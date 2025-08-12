@@ -260,7 +260,7 @@ frontend:
     implemented: true
     working: false
     file: "components/AdvancedScreener.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
     needs_retesting: false
     status_history:
@@ -270,6 +270,9 @@ frontend:
         - working: false
         - agent: "testing"
         - comment: "❌ NOT WORKING: Component loads with filter panel but stock table shows 'Showing 0 of 0 stocks'. API calls to /api/screener/data and /api/screener/sectors are made but no stock data displays in table. Filter functionality works but returns no results."
+        - working: false
+        - agent: "testing"
+        - comment: "❌ NOT WORKING: Frontend data handling issue identified. API /api/screener/data returns 9 stocks with proper data structure, but frontend component shows 'Showing 0 of 0 stocks'. Filter panel, exchange selection, and table structure work correctly. Issue is in frontend state management - data from API not being properly set in component state despite successful API calls."
 
   - task: "Portfolio Component"
     implemented: true
