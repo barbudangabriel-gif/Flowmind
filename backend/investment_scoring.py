@@ -471,8 +471,8 @@ class InvestmentScorer:
         
         return explanation
     
-    def _assess_enhanced_risk_level(self, stock_data: Dict[str, Any], scores: Dict[str, float], technical_data: Dict[str, Any]) -> str:
-        """Enhanced risk assessment including technical volatility"""
+    def _assess_enhanced_risk_level(self, stock_data: Dict[str, Any], scores: Dict[str, float], technical_data: Dict[str, Any], sentiment_data: Dict[str, Any]) -> str:
+        """Enhanced risk assessment including technical volatility and sentiment"""
         # Base risk from fundamental analysis
         volatility_score = scores.get('volatility_score', 50)
         financial_health = scores.get('financial_health', 50)
@@ -482,6 +482,10 @@ class InvestmentScorer:
         price_action = technical_data.get('price_action', {})
         volatility = price_action.get('volatility', 0.3)
         
+        # Sentiment risk factors
+        sentiment_confidence = sentiment_data.get('confidence_level', 0.0)
+        market_mood = sentiment_data.get('market_mood', 'UNCERTAIN')
+        
         # Combine risk factors
         base_risk_score = (volatility_score + financial_health) / 2
         
@@ -490,6 +494,14 @@ class InvestmentScorer:
             base_risk_score -= 10
         elif volatility < 0.2:  # Low volatility
             base_risk_score += 10
+        
+        # Adjust for sentiment uncertainty
+        if sentiment_confidence < 0.3 or market_mood == 'UNCERTAIN':
+            base_risk_score -= 8  # Higher risk due to sentiment uncertainty
+        elif market_mood in ['PESSIMISTIC', 'CAUTIOUSLY_NEGATIVE']:
+            base_risk_score -= 5
+        elif market_mood in ['OPTIMISTIC', 'CAUTIOUSLY_POSITIVE']:
+            base_risk_score += 5
         
         # Adjust for trend reliability
         trend_reliability = technical_data.get('trend_analysis', {}).get('short_term', {}).get('reliability', 'LOW')
