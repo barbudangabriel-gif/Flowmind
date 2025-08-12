@@ -555,6 +555,6 @@ const AdvancedScreener = React.memo(() => {
       </div>
     </div>
   );
-};
+});
 
 export default AdvancedScreener;
