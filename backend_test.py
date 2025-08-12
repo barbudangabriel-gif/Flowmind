@@ -251,6 +251,8 @@ class StockMarketAPITester:
                 print(f"   ✅ {symbol} Price: ${enhanced_data['price']:.2f}")
         
         return success
+
+    def test_error_handling(self):
         """Test error handling for invalid requests"""
         # Test invalid stock symbol
         self.run_test("Invalid Stock Symbol", "GET", "stocks/INVALID123", 500)
