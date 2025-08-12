@@ -56,10 +56,9 @@ const AdvancedScreener = () => {
     console.log('📊 AdvancedScreener State Update:', {
       stocksLength: stocks.length,
       filteredStocksLength: filteredStocks.length,
-      sortedStocksLength: sortedStocks.length,
-      paginatedStocksLength: paginatedStocks.length
+      loading: loading
     });
-  }, [stocks, filteredStocks, sortedStocks, paginatedStocks]);
+  }, [stocks, filteredStocks, loading]);
 
   const fetchSectors = async () => {
     try {
