@@ -133,84 +133,90 @@ const InvestmentScoring = () => {
     return 'text-red-600';
   };
 
-  const InvestmentCard = ({ investment, showDetails = false }) => (
-    <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-      <div className="flex justify-between items-start mb-3">
-        <div>
-          <h3 className="text-lg font-bold text-gray-800">{investment.symbol}</h3>
-          <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${getRatingColor(investment.rating)}`}>
-            {investment.rating}
-          </span>
-        </div>
-        <div className="text-right">
-          <div className={`text-2xl font-bold ${getScoreColor(investment.total_score)}`}>
-            {investment.total_score}
-          </div>
-          <div className="text-xs text-gray-500">Score</div>
-        </div>
-      </div>
+  const InvestmentCard = ({ investment, showDetails = false }) => {
+    if (!investment) {
+      return <div className="bg-white p-4 rounded-lg shadow-md">Loading...</div>;
+    }
 
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center space-x-2">
-          <Shield className={`w-4 h-4 ${getRiskColor(investment.risk_level).split(' ')[0]}`} />
-          <span className={`text-xs px-2 py-1 rounded ${getRiskColor(investment.risk_level)}`}>
-            {investment.risk_level} RISK
-          </span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <Timer className="w-4 h-4 text-gray-500" />
-          <span className="text-xs text-gray-600">{investment.investment_horizon}</span>
-        </div>
-      </div>
-
-      <p className="text-sm text-gray-600 mb-3">{investment.explanation}</p>
-
-      {showDetails && (
-        <div className="space-y-3">
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+        <div className="flex justify-between items-start mb-3">
           <div>
-            <h4 className="text-sm font-semibold text-green-600 mb-1 flex items-center">
-              <CheckCircle className="w-4 h-4 mr-1" />
-              Key Strengths
-            </h4>
-            <div className="flex flex-wrap gap-1">
-              {investment.key_strengths.map((strength, idx) => (
-                <span key={idx} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                  {strength}
-                </span>
-              ))}
-            </div>
+            <h3 className="text-lg font-bold text-gray-800">{investment.symbol || 'N/A'}</h3>
+            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${getRatingColor(investment.rating || 'HOLD')}`}>
+              {investment.rating || 'HOLD'}
+            </span>
           </div>
+          <div className="text-right">
+            <div className={`text-2xl font-bold ${getScoreColor(investment.total_score || 50)}`}>
+              {investment.total_score || 'N/A'}
+            </div>
+            <div className="text-xs text-gray-500">Score</div>
+          </div>
+        </div>
 
-          {investment.key_risks.length > 0 && (
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <Shield className={`w-4 h-4 ${getRiskColor(investment.risk_level || 'MODERATE').split(' ')[0]}`} />
+            <span className={`text-xs px-2 py-1 rounded ${getRiskColor(investment.risk_level || 'MODERATE')}`}>
+              {investment.risk_level || 'MODERATE'} RISK
+            </span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <Timer className="w-4 h-4 text-gray-500" />
+            <span className="text-xs text-gray-600">{investment.investment_horizon || 'MEDIUM-TERM'}</span>
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-600 mb-3">{investment.explanation || 'Investment analysis pending...'}</p>
+
+        {showDetails && (
+          <div className="space-y-3">
             <div>
-              <h4 className="text-sm font-semibold text-red-600 mb-1 flex items-center">
-                <XCircle className="w-4 h-4 mr-1" />
-                Key Risks
+              <h4 className="text-sm font-semibold text-green-600 mb-1 flex items-center">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Key Strengths
               </h4>
               <div className="flex flex-wrap gap-1">
-                {investment.key_risks.map((risk, idx) => (
-                  <span key={idx} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
-                    {risk}
+                {(investment.key_strengths || []).map((strength, idx) => (
+                  <span key={idx} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                    {strength}
                   </span>
                 ))}
               </div>
             </div>
-          )}
 
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-            <div>
-              <div className="text-xs text-gray-500">Valuation Score</div>
-              <div className="font-medium">{investment.individual_scores?.pe || 'N/A'}</div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-500">Momentum Score</div>
-              <div className="font-medium">{investment.individual_scores?.momentum || 'N/A'}</div>
+            {(investment.key_risks || []).length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-red-600 mb-1 flex items-center">
+                  <XCircle className="w-4 h-4 mr-1" />
+                  Key Risks
+                </h4>
+                <div className="flex flex-wrap gap-1">
+                  {(investment.key_risks || []).map((risk, idx) => (
+                    <span key={idx} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                      {risk}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+              <div>
+                <div className="text-xs text-gray-500">Valuation Score</div>
+                <div className="font-medium">{investment.individual_scores?.pe || 'N/A'}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Momentum Score</div>
+                <div className="font-medium">{investment.individual_scores?.momentum || 'N/A'}</div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
