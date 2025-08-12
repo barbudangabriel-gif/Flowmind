@@ -237,7 +237,7 @@ frontend:
 
   - task: "Technical Analysis Component"
     implemented: true
-    working: false
+    working: true
     file: "App.js"
     stuck_count: 0
     priority: "medium"
@@ -249,6 +249,9 @@ frontend:
         - working: false
         - agent: "testing"
         - comment: "❌ NOT WORKING: Component loads with form but shows loading spinner when analyzing AAPL. No technical data cards or RSI sections display. API call to /api/investments/score/AAPL is made but technical analysis results don't render properly."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ WORKING: Fixed API endpoint from /api/technical-analysis/smart-money/ to /api/investments/smart-money/. Component now displays comprehensive smart money analysis with BULLISH/BEARISH verdicts, order blocks, fair value gaps, liquidity sweeps, and market structure analysis. All tabs (Overview, Order Blocks, FVG, Liquidity Sweeps, Market Structure, Price Action) working correctly. Technical analysis fully functional."
 
   - task: "Advanced Screener Component"
     implemented: true
