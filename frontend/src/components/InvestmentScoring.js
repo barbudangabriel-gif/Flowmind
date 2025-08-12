@@ -42,13 +42,13 @@ const InvestmentScoring = React.memo(() => {
   useEffect(() => {
     loadTopPicks();
     loadRiskAnalysis();
-  }, []);
+  }, [loadTopPicks, loadRiskAnalysis]);
 
   useEffect(() => {
     if (selectedSector) {
       loadSectorLeaders();
     }
-  }, [selectedSector]);
+  }, [selectedSector, loadSectorLeaders]);
 
   // Memoized API functions
   const loadTopPicks = useCallback(async () => {
