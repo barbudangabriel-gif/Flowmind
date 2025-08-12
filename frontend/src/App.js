@@ -273,18 +273,18 @@ const Dashboard = () => {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-6 text-white shadow-xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold mb-2">Market Dashboard</h2>
-            <p className="text-blue-100 text-lg">Real-time market overview and top movers</p>
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-4 md:p-6 text-white shadow-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between">
+          <div className="mb-4 md:mb-0">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">Market Dashboard</h2>
+            <p className="text-blue-100 text-sm md:text-lg">Real-time market overview and top movers</p>
           </div>
-          <div className="text-right">
+          <div className="text-left md:text-right">
             <div className="text-sm text-blue-200 mb-1">Last Updated</div>
-            <div className="text-blue-100 font-medium">{new Date().toLocaleTimeString()}</div>
+            <div className="text-blue-100 font-medium mb-2">{new Date().toLocaleTimeString()}</div>
             <button
               onClick={fetchMarketData}
-              className="mt-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+              className="bg-white/20 hover:bg-white/30 px-3 md:px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2"
             >
               <RefreshCw size={16} />
               <span>Refresh</span>
