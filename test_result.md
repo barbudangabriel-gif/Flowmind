@@ -318,10 +318,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Dashboard Component - Market Overview Display"
     - "Investment Scoring Component"
     - "Technical Analysis Component"
-  stuck_tasks: []
+    - "Advanced Screener Component"
+  stuck_tasks:
+    - "Investment Scoring Component"
+    - "Technical Analysis Component"
+    - "Advanced Screener Component"
   test_all: false
   test_priority: "high_first"
 
