@@ -365,9 +365,9 @@ const Dashboard = () => {
       {/* Top Movers */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8">
         {/* Top Gainers */}
-        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100">
+        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100 card-hover">
           <div className="flex items-center space-x-3 mb-4 md:mb-6">
-            <div className="p-2 md:p-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl text-white">
+            <div className="p-2 md:p-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl text-white animate-pulse-soft">
               <TrendingUp size={20} />
             </div>
             <div>
