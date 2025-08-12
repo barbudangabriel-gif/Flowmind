@@ -417,18 +417,46 @@ async def get_investment_score(symbol: str):
         raise HTTPException(status_code=500, detail=f"Error calculating investment score for {symbol}: {str(e)}")
 
 @api_router.get("/investments/smart-money/{symbol}", response_model=SmartMoneyAnalysis)
-async def get_smart_money_analysis(symbol: str, timeframe: str = Query("1D", description="Timeframe for analysis")):
-    """Get smart money analysis for a specific stock"""
+async def get_smart_money_analysis(symbol: str, timeframe: str = Query("3mo", description="Timeframe for analysis")):
+    """Get comprehensive Smart Money Concepts and Price Action analysis for a specific stock"""
     try:
-        # Get enhanced stock data
-        stock_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
-        
         # Perform smart money analysis
-        analysis_data = await smart_money_analyzer.analyze_smart_money_patterns(symbol, timeframe)
+        analysis_data = await smart_money_analyzer.analyze_smart_money_concepts(symbol, timeframe)
         
         return SmartMoneyAnalysis(**analysis_data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error performing smart money analysis for {symbol}: {str(e)}")
+
+@api_router.get("/technical-analysis/smart-money/{symbol}")
+async def get_smart_money_technical_analysis(symbol: str, period: str = Query("3mo")):
+    """Get Smart Money technical analysis with Order Blocks, FVGs, and Price Action"""
+    try:
+        analysis = await smart_money_analyzer.analyze_smart_money_concepts(symbol, period)
+        
+        # Format for technical analysis display
+        return {
+            "symbol": symbol.upper(),
+            "smart_money_verdict": analysis["smart_money_verdict"],
+            "market_structure": analysis["market_structure"],
+            "order_blocks": analysis["order_blocks"],
+            "fair_value_gaps": analysis["fair_value_gaps"],
+            "liquidity_sweeps": analysis["liquidity_sweeps"],
+            "premium_discount": analysis["premium_discount"],
+            "price_action": analysis["price_action"],
+            "trading_signals": analysis["trading_signals"],
+            "key_levels": {
+                "support_resistance": analysis["price_action"]["support_resistance"],
+                "supply_demand": analysis["price_action"]["supply_demand_zones"]
+            },
+            "patterns": {
+                "candlestick_patterns": analysis["price_action"]["candlestick_patterns"],
+                "imbalances": analysis["imbalances"]
+            },
+            "volume_analysis": analysis["price_action"]["volume_analysis"],
+            "analysis_timestamp": analysis["analysis_timestamp"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in smart money technical analysis for {symbol}: {str(e)}")
 
 @api_router.get("/investments/top-picks", response_model=TopInvestments)
 async def get_top_investment_picks(
