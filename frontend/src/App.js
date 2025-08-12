@@ -498,7 +498,6 @@ const MemoizedStockRow = React.memo(({ stock, type }) => (
     </div>
   </div>
 ));
-};
 
 // Portfolio Component
 const Portfolio = () => {
