@@ -92,20 +92,22 @@ const InvestmentScoring = React.memo(() => {
     }
   }, [selectedSector]);
 
-  const searchStockScore = async () => {
-    if (!searchSymbol.trim()) return;
+  const analyzeStock = useCallback(async () => {
+    if (!selectedStock) return;
     
     setLoading(true);
     try {
-      const response = await axios.get(`${API}/investments/score/${searchSymbol.toUpperCase()}`);
-      setStockScore(response.data);
+      console.log(`Analyzing stock: ${selectedStock}`);
+      const response = await axios.get(`${API}/investments/score/${selectedStock}`);
+      console.log('Stock analysis response:', response.data);
+      setStockAnalysis(response.data);
     } catch (error) {
-      console.error('Error getting stock score:', error);
-      setStockScore(null);
+      console.error('Error analyzing stock:', error);
+      setStockAnalysis(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedStock]);
 
   const getRatingColor = (rating) => {
     switch (rating) {
