@@ -276,8 +276,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Market Overview API - Dashboard Data Loading"
-    - "Investment Scoring System"
+    - "Dashboard Component - Market Overview Display"
+    - "Investment Scoring Component"
     - "Technical Analysis Component"
   stuck_tasks: []
   test_all: false
