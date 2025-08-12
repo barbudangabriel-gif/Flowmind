@@ -1,0 +1,385 @@
+"""
+Investment Scoring System - Algoritm pentru cele mai bune oportunități de investiții
+"""
+import asyncio
+from typing import List, Dict, Any, Optional
+import numpy as np
+from datetime import datetime, timedelta
+import logging
+from enhanced_ticker_data import enhanced_ticker_manager
+
+logger = logging.getLogger(__name__)
+
+class InvestmentScorer:
+    def __init__(self):
+        self.weights = {
+            # Valuation metrics (35%)
+            'pe_score': 0.15,        # P/E ratio 
+            'pb_score': 0.10,        # Price-to-book
+            'value_score': 0.10,     # Overall valuation
+            
+            # Growth metrics (25%)
+            'momentum_score': 0.15,   # Price momentum
+            'growth_score': 0.10,     # Revenue/earnings growth
+            
+            # Quality metrics (25%)
+            'profitability_score': 0.10,  # ROE, margins
+            'dividend_score': 0.08,       # Dividend yield & stability
+            'financial_health': 0.07,     # Debt ratios, cash
+            
+            # Market metrics (15%)
+            'volume_score': 0.08,         # Trading volume
+            'volatility_score': 0.07,     # Risk (Beta, volatility)
+        }
+    
+    async def calculate_investment_score(self, stock_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Calculate comprehensive investment score for a stock"""
+        try:
+            symbol = stock_data.get('symbol', 'N/A')
+            
+            # Calculate individual scores
+            scores = {}
+            scores['pe_score'] = self._calculate_pe_score(stock_data)
+            scores['pb_score'] = self._calculate_pb_score(stock_data)
+            scores['value_score'] = self._calculate_value_score(stock_data)
+            scores['momentum_score'] = self._calculate_momentum_score(stock_data)
+            scores['growth_score'] = self._calculate_growth_score(stock_data)
+            scores['profitability_score'] = self._calculate_profitability_score(stock_data)
+            scores['dividend_score'] = self._calculate_dividend_score(stock_data)
+            scores['financial_health'] = self._calculate_financial_health_score(stock_data)
+            scores['volume_score'] = self._calculate_volume_score(stock_data)
+            scores['volatility_score'] = self._calculate_volatility_score(stock_data)
+            
+            # Calculate weighted total score
+            total_score = sum(scores[metric] * self.weights[metric] for metric in scores)
+            total_score = max(0, min(100, total_score))  # Clamp between 0-100
+            
+            # Determine investment rating
+            rating = self._get_investment_rating(total_score)
+            
+            # Create recommendation explanation
+            explanation = self._generate_explanation(stock_data, scores, total_score)
+            
+            return {
+                'symbol': symbol,
+                'total_score': round(total_score, 2),
+                'rating': rating,
+                'individual_scores': {k: round(v, 2) for k, v in scores.items()},
+                'explanation': explanation,
+                'risk_level': self._assess_risk_level(stock_data, scores),
+                'investment_horizon': self._recommend_investment_horizon(scores),
+                'key_strengths': self._identify_key_strengths(scores),
+                'key_risks': self._identify_key_risks(scores),
+                'last_updated': datetime.utcnow().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error calculating investment score for {stock_data.get('symbol', 'unknown')}: {str(e)}")
+            return self._get_default_score(stock_data.get('symbol', 'N/A'))
+    
+    def _calculate_pe_score(self, stock_data: Dict[str, Any]) -> float:
+        """Score based on P/E ratio (lower is better, but not too low)"""
+        pe_ratio = stock_data.get('pe_ratio')
+        if not pe_ratio or pe_ratio <= 0:
+            return 50  # Neutral score for missing/invalid P/E
+        
+        # Optimal P/E range: 15-25
+        if 15 <= pe_ratio <= 25:
+            return 90
+        elif 10 <= pe_ratio < 15:
+            return 80
+        elif 25 < pe_ratio <= 35:
+            return 70
+        elif 5 <= pe_ratio < 10:
+            return 60
+        elif 35 < pe_ratio <= 50:
+            return 50
+        else:
+            return 30  # Very high or very low P/E
+    
+    def _calculate_pb_score(self, stock_data: Dict[str, Any]) -> float:
+        """Score based on estimated Price-to-Book ratio"""
+        # Since we don't have direct P/B, estimate based on market cap and other factors
+        market_cap = stock_data.get('market_cap', 0)
+        price = stock_data.get('price', 0)
+        
+        if market_cap == 0 or price == 0:
+            return 50
+        
+        # Estimate P/B score based on market cap size and sector
+        sector = stock_data.get('sector', 'Unknown')
+        
+        # Tech stocks typically have higher P/B ratios
+        if sector == 'Technology':
+            return 70  # Generally acceptable for tech
+        elif sector in ['Healthcare', 'Financial Services']:
+            return 75  # Moderate P/B expectations
+        else:
+            return 80  # Conservative sectors
+    
+    def _calculate_value_score(self, stock_data: Dict[str, Any]) -> float:
+        """Overall valuation score based on multiple factors"""
+        price = stock_data.get('price', 0)
+        week_52_low = stock_data.get('week_52_low', 0)
+        week_52_high = stock_data.get('week_52_high', 0)
+        
+        if not all([price, week_52_low, week_52_high]):
+            return 50
+        
+        # Calculate position within 52-week range
+        range_position = (price - week_52_low) / (week_52_high - week_52_low)
+        
+        # Lower position = better value (inverted score)
+        if range_position <= 0.3:
+            return 90  # Near 52-week low = good value
+        elif range_position <= 0.5:
+            return 75  # Below middle = decent value
+        elif range_position <= 0.7:
+            return 60  # Above middle = fair value
+        else:
+            return 40   # Near 52-week high = expensive
+    
+    def _calculate_momentum_score(self, stock_data: Dict[str, Any]) -> float:
+        """Score based on price momentum"""
+        change_percent = stock_data.get('change_percent', 0)
+        
+        # Recent positive momentum is good, but not excessive
+        if 0.5 <= change_percent <= 3.0:
+            return 85  # Good positive momentum
+        elif -0.5 <= change_percent < 0.5:
+            return 70  # Stable
+        elif 3.0 < change_percent <= 5.0:
+            return 75  # Strong but not excessive
+        elif -2.0 <= change_percent < -0.5:
+            return 60  # Minor decline
+        elif change_percent > 5.0:
+            return 50  # Potentially overheated
+        else:
+            return 40   # Significant decline
+    
+    def _calculate_growth_score(self, stock_data: Dict[str, Any]) -> float:
+        """Estimate growth score based on available data"""
+        sector = stock_data.get('sector', 'Unknown')
+        market_cap = stock_data.get('market_cap', 0)
+        
+        # Sector-based growth expectations
+        growth_sectors = ['Technology', 'Healthcare', 'Communication Services']
+        if sector in growth_sectors:
+            return 80
+        elif sector in ['Consumer Cyclical', 'Industrials']:
+            return 70
+        else:
+            return 60
+    
+    def _calculate_profitability_score(self, stock_data: Dict[str, Any]) -> float:
+        """Score based on profitability metrics"""
+        pe_ratio = stock_data.get('pe_ratio')
+        sector = stock_data.get('sector', 'Unknown')
+        
+        if not pe_ratio or pe_ratio <= 0:
+            return 30  # No earnings = poor profitability
+        
+        # Having a positive P/E means profitable
+        base_score = 70
+        
+        # Adjust by sector profitability expectations
+        high_margin_sectors = ['Technology', 'Healthcare', 'Financial Services']
+        if sector in high_margin_sectors:
+            return min(90, base_score + 15)
+        else:
+            return base_score
+    
+    def _calculate_dividend_score(self, stock_data: Dict[str, Any]) -> float:
+        """Score based on dividend yield"""
+        dividend_yield = stock_data.get('dividend_yield')
+        
+        if not dividend_yield:
+            return 50  # No dividend = neutral
+        
+        dividend_percent = dividend_yield * 100
+        
+        if 2.0 <= dividend_percent <= 4.0:
+            return 90  # Attractive dividend
+        elif 1.0 <= dividend_percent < 2.0:
+            return 75  # Moderate dividend
+        elif 4.0 < dividend_percent <= 6.0:
+            return 80  # High dividend
+        elif dividend_percent > 6.0:
+            return 60   # Potentially unsustainable
+        else:
+            return 50   # Very low dividend
+    
+    def _calculate_financial_health_score(self, stock_data: Dict[str, Any]) -> float:
+        """Assess financial health"""
+        market_cap = stock_data.get('market_cap', 0)
+        
+        # Larger market cap generally indicates more financial stability
+        if market_cap >= 100e9:  # $100B+
+            return 90  # Large cap = stable
+        elif market_cap >= 10e9:  # $10B+
+            return 80  # Mid-large cap = good
+        elif market_cap >= 2e9:   # $2B+
+            return 70  # Mid cap = decent
+        else:
+            return 55  # Small cap = higher risk
+    
+    def _calculate_volume_score(self, stock_data: Dict[str, Any]) -> float:
+        """Score based on trading volume (liquidity)"""
+        volume = stock_data.get('volume', 0)
+        avg_volume = stock_data.get('avg_volume', 0)
+        
+        if not avg_volume or avg_volume == 0:
+            return 50
+        
+        volume_ratio = volume / avg_volume
+        
+        if 0.8 <= volume_ratio <= 1.5:
+            return 85  # Normal volume
+        elif 0.5 <= volume_ratio < 0.8:
+            return 70  # Below average volume
+        elif 1.5 < volume_ratio <= 2.0:
+            return 80  # Above average volume
+        else:
+            return 60   # Extreme volume (high or low)
+    
+    def _calculate_volatility_score(self, stock_data: Dict[str, Any]) -> float:
+        """Score based on volatility (lower volatility = higher score)"""
+        beta = stock_data.get('beta')
+        
+        if not beta:
+            return 60  # Unknown risk
+        
+        if 0.7 <= beta <= 1.2:
+            return 85  # Market-level risk
+        elif 0.4 <= beta < 0.7:
+            return 90  # Lower risk
+        elif 1.2 < beta <= 1.5:
+            return 70  # Higher risk
+        else:
+            return 50   # High volatility
+    
+    def _get_investment_rating(self, score: float) -> str:
+        """Convert score to investment rating"""
+        if score >= 85:
+            return "BUY STRONG"
+        elif score >= 75:
+            return "BUY"
+        elif score >= 65:
+            return "HOLD +"
+        elif score >= 55:
+            return "HOLD"
+        elif score >= 45:
+            return "HOLD -"
+        else:
+            return "AVOID"
+    
+    def _generate_explanation(self, stock_data: Dict[str, Any], scores: Dict[str, float], total_score: float) -> str:
+        """Generate human-readable explanation"""
+        symbol = stock_data.get('symbol', 'N/A')
+        sector = stock_data.get('sector', 'Unknown')
+        price = stock_data.get('price', 0)
+        
+        explanation = f"{symbol} ({sector}) at ${price:.2f} "
+        
+        if total_score >= 75:
+            explanation += "shows strong investment potential with "
+        elif total_score >= 65:
+            explanation += "presents a solid investment opportunity with "
+        elif total_score >= 55:
+            explanation += "offers moderate investment appeal with "
+        else:
+            explanation += "faces investment challenges with "
+        
+        # Highlight top factors
+        top_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:2]
+        factors = []
+        
+        for factor, score in top_scores:
+            if score >= 80:
+                factor_name = factor.replace('_score', '').replace('_', ' ')
+                factors.append(f"strong {factor_name}")
+        
+        if factors:
+            explanation += ", ".join(factors) + "."
+        else:
+            explanation += "mixed fundamentals."
+        
+        return explanation
+    
+    def _assess_risk_level(self, stock_data: Dict[str, Any], scores: Dict[str, float]) -> str:
+        """Assess overall risk level"""
+        volatility_score = scores.get('volatility_score', 50)
+        financial_health = scores.get('financial_health', 50)
+        
+        avg_risk_score = (volatility_score + financial_health) / 2
+        
+        if avg_risk_score >= 80:
+            return "LOW"
+        elif avg_risk_score >= 65:
+            return "MODERATE"
+        else:
+            return "HIGH"
+    
+    def _recommend_investment_horizon(self, scores: Dict[str, float]) -> str:
+        """Recommend investment time horizon"""
+        momentum_score = scores.get('momentum_score', 50)
+        value_score = scores.get('value_score', 50)
+        
+        if value_score >= 75 and momentum_score >= 70:
+            return "LONG-TERM"  # Good value + momentum
+        elif momentum_score >= 80:
+            return "SHORT-TERM"  # Strong momentum
+        else:
+            return "MEDIUM-TERM"
+    
+    def _identify_key_strengths(self, scores: Dict[str, float]) -> List[str]:
+        """Identify top strengths"""
+        strengths = []
+        
+        if scores.get('pe_score', 0) >= 80:
+            strengths.append("Attractive Valuation")
+        if scores.get('dividend_score', 0) >= 80:
+            strengths.append("Strong Dividend")
+        if scores.get('momentum_score', 0) >= 80:
+            strengths.append("Positive Momentum")
+        if scores.get('financial_health', 0) >= 80:
+            strengths.append("Financial Stability")
+        if scores.get('volatility_score', 0) >= 80:
+            strengths.append("Low Risk")
+        
+        return strengths[:3]  # Top 3 strengths
+    
+    def _identify_key_risks(self, scores: Dict[str, float]) -> List[str]:
+        """Identify main risks"""
+        risks = []
+        
+        if scores.get('pe_score', 100) <= 40:
+            risks.append("Valuation Concerns")
+        if scores.get('volatility_score', 100) <= 40:
+            risks.append("High Volatility")
+        if scores.get('volume_score', 100) <= 40:
+            risks.append("Low Liquidity")
+        if scores.get('momentum_score', 100) <= 40:
+            risks.append("Negative Momentum")
+        if scores.get('financial_health', 100) <= 40:
+            risks.append("Financial Risk")
+        
+        return risks[:3]  # Top 3 risks
+    
+    def _get_default_score(self, symbol: str) -> Dict[str, Any]:
+        """Return default score for error cases"""
+        return {
+            'symbol': symbol,
+            'total_score': 50.0,
+            'rating': "HOLD",
+            'individual_scores': {k.replace('_score', ''): 50.0 for k in self.weights.keys()},
+            'explanation': f"Unable to calculate comprehensive score for {symbol}",
+            'risk_level': "UNKNOWN",
+            'investment_horizon': "UNKNOWN",
+            'key_strengths': [],
+            'key_risks': ["Insufficient Data"],
+            'last_updated': datetime.utcnow().isoformat()
+        }
+
+# Global instance
+investment_scorer = InvestmentScorer()
