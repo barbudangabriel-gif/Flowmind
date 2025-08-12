@@ -51,6 +51,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'portfolio', label: 'Portfolio', icon: Briefcase },
+    { id: 'investments', label: '🎯 Investment Scoring', icon: Award },
     { id: 'screener', label: 'Advanced Screener', icon: Database },
     { id: 'simple-screener', label: 'Stock Search', icon: Search },
     { id: 'watchlist', label: 'Watchlist', icon: Star },
