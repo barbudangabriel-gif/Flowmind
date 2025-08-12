@@ -60,11 +60,16 @@ const AdvancedScreener = () => {
   };
 
   const loadScreenerData = async (exchange = 'all') => {
+    console.log('Loading screener data for exchange:', exchange);
     setLoading(true);
     try {
       const response = await axios.get(`${API}/screener/data?limit=100&exchange=${exchange}`);
-      setStocks(response.data.stocks || []);
-      setFilteredStocks(response.data.stocks || []);
+      console.log('API response:', response.data);
+      const stocksData = response.data.stocks || [];
+      console.log('Setting stocks data:', stocksData);
+      setStocks(stocksData);
+      setFilteredStocks(stocksData);
+      console.log('Stocks and filteredStocks set successfully');
     } catch (error) {
       console.error('Error loading screener data:', error);
       setStocks([]);
