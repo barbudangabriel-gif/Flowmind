@@ -88,10 +88,11 @@ const AdvancedScreener = () => {
       if (filters.maxChange) criteria.max_change = parseFloat(filters.maxChange);
 
       const response = await axios.post(`${API}/screener/filter`, criteria);
-      setFilteredStocks(response.data.stocks);
+      setFilteredStocks(response.data.stocks || []);
       setCurrentPage(1);
     } catch (error) {
       console.error('Error filtering stocks:', error);
+      setFilteredStocks([]);
     } finally {
       setLoading(false);
     }
