@@ -166,8 +166,8 @@ const AdvancedScreener = React.memo(() => {
     setSortConfig({ key, direction });
   }, [sortConfig]);
 
-  // Create sorted and paginated stocks with defensive programming
-  const getSortedStocks = () => {
+  // Memoized sorted and paginated data
+  const getSortedStocks = useCallback(() => {
     const stocksToSort = Array.isArray(filteredStocks) ? filteredStocks : [];
     if (!sortConfig.key || stocksToSort.length === 0) return stocksToSort;
 
@@ -184,24 +184,16 @@ const AdvancedScreener = React.memo(() => {
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
     });
-  };
+  }, [filteredStocks, sortConfig]);
 
-  const sortedStocks = getSortedStocks();
-  const paginatedStocks = (() => {
+  const sortedStocks = useMemo(() => getSortedStocks(), [getSortedStocks]);
+  
+  const paginatedStocks = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return sortedStocks.slice(startIndex, startIndex + itemsPerPage);
-  })();
-  const totalPages = Math.ceil(sortedStocks.length / itemsPerPage);
+  }, [sortedStocks, currentPage, itemsPerPage]);
 
-  // Memoized format function
-  const formatNumber = useCallback((num) => {
-    if (num === null || num === undefined) return 'N/A';
-    if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
-    if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num.toFixed(2);
-  }, []);
+  const totalPages = useMemo(() => Math.ceil(sortedStocks.length / itemsPerPage), [sortedStocks.length, itemsPerPage]);
 
   const exportToCSV = useCallback(() => {
     const stocksToExport = getSortedStocks();
@@ -232,7 +224,7 @@ const AdvancedScreener = React.memo(() => {
     a.download = 'stock_screener_results.csv';
     a.click();
     window.URL.revokeObjectURL(url);
-  }, []);
+  }, [getSortedStocks]);
 
   const SortableHeader = ({ column, children }) => (
     <th 
