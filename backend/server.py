@@ -133,6 +133,24 @@ class WatchlistItemCreate(BaseModel):
     target_price: Optional[float] = None
     notes: Optional[str] = None
 
+class InvestmentScore(BaseModel):
+    symbol: str
+    total_score: float
+    rating: str
+    individual_scores: Dict[str, float]
+    explanation: str
+    risk_level: str
+    investment_horizon: str
+    key_strengths: List[str]
+    key_risks: List[str]
+    last_updated: str
+
+class TopInvestments(BaseModel):
+    recommendations: List[InvestmentScore]
+    total_analyzed: int
+    criteria: str
+    last_updated: str
+
 # Utility functions for data fetching
 async def get_stock_quote(symbol: str) -> Dict[str, Any]:
     """Get current stock quote - fallback for basic compatibility"""
