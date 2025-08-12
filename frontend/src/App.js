@@ -35,8 +35,10 @@ import {
   Home,
   Star,
   Newspaper,
-  Settings
+  Settings,
+  Database
 } from "lucide-react";
+import AdvancedScreener from "./components/AdvancedScreener";
 import "./App.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
