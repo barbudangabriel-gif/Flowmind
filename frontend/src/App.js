@@ -34,7 +34,7 @@ import {
   Briefcase,
   Home,
   Star,
-  News,
+  Newspaper,
   Settings
 } from "lucide-react";
 import "./App.css";
