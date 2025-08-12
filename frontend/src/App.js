@@ -502,38 +502,75 @@ const Portfolio = () => {
   })) || [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Portfolio</h2>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
-        >
-          <Plus size={20} />
-          <span>Add Stock</span>
-        </button>
+    <div className="space-y-6 md:space-y-8">
+      {/* Page Header */}
+      <div className="bg-gradient-to-r from-emerald-600 via-green-700 to-teal-700 rounded-2xl p-4 md:p-6 text-white shadow-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between">
+          <div className="mb-4 md:mb-0">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2">Portfolio Management</h2>
+            <p className="text-emerald-100 text-sm md:text-lg">Track your investments and performance</p>
+          </div>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+          >
+            <Plus size={20} />
+            <span>Add Stock</span>
+          </button>
+        </div>
       </div>
 
       {/* Portfolio Summary */}
       {portfolio && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-sm font-medium text-gray-600">Total Value</h3>
-            <p className="text-2xl font-bold text-gray-800">${portfolio.total_value?.toFixed(2)}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg border border-gray-100 card-hover">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg text-white">
+                <DollarSign size={20} />
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">Total Value</h3>
+            </div>
+            <p className="text-2xl md:text-3xl font-bold text-gray-800">${portfolio.total_value?.toFixed(2)}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-sm font-medium text-gray-600">Total Cost</h3>
-            <p className="text-2xl font-bold text-gray-800">${portfolio.total_cost?.toFixed(2)}</p>
+          
+          <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg border border-gray-100 card-hover">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg text-white">
+                <Briefcase size={20} />
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">Total Cost</h3>
+            </div>
+            <p className="text-2xl md:text-3xl font-bold text-gray-800">${portfolio.total_cost?.toFixed(2)}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-sm font-medium text-gray-600">P&L</h3>
-            <p className={`text-2xl font-bold ${portfolio.total_profit_loss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          
+          <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg border border-gray-100 card-hover">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className={`p-2 rounded-lg text-white ${
+                portfolio.total_profit_loss >= 0 
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
+                  : 'bg-gradient-to-r from-red-500 to-red-600'
+              }`}>
+                {portfolio.total_profit_loss >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">P&L</h3>
+            </div>
+            <p className={`text-2xl md:text-3xl font-bold ${portfolio.total_profit_loss >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               ${portfolio.total_profit_loss?.toFixed(2)}
             </p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-sm font-medium text-gray-600">P&L %</h3>
-            <p className={`text-2xl font-bold ${portfolio.total_profit_loss_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          
+          <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg border border-gray-100 card-hover">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className={`p-2 rounded-lg text-white ${
+                portfolio.total_profit_loss_percent >= 0 
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
+                  : 'bg-gradient-to-r from-red-500 to-red-600'
+              }`}>
+                <Activity size={20} />
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">P&L %</h3>
+            </div>
+            <p className={`text-2xl md:text-3xl font-bold ${portfolio.total_profit_loss_percent >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               {portfolio.total_profit_loss_percent?.toFixed(2)}%
             </p>
           </div>
