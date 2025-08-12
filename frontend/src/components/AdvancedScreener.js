@@ -447,7 +447,7 @@ const AdvancedScreener = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <span className="text-gray-600">
-              Showing {paginatedStocks.length} of {sortedStocks.length} stocks
+              Showing {Array.isArray(paginatedStocks) ? paginatedStocks.length : 0} of {Array.isArray(sortedStocks) ? sortedStocks.length : 0} stocks
             </span>
             {loading && <Loader className="animate-spin text-blue-500" size={20} />}
           </div>
