@@ -115,6 +115,15 @@ class EnhancedTickerDataManager:
                 price_change = current_price - previous_close
                 percent_change = (price_change / previous_close) * 100
             
+            # Get volume - prefer live volume if available
+            current_volume = info.get('regularMarketVolume') or info.get('volume')
+            if not current_volume and not history.empty:
+                current_volume = int(history['Volume'].iloc[-1])
+            elif not current_volume:
+                current_volume = 0
+            else:
+                current_volume = int(current_volume)
+            
             # Try to get extended hours data
             extended_hours_data = await self._get_extended_hours_data(symbol)
             
@@ -138,7 +147,7 @@ class EnhancedTickerDataManager:
                 "market_state": self._get_market_state(),
                 "extended_hours": extended_hours_data,
                 "timestamp": datetime.utcnow().isoformat(),
-                "data_source": "Yahoo Finance"
+                "data_source": "Yahoo Finance Enhanced"
             }
             
             return result
