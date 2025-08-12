@@ -202,7 +202,7 @@ const AdvancedScreener = () => {
   };
 
   const exportToCSV = () => {
-    const stocksToExport = Array.isArray(sortedStocks) ? sortedStocks : [];
+    const stocksToExport = getSortedStocks();
     if (stocksToExport.length === 0) {
       console.warn('No stocks to export');
       return;
@@ -215,9 +215,9 @@ const AdvancedScreener = () => {
         stock.symbol,
         `"${stock.name}"`,
         `"${stock.sector}"`,
-        stock.price.toFixed(2),
-        stock.change_percent.toFixed(2),
-        stock.volume,
+        stock.price?.toFixed(2) || '0.00',
+        stock.change_percent?.toFixed(2) || '0.00',
+        stock.volume || '0',
         stock.market_cap || '',
         stock.pe_ratio?.toFixed(2) || ''
       ].join(','))
