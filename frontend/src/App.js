@@ -349,38 +349,38 @@ const Dashboard = () => {
       </div>
 
       {/* Top Movers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8">
         {/* Top Gainers */}
-        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-100">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="p-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl text-white">
-              <TrendingUp size={24} />
+        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center space-x-3 mb-4 md:mb-6">
+            <div className="p-2 md:p-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl text-white">
+              <TrendingUp size={20} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-800">Top Gainers</h3>
+              <h3 className="text-lg md:text-xl font-bold text-gray-800">Top Gainers</h3>
               <p className="text-gray-600 text-sm">Best performing stocks today</p>
             </div>
           </div>
           
           <div className="space-y-3">
             {topMovers?.gainers?.slice(0, 5).map((stock, idx) => (
-              <div key={idx} className="group p-4 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 rounded-xl transition-all duration-200 border border-transparent hover:border-emerald-200">
+              <div key={idx} className="group p-3 md:p-4 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 rounded-xl transition-all duration-200 border border-transparent hover:border-emerald-200">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full flex items-center justify-center">
-                      <span className="font-bold text-emerald-600">{idx + 1}</span>
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full flex items-center justify-center">
+                      <span className="font-bold text-emerald-600 text-sm md:text-base">{idx + 1}</span>
                     </div>
                     <div>
-                      <span className="font-bold text-gray-800">{stock.symbol}</span>
-                      <p className="text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
+                      <span className="font-bold text-gray-800 text-sm md:text-base">{stock.symbol}</span>
+                      <p className="text-xs md:text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center space-x-1 text-emerald-600 font-bold">
-                      <TrendingUp size={16} />
+                    <div className="flex items-center space-x-1 text-emerald-600 font-bold text-sm md:text-base">
+                      <TrendingUp size={14} />
                       <span>+{stock.change_percent?.toFixed(2)}%</span>
                     </div>
-                    <p className="text-sm text-gray-600">+${stock.change?.toFixed(2)}</p>
+                    <p className="text-xs md:text-sm text-gray-600">+${stock.change?.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -389,36 +389,36 @@ const Dashboard = () => {
         </div>
 
         {/* Top Losers */}
-        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-100">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-xl text-white">
-              <TrendingDown size={24} />
+        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center space-x-3 mb-4 md:mb-6">
+            <div className="p-2 md:p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-xl text-white">
+              <TrendingDown size={20} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-800">Top Losers</h3>
+              <h3 className="text-lg md:text-xl font-bold text-gray-800">Top Losers</h3>
               <p className="text-gray-600 text-sm">Worst performing stocks today</p>
             </div>
           </div>
           
           <div className="space-y-3">
             {topMovers?.losers?.slice(0, 5).map((stock, idx) => (
-              <div key={idx} className="group p-4 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-50 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200">
+              <div key={idx} className="group p-3 md:p-4 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-50 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-red-100 to-red-100 rounded-full flex items-center justify-center">
-                      <span className="font-bold text-red-600">{idx + 1}</span>
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-red-100 to-red-100 rounded-full flex items-center justify-center">
+                      <span className="font-bold text-red-600 text-sm md:text-base">{idx + 1}</span>
                     </div>
                     <div>
-                      <span className="font-bold text-gray-800">{stock.symbol}</span>
-                      <p className="text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
+                      <span className="font-bold text-gray-800 text-sm md:text-base">{stock.symbol}</span>
+                      <p className="text-xs md:text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="flex items-center space-x-1 text-red-600 font-bold">
-                      <TrendingDown size={16} />
+                    <div className="flex items-center space-x-1 text-red-600 font-bold text-sm md:text-base">
+                      <TrendingDown size={14} />
                       <span>{stock.change_percent?.toFixed(2)}%</span>
                     </div>
-                    <p className="text-sm text-gray-600">${stock.change?.toFixed(2)}</p>
+                    <p className="text-xs md:text-sm text-gray-600">${stock.change?.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
