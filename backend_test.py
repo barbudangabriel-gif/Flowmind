@@ -216,7 +216,33 @@ class StockMarketAPITester:
         
         return success
 
-    def test_error_handling(self):
+    def test_enhanced_stock_endpoints(self):
+        """Test NEW enhanced stock endpoints with real-time data and extended hours"""
+        # Test enhanced stock data for AAPL
+        success, aapl_enhanced = self.run_test("Enhanced Stock Data (AAPL)", "GET", "stocks/AAPL/enhanced", 200)
+        if success:
+            print(f"   ✅ AAPL Enhanced Price: ${aapl_enhanced.get('price', 0):.2f}")
+            print(f"   Market State: {aapl_enhanced.get('market_state', 'UNKNOWN')}")
+            if 'extended_hours' in aapl_enhanced:
+                extended = aapl_enhanced['extended_hours']
+                if 'premarket' in extended:
+                    print(f"   📈 Premarket Data: ${extended['premarket'].get('price', 'N/A')}")
+                if 'postmarket' in extended:
+                    print(f"   📉 Postmarket Data: ${extended['postmarket'].get('price', 'N/A')}")
+        
+        # Test extended hours endpoint
+        success, extended_hours = self.run_test("Extended Hours Data (AAPL)", "GET", "stocks/AAPL/extended-hours", 200)
+        if success:
+            print(f"   Market State: {extended_hours.get('market_state', 'UNKNOWN')}")
+            print(f"   Regular Price: ${extended_hours.get('regular_price', 0):.2f}")
+        
+        # Test enhanced data for other popular stocks
+        for symbol in ["MSFT", "GOOGL", "TSLA"]:
+            success, enhanced_data = self.run_test(f"Enhanced Stock Data ({symbol})", "GET", f"stocks/{symbol}/enhanced", 200)
+            if success and enhanced_data.get('price', 0) > 0:
+                print(f"   ✅ {symbol} Price: ${enhanced_data['price']:.2f}")
+        
+        return success
         """Test error handling for invalid requests"""
         # Test invalid stock symbol
         self.run_test("Invalid Stock Symbol", "GET", "stocks/INVALID123", 500)
