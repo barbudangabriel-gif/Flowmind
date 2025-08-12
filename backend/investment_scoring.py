@@ -37,48 +37,72 @@ class InvestmentScorer:
         }
     
     async def calculate_investment_score(self, stock_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Calculate comprehensive investment score for a stock"""
+        """Calculate comprehensive investment score with technical analysis"""
         try:
             symbol = stock_data.get('symbol', 'N/A')
             
+            # Get technical analysis data
+            technical_data = await technical_analyzer.analyze_stock_technical(symbol)
+            
             # Calculate individual scores
             scores = {}
+            
+            # Fundamental scores
             scores['pe_score'] = self._calculate_pe_score(stock_data)
             scores['pb_score'] = self._calculate_pb_score(stock_data)
             scores['value_score'] = self._calculate_value_score(stock_data)
-            scores['momentum_score'] = self._calculate_momentum_score(stock_data)
             scores['growth_score'] = self._calculate_growth_score(stock_data)
             scores['profitability_score'] = self._calculate_profitability_score(stock_data)
             scores['dividend_score'] = self._calculate_dividend_score(stock_data)
             scores['financial_health'] = self._calculate_financial_health_score(stock_data)
-            scores['volume_score'] = self._calculate_volume_score(stock_data)
             scores['volatility_score'] = self._calculate_volatility_score(stock_data)
+            
+            # Technical scores (NEW!)
+            technical_scores = technical_data.get('technical_score', {})
+            scores['trend_score'] = technical_scores.get('trend_score', 50)
+            scores['momentum_score'] = technical_scores.get('momentum_score', 50)
+            scores['volume_score'] = technical_scores.get('volume_score', 50)
+            scores['price_action_score'] = technical_scores.get('price_action_score', 50)
+            scores['support_resistance_score'] = technical_scores.get('support_resistance_score', 50)
             
             # Calculate weighted total score
             total_score = sum(scores[metric] * self.weights[metric] for metric in scores)
-            total_score = max(0, min(100, total_score))  # Clamp between 0-100
+            total_score = max(0, min(100, total_score))
             
-            # Determine investment rating
-            rating = self._get_investment_rating(total_score)
+            # Determine investment rating with technical consideration
+            rating = self._get_enhanced_investment_rating(total_score, technical_data)
             
-            # Create recommendation explanation
-            explanation = self._generate_explanation(stock_data, scores, total_score)
+            # Create enhanced recommendation explanation
+            explanation = self._generate_enhanced_explanation(stock_data, scores, total_score, technical_data)
+            
+            # Generate technical signals
+            technical_signals = technical_data.get('signals', [])
             
             return {
                 'symbol': symbol,
                 'total_score': round(total_score, 2),
                 'rating': rating,
                 'individual_scores': {k: round(v, 2) for k, v in scores.items()},
+                'fundamental_score': round(sum(scores[k] * self.weights[k] for k in ['pe_score', 'pb_score', 'value_score', 'growth_score', 'profitability_score', 'dividend_score', 'financial_health']) / sum(self.weights[k] for k in ['pe_score', 'pb_score', 'value_score', 'growth_score', 'profitability_score', 'dividend_score', 'financial_health']), 2),
+                'technical_score': round(sum(scores[k] * self.weights[k] for k in ['trend_score', 'momentum_score', 'volume_score', 'price_action_score', 'support_resistance_score']) / sum(self.weights[k] for k in ['trend_score', 'momentum_score', 'volume_score', 'price_action_score', 'support_resistance_score']), 2),
                 'explanation': explanation,
-                'risk_level': self._assess_risk_level(stock_data, scores),
-                'investment_horizon': self._recommend_investment_horizon(scores),
-                'key_strengths': self._identify_key_strengths(scores),
-                'key_risks': self._identify_key_risks(scores),
-                'last_updated': datetime.utcnow().isoformat()
+                'risk_level': self._assess_enhanced_risk_level(stock_data, scores, technical_data),
+                'investment_horizon': self._recommend_enhanced_investment_horizon(scores, technical_data),
+                'key_strengths': self._identify_enhanced_key_strengths(scores, technical_data),
+                'key_risks': self._identify_enhanced_key_risks(scores, technical_data),
+                'technical_analysis': {
+                    'trend_direction': technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL'),
+                    'trend_strength': technical_data.get('trend_analysis', {}).get('strength', 50),
+                    'key_indicators': self._get_key_technical_indicators(technical_data),
+                    'signals': technical_signals,
+                    'support_resistance': technical_data.get('support_resistance', {})
+                },
+                'last_updated': datetime.utcnow().isoformat(),
+                'analysis_type': 'ENHANCED_WITH_TECHNICAL'
             }
             
         except Exception as e:
-            logger.error(f"Error calculating investment score for {stock_data.get('symbol', 'unknown')}: {str(e)}")
+            logger.error(f"Error calculating enhanced investment score for {stock_data.get('symbol', 'unknown')}: {str(e)}")
             return self._get_default_score(stock_data.get('symbol', 'N/A'))
     
     def _calculate_pe_score(self, stock_data: Dict[str, Any]) -> float:
