@@ -206,10 +206,16 @@ const AdvancedScreener = () => {
   };
 
   const exportToCSV = () => {
+    const stocksToExport = Array.isArray(sortedStocks) ? sortedStocks : [];
+    if (stocksToExport.length === 0) {
+      console.warn('No stocks to export');
+      return;
+    }
+    
     const headers = ['Symbol', 'Name', 'Sector', 'Price', 'Change %', 'Volume', 'Market Cap', 'P/E'];
     const csvContent = [
       headers.join(','),
-      ...sortedStocks.map(stock => [
+      ...stocksToExport.map(stock => [
         stock.symbol,
         `"${stock.name}"`,
         `"${stock.sector}"`,
