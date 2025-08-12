@@ -1499,6 +1499,12 @@ const MarketNews = () => {
 // Main App Component
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Function to handle sidebar state from Sidebar component
+  const handleSidebarToggle = (collapsed) => {
+    setSidebarCollapsed(collapsed);
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -1527,7 +1533,10 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        <main className="flex-1 ml-64 p-8">
+        <main className={`flex-1 transition-all duration-300 ${
+          // Dynamic margin based on screen size and sidebar state
+          'ml-16 md:ml-64'
+        } p-4 md:p-8`}>
           <div className="max-w-7xl mx-auto">
             {renderContent()}
           </div>
