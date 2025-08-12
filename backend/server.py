@@ -236,10 +236,19 @@ async def root():
             "S&P 500 & NASDAQ Tickers",
             "Advanced Screener",
             "Extended Hours Trading",
-            "Portfolio Management"
+            "Portfolio Management",
+            "🎯 Investment Scoring System",
+            "📊 Top Investment Picks",
+            "⚖️ Risk Analysis"
         ],
         "market_state": enhanced_ticker_manager._get_market_state(),
-        "endpoints": {
+        "new_endpoints": {
+            "investment_score": "/investments/score/{symbol}",
+            "top_picks": "/investments/top-picks",
+            "sector_leaders": "/investments/sector-leaders",
+            "risk_analysis": "/investments/risk-analysis"
+        },
+        "core_endpoints": {
             "enhanced_stock": "/stocks/{symbol}/enhanced",
             "extended_hours": "/stocks/{symbol}/extended-hours",
             "screener": "/screener/data",
