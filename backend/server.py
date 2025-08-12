@@ -134,25 +134,19 @@ class WatchlistItemCreate(BaseModel):
 
 # Utility functions for data fetching
 async def get_stock_quote(symbol: str) -> Dict[str, Any]:
-    """Get current stock quote using yfinance"""
+    """Get current stock quote - fallback for basic compatibility"""
     try:
-        ticker = yf.Ticker(symbol)
-        info = ticker.info
-        history = ticker.history(period="1d")
+        enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
         
-        if history.empty:
-            raise HTTPException(status_code=404, detail=f"Stock data not found for {symbol}")
-            
-        latest = history.iloc[-1]
-        
+        # Convert enhanced data to basic format for compatibility
         return {
-            "symbol": symbol.upper(),
-            "price": float(latest['Close']),
-            "change": float(latest['Close'] - history.iloc[-2]['Close']) if len(history) > 1 else 0.0,
-            "change_percent": float(((latest['Close'] - history.iloc[-2]['Close']) / history.iloc[-2]['Close']) * 100) if len(history) > 1 else 0.0,
-            "volume": int(latest['Volume']),
-            "market_cap": info.get('marketCap'),
-            "pe_ratio": info.get('forwardPE'),
+            "symbol": enhanced_data["symbol"],
+            "price": enhanced_data["price"],
+            "change": enhanced_data["change"],
+            "change_percent": enhanced_data["change_percent"],
+            "volume": enhanced_data["volume"],
+            "market_cap": enhanced_data["market_cap"],
+            "pe_ratio": enhanced_data["pe_ratio"],
             "timestamp": datetime.utcnow()
         }
     except Exception as e:
