@@ -258,7 +258,7 @@ async def get_screener_data(
     limit: int = Query(50, description="Maximum number of stocks to return"),
     exchange: str = Query("all", description="Exchange filter: sp500, nasdaq, or all")
 ):
-    """Get basic screener data for all stocks"""
+    """Get enhanced screener data with real-time prices and extended hours"""
     try:
         if exchange == "sp500":
             tickers = await enhanced_ticker_manager.get_sp500_tickers()
@@ -267,32 +267,39 @@ async def get_screener_data(
         else:
             tickers = await enhanced_ticker_manager.get_all_tickers()
         
-        # Limit to prevent API overload
+        # Limit to prevent API overload but ensure good data
         tickers = tickers[:limit]
         
-        stock_data = await enhanced_ticker_manager.get_ticker_info_batch(tickers)
+        # Use enhanced real-time data collection
+        stock_data = await enhanced_ticker_manager.get_bulk_real_time_data(tickers)
+        
         return {
             "stocks": stock_data,
             "total_count": len(stock_data),
-            "exchange": exchange
+            "exchange": exchange,
+            "market_state": enhanced_ticker_manager._get_market_state(),
+            "last_updated": datetime.utcnow().isoformat()
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching screener data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching enhanced screener data: {str(e)}")
 
 @api_router.post("/screener/filter")
-async def screen_stocks(criteria: ScreenerCriteria):
-    """Advanced stock screening with multiple criteria"""
+async def screen_stocks_enhanced(criteria: ScreenerCriteria, exchange: str = Query("all", description="Exchange to screen")):
+    """Enhanced stock screening with real-time data and extended hours"""
     try:
         criteria_dict = criteria.dict(exclude_none=True)
-        filtered_stocks = await enhanced_ticker_manager.screen_stocks(criteria_dict)
+        filtered_stocks = await enhanced_ticker_manager.screen_stocks_enhanced(criteria_dict, exchange)
         
         return {
             "stocks": filtered_stocks,
             "total_count": len(filtered_stocks),
-            "criteria": criteria_dict
+            "criteria": criteria_dict,
+            "exchange": exchange,
+            "market_state": enhanced_ticker_manager._get_market_state(),
+            "last_updated": datetime.utcnow().isoformat()
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error screening stocks: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error screening stocks with enhanced data: {str(e)}")
 
 @api_router.get("/screener/sectors")
 async def get_available_sectors():
