@@ -318,7 +318,7 @@ const Dashboard = () => {
                 : 'bg-gradient-to-br from-red-400 to-red-500'
             }`}></div>
             
-            <div className="relative bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:transform hover:scale-105">
+            <div className="relative bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg card-hover border border-gray-100">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <div className="flex items-center space-x-2 mb-2">
