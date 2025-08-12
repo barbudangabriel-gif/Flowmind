@@ -562,65 +562,154 @@ const SimpleStockScreener = () => {
   );
 };
 
-// Enhanced Technical Analysis Component
+// Enhanced Technical Analysis Component with Smart Money Concepts
 const TechnicalAnalysis = () => {
   const [symbol, setSymbol] = useState('AAPL');
-  const [technicalData, setTechnicalData] = useState(null);
-  const [stockScore, setStockScore] = useState(null);
+  const [smartMoneyData, setSmartMoneyData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
-  const fetchTechnicalAnalysis = async () => {
+  const fetchSmartMoneyAnalysis = async () => {
     if (!symbol) return;
     
     setLoading(true);
     try {
-      // Get enhanced investment score which includes comprehensive technical analysis
-      const response = await axios.get(`${API}/investments/score/${symbol}`);
-      setStockScore(response.data);
-      setTechnicalData(response.data.technical_analysis);
+      const response = await axios.get(`${API}/technical-analysis/smart-money/${symbol}?period=3mo`);
+      console.log('Smart Money Analysis Response:', response.data);
+      setSmartMoneyData(response.data);
     } catch (error) {
-      console.error('Error fetching technical analysis:', error);
-      setTechnicalData(null);
-      setStockScore(null);
+      console.error('Error fetching smart money analysis:', error);
+      setSmartMoneyData(null);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTechnicalAnalysis();
+    fetchSmartMoneyAnalysis();
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetchTechnicalAnalysis();
+    fetchSmartMoneyAnalysis();
+  };
+
+  const getVerdictColor = (verdict) => {
+    switch (verdict) {
+      case 'BULLISH': return 'text-green-700 bg-green-100';
+      case 'BEARISH': return 'text-red-700 bg-red-100';
+      case 'NEUTRAL': return 'text-gray-700 bg-gray-100';
+      default: return 'text-gray-700 bg-gray-100';
+    }
   };
 
   const getSignalColor = (signal) => {
     switch (signal) {
-      case 'BUY': return 'text-green-700 bg-green-100';
-      case 'SELL': return 'text-red-700 bg-red-100';
-      case 'BULLISH': return 'text-green-600 bg-green-50';
-      case 'BEARISH': return 'text-red-600 bg-red-50';
-      case 'OVERBOUGHT': return 'text-red-600 bg-red-50';
-      case 'OVERSOLD': return 'text-green-600 bg-green-50';
+      case 'bullish': return 'text-green-600 bg-green-50';
+      case 'bearish': return 'text-red-600 bg-red-50';
+      case 'buy': return 'text-green-700 bg-green-100';
+      case 'sell': return 'text-red-700 bg-red-100';
       default: return 'text-gray-600 bg-gray-50';
     }
   };
 
-  const getTrendColor = (trend) => {
-    switch (trend) {
-      case 'BULLISH': return 'text-green-700';
-      case 'BEARISH': return 'text-red-700';
-      case 'BULLISH_WEAK': return 'text-green-500';
-      case 'BEARISH_WEAK': return 'text-red-500';
-      default: return 'text-gray-600';
-    }
-  };
+  const OrderBlockCard = ({ orderBlock }) => (
+    <div className={`p-3 rounded-lg border-l-4 ${
+      orderBlock.type === 'bullish' 
+        ? 'border-green-500 bg-green-50' 
+        : 'border-red-500 bg-red-50'
+    }`}>
+      <div className="flex justify-between items-center mb-2">
+        <span className={`font-semibold ${
+          orderBlock.type === 'bullish' ? 'text-green-700' : 'text-red-700'
+        }`}>
+          {orderBlock.type.toUpperCase()} Order Block
+        </span>
+        <span className={`text-xs px-2 py-1 rounded ${
+          orderBlock.strength === 'strong' 
+            ? 'bg-purple-100 text-purple-700'
+            : orderBlock.strength === 'medium'
+            ? 'bg-blue-100 text-blue-700'
+            : 'bg-gray-100 text-gray-700'
+        }`}>
+          {orderBlock.strength}
+        </span>
+      </div>
+      <div className="text-sm space-y-1">
+        <div>High: <span className="font-medium">${orderBlock.high?.toFixed(2)}</span></div>
+        <div>Low: <span className="font-medium">${orderBlock.low?.toFixed(2)}</span></div>
+        <div>Status: <span className={`font-medium ${orderBlock.tested ? 'text-red-600' : 'text-green-600'}`}>
+          {orderBlock.tested ? 'Tested' : 'Untested'}
+        </span></div>
+      </div>
+    </div>
+  );
+
+  const FairValueGapCard = ({ fvg }) => (
+    <div className={`p-3 rounded-lg border-l-4 ${
+      fvg.type === 'bullish' 
+        ? 'border-blue-500 bg-blue-50' 
+        : 'border-orange-500 bg-orange-50'
+    }`}>
+      <div className="flex justify-between items-center mb-2">
+        <span className={`font-semibold ${
+          fvg.type === 'bullish' ? 'text-blue-700' : 'text-orange-700'
+        }`}>
+          {fvg.type.toUpperCase()} FVG
+        </span>
+        <span className={`text-xs px-2 py-1 rounded ${
+          fvg.filled ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700'
+        }`}>
+          {fvg.filled ? 'Filled' : 'Open'}
+        </span>
+      </div>
+      <div className="text-sm space-y-1">
+        <div>Gap High: <span className="font-medium">${fvg.gap_high?.toFixed(2)}</span></div>
+        <div>Gap Low: <span className="font-medium">${fvg.gap_low?.toFixed(2)}</span></div>
+        <div>Size: <span className="font-medium">${fvg.gap_size?.toFixed(2)}</span></div>
+        {!fvg.filled && fvg.fill_percentage > 0 && (
+          <div>Filled: <span className="font-medium">{fvg.fill_percentage?.toFixed(1)}%</span></div>
+        )}
+      </div>
+    </div>
+  );
+
+  const LiquiditySweepCard = ({ sweep }) => (
+    <div className={`p-3 rounded-lg border-l-4 ${
+      sweep.type === 'high_sweep' 
+        ? 'border-purple-500 bg-purple-50' 
+        : 'border-indigo-500 bg-indigo-50'
+    }`}>
+      <div className="flex justify-between items-center mb-2">
+        <span className={`font-semibold ${
+          sweep.type === 'high_sweep' ? 'text-purple-700' : 'text-indigo-700'
+        }`}>
+          {sweep.type === 'high_sweep' ? 'High Sweep' : 'Low Sweep'}
+        </span>
+        <span className={`text-xs px-2 py-1 rounded ${
+          sweep.significance === 'major' 
+            ? 'bg-red-100 text-red-700'
+            : 'bg-yellow-100 text-yellow-700'
+        }`}>
+          {sweep.significance}
+        </span>
+      </div>
+      <div className="text-sm space-y-1">
+        <div>Price: <span className="font-medium">${sweep.price?.toFixed(2)}</span></div>
+        <div>Volume: <span className="font-medium">{sweep.volume?.toLocaleString()}</span></div>
+        <div>Time: <span className="font-medium">{new Date(sweep.time).toLocaleDateString()}</span></div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">📈 Advanced Technical Analysis</h2>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">🎯 Smart Money & Price Action Analysis</h2>
+          <p className="text-gray-600">Advanced institutional trading concepts and price action patterns</p>
+        </div>
+      </div>
       
       <form onSubmit={handleSubmit} className="flex space-x-4">
         <input
@@ -635,7 +724,7 @@ const TechnicalAnalysis = () => {
           className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
         >
           <Activity size={20} />
-          <span>Analyze</span>
+          <span>Analyze Smart Money</span>
         </button>
       </form>
 
@@ -645,212 +734,356 @@ const TechnicalAnalysis = () => {
         </div>
       )}
 
-      {technicalData && stockScore && (
+      {smartMoneyData && (
         <div className="space-y-6">
-          {/* Overall Analysis Summary */}
+          {/* Smart Money Verdict */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-gray-800">{symbol} Technical Analysis</h3>
-                <p className="text-gray-600 mt-1">Comprehensive technical analysis with multiple indicators</p>
+                <h3 className="text-xl font-bold text-gray-800">{smartMoneyData.symbol} Smart Money Analysis</h3>
+                <p className="text-gray-600 mt-1">{smartMoneyData.smart_money_verdict?.key_insight}</p>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-blue-600">
-                  {stockScore.technical_score || 'N/A'}
+                <div className={`text-2xl font-bold px-4 py-2 rounded-lg ${getVerdictColor(smartMoneyData.smart_money_verdict?.verdict)}`}>
+                  {smartMoneyData.smart_money_verdict?.verdict}
                 </div>
-                <div className="text-sm text-gray-500">Technical Score</div>
+                <div className="text-sm text-gray-500 mt-1">
+                  {smartMoneyData.smart_money_verdict?.confidence}% Confidence
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Trend Analysis */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <TrendingUp className="mr-2" size={20} />
-                Overall Trend
-              </h3>
-              <div className="space-y-3">
+          {/* Tab Navigation */}
+          <div className="bg-white p-1 rounded-lg shadow-sm">
+            <div className="flex space-x-1">
+              {[
+                { id: 'overview', label: 'Overview', icon: Target },
+                { id: 'order-blocks', label: 'Order Blocks', icon: Award },
+                { id: 'fvg', label: 'Fair Value Gaps', icon: BarChart3 },
+                { id: 'liquidity', label: 'Liquidity Sweeps', icon: TrendingUp },
+                { id: 'structure', label: 'Market Structure', icon: Activity },
+                { id: 'price-action', label: 'Price Action', icon: PieChartIcon }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors text-sm ${
+                      activeTab === tab.id
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Icon size={16} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Overview Tab */}
+          {activeTab === 'overview' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Premium/Discount Zone */}
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Target className="mr-2" size={20} />
+                  Premium/Discount
+                </h3>
                 <div className="text-center">
-                  <div className={`text-2xl font-bold ${getTrendColor(technicalData.trend_direction)}`}>
-                    {technicalData.trend_direction || 'NEUTRAL'}
+                  <div className={`text-2xl font-bold mb-2 ${
+                    smartMoneyData.premium_discount?.current_zone === 'premium' 
+                      ? 'text-red-600' 
+                      : smartMoneyData.premium_discount?.current_zone === 'discount'
+                      ? 'text-green-600'
+                      : 'text-blue-600'
+                  }`}>
+                    {smartMoneyData.premium_discount?.current_zone?.toUpperCase()}
                   </div>
-                  <div className="text-sm text-gray-500">Direction</div>
+                  <div className="text-sm text-gray-600">
+                    {smartMoneyData.premium_discount?.premium_percentage?.toFixed(1)}% of Range
+                  </div>
+                  <div className="mt-3 space-y-1 text-xs">
+                    <div>High: ${smartMoneyData.premium_discount?.range_high?.toFixed(2)}</div>
+                    <div>Low: ${smartMoneyData.premium_discount?.range_low?.toFixed(2)}</div>
+                    <div>Equilibrium: ${smartMoneyData.premium_discount?.equilibrium?.toFixed(2)}</div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Market Structure */}
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <Activity className="mr-2" size={20} />
+                  Market Structure
+                </h3>
                 <div className="text-center">
-                  <div className="text-lg font-semibold text-gray-700">
-                    {technicalData.trend_strength ? technicalData.trend_strength.toFixed(1) + '%' : 'N/A'}
+                  <div className={`text-2xl font-bold mb-2 ${
+                    smartMoneyData.market_structure?.current_trend === 'bullish' 
+                      ? 'text-green-600' 
+                      : smartMoneyData.market_structure?.current_trend === 'bearish'
+                      ? 'text-red-600'
+                      : 'text-gray-600'
+                  }`}>
+                    {smartMoneyData.market_structure?.current_trend?.toUpperCase()}
                   </div>
-                  <div className="text-sm text-gray-500">Strength</div>
-                </div>
-              </div>
-            </div>
-
-            {/* RSI */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <Activity className="mr-2" size={20} />
-                RSI (14)
-              </h3>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">
-                  {technicalData.key_indicators?.RSI?.value ? technicalData.key_indicators.RSI.value.toFixed(1) : 'N/A'}
-                </div>
-                <div className={`mt-2 px-3 py-1 rounded-full text-sm font-medium ${getSignalColor(technicalData.key_indicators?.RSI?.signal || 'NEUTRAL')}`}>
-                  {technicalData.key_indicators?.RSI?.signal || 'NEUTRAL'}
-                </div>
-              </div>
-              <div className="mt-4">
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full" 
-                    style={{ width: `${Math.min(100, technicalData.key_indicators?.RSI?.value || 0)}%` }}
-                  ></div>
-                </div>
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>0</span>
-                  <span>30</span>
-                  <span>70</span>
-                  <span>100</span>
-                </div>
-              </div>
-            </div>
-
-            {/* MACD */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <BarChart3 className="mr-2" size={20} />
-                MACD
-              </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Signal:</span>
-                  <span className={`px-2 py-1 rounded text-sm font-medium ${getSignalColor(technicalData.key_indicators?.MACD?.crossover || 'NEUTRAL')}`}>
-                    {technicalData.key_indicators?.MACD?.crossover || 'NEUTRAL'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Momentum:</span>
-                  <span className={`px-2 py-1 rounded text-sm font-medium ${getSignalColor(technicalData.key_indicators?.MACD?.momentum || 'NEUTRAL')}`}>
-                    {technicalData.key_indicators?.MACD?.momentum || 'NEUTRAL'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bollinger Bands & Support/Resistance */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <Target className="mr-2" size={20} />
-                Bollinger Bands
-              </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Position:</span>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-20 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-purple-600 h-2 rounded-full" 
-                        style={{ width: `${Math.min(100, (technicalData.key_indicators?.Bollinger_Bands?.position || 0.5) * 100)}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-medium">
-                      {technicalData.key_indicators?.Bollinger_Bands?.position ? (technicalData.key_indicators.Bollinger_Bands.position * 100).toFixed(0) + '%' : 'N/A'}
-                    </span>
+                  <div className="text-sm text-gray-600">
+                    {smartMoneyData.market_structure?.structure_points?.length || 0} Structure Points
+                  </div>
+                  <div className="mt-3 text-xs">
+                    BOS Events: {smartMoneyData.market_structure?.break_of_structure?.length || 0}
                   </div>
                 </div>
-                <div className={`px-3 py-2 rounded text-center text-sm font-medium ${getSignalColor(technicalData.key_indicators?.Bollinger_Bands?.signal || 'NEUTRAL')}`}>
-                  {technicalData.key_indicators?.Bollinger_Bands?.signal || 'NEUTRAL'}
-                </div>
               </div>
-            </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <Target className="mr-2" size={20} />
-                Support & Resistance
-              </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Resistance:</span>
-                  <span className="font-medium text-red-600">
-                    ${technicalData.support_resistance?.nearest_resistance ? technicalData.support_resistance.nearest_resistance.toFixed(2) : 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Support:</span>
-                  <span className="font-medium text-green-600">
-                    ${technicalData.support_resistance?.nearest_support ? technicalData.support_resistance.nearest_support.toFixed(2) : 'N/A'}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-500 text-center">
-                  Distance to resistance: {technicalData.support_resistance?.distance_to_resistance ? technicalData.support_resistance.distance_to_resistance.toFixed(1) + '%' : 'N/A'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Trading Signals */}
-          {technicalData.signals && technicalData.signals.length > 0 && (
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <Activity className="mr-2" size={20} />
-                Trading Signals
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {technicalData.signals.map((signal, index) => (
-                  <div key={index} className={`p-4 rounded-lg border-l-4 ${signal.signal === 'BUY' ? 'border-green-500 bg-green-50' : signal.signal === 'SELL' ? 'border-red-500 bg-red-50' : 'border-gray-500 bg-gray-50'}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`px-3 py-1 rounded text-sm font-medium ${getSignalColor(signal.signal)}`}>
-                        {signal.signal}
-                      </span>
-                      <span className="text-xs text-gray-500">{signal.type}</span>
+              {/* Trading Signals */}
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold mb-4 flex items-center">
+                  <TrendingUp className="mr-2" size={20} />
+                  Active Signals
+                </h3>
+                <div className="space-y-2">
+                  {smartMoneyData.trading_signals?.slice(0, 3).map((signal, index) => (
+                    <div key={index} className={`px-3 py-2 rounded text-sm ${getSignalColor(signal.type)}`}>
+                      <div className="font-medium">{signal.type.toUpperCase()}</div>
+                      <div className="text-xs mt-1">{signal.reason}</div>
+                      <div className="text-xs mt-1">
+                        Entry: ${signal.entry?.toFixed(2)} | Target: ${signal.target?.toFixed(2)}
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-700">{signal.description}</p>
-                    <div className="flex justify-between items-center mt-2">
-                      <span className={`text-xs px-2 py-1 rounded ${signal.confidence === 'HIGH' ? 'bg-green-100 text-green-700' : signal.confidence === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {signal.confidence} Confidence
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  )) || <div className="text-gray-500 text-sm">No active signals</div>}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Investment Score Summary */}
-          <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
-            <h3 className="text-lg font-semibold mb-4">Investment Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{stockScore.total_score}</div>
-                <div className="text-sm text-gray-500">Total Score</div>
-                <div className={`mt-1 px-3 py-1 rounded text-sm font-medium ${stockScore.rating === 'BUY' || stockScore.rating === 'BUY STRONG' ? 'bg-green-100 text-green-700' : stockScore.rating.includes('HOLD') ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                  {stockScore.rating}
+          {/* Order Blocks Tab */}
+          {activeTab === 'order-blocks' && (
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">Order Blocks Analysis</h3>
+                <p className="text-blue-600 text-sm">
+                  Order blocks represent areas where institutions placed significant orders. Untested blocks often act as strong support/resistance.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {smartMoneyData.order_blocks?.length > 0 ? (
+                  smartMoneyData.order_blocks.map((ob, index) => (
+                    <OrderBlockCard key={index} orderBlock={ob} />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center text-gray-500">
+                    No order blocks detected in current timeframe
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Fair Value Gaps Tab */}
+          {activeTab === 'fvg' && (
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-blue-800 mb-2">Fair Value Gaps (FVG)</h3>
+                <p className="text-blue-600 text-sm">
+                  Fair Value Gaps are price imbalances that often get filled. They represent areas where price moved too quickly.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {smartMoneyData.fair_value_gaps?.length > 0 ? (
+                  smartMoneyData.fair_value_gaps.map((fvg, index) => (
+                    <FairValueGapCard key={index} fvg={fvg} />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center text-gray-500">
+                    No unfilled fair value gaps detected
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Liquidity Sweeps Tab */}
+          {activeTab === 'liquidity' && (
+            <div className="space-y-4">
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-purple-800 mb-2">Liquidity Sweeps</h3>
+                <p className="text-purple-600 text-sm">
+                  Liquidity sweeps occur when price briefly moves beyond key levels to grab retail liquidity before reversing.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {smartMoneyData.liquidity_sweeps?.length > 0 ? (
+                  smartMoneyData.liquidity_sweeps.map((sweep, index) => (
+                    <LiquiditySweepCard key={index} sweep={sweep} />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center text-gray-500">
+                    No recent liquidity sweeps detected
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Market Structure Tab */}
+          {activeTab === 'structure' && (
+            <div className="space-y-4">
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-green-800 mb-2">Market Structure Analysis</h3>
+                <p className="text-green-600 text-sm">
+                  Market structure shows the pattern of higher highs/lows (bullish) or lower highs/lows (bearish).
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Structure Summary */}
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h4 className="font-semibold mb-4">Current Structure</h4>
+                  <div className="space-y-3">
+                    <div className={`p-3 rounded text-center ${
+                      smartMoneyData.market_structure?.current_trend === 'bullish' 
+                        ? 'bg-green-100 text-green-700'
+                        : smartMoneyData.market_structure?.current_trend === 'bearish'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      <div className="font-bold text-lg">
+                        {smartMoneyData.market_structure?.current_trend?.toUpperCase()}
+                      </div>
+                      <div className="text-sm">Market Trend</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="bg-gray-50 p-2 rounded text-center">
+                        <div className="font-medium">{smartMoneyData.market_structure?.structure_points?.length || 0}</div>
+                        <div className="text-gray-600">Structure Points</div>
+                      </div>
+                      <div className="bg-gray-50 p-2 rounded text-center">
+                        <div className="font-medium">{smartMoneyData.market_structure?.break_of_structure?.length || 0}</div>
+                        <div className="text-gray-600">BOS Events</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent BOS Events */}
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h4 className="font-semibold mb-4">Recent Break of Structure</h4>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {smartMoneyData.market_structure?.break_of_structure?.length > 0 ? (
+                      smartMoneyData.market_structure.break_of_structure.map((bos, index) => (
+                        <div key={index} className={`p-2 rounded text-sm ${
+                          bos.type === 'bullish_bos' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                        }`}>
+                          <div className="font-medium">{bos.type.replace('_', ' ').toUpperCase()}</div>
+                          <div className="text-xs">Price: ${bos.price?.toFixed(2)} | Level: ${bos.level_broken?.toFixed(2)}</div>
+                          <div className="text-xs">{new Date(bos.time).toLocaleDateString()}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-gray-500 text-center">No recent BOS events</div>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-green-600">{stockScore.fundamental_score || 'N/A'}</div>
-                <div className="text-sm text-gray-500">Fundamental</div>
+            </div>
+          )}
+
+          {/* Price Action Tab */}
+          {activeTab === 'price-action' && (
+            <div className="space-y-6">
+              <div className="bg-indigo-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-indigo-800 mb-2">Price Action Analysis</h3>
+                <p className="text-indigo-600 text-sm">
+                  Comprehensive price action including support/resistance, candlestick patterns, and volume analysis.
+                </p>
               </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-purple-600">{stockScore.technical_score || 'N/A'}</div>
-                <div className="text-sm text-gray-500">Technical</div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Support/Resistance */}
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h4 className="font-semibold mb-4 flex items-center">
+                    <Target className="mr-2" size={16} />
+                    Key Levels
+                  </h4>
+                  <div className="space-y-3">
+                    {smartMoneyData.key_levels?.support_resistance?.nearest_resistance && (
+                      <div className="flex justify-between items-center p-2 bg-red-50 rounded">
+                        <span className="text-sm text-red-700">Nearest Resistance</span>
+                        <span className="font-medium text-red-800">
+                          ${smartMoneyData.key_levels.support_resistance.nearest_resistance.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                    {smartMoneyData.key_levels?.support_resistance?.nearest_support && (
+                      <div className="flex justify-between items-center p-2 bg-green-50 rounded">
+                        <span className="text-sm text-green-700">Nearest Support</span>
+                        <span className="font-medium text-green-800">
+                          ${smartMoneyData.key_levels.support_resistance.nearest_support.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Candlestick Patterns */}
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h4 className="font-semibold mb-4 flex items-center">
+                    <BarChart3 className="mr-2" size={16} />
+                    Recent Patterns
+                  </h4>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {smartMoneyData.patterns?.candlestick_patterns?.slice(0, 5).map((pattern, index) => (
+                      <div key={index} className={`p-2 rounded text-sm ${getSignalColor(pattern.signal)}`}>
+                        <div className="font-medium">{pattern.name}</div>
+                        <div className="text-xs">{pattern.signal.toUpperCase()} | {pattern.reliability} reliability</div>
+                        <div className="text-xs">{new Date(pattern.time).toLocaleDateString()}</div>
+                      </div>
+                    )) || <div className="text-gray-500 text-center">No recent patterns</div>}
+                  </div>
+                </div>
+
+                {/* Volume Analysis */}
+                <div className="bg-white p-6 rounded-lg shadow-md lg:col-span-2">
+                  <h4 className="font-semibold mb-4 flex items-center">
+                    <Activity className="mr-2" size={16} />
+                    Volume Analysis
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-gray-50 p-3 rounded text-center">
+                      <div className="font-bold text-lg">
+                        {smartMoneyData.volume_analysis?.current_volume_ratio?.toFixed(2)}x
+                      </div>
+                      <div className="text-sm text-gray-600">Current Volume Ratio</div>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded text-center">
+                      <div className="font-bold text-lg">
+                        ${smartMoneyData.volume_analysis?.point_of_control?.price?.toFixed(2)}
+                      </div>
+                      <div className="text-sm text-gray-600">Point of Control</div>
+                    </div>
+                    <div className="bg-gray-50 p-3 rounded text-center">
+                      <div className="font-bold text-lg">
+                        {smartMoneyData.volume_analysis?.high_volume_bars?.length || 0}
+                      </div>
+                      <div className="text-sm text-gray-600">High Volume Bars</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-gray-50 rounded">
-              <p className="text-sm text-gray-700">{stockScore.explanation}</p>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
-      {!technicalData && !loading && (
+      {!smartMoneyData && !loading && (
         <div className="bg-white p-8 rounded-lg shadow-md text-center">
           <Activity className="mx-auto mb-4 text-gray-400" size={48} />
-          <p className="text-gray-600">Enter a stock symbol and click "Analyze" to view comprehensive technical analysis.</p>
+          <p className="text-gray-600">Enter a stock symbol and click "Analyze Smart Money" to view comprehensive Smart Money Concepts and Price Action analysis.</p>
         </div>
       )}
     </div>
