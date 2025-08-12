@@ -277,7 +277,7 @@ async def screen_stocks(criteria: ScreenerCriteria):
     """Advanced stock screening with multiple criteria"""
     try:
         criteria_dict = criteria.dict(exclude_none=True)
-        filtered_stocks = await ticker_manager.screen_stocks(criteria_dict)
+        filtered_stocks = await enhanced_ticker_manager.screen_stocks(criteria_dict)
         
         return {
             "stocks": filtered_stocks,
