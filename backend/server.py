@@ -150,6 +150,21 @@ class InvestmentScore(BaseModel):
     analysis_type: Optional[str] = None
     last_updated: str
 
+class SmartMoneyAnalysis(BaseModel):
+    symbol: str
+    analysis_timestamp: str
+    current_price: float
+    timeframe: str
+    smart_money_verdict: Dict[str, Any]
+    order_blocks: List[Dict[str, Any]]
+    fair_value_gaps: List[Dict[str, Any]]
+    liquidity_sweeps: List[Dict[str, Any]]
+    market_structure: Dict[str, Any]
+    premium_discount: Dict[str, Any]
+    imbalances: List[Dict[str, Any]]
+    price_action: Dict[str, Any]
+    trading_signals: List[Dict[str, Any]]
+
 class TopInvestments(BaseModel):
     recommendations: List[InvestmentScore]
     total_analyzed: int
