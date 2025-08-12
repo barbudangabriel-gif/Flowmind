@@ -283,6 +283,10 @@ def main():
     print("\n🔍 Testing NEW Advanced Screener Endpoints")
     tester.test_screener_endpoints()
     
+    # Test NEW enhanced endpoints
+    print("\n🚀 Testing NEW Enhanced Stock Endpoints")
+    tester.test_enhanced_stock_endpoints()
+    
     # Test stock data endpoints
     print("\n📈 Testing Stock Data Endpoints")
     popular_stocks = ["AAPL", "GOOGL", "MSFT", "TSLA"]
