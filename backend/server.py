@@ -231,7 +231,7 @@ async def get_stock_indicators(symbol: str):
 @api_router.get("/tickers/sp500")
 async def get_sp500_tickers():
     """Get S&P 500 ticker list"""
-    tickers = await ticker_manager.get_sp500_tickers()
+    tickers = await enhanced_ticker_manager.get_sp500_tickers()
     return {"tickers": tickers, "count": len(tickers)}
 
 @api_router.get("/tickers/nasdaq")
