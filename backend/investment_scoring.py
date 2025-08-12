@@ -504,6 +504,21 @@ class InvestmentScorer:
         
         return key_indicators
     
+    def _get_investment_rating(self, score: float) -> str:
+        """Convert score to investment rating (original method for compatibility)"""
+        if score >= 85:
+            return "BUY STRONG"
+        elif score >= 75:
+            return "BUY"
+        elif score >= 65:
+            return "HOLD +"
+        elif score >= 55:
+            return "HOLD"
+        elif score >= 45:
+            return "HOLD -"
+        else:
+            return "AVOID"
+    
     def _generate_explanation(self, stock_data: Dict[str, Any], scores: Dict[str, float], total_score: float) -> str:
         """Generate human-readable explanation"""
         symbol = stock_data.get('symbol', 'N/A')
