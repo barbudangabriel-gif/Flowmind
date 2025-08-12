@@ -249,17 +249,14 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   );
 };
 
-// Dashboard Component
-const Dashboard = () => {
+// Memoized Dashboard Component
+const Dashboard = React.memo(() => {
   const [marketData, setMarketData] = useState(null);
   const [topMovers, setTopMovers] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchMarketData();
-  }, []);
-
-  const fetchMarketData = async () => {
+  // Memoized fetch function
+  const fetchMarketData = useCallback(async () => {
     try {
       const [overviewRes, moversRes] = await Promise.all([
         axios.get(`${API}/market/overview`),
@@ -273,7 +270,42 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchMarketData();
+  }, [fetchMarketData]);
+
+  // Memoized formatted number function
+  const formatNumber = useCallback((num) => {
+    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+    return num?.toFixed(2) || '0.00';
+  }, []);
+
+  // Memoized market indices data
+  const memoizedIndices = useMemo(() => {
+    return marketData?.indices?.map((index, idx) => ({
+      ...index,
+      id: `index-${idx}`,
+      formattedPrice: formatNumber(index.price)
+    })) || [];
+  }, [marketData?.indices, formatNumber]);
+
+  // Memoized top movers data
+  const memoizedTopMovers = useMemo(() => ({
+    gainers: topMovers?.gainers?.slice(0, 5).map((stock, idx) => ({
+      ...stock,
+      id: `gainer-${idx}`,
+      rank: idx + 1
+    })) || [],
+    losers: topMovers?.losers?.slice(0, 5).map((stock, idx) => ({
+      ...stock,
+      id: `loser-${idx}`,
+      rank: idx + 1
+    })) || []
+  }), [topMovers]);
 
   if (loading) {
     return (
@@ -299,13 +331,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  const formatNumber = (num) => {
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-    return num?.toFixed(2) || '0.00';
-  };
 
   return (
     <div className="space-y-8">
