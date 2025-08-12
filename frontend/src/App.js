@@ -142,18 +142,29 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           {/* Logo/Header */}
           <div className="mb-8">
             <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} mb-2`}>
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-xl font-bold">📈</span>
-              </div>
-              {!isCollapsed && (
-                <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                    Market Insight
-                  </h1>
-                  <p className="text-xs text-slate-400">Professional Trading Platform</p>
+              {isCollapsed ? (
+                // Collapsed state - only icon
+                <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                  <img 
+                    src="/assets/logos/flowmind_icon.svg" 
+                    alt="FlowMind" 
+                    className="w-8 h-8"
+                  />
+                </div>
+              ) : (
+                // Expanded state - full horizontal logo
+                <div className="flex items-center space-x-2">
+                  <img 
+                    src="/assets/logos/flowmind_horizontal.svg" 
+                    alt="FlowMind Analytics" 
+                    className="h-8"
+                  />
                 </div>
               )}
             </div>
+            {!isCollapsed && (
+              <p className="text-xs text-slate-400 text-center">Where Data Flows, Intelligence Grows</p>
+            )}
           </div>
 
           {/* Navigation Groups */}
