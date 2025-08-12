@@ -37,7 +37,8 @@ import {
   Newspaper,
   Settings,
   Database,
-  Award
+  Award,
+  RefreshCw
 } from "lucide-react";
 import AdvancedScreener from "./components/AdvancedScreener";
 import InvestmentScoring from "./components/InvestmentScoring";
