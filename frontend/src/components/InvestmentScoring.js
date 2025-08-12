@@ -269,20 +269,37 @@ const InvestmentScoring = () => {
             <p className="text-blue-600 text-sm">
               Stocks ranked by comprehensive scoring algorithm considering valuation, momentum, growth, and risk factors.
             </p>
+            <div className="text-xs text-blue-500 mt-2">
+              Debug: Found {topPicks?.length || 0} top picks
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {topPicks.slice(0, 9).map((pick, index) => (
-              <div key={pick.symbol} className="relative">
-                {index < 3 && (
-                  <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full z-10">
-                    #{index + 1}
-                  </div>
-                )}
-                <InvestmentCard investment={pick} />
+          {(!topPicks || topPicks.length === 0) ? (
+            <div className="bg-white p-8 rounded-lg shadow-md text-center">
+              <div className="text-gray-500">
+                {loading ? 'Loading investment recommendations...' : 'No investment picks available. Try refreshing.'}
               </div>
-            ))}
-          </div>
+              <button
+                onClick={loadTopPicks}
+                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Refresh Data
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {topPicks.slice(0, 9).map((pick, index) => (
+                <div key={pick?.symbol || index} className="relative">
+                  {index < 3 && (
+                    <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full z-10">
+                      #{index + 1}
+                    </div>
+                  )}
+                  <InvestmentCard investment={pick} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
