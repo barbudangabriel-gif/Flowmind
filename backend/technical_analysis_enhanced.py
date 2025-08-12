@@ -200,7 +200,7 @@ class TechnicalAnalyzer:
             }
             
             # Williams %R
-            williams_r = ta.momentum.williams_r(high, low, close, window=14)
+            williams_r = ta.momentum.williams_r(high, low, close, lbp=14)
             indicators['williams_r'] = {
                 'current': williams_r.iloc[-1] if not pd.isna(williams_r.iloc[-1]) else -50,
                 'signal': self._interpret_williams_r(williams_r.iloc[-1] if not pd.isna(williams_r.iloc[-1]) else -50)
