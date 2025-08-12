@@ -404,8 +404,8 @@ class InvestmentScorer:
         
         return base_rating
     
-    def _generate_enhanced_explanation(self, stock_data: Dict[str, Any], scores: Dict[str, float], total_score: float, technical_data: Dict[str, Any]) -> str:
-        """Generate enhanced explanation including technical analysis"""
+    def _generate_enhanced_explanation(self, stock_data: Dict[str, Any], scores: Dict[str, float], total_score: float, technical_data: Dict[str, Any], sentiment_data: Dict[str, Any]) -> str:
+        """Generate enhanced explanation including technical analysis and sentiment"""
         symbol = stock_data.get('symbol', 'N/A')
         sector = stock_data.get('sector', 'Unknown')
         price = stock_data.get('price', 0)
@@ -413,6 +413,11 @@ class InvestmentScorer:
         # Get technical information
         trend_direction = technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL')
         trend_strength = technical_data.get('trend_analysis', {}).get('strength', 50)
+        
+        # Get sentiment information
+        sentiment_direction = sentiment_data.get('insights', {}).get('direction', 'UNKNOWN')
+        sentiment_strength = sentiment_data.get('insights', {}).get('strength', 'Unknown')
+        market_mood = sentiment_data.get('market_mood', 'UNCERTAIN')
         
         explanation = f"{symbol} ({sector}) at ${price:.2f} "
         
@@ -425,25 +430,44 @@ class InvestmentScorer:
         else:
             explanation += "faces investment challenges with "
         
-        # Add technical context
-        technical_context = ""
-        if trend_direction == 'BULLISH':
-            technical_context = f"bullish technical trend (strength: {trend_strength:.1f}%) "
-        elif trend_direction == 'BEARISH':
-            technical_context = f"bearish technical trend (strength: {trend_strength:.1f}%) "
-        else:
-            technical_context = "neutral technical conditions "
+        # Build context combining all three analyses
+        context_parts = []
         
-        # Combine fundamental and technical factors
+        # Technical context
+        if trend_direction == 'BULLISH':
+            context_parts.append(f"bullish technical trend (strength: {trend_strength:.0f}%)")
+        elif trend_direction == 'BEARISH':
+            context_parts.append(f"bearish technical trend (strength: {trend_strength:.0f}%)")
+        else:
+            context_parts.append("neutral technical conditions")
+        
+        # Sentiment context
+        if sentiment_direction == 'BULLISH':
+            context_parts.append(f"{sentiment_strength.lower()} positive market sentiment ({market_mood.lower()})")
+        elif sentiment_direction == 'BEARISH':
+            context_parts.append(f"{sentiment_strength.lower()} negative market sentiment ({market_mood.lower()})")
+        else:
+            context_parts.append(f"mixed market sentiment ({market_mood.lower()})")
+        
+        # Calculate component strength
         fundamental_score = sum(scores[k] * self.weights[k] for k in ['pe_score', 'pb_score', 'value_score', 'growth_score', 'profitability_score', 'dividend_score', 'financial_health'] if k in scores)
         technical_score = sum(scores[k] * self.weights[k] for k in ['trend_score', 'momentum_score', 'volume_score', 'price_action_score', 'support_resistance_score'] if k in scores)
+        sentiment_score = scores.get('sentiment_score', 50) * self.weights.get('sentiment_score', 0.2)
         
-        if fundamental_score > technical_score:
-            explanation += f"strong fundamentals and {technical_context}."
-        elif technical_score > fundamental_score:
-            explanation += f"{technical_context}and decent fundamentals."
+        # Find strongest component
+        components = [
+            ('fundamentals', fundamental_score),
+            ('technicals', technical_score), 
+            ('sentiment', sentiment_score)
+        ]
+        strongest = max(components, key=lambda x: x[1])
+        
+        if strongest[0] == 'fundamentals':
+            explanation += f"strong fundamentals, {context_parts[0]}, and {context_parts[1]}."
+        elif strongest[0] == 'technicals':
+            explanation += f"{context_parts[0]}, decent fundamentals, and {context_parts[1]}."
         else:
-            explanation += f"balanced fundamental and technical factors."
+            explanation += f"{context_parts[1]}, {context_parts[0]}, and balanced fundamentals."
         
         return explanation
     
