@@ -442,6 +442,6 @@ const InvestmentScoring = React.memo(() => {
       )}
     </div>
   );
-};
+});
 
 export default InvestmentScoring;
