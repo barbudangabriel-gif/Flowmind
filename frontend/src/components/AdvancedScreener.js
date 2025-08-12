@@ -158,13 +158,13 @@ const AdvancedScreener = React.memo(() => {
     setCurrentPage(1);
   }, [stocks]);
 
-  const handleSort = (key) => {
+  const handleSort = useCallback((key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
     }
     setSortConfig({ key, direction });
-  };
+  }, [sortConfig]);
 
   // Create sorted and paginated stocks with defensive programming
   const getSortedStocks = () => {
