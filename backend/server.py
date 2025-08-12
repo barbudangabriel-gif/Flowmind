@@ -223,6 +223,30 @@ async def get_stock(symbol: str):
     data = await get_stock_quote(symbol)
     return StockData(**data)
 
+@api_router.get("/stocks/{symbol}/enhanced", response_model=EnhancedStockData)
+async def get_stock_enhanced(symbol: str):
+    """Get enhanced stock data with real-time prices and extended hours"""
+    try:
+        enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
+        return EnhancedStockData(**enhanced_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching enhanced data for {symbol}: {str(e)}")
+
+@api_router.get("/stocks/{symbol}/extended-hours")
+async def get_extended_hours_data(symbol: str):
+    """Get pre-market and post-market data for a stock"""
+    try:
+        enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
+        return {
+            "symbol": symbol.upper(),
+            "market_state": enhanced_data.get("market_state", "UNKNOWN"),
+            "extended_hours": enhanced_data.get("extended_hours", {}),
+            "regular_price": enhanced_data.get("price", 0.0),
+            "timestamp": enhanced_data.get("timestamp", datetime.utcnow().isoformat())
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching extended hours data for {symbol}: {str(e)}")
+
 @api_router.get("/stocks/{symbol}/history")
 async def get_stock_history(symbol: str, period: str = Query("1y", description="Period: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max")):
     """Get historical stock data"""
