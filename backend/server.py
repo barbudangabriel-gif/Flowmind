@@ -17,6 +17,7 @@ from alpha_vantage.techindicators import TechIndicators
 import pandas as pd
 import numpy as np
 from enhanced_ticker_data import enhanced_ticker_manager
+from investment_scoring import investment_scorer
 
 
 ROOT_DIR = Path(__file__).parent
