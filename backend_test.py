@@ -155,11 +155,28 @@ class StockMarketAPITester:
         return success
 
     def test_screener_endpoints(self):
-        """Test advanced screener endpoints"""
+        """Test advanced screener endpoints - CRITICAL: Check for real prices (not $0.00)"""
         # Test basic screener data
         success, screener_data = self.run_test("Screener Data (All)", "GET", "screener/data", 200, params={"limit": 20, "exchange": "all"})
         if success and 'stocks' in screener_data:
             print(f"   Found {len(screener_data['stocks'])} stocks in screener")
+            
+            # CRITICAL CHECK: Verify real prices (not $0.00)
+            zero_price_count = 0
+            real_price_count = 0
+            for stock in screener_data['stocks']:
+                if stock.get('price', 0) == 0.0:
+                    zero_price_count += 1
+                else:
+                    real_price_count += 1
+                    if stock['symbol'] == 'AAPL':
+                        print(f"   ✅ AAPL Price: ${stock['price']:.2f} (Expected ~$227)")
+                    elif stock['symbol'] == 'ABT':
+                        print(f"   ✅ ABT Price: ${stock['price']:.2f} (Expected ~$131)")
+            
+            print(f"   📊 Price Analysis: {real_price_count} real prices, {zero_price_count} zero prices")
+            if zero_price_count > real_price_count:
+                print(f"   ⚠️  WARNING: More zero prices than real prices!")
         
         # Test S&P 500 screener data
         success, sp500_screener = self.run_test("Screener Data (S&P 500)", "GET", "screener/data", 200, params={"limit": 15, "exchange": "sp500"})
