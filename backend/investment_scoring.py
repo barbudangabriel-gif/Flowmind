@@ -41,12 +41,15 @@ class InvestmentScorer:
         }
     
     async def calculate_investment_score(self, stock_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Calculate comprehensive investment score with technical analysis"""
+        """Calculate comprehensive investment score with technical analysis and sentiment"""
         try:
             symbol = stock_data.get('symbol', 'N/A')
             
-            # Get technical analysis data
-            technical_data = await technical_analyzer.analyze_stock_technical(symbol)
+            # Get technical analysis and sentiment data concurrently
+            technical_task = technical_analyzer.analyze_stock_technical(symbol)
+            sentiment_task = market_sentiment_analyzer.analyze_market_sentiment(symbol)
+            
+            technical_data, sentiment_data = await asyncio.gather(technical_task, sentiment_task)
             
             # Calculate individual scores
             scores = {}
@@ -61,7 +64,7 @@ class InvestmentScorer:
             scores['financial_health'] = self._calculate_financial_health_score(stock_data)
             scores['volatility_score'] = self._calculate_volatility_score(stock_data)
             
-            # Technical scores (NEW!)
+            # Technical scores
             technical_scores = technical_data.get('technical_score', {})
             scores['trend_score'] = technical_scores.get('trend_score', 50)
             scores['momentum_score'] = technical_scores.get('momentum_score', 50)
@@ -69,22 +72,26 @@ class InvestmentScorer:
             scores['price_action_score'] = technical_scores.get('price_action_score', 50)
             scores['support_resistance_score'] = technical_scores.get('support_resistance_score', 50)
             
+            # Sentiment score (NEW!)
+            scores['sentiment_score'] = sentiment_to_investment_score(sentiment_data)
+            
             # Calculate weighted total score
             total_score = sum(scores[metric] * self.weights[metric] for metric in scores)
             total_score = max(0, min(100, total_score))
             
-            # Determine investment rating with technical consideration
-            rating = self._get_enhanced_investment_rating(total_score, technical_data)
+            # Determine investment rating with technical and sentiment consideration
+            rating = self._get_enhanced_investment_rating(total_score, technical_data, sentiment_data)
             
             # Create enhanced recommendation explanation
-            explanation = self._generate_enhanced_explanation(stock_data, scores, total_score, technical_data)
+            explanation = self._generate_enhanced_explanation(stock_data, scores, total_score, technical_data, sentiment_data)
             
             # Generate technical signals
             technical_signals = technical_data.get('signals', [])
             
-            # Calculate separate fundamental and technical scores
+            # Calculate separate component scores
             fundamental_keys = ['pe_score', 'pb_score', 'value_score', 'growth_score', 'profitability_score', 'dividend_score', 'financial_health']
             technical_keys = ['trend_score', 'momentum_score', 'volume_score', 'price_action_score', 'support_resistance_score']
+            sentiment_keys = ['sentiment_score']
             
             try:
                 # Calculate fundamental score
@@ -97,10 +104,16 @@ class InvestmentScorer:
                 technical_weights_sum = sum(self.weights[k] for k in technical_keys if k in self.weights)
                 technical_score = technical_weighted_sum / technical_weights_sum if technical_weights_sum > 0 else 50
                 
+                # Calculate sentiment score
+                sentiment_weighted_sum = sum(scores[k] * self.weights[k] for k in sentiment_keys if k in scores)
+                sentiment_weights_sum = sum(self.weights[k] for k in sentiment_keys if k in self.weights)
+                sentiment_score = sentiment_weighted_sum / sentiment_weights_sum if sentiment_weights_sum > 0 else 50
+                
             except Exception as e:
                 logger.error(f"Error calculating component scores: {str(e)}")
                 fundamental_score = 50
                 technical_score = 50
+                sentiment_score = 50
             
             return {
                 'symbol': symbol,
@@ -109,11 +122,12 @@ class InvestmentScorer:
                 'individual_scores': {k: round(v, 2) for k, v in scores.items()},
                 'fundamental_score': round(fundamental_score, 2),
                 'technical_score': round(technical_score, 2),
+                'sentiment_score': round(sentiment_score, 2),  # NEW!
                 'explanation': explanation,
-                'risk_level': self._assess_enhanced_risk_level(stock_data, scores, technical_data),
-                'investment_horizon': self._recommend_enhanced_investment_horizon(scores, technical_data),
-                'key_strengths': self._identify_enhanced_key_strengths(scores, technical_data),
-                'key_risks': self._identify_enhanced_key_risks(scores, technical_data),
+                'risk_level': self._assess_enhanced_risk_level(stock_data, scores, technical_data, sentiment_data),
+                'investment_horizon': self._recommend_enhanced_investment_horizon(scores, technical_data, sentiment_data),
+                'key_strengths': self._identify_enhanced_key_strengths(scores, technical_data, sentiment_data),
+                'key_risks': self._identify_enhanced_key_risks(scores, technical_data, sentiment_data),
                 'technical_analysis': {
                     'trend_direction': technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL'),
                     'trend_strength': technical_data.get('trend_analysis', {}).get('strength', 50),
@@ -121,8 +135,18 @@ class InvestmentScorer:
                     'signals': technical_signals,
                     'support_resistance': technical_data.get('support_resistance', {})
                 },
+                'sentiment_analysis': {
+                    'direction': sentiment_data.get('insights', {}).get('direction', 'UNKNOWN'),
+                    'strength': sentiment_data.get('insights', {}).get('strength', 'Unknown'),
+                    'market_mood': sentiment_data.get('market_mood', 'UNCERTAIN'),
+                    'confidence': sentiment_data.get('confidence_level', 0.0),
+                    'dominant_source': sentiment_data.get('insights', {}).get('dominant_source', 'None'),
+                    'key_themes': sentiment_data.get('insights', {}).get('key_themes', []),
+                    'total_mentions': sentiment_data.get('total_mentions', 0),
+                    'summary': sentiment_data.get('insights', {}).get('summary', 'No sentiment data available')
+                },
                 'last_updated': datetime.utcnow().isoformat(),
-                'analysis_type': 'ENHANCED_WITH_TECHNICAL'
+                'analysis_type': 'ENHANCED_WITH_TECHNICAL_AND_SENTIMENT'
             }
             
         except Exception as e:
