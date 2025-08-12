@@ -252,6 +252,76 @@ class StockMarketAPITester:
         
         return success
 
+    def test_investment_scoring_endpoints(self):
+        """Test NEW Investment Scoring System endpoints - PRIORITY FEATURE"""
+        print("\n🎯 Testing Investment Scoring System - NEW FEATURE")
+        
+        # Test top investment picks
+        success, top_picks_data = self.run_test("Investment Top Picks", "GET", "investments/top-picks", 200, params={"limit": 10})
+        if success and 'recommendations' in top_picks_data:
+            recommendations = top_picks_data['recommendations']
+            print(f"   Found {len(recommendations)} top investment picks")
+            
+            # Check first recommendation structure
+            if recommendations:
+                first_pick = recommendations[0]
+                print(f"   #1 Pick: {first_pick.get('symbol', 'N/A')} - Score: {first_pick.get('total_score', 'N/A')} - Rating: {first_pick.get('rating', 'N/A')}")
+                print(f"   Risk Level: {first_pick.get('risk_level', 'N/A')}")
+                
+                # Verify required fields
+                required_fields = ['symbol', 'total_score', 'rating', 'risk_level', 'key_strengths', 'key_risks']
+                missing_fields = [field for field in required_fields if field not in first_pick]
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields in top pick: {missing_fields}")
+                else:
+                    print(f"   ✅ All required fields present in top pick")
+        
+        # Test individual stock scoring - AAPL
+        success, aapl_score = self.run_test("Investment Score (AAPL)", "GET", "investments/score/AAPL", 200)
+        if success:
+            print(f"   AAPL Score: {aapl_score.get('total_score', 'N/A')}")
+            print(f"   AAPL Rating: {aapl_score.get('rating', 'N/A')}")
+            print(f"   AAPL Risk Level: {aapl_score.get('risk_level', 'N/A')}")
+            
+            # Check individual scores breakdown
+            individual_scores = aapl_score.get('individual_scores', {})
+            if individual_scores:
+                print(f"   Score Breakdown: {len(individual_scores)} metrics")
+                # Show a few key scores
+                for key in ['pe_score', 'momentum_score', 'value_score']:
+                    if key in individual_scores:
+                        print(f"     {key}: {individual_scores[key]}")
+        
+        # Test sector leaders
+        success, sector_data = self.run_test("Sector Leaders (Technology)", "GET", "investments/sector-leaders", 200, params={"sector": "Technology"})
+        if success and 'leaders' in sector_data:
+            leaders = sector_data['leaders']
+            print(f"   Found {len(leaders)} Technology sector leaders")
+            if leaders:
+                top_leader = leaders[0]
+                print(f"   Top Tech Leader: {top_leader.get('symbol', 'N/A')} - Score: {top_leader.get('total_score', 'N/A')}")
+        
+        # Test different sector
+        success, healthcare_data = self.run_test("Sector Leaders (Healthcare)", "GET", "investments/sector-leaders", 200, params={"sector": "Healthcare"})
+        if success and 'leaders' in healthcare_data:
+            leaders = healthcare_data['leaders']
+            print(f"   Found {len(leaders)} Healthcare sector leaders")
+        
+        # Test risk analysis
+        success, risk_data = self.run_test("Risk Analysis", "GET", "investments/risk-analysis", 200)
+        if success and 'risk_categories' in risk_data:
+            risk_categories = risk_data['risk_categories']
+            print(f"   Risk Categories: {list(risk_categories.keys())}")
+            
+            for risk_level, stocks in risk_categories.items():
+                print(f"   {risk_level} Risk: {len(stocks)} stocks")
+                if stocks:
+                    # Show first stock in each category
+                    first_stock = stocks[0]
+                    print(f"     Example: {first_stock.get('symbol', 'N/A')} - Score: {first_stock.get('total_score', 'N/A')}")
+        
+        return success
+
     def test_error_handling(self):
         """Test error handling for invalid requests"""
         # Test invalid stock symbol
@@ -262,6 +332,9 @@ class StockMarketAPITester:
         
         # Test invalid watchlist item deletion
         self.run_test("Delete Non-existent Watchlist Item", "DELETE", "watchlist/invalid-id", 404)
+        
+        # Test invalid investment score
+        self.run_test("Invalid Investment Score", "GET", "investments/score/INVALID123", 500)
 
 def main():
     print("🚀 Starting Stock Market API Tests")
