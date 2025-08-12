@@ -193,9 +193,14 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-    </div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="flex items-center space-x-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-3 border-blue-500 border-t-transparent"></div>
+          <span className="text-gray-600 font-medium">Loading market data...</span>
+        </div>
+      </div>
+    );
   }
 
   const formatNumber = (num) => {
@@ -206,62 +211,155 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Market Dashboard</h2>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 rounded-2xl p-6 text-white shadow-xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Market Dashboard</h2>
+            <p className="text-blue-100 text-lg">Real-time market overview and top movers</p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-blue-200 mb-1">Last Updated</div>
+            <div className="text-blue-100 font-medium">{new Date().toLocaleTimeString()}</div>
+            <button
+              onClick={fetchMarketData}
+              className="mt-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+            >
+              <RefreshCw size={16} />
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+      </div>
       
       {/* Market Indices */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {marketData?.indices?.map((index, idx) => (
-          <div key={idx} className="bg-white p-4 rounded-lg shadow-md">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-sm font-medium text-gray-600">{index.symbol}</h3>
-                <p className="text-xl font-bold">${index.price?.toFixed(2)}</p>
-                <div className={`flex items-center space-x-1 text-sm ${
-                  index.change >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {index.change >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                  <span>{index.change?.toFixed(2)} ({index.change_percent?.toFixed(2)}%)</span>
+          <div key={idx} className="group relative">
+            {/* Background gradient based on performance */}
+            <div className={`absolute inset-0 rounded-xl opacity-10 ${
+              index.change >= 0 
+                ? 'bg-gradient-to-br from-emerald-400 to-green-500' 
+                : 'bg-gradient-to-br from-red-400 to-red-500'
+            }`}></div>
+            
+            <div className="relative bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:transform hover:scale-105">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className="text-sm font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                      {index.symbol}
+                    </span>
+                  </div>
+                  <p className="text-2xl font-bold text-gray-800">${index.price?.toFixed(2)}</p>
+                </div>
+                <div className={`p-3 rounded-xl ${
+                  index.change >= 0 
+                    ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
+                    : 'bg-gradient-to-r from-red-500 to-red-600'
+                } text-white`}>
+                  {index.change >= 0 ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
                 </div>
               </div>
-              <Activity className="h-8 w-8 text-gray-400" />
+              
+              <div className={`flex items-center space-x-2 text-lg font-semibold ${
+                index.change >= 0 ? 'text-emerald-600' : 'text-red-600'
+              }`}>
+                <span>{index.change >= 0 ? '+' : ''}{index.change?.toFixed(2)}</span>
+                <span>({index.change_percent?.toFixed(2)}%)</span>
+              </div>
+              
+              {/* Progress bar for visual change representation */}
+              <div className="mt-3">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-500 ${
+                      index.change >= 0 
+                        ? 'bg-gradient-to-r from-emerald-400 to-green-500' 
+                        : 'bg-gradient-to-r from-red-400 to-red-500'
+                    }`}
+                    style={{ width: `${Math.min(100, Math.abs(index.change_percent) * 10)}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
       {/* Top Movers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4 text-green-600">Top Gainers</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Top Gainers */}
+        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl text-white">
+              <TrendingUp size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-800">Top Gainers</h3>
+              <p className="text-gray-600 text-sm">Best performing stocks today</p>
+            </div>
+          </div>
+          
           <div className="space-y-3">
             {topMovers?.gainers?.slice(0, 5).map((stock, idx) => (
-              <div key={idx} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
-                <div>
-                  <span className="font-medium">{stock.symbol}</span>
-                  <p className="text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-green-600 font-medium">+{stock.change_percent?.toFixed(2)}%</span>
-                  <p className="text-sm text-gray-600">+${stock.change?.toFixed(2)}</p>
+              <div key={idx} className="group p-4 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 rounded-xl transition-all duration-200 border border-transparent hover:border-emerald-200">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full flex items-center justify-center">
+                      <span className="font-bold text-emerald-600">{idx + 1}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-gray-800">{stock.symbol}</span>
+                      <p className="text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center space-x-1 text-emerald-600 font-bold">
+                      <TrendingUp size={16} />
+                      <span>+{stock.change_percent?.toFixed(2)}%</span>
+                    </div>
+                    <p className="text-sm text-gray-600">+${stock.change?.toFixed(2)}</p>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4 text-red-600">Top Losers</h3>
+        {/* Top Losers */}
+        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-100">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-xl text-white">
+              <TrendingDown size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-800">Top Losers</h3>
+              <p className="text-gray-600 text-sm">Worst performing stocks today</p>
+            </div>
+          </div>
+          
           <div className="space-y-3">
             {topMovers?.losers?.slice(0, 5).map((stock, idx) => (
-              <div key={idx} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
-                <div>
-                  <span className="font-medium">{stock.symbol}</span>
-                  <p className="text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-red-600 font-medium">{stock.change_percent?.toFixed(2)}%</span>
-                  <p className="text-sm text-gray-600">${stock.change?.toFixed(2)}</p>
+              <div key={idx} className="group p-4 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-50 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-red-100 to-red-100 rounded-full flex items-center justify-center">
+                      <span className="font-bold text-red-600">{idx + 1}</span>
+                    </div>
+                    <div>
+                      <span className="font-bold text-gray-800">{stock.symbol}</span>
+                      <p className="text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center space-x-1 text-red-600 font-bold">
+                      <TrendingDown size={16} />
+                      <span>{stock.change_percent?.toFixed(2)}%</span>
+                    </div>
+                    <p className="text-sm text-gray-600">${stock.change?.toFixed(2)}</p>
+                  </div>
                 </div>
               </div>
             ))}
