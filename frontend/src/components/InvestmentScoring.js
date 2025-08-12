@@ -345,10 +345,10 @@ const InvestmentScoring = React.memo(() => {
             </div>
           </div>
 
-          {stockScore && (
+          {stockAnalysis && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <InvestmentCard investment={stockScore} showDetails={true} />
+                <InvestmentCard investment={stockAnalysis} showDetails={true} />
               </div>
               <div className="space-y-4">
                 <div className="bg-white p-4 rounded-lg shadow-md">
@@ -357,7 +357,7 @@ const InvestmentScoring = React.memo(() => {
                     Score Breakdown
                   </h4>
                   <div className="space-y-2">
-                    {Object.entries(stockScore.individual_scores || {}).map(([key, value]) => (
+                    {Object.entries(stockAnalysis.individual_scores || {}).map(([key, value]) => (
                       <div key={key} className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 capitalize">{key.replace('_', ' ')}</span>
                         <div className="flex items-center space-x-2">
