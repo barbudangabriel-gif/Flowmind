@@ -29,8 +29,8 @@ db = client[os.environ['DB_NAME']]
 
 # Alpha Vantage API
 ALPHA_VANTAGE_API_KEY = os.environ.get('ALPHA_VANTAGE_API_KEY')
-ts = TimeSeries(key=ALPHA_VANTAGE_API_KEY, output_format='pandas')
-ti = TechIndicators(key=ALPHA_VANTAGE_API_KEY, output_format='pandas')
+ts = TimeSeries(key=ALPHA_VANTAGE_API_KEY, output_format='pandas') if ALPHA_VANTAGE_API_KEY else None
+ti = TechIndicators(key=ALPHA_VANTAGE_API_KEY, output_format='pandas') if ALPHA_VANTAGE_API_KEY else None
 
 # Create the main app without a prefix
 app = FastAPI(title="Stock Market Analysis API", version="2.0.0")
