@@ -858,7 +858,9 @@ function App() {
       case 'portfolio':
         return <Portfolio />;
       case 'screener':
-        return <StockScreener />;
+        return <AdvancedScreener />;
+      case 'simple-screener':
+        return <SimpleStockScreener />;
       case 'watchlist':
         return <Watchlist />;
       case 'technical':
