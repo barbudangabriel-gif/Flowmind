@@ -49,7 +49,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'portfolio', label: 'Portfolio', icon: Briefcase },
-    { id: 'screener', label: 'Stock Screener', icon: Search },
+    { id: 'screener', label: 'Advanced Screener', icon: Database },
+    { id: 'simple-screener', label: 'Stock Search', icon: Search },
     { id: 'watchlist', label: 'Watchlist', icon: Star },
     { id: 'technical', label: 'Technical Analysis', icon: BarChart3 },
     { id: 'news', label: 'Market News', icon: Newspaper }
