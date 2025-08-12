@@ -44,11 +44,22 @@ const AdvancedScreener = () => {
 
   useEffect(() => {
     const initializeData = async () => {
+      console.log('🔄 Initializing AdvancedScreener data...');
       await fetchSectors();
       await loadScreenerData('all');
     };
     initializeData();
-  }, []);
+  }, []); // Empty dependency array to run only once
+
+  // Debug effect to monitor state changes
+  useEffect(() => {
+    console.log('📊 AdvancedScreener State Update:', {
+      stocksLength: stocks.length,
+      filteredStocksLength: filteredStocks.length,
+      sortedStocksLength: sortedStocks.length,
+      paginatedStocksLength: paginatedStocks.length
+    });
+  }, [stocks, filteredStocks, sortedStocks, paginatedStocks]);
 
   const fetchSectors = async () => {
     try {
