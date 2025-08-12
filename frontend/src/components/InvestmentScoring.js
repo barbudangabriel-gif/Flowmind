@@ -42,7 +42,7 @@ const InvestmentScoring = React.memo(() => {
   useEffect(() => {
     loadTopPicks();
     loadRiskAnalysis();
-  }, [loadTopPicks, loadRiskAnalysis]);
+  }, []); // Remove dependencies for initial load
 
   useEffect(() => {
     if (selectedSector) {
