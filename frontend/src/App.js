@@ -50,6 +50,26 @@ import "./App.css";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Loading fallback component with enhanced design
+const LoadingFallback = ({ componentName }) => (
+  <div className="flex flex-col justify-center items-center h-64 space-y-4">
+    <div className="relative">
+      <div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin"></div>
+      <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+      <div className="absolute top-2 left-2 w-12 h-12 border-4 border-blue-300 rounded-full border-t-transparent animate-spin animation-delay-150"></div>
+    </div>
+    <div className="text-center">
+      <span className="text-gray-700 font-medium text-lg">Loading {componentName}...</span>
+      <p className="text-gray-500 text-sm mt-1">Preparing advanced features</p>
+    </div>
+    <div className="flex space-x-1">
+      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce animation-delay-150"></div>
+      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce animation-delay-300"></div>
+    </div>
+  </div>
+);
+
 // Navigation Component
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
