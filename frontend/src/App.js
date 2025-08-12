@@ -143,19 +143,19 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           <div className="mb-8">
             <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center'} mb-2`}>
               {isCollapsed ? (
-                // Collapsed state - FlowMind icon glyph
+                // Collapsed state - FlowMind transparent glyph
                 <div className="flex items-center justify-center flex-shrink-0">
                   <img 
-                    src="/assets/logos/flowmind_glyph.svg" 
+                    src="/assets/logos/flowmind_transparent_glyph.svg" 
                     alt="FlowMind" 
                     className="w-10 h-10"
                   />
                 </div>
               ) : (
-                // Expanded state - FlowMind horizontal logo (your original design)
+                // Expanded state - FlowMind horizontal transparent logo
                 <div className="flex items-center justify-center w-full px-2">
                   <img 
-                    src="/assets/logos/flowmind_horizontal.svg" 
+                    src="/assets/logos/flowmind_horizontal_transparent.svg" 
                     alt="FlowMind Analytics" 
                     className="h-8 w-full max-w-[220px] object-contain"
                   />
