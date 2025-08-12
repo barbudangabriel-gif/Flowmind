@@ -357,139 +357,147 @@ const Dashboard = React.memo(() => {
       
       {/* Market Indices */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {marketData?.indices?.map((index, idx) => (
-          <div key={idx} className="group relative">
-            {/* Background gradient based on performance */}
-            <div className={`absolute inset-0 rounded-xl opacity-10 ${
-              index.change >= 0 
-                ? 'bg-gradient-to-br from-emerald-400 to-green-500' 
-                : 'bg-gradient-to-br from-red-400 to-red-500'
-            }`}></div>
-            
-            <div className="relative bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg card-hover border border-gray-100">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-xs md:text-sm font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                      {index.symbol}
-                    </span>
-                  </div>
-                  <p className="text-xl md:text-2xl font-bold text-gray-800">${index.price?.toFixed(2)}</p>
-                </div>
-                <div className={`p-2 md:p-3 rounded-xl ${
-                  index.change >= 0 
-                    ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
-                    : 'bg-gradient-to-r from-red-500 to-red-600'
-                } text-white`}>
-                  {index.change >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
-                </div>
-              </div>
-              
-              <div className={`flex items-center space-x-2 text-base md:text-lg font-semibold ${
-                index.change >= 0 ? 'text-emerald-600' : 'text-red-600'
-              }`}>
-                <span>{index.change >= 0 ? '+' : ''}{index.change?.toFixed(2)}</span>
-                <span>({index.change_percent?.toFixed(2)}%)</span>
-              </div>
-              
-              {/* Progress bar for visual change representation */}
-              <div className="mt-3">
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-500 ${
-                      index.change >= 0 
-                        ? 'bg-gradient-to-r from-emerald-400 to-green-500' 
-                        : 'bg-gradient-to-r from-red-400 to-red-500'
-                    }`}
-                    style={{ width: `${Math.min(100, Math.abs(index.change_percent) * 10)}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {memoizedIndices.map((index) => (
+          <MemoizedIndexCard key={index.id} index={index} />
         ))}
       </div>
 
       {/* Top Movers */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8">
-        {/* Top Gainers */}
-        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100 card-hover">
-          <div className="flex items-center space-x-3 mb-4 md:mb-6">
-            <div className="p-2 md:p-3 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl text-white animate-pulse-soft">
-              <TrendingUp size={20} />
-            </div>
-            <div>
-              <h3 className="text-lg md:text-xl font-bold text-gray-800">Top Gainers</h3>
-              <p className="text-gray-600 text-sm">Best performing stocks today</p>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            {topMovers?.gainers?.slice(0, 5).map((stock, idx) => (
-              <div key={idx} className="group p-3 md:p-4 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 rounded-xl transition-all duration-200 border border-transparent hover:border-emerald-200">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full flex items-center justify-center">
-                      <span className="font-bold text-emerald-600 text-sm md:text-base">{idx + 1}</span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-gray-800 text-sm md:text-base">{stock.symbol}</span>
-                      <p className="text-xs md:text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center space-x-1 text-emerald-600 font-bold text-sm md:text-base">
-                      <TrendingUp size={14} />
-                      <span>+{stock.change_percent?.toFixed(2)}%</span>
-                    </div>
-                    <p className="text-xs md:text-sm text-gray-600">+${stock.change?.toFixed(2)}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Top Losers */}
-        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100 card-hover">
-          <div className="flex items-center space-x-3 mb-4 md:mb-6">
-            <div className="p-2 md:p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-xl text-white animate-pulse-soft">
-              <TrendingDown size={20} />
-            </div>
-            <div>
-              <h3 className="text-lg md:text-xl font-bold text-gray-800">Top Losers</h3>
-              <p className="text-gray-600 text-sm">Worst performing stocks today</p>
-            </div>
-          </div>
-          
-          <div className="space-y-3">
-            {topMovers?.losers?.slice(0, 5).map((stock, idx) => (
-              <div key={idx} className="group p-3 md:p-4 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-50 rounded-xl transition-all duration-200 border border-transparent hover:border-red-200">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-red-100 to-red-100 rounded-full flex items-center justify-center">
-                      <span className="font-bold text-red-600 text-sm md:text-base">{idx + 1}</span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-gray-800 text-sm md:text-base">{stock.symbol}</span>
-                      <p className="text-xs md:text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center space-x-1 text-red-600 font-bold text-sm md:text-base">
-                      <TrendingDown size={14} />
-                      <span>{stock.change_percent?.toFixed(2)}%</span>
-                    </div>
-                    <p className="text-xs md:text-sm text-gray-600">${stock.change?.toFixed(2)}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <MemoizedTopMoversCard
+          title="Top Gainers"
+          stocks={memoizedTopMovers.gainers}
+          type="gainers"
+        />
+        <MemoizedTopMoversCard
+          title="Top Losers"
+          stocks={memoizedTopMovers.losers}
+          type="losers"
+        />
       </div>
     </div>
   );
+});
+
+// Memoized Index Card Component
+const MemoizedIndexCard = React.memo(({ index }) => (
+  <div className="group relative">
+    {/* Background gradient based on performance */}
+    <div className={`absolute inset-0 rounded-xl opacity-10 ${
+      index.change >= 0 
+        ? 'bg-gradient-to-br from-emerald-400 to-green-500' 
+        : 'bg-gradient-to-br from-red-400 to-red-500'
+    }`}></div>
+    
+    <div className="relative bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg card-hover border border-gray-100">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <div className="flex items-center space-x-2 mb-2">
+            <span className="text-xs md:text-sm font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+              {index.symbol}
+            </span>
+          </div>
+          <p className="text-xl md:text-2xl font-bold text-gray-800">${index.price?.toFixed(2)}</p>
+        </div>
+        <div className={`p-2 md:p-3 rounded-xl ${
+          index.change >= 0 
+            ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
+            : 'bg-gradient-to-r from-red-500 to-red-600'
+        } text-white`}>
+          {index.change >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+        </div>
+      </div>
+      
+      <div className={`flex items-center space-x-2 text-base md:text-lg font-semibold ${
+        index.change >= 0 ? 'text-emerald-600' : 'text-red-600'
+      }`}>
+        <span>{index.change >= 0 ? '+' : ''}{index.change?.toFixed(2)}</span>
+        <span>({index.change_percent?.toFixed(2)}%)</span>
+      </div>
+      
+      {/* Progress bar for visual change representation */}
+      <div className="mt-3">
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className={`h-2 rounded-full transition-all duration-500 ${
+              index.change >= 0 
+                ? 'bg-gradient-to-r from-emerald-400 to-green-500' 
+                : 'bg-gradient-to-r from-red-400 to-red-500'
+            }`}
+            style={{ width: `${Math.min(100, Math.abs(index.change_percent) * 10)}%` }}
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
+// Memoized Top Movers Card Component
+const MemoizedTopMoversCard = React.memo(({ title, stocks, type }) => (
+  <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100 card-hover">
+    <div className="flex items-center space-x-3 mb-4 md:mb-6">
+      <div className={`p-2 md:p-3 rounded-xl text-white animate-pulse-soft ${
+        type === 'gainers' 
+          ? 'bg-gradient-to-r from-emerald-500 to-green-500'
+          : 'bg-gradient-to-r from-red-500 to-red-600'
+      }`}>
+        {type === 'gainers' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+      </div>
+      <div>
+        <h3 className="text-lg md:text-xl font-bold text-gray-800">{title}</h3>
+        <p className="text-gray-600 text-sm">
+          {type === 'gainers' ? 'Best performing stocks today' : 'Worst performing stocks today'}
+        </p>
+      </div>
+    </div>
+    
+    <div className="space-y-3">
+      {stocks.map((stock) => (
+        <MemoizedStockRow key={stock.id} stock={stock} type={type} />
+      ))}
+    </div>
+  </div>
+));
+
+// Memoized Stock Row Component
+const MemoizedStockRow = React.memo(({ stock, type }) => (
+  <div className={`group p-3 md:p-4 rounded-xl transition-all duration-200 border border-transparent hover:border-${type === 'gainers' ? 'emerald' : 'red'}-200 hover:bg-gradient-to-r ${
+    type === 'gainers' 
+      ? 'hover:from-emerald-50 hover:to-green-50'
+      : 'hover:from-red-50 hover:to-red-50'
+  }`}>
+    <div className="flex justify-between items-center">
+      <div className="flex items-center space-x-3">
+        <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
+          type === 'gainers'
+            ? 'bg-gradient-to-r from-emerald-100 to-green-100'
+            : 'bg-gradient-to-r from-red-100 to-red-100'
+        }`}>
+          <span className={`font-bold text-sm md:text-base ${
+            type === 'gainers' ? 'text-emerald-600' : 'text-red-600'
+          }`}>
+            {stock.rank}
+          </span>
+        </div>
+        <div>
+          <span className="font-bold text-gray-800 text-sm md:text-base">{stock.symbol}</span>
+          <p className="text-xs md:text-sm text-gray-600">${stock.price?.toFixed(2)}</p>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className={`flex items-center space-x-1 font-bold text-sm md:text-base ${
+          type === 'gainers' ? 'text-emerald-600' : 'text-red-600'
+        }`}>
+          {type === 'gainers' ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+          <span>{type === 'gainers' ? '+' : ''}{stock.change_percent?.toFixed(2)}%</span>
+        </div>
+        <p className="text-xs md:text-sm text-gray-600">
+          {type === 'gainers' ? '+' : ''}${stock.change?.toFixed(2)}
+        </p>
+      </div>
+    </div>
+  </div>
+));
 };
 
 // Portfolio Component
