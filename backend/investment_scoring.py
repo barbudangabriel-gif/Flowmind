@@ -78,13 +78,33 @@ class InvestmentScorer:
             # Generate technical signals
             technical_signals = technical_data.get('signals', [])
             
+            # Calculate separate fundamental and technical scores
+            fundamental_keys = ['pe_score', 'pb_score', 'value_score', 'growth_score', 'profitability_score', 'dividend_score', 'financial_health']
+            technical_keys = ['trend_score', 'momentum_score', 'volume_score', 'price_action_score', 'support_resistance_score']
+            
+            try:
+                # Calculate fundamental score
+                fundamental_weighted_sum = sum(scores[k] * self.weights[k] for k in fundamental_keys if k in scores)
+                fundamental_weights_sum = sum(self.weights[k] for k in fundamental_keys if k in self.weights)
+                fundamental_score = fundamental_weighted_sum / fundamental_weights_sum if fundamental_weights_sum > 0 else 50
+                
+                # Calculate technical score  
+                technical_weighted_sum = sum(scores[k] * self.weights[k] for k in technical_keys if k in scores)
+                technical_weights_sum = sum(self.weights[k] for k in technical_keys if k in self.weights)
+                technical_score = technical_weighted_sum / technical_weights_sum if technical_weights_sum > 0 else 50
+                
+            except Exception as e:
+                logger.error(f"Error calculating component scores: {str(e)}")
+                fundamental_score = 50
+                technical_score = 50
+            
             return {
                 'symbol': symbol,
                 'total_score': round(total_score, 2),
                 'rating': rating,
                 'individual_scores': {k: round(v, 2) for k, v in scores.items()},
-                'fundamental_score': round(sum(scores[k] * self.weights[k] for k in ['pe_score', 'pb_score', 'value_score', 'growth_score', 'profitability_score', 'dividend_score', 'financial_health']) / sum(self.weights[k] for k in ['pe_score', 'pb_score', 'value_score', 'growth_score', 'profitability_score', 'dividend_score', 'financial_health']), 2),
-                'technical_score': round(sum(scores[k] * self.weights[k] for k in ['trend_score', 'momentum_score', 'volume_score', 'price_action_score', 'support_resistance_score']) / sum(self.weights[k] for k in ['trend_score', 'momentum_score', 'volume_score', 'price_action_score', 'support_resistance_score']), 2),
+                'fundamental_score': round(fundamental_score, 2),
+                'technical_score': round(technical_score, 2),
                 'explanation': explanation,
                 'risk_level': self._assess_enhanced_risk_level(stock_data, scores, technical_data),
                 'investment_horizon': self._recommend_enhanced_investment_horizon(scores, technical_data),
