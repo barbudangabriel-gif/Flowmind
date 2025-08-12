@@ -552,52 +552,80 @@ const SimpleStockScreener = () => {
   );
 };
 
-// Technical Analysis Component
+// Enhanced Technical Analysis Component
 const TechnicalAnalysis = () => {
   const [symbol, setSymbol] = useState('AAPL');
-  const [indicators, setIndicators] = useState(null);
+  const [technicalData, setTechnicalData] = useState(null);
+  const [stockScore, setStockScore] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchIndicators = async () => {
+  const fetchTechnicalAnalysis = async () => {
     if (!symbol) return;
     
     setLoading(true);
     try {
-      const response = await axios.get(`${API}/stocks/${symbol}/indicators`);
-      setIndicators(response.data);
+      // Get enhanced investment score which includes comprehensive technical analysis
+      const response = await axios.get(`${API}/investments/score/${symbol}`);
+      setStockScore(response.data);
+      setTechnicalData(response.data.technical_analysis);
     } catch (error) {
-      console.error('Error fetching indicators:', error);
+      console.error('Error fetching technical analysis:', error);
+      setTechnicalData(null);
+      setStockScore(null);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchIndicators();
+    fetchTechnicalAnalysis();
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    fetchIndicators();
+    fetchTechnicalAnalysis();
+  };
+
+  const getSignalColor = (signal) => {
+    switch (signal) {
+      case 'BUY': return 'text-green-700 bg-green-100';
+      case 'SELL': return 'text-red-700 bg-red-100';
+      case 'BULLISH': return 'text-green-600 bg-green-50';
+      case 'BEARISH': return 'text-red-600 bg-red-50';
+      case 'OVERBOUGHT': return 'text-red-600 bg-red-50';
+      case 'OVERSOLD': return 'text-green-600 bg-green-50';
+      default: return 'text-gray-600 bg-gray-50';
+    }
+  };
+
+  const getTrendColor = (trend) => {
+    switch (trend) {
+      case 'BULLISH': return 'text-green-700';
+      case 'BEARISH': return 'text-red-700';
+      case 'BULLISH_WEAK': return 'text-green-500';
+      case 'BEARISH_WEAK': return 'text-red-500';
+      default: return 'text-gray-600';
+    }
   };
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Technical Analysis</h2>
+      <h2 className="text-2xl font-bold text-gray-800">📈 Advanced Technical Analysis</h2>
       
       <form onSubmit={handleSubmit} className="flex space-x-4">
         <input
           type="text"
           value={symbol}
           onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-          placeholder="Enter stock symbol"
+          placeholder="Enter stock symbol (e.g., AAPL)"
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
         >
-          Analyze
+          <Activity size={20} />
+          <span>Analyze</span>
         </button>
       </form>
 
@@ -607,74 +635,212 @@ const TechnicalAnalysis = () => {
         </div>
       )}
 
-      {indicators && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* RSI */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <Activity className="mr-2" size={20} />
-              RSI (14)
-            </h3>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
-                {indicators.rsi?.value ? indicators.rsi.value.toFixed(2) : 'N/A'}
+      {technicalData && stockScore && (
+        <div className="space-y-6">
+          {/* Overall Analysis Summary */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">{symbol} Technical Analysis</h3>
+                <p className="text-gray-600 mt-1">Comprehensive technical analysis with multiple indicators</p>
               </div>
-              <div className="mt-2 text-sm text-gray-600">
-                {indicators.rsi?.value > 70 ? 'Overbought' : 
-                 indicators.rsi?.value < 30 ? 'Oversold' : 'Neutral'}
-              </div>
-            </div>
-          </div>
-
-          {/* MACD */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <TrendingUp className="mr-2" size={20} />
-              MACD
-            </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">MACD:</span>
-                <span className="font-medium">
-                  {indicators.macd?.macd ? indicators.macd.macd.toFixed(4) : 'N/A'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Signal:</span>
-                <span className="font-medium">
-                  {indicators.macd?.signal ? indicators.macd.signal.toFixed(4) : 'N/A'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Histogram:</span>
-                <span className="font-medium">
-                  {indicators.macd?.histogram ? indicators.macd.histogram.toFixed(4) : 'N/A'}
-                </span>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-blue-600">
+                  {stockScore.technical_score || 'N/A'}
+                </div>
+                <div className="text-sm text-gray-500">Technical Score</div>
               </div>
             </div>
           </div>
 
-          {/* Moving Averages */}
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <BarChart3 className="mr-2" size={20} />
-              Moving Averages
-            </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">SMA 20:</span>
-                <span className="font-medium">
-                  {indicators.sma?.sma20 ? `$${indicators.sma.sma20.toFixed(2)}` : 'N/A'}
-                </span>
+          {/* Trend Analysis */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <TrendingUp className="mr-2" size={20} />
+                Overall Trend
+              </h3>
+              <div className="space-y-3">
+                <div className="text-center">
+                  <div className={`text-2xl font-bold ${getTrendColor(technicalData.trend_direction)}`}>
+                    {technicalData.trend_direction || 'NEUTRAL'}
+                  </div>
+                  <div className="text-sm text-gray-500">Direction</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-gray-700">
+                    {technicalData.trend_strength ? technicalData.trend_strength.toFixed(1) + '%' : 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-500">Strength</div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">SMA 50:</span>
-                <span className="font-medium">
-                  {indicators.sma?.sma50 ? `$${indicators.sma.sma50.toFixed(2)}` : 'N/A'}
-                </span>
+            </div>
+
+            {/* RSI */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Activity className="mr-2" size={20} />
+                RSI (14)
+              </h3>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600">
+                  {technicalData.key_indicators?.RSI?.value ? technicalData.key_indicators.RSI.value.toFixed(1) : 'N/A'}
+                </div>
+                <div className={`mt-2 px-3 py-1 rounded-full text-sm font-medium ${getSignalColor(technicalData.key_indicators?.RSI?.signal || 'NEUTRAL')}`}>
+                  {technicalData.key_indicators?.RSI?.signal || 'NEUTRAL'}
+                </div>
+              </div>
+              <div className="mt-4">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full" 
+                    style={{ width: `${Math.min(100, technicalData.key_indicators?.RSI?.value || 0)}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0</span>
+                  <span>30</span>
+                  <span>70</span>
+                  <span>100</span>
+                </div>
+              </div>
+            </div>
+
+            {/* MACD */}
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <BarChart3 className="mr-2" size={20} />
+                MACD
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Signal:</span>
+                  <span className={`px-2 py-1 rounded text-sm font-medium ${getSignalColor(technicalData.key_indicators?.MACD?.crossover || 'NEUTRAL')}`}>
+                    {technicalData.key_indicators?.MACD?.crossover || 'NEUTRAL'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Momentum:</span>
+                  <span className={`px-2 py-1 rounded text-sm font-medium ${getSignalColor(technicalData.key_indicators?.MACD?.momentum || 'NEUTRAL')}`}>
+                    {technicalData.key_indicators?.MACD?.momentum || 'NEUTRAL'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Bollinger Bands & Support/Resistance */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Target className="mr-2" size={20} />
+                Bollinger Bands
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Position:</span>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-20 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-purple-600 h-2 rounded-full" 
+                        style={{ width: `${Math.min(100, (technicalData.key_indicators?.Bollinger_Bands?.position || 0.5) * 100)}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-medium">
+                      {technicalData.key_indicators?.Bollinger_Bands?.position ? (technicalData.key_indicators.Bollinger_Bands.position * 100).toFixed(0) + '%' : 'N/A'}
+                    </span>
+                  </div>
+                </div>
+                <div className={`px-3 py-2 rounded text-center text-sm font-medium ${getSignalColor(technicalData.key_indicators?.Bollinger_Bands?.signal || 'NEUTRAL')}`}>
+                  {technicalData.key_indicators?.Bollinger_Bands?.signal || 'NEUTRAL'}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Target className="mr-2" size={20} />
+                Support & Resistance
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Resistance:</span>
+                  <span className="font-medium text-red-600">
+                    ${technicalData.support_resistance?.nearest_resistance ? technicalData.support_resistance.nearest_resistance.toFixed(2) : 'N/A'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Support:</span>
+                  <span className="font-medium text-green-600">
+                    ${technicalData.support_resistance?.nearest_support ? technicalData.support_resistance.nearest_support.toFixed(2) : 'N/A'}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 text-center">
+                  Distance to resistance: {technicalData.support_resistance?.distance_to_resistance ? technicalData.support_resistance.distance_to_resistance.toFixed(1) + '%' : 'N/A'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Trading Signals */}
+          {technicalData.signals && technicalData.signals.length > 0 && (
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Activity className="mr-2" size={20} />
+                Trading Signals
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {technicalData.signals.map((signal, index) => (
+                  <div key={index} className={`p-4 rounded-lg border-l-4 ${signal.signal === 'BUY' ? 'border-green-500 bg-green-50' : signal.signal === 'SELL' ? 'border-red-500 bg-red-50' : 'border-gray-500 bg-gray-50'}`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`px-3 py-1 rounded text-sm font-medium ${getSignalColor(signal.signal)}`}>
+                        {signal.signal}
+                      </span>
+                      <span className="text-xs text-gray-500">{signal.type}</span>
+                    </div>
+                    <p className="text-sm text-gray-700">{signal.description}</p>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className={`text-xs px-2 py-1 rounded ${signal.confidence === 'HIGH' ? 'bg-green-100 text-green-700' : signal.confidence === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-700'}`}>
+                        {signal.confidence} Confidence
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Investment Score Summary */}
+          <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-blue-500">
+            <h3 className="text-lg font-semibold mb-4">Investment Summary</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{stockScore.total_score}</div>
+                <div className="text-sm text-gray-500">Total Score</div>
+                <div className={`mt-1 px-3 py-1 rounded text-sm font-medium ${stockScore.rating === 'BUY' || stockScore.rating === 'BUY STRONG' ? 'bg-green-100 text-green-700' : stockScore.rating.includes('HOLD') ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                  {stockScore.rating}
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-green-600">{stockScore.fundamental_score || 'N/A'}</div>
+                <div className="text-sm text-gray-500">Fundamental</div>
+              </div>
+              <div className="text-center">
+                <div className="text-xl font-bold text-purple-600">{stockScore.technical_score || 'N/A'}</div>
+                <div className="text-sm text-gray-500">Technical</div>
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-gray-50 rounded">
+              <p className="text-sm text-gray-700">{stockScore.explanation}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!technicalData && !loading && (
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <Activity className="mx-auto mb-4 text-gray-400" size={48} />
+          <p className="text-gray-600">Enter a stock symbol and click "Analyze" to view comprehensive technical analysis.</p>
         </div>
       )}
     </div>
