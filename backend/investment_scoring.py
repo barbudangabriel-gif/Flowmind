@@ -15,23 +15,26 @@ logger = logging.getLogger(__name__)
 
 class InvestmentScorer:
     def __init__(self):
-        # Updated weights to include technical analysis (50/50 split)
+        # Enhanced weights to include sentiment analysis (40/40/20 split)
         self.weights = {
-            # Fundamental Analysis (50%)
-            'pe_score': 0.08,           # P/E ratio 
-            'pb_score': 0.06,           # Price-to-book
-            'value_score': 0.08,        # Overall valuation
-            'growth_score': 0.08,       # Revenue/earnings growth
-            'profitability_score': 0.07, # ROE, margins
-            'dividend_score': 0.06,     # Dividend yield & stability
-            'financial_health': 0.07,   # Debt ratios, cash
+            # Fundamental Analysis (40%)
+            'pe_score': 0.07,           # P/E ratio 
+            'pb_score': 0.05,           # Price-to-book
+            'value_score': 0.07,        # Overall valuation
+            'growth_score': 0.07,       # Revenue/earnings growth
+            'profitability_score': 0.06, # ROE, margins
+            'dividend_score': 0.04,     # Dividend yield & stability
+            'financial_health': 0.04,   # Debt ratios, cash
             
-            # Technical Analysis (50%)
-            'trend_score': 0.15,        # Overall trend direction & strength
-            'momentum_score': 0.12,     # RSI, MACD, Stochastic
-            'volume_score': 0.08,       # Volume confirmation
-            'price_action_score': 0.10, # Price patterns, volatility
-            'support_resistance_score': 0.05, # S/R levels
+            # Technical Analysis (40%)
+            'trend_score': 0.12,        # Overall trend direction & strength
+            'momentum_score': 0.10,     # RSI, MACD, Stochastic
+            'volume_score': 0.06,       # Volume confirmation
+            'price_action_score': 0.08, # Price patterns, volatility
+            'support_resistance_score': 0.04, # S/R levels
+            
+            # Sentiment Analysis (20%) - NEW!
+            'sentiment_score': 0.20,    # Market sentiment from multiple sources
             
             # Market Metrics (Combined)
             'volatility_score': 0.05,   # Risk (Beta, volatility)
