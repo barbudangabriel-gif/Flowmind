@@ -446,7 +446,7 @@ const AdvancedScreener = React.memo(() => {
         </div>
       )}
 
-      {/* Results Summary */}
+      {/* Results Summary with Virtual Scrolling Toggle */}
       <div className="bg-white p-4 rounded-lg shadow-md">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">
@@ -455,106 +455,142 @@ const AdvancedScreener = React.memo(() => {
             </span>
             {loading && <Loader className="animate-spin text-blue-500" size={20} />}
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Results Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <SortableHeader column="symbol">Symbol</SortableHeader>
-                <SortableHeader column="name">Company</SortableHeader>
-                <SortableHeader column="sector">Sector</SortableHeader>
-                <SortableHeader column="price">Price</SortableHeader>
-                <SortableHeader column="change_percent">Change %</SortableHeader>
-                <SortableHeader column="volume">Volume</SortableHeader>
-                <SortableHeader column="market_cap">Market Cap</SortableHeader>
-                <SortableHeader column="pe_ratio">P/E</SortableHeader>
-                <SortableHeader column="dividend_yield">Div Yield</SortableHeader>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {paginatedStocks.map((stock, index) => (
-                <tr key={stock.symbol} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-mono font-bold text-blue-600">{stock.symbol}</td>
-                  <td className="px-4 py-3">
-                    <div>
-                      <div className="font-medium truncate max-w-48">{stock.name}</div>
-                      <div className="text-xs text-gray-500">{stock.exchange}</div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{stock.sector}</td>
-                  <td className="px-4 py-3 font-medium">${stock.price.toFixed(2)}</td>
-                  <td className={`px-4 py-3 font-medium flex items-center space-x-1 ${
-                    stock.change_percent >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {stock.change_percent >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                    <span>{stock.change_percent.toFixed(2)}%</span>
-                  </td>
-                  <td className="px-4 py-3 text-sm">{formatNumber(stock.volume)}</td>
-                  <td className="px-4 py-3 text-sm">${formatNumber(stock.market_cap)}</td>
-                  <td className="px-4 py-3 text-sm">{stock.pe_ratio ? stock.pe_ratio.toFixed(2) : 'N/A'}</td>
-                  <td className="px-4 py-3 text-sm">{stock.dividend_yield ? (stock.dividend_yield * 100).toFixed(2) + '%' : 'N/A'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-6 py-3 bg-gray-50 border-t">
-            <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <label className="text-sm text-gray-600">Virtual Scrolling:</label>
               <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 text-sm border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                onClick={() => setUseVirtualScrolling(!useVirtualScrolling)}
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  useVirtualScrolling 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-gray-100 text-gray-700'
+                }`}
               >
-                Previous
-              </button>
-              
-              <div className="flex space-x-1">
-                {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
-                  let page = i + 1;
-                  if (totalPages > 5) {
-                    if (currentPage > 3) {
-                      page = currentPage - 2 + i;
-                      if (page > totalPages) page = totalPages - 4 + i;
-                    }
-                  }
-                  
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 text-sm border rounded-md ${
-                        currentPage === page 
-                          ? 'bg-blue-600 text-white border-blue-600' 
-                          : 'hover:bg-gray-100'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-              </div>
-              
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-              >
-                Next
+                {useVirtualScrolling ? 'ON' : 'OFF'}
               </button>
             </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+            </div>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* Results Table or Virtual Scrolling */}
+      {useVirtualScrolling && sortedStocks.length > 50 ? (
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              📊 Virtual Scrolling Mode ({sortedStocks.length} stocks)
+            </h3>
+            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+              Performance Optimized
+            </span>
+          </div>
+          <VirtualizedStockTable 
+            stocks={sortedStocks}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            containerHeight={600}
+            itemHeight={60}
+          />
+        </div>
+      ) : (
+        /* Traditional Table */
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <SortableHeader column="symbol">Symbol</SortableHeader>
+                  <SortableHeader column="name">Company</SortableHeader>
+                  <SortableHeader column="sector">Sector</SortableHeader>
+                  <SortableHeader column="price">Price</SortableHeader>
+                  <SortableHeader column="change_percent">Change %</SortableHeader>
+                  <SortableHeader column="volume">Volume</SortableHeader>
+                  <SortableHeader column="market_cap">Market Cap</SortableHeader>
+                  <SortableHeader column="pe_ratio">P/E</SortableHeader>
+                  <SortableHeader column="dividend_yield">Div Yield</SortableHeader>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {paginatedStocks.map((stock, index) => (
+                  <tr key={stock.symbol} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 font-mono font-bold text-blue-600">{stock.symbol}</td>
+                    <td className="px-4 py-3">
+                      <div>
+                        <div className="font-medium truncate max-w-48">{stock.name}</div>
+                        <div className="text-xs text-gray-500">{stock.exchange}</div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{stock.sector}</td>
+                    <td className="px-4 py-3 font-medium">${stock.price?.toFixed(2)}</td>
+                    <td className={`px-4 py-3 font-medium flex items-center space-x-1 ${
+                      stock.change_percent >= 0 ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {stock.change_percent >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                      <span>{stock.change_percent?.toFixed(2)}%</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm">{formatNumber(stock.volume)}</td>
+                    <td className="px-4 py-3 text-sm">${formatNumber(stock.market_cap)}</td>
+                    <td className="px-4 py-3 text-sm">{stock.pe_ratio ? stock.pe_ratio.toFixed(2) : 'N/A'}</td>
+                    <td className="px-4 py-3 text-sm">{stock.dividend_yield ? (stock.dividend_yield * 100).toFixed(2) + '%' : 'N/A'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination for Traditional Table */}
+          {totalPages > 1 && !useVirtualScrolling && (
+            <div className="px-6 py-3 bg-gray-50 border-t">
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                >
+                  Previous
+                </button>
+                
+                <div className="flex space-x-1">
+                  {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
+                    let page = i + 1;
+                    if (totalPages > 5) {
+                      if (currentPage > 3) {
+                        page = currentPage - 2 + i;
+                        if (page > totalPages) page = totalPages - 4 + i;
+                      }
+                    }
+                    
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1 text-sm border rounded-md ${
+                          currentPage === page 
+                            ? 'bg-blue-600 text-white border-blue-600' 
+                            : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 text-sm border rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 });
