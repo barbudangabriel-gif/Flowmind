@@ -71,11 +71,11 @@ class EnhancedTickerDataManager:
             # Primary source: Yahoo Finance with extended hours
             ticker = yf.Ticker(symbol)
             
-            # Get current info and history
+            # Get current info and recent history for proper change calculation
             info = ticker.info
             
-            # Get last 2 days of data to calculate proper change
-            history = ticker.history(period="2d", interval="1d", prepost=True)
+            # Get last 5 trading days to ensure we have previous close data
+            history = ticker.history(period="5d", interval="1d", prepost=True)
             
             if history.empty:
                 raise Exception(f"No data available for {symbol}")
@@ -84,14 +84,36 @@ class EnhancedTickerDataManager:
             current_price = float(history['Close'].iloc[-1])
             current_volume = int(history['Volume'].iloc[-1])
             
-            # Calculate change from previous day
+            # Calculate change from previous trading day
+            price_change = 0.0
+            percent_change = 0.0
+            
             if len(history) > 1:
+                # Find the previous trading day's close
                 previous_close = float(history['Close'].iloc[-2])
                 price_change = current_price - previous_close
                 percent_change = (price_change / previous_close) * 100
             else:
-                price_change = 0.0
-                percent_change = 0.0
+                # Fallback: use info data if available
+                prev_close = info.get('previousClose')
+                if prev_close:
+                    price_change = current_price - float(prev_close)
+                    percent_change = (price_change / float(prev_close)) * 100
+            
+            # Try to get live/current price if available
+            current_live_price = info.get('currentPrice') or info.get('regularMarketPrice')
+            if current_live_price and current_live_price != current_price:
+                # Use live price for more accurate change calculation
+                if len(history) > 1:
+                    previous_close = float(history['Close'].iloc[-2])
+                elif info.get('previousClose'):
+                    previous_close = float(info.get('previousClose'))
+                else:
+                    previous_close = current_price
+                
+                current_price = float(current_live_price)
+                price_change = current_price - previous_close
+                percent_change = (price_change / previous_close) * 100
             
             # Try to get extended hours data
             extended_hours_data = await self._get_extended_hours_data(symbol)
