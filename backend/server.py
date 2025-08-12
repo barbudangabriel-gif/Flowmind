@@ -356,15 +356,150 @@ async def screen_stocks_enhanced(criteria: ScreenerCriteria, exchange: str = Que
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error screening stocks with enhanced data: {str(e)}")
 
-@api_router.get("/screener/sectors")
-async def get_available_sectors():
-    """Get list of available sectors for filtering"""
-    sectors = [
-        "All", "Technology", "Healthcare", "Financial Services", "Consumer Cyclical",
-        "Communication Services", "Industrials", "Consumer Defensive", "Energy",
-        "Utilities", "Real Estate", "Basic Materials"
-    ]
-    return {"sectors": sectors}
+@api_router.get("/investments/score/{symbol}", response_model=InvestmentScore)
+async def get_investment_score(symbol: str):
+    """Get comprehensive investment score for a specific stock"""
+    try:
+        # Get enhanced stock data
+        stock_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
+        
+        # Calculate investment score
+        score_data = await investment_scorer.calculate_investment_score(stock_data)
+        
+        return InvestmentScore(**score_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error calculating investment score for {symbol}: {str(e)}")
+
+@api_router.get("/investments/top-picks", response_model=TopInvestments)
+async def get_top_investment_picks(
+    limit: int = Query(10, description="Number of top picks to return"),
+    min_market_cap: float = Query(1000, description="Minimum market cap in millions"),
+    exchange: str = Query("all", description="Exchange filter: sp500, nasdaq, or all")
+):
+    """Get top investment picks based on comprehensive scoring"""
+    try:
+        # Get ticker list based on exchange
+        if exchange == "sp500":
+            tickers = await enhanced_ticker_manager.get_sp500_tickers()
+        elif exchange == "nasdaq":
+            tickers = await enhanced_ticker_manager.get_nasdaq_tickers()
+        else:
+            tickers = await enhanced_ticker_manager.get_all_tickers()
+        
+        # Limit to top liquid stocks for faster processing
+        tickers = tickers[:min(50, len(tickers))]
+        
+        # Get enhanced data for all stocks
+        stocks_data = await enhanced_ticker_manager.get_bulk_real_time_data(tickers)
+        
+        # Filter by market cap if specified
+        filtered_stocks = []
+        for stock in stocks_data:
+            market_cap = stock.get('market_cap', 0)
+            if market_cap and market_cap >= (min_market_cap * 1e6):
+                filtered_stocks.append(stock)
+        
+        # Calculate investment scores for all stocks
+        scored_stocks = []
+        for stock_data in filtered_stocks[:30]:  # Limit for performance
+            try:
+                score_data = await investment_scorer.calculate_investment_score(stock_data)
+                scored_stocks.append(score_data)
+            except Exception as e:
+                logger.error(f"Error scoring {stock_data.get('symbol', 'unknown')}: {str(e)}")
+                continue
+        
+        # Sort by total score (descending)
+        scored_stocks.sort(key=lambda x: x['total_score'], reverse=True)
+        
+        # Get top picks
+        top_picks = scored_stocks[:limit]
+        
+        return TopInvestments(
+            recommendations=[InvestmentScore(**pick) for pick in top_picks],
+            total_analyzed=len(scored_stocks),
+            criteria=f"Min Market Cap: ${min_market_cap}M, Exchange: {exchange}",
+            last_updated=datetime.utcnow().isoformat()
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating top investment picks: {str(e)}")
+
+@api_router.get("/investments/sector-leaders")
+async def get_sector_leaders(sector: str = Query("Technology", description="Sector to analyze")):
+    """Get top investment picks within a specific sector"""
+    try:
+        # Get all tickers and filter by sector
+        all_tickers = await enhanced_ticker_manager.get_all_tickers()
+        stocks_data = await enhanced_ticker_manager.get_bulk_real_time_data(all_tickers[:30])
+        
+        # Filter by sector
+        sector_stocks = [stock for stock in stocks_data if stock.get('sector') == sector]
+        
+        if not sector_stocks:
+            return {
+                "sector": sector,
+                "leaders": [],
+                "message": f"No stocks found in {sector} sector or data unavailable"
+            }
+        
+        # Calculate scores for sector stocks
+        scored_stocks = []
+        for stock_data in sector_stocks:
+            try:
+                score_data = await investment_scorer.calculate_investment_score(stock_data)
+                scored_stocks.append(score_data)
+            except Exception as e:
+                continue
+        
+        # Sort by score
+        scored_stocks.sort(key=lambda x: x['total_score'], reverse=True)
+        
+        return {
+            "sector": sector,
+            "leaders": [InvestmentScore(**stock) for stock in scored_stocks[:5]],
+            "total_analyzed": len(scored_stocks),
+            "last_updated": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error analyzing sector leaders: {str(e)}")
+
+@api_router.get("/investments/risk-analysis")
+async def get_risk_analysis():
+    """Get investment recommendations categorized by risk level"""
+    try:
+        # Get top stocks for analysis
+        tickers = await enhanced_ticker_manager.get_sp500_tickers()
+        stocks_data = await enhanced_ticker_manager.get_bulk_real_time_data(tickers[:25])
+        
+        # Calculate scores and categorize by risk
+        risk_categories = {"LOW": [], "MODERATE": [], "HIGH": []}
+        
+        for stock_data in stocks_data:
+            try:
+                score_data = await investment_scorer.calculate_investment_score(stock_data)
+                risk_level = score_data['risk_level']
+                
+                if risk_level in risk_categories and len(risk_categories[risk_level]) < 5:
+                    risk_categories[risk_level].append(InvestmentScore(**score_data))
+                    
+            except Exception as e:
+                continue
+        
+        # Sort each category by score
+        for risk_level in risk_categories:
+            risk_categories[risk_level].sort(key=lambda x: x.total_score, reverse=True)
+        
+        return {
+            "risk_categories": risk_categories,
+            "total_analyzed": len(stocks_data),
+            "methodology": "Risk assessed based on beta, market cap, volatility, and financial stability",
+            "last_updated": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error performing risk analysis: {str(e)}")
 
 # Original endpoints remain the same...
 @api_router.get("/stocks/search/{query}")
