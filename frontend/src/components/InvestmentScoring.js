@@ -23,15 +23,16 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const InvestmentScoring = () => {
+// Memoized Investment Scoring Component
+const InvestmentScoring = React.memo(() => {
   const [topPicks, setTopPicks] = useState([]);
   const [riskAnalysis, setRiskAnalysis] = useState(null);
   const [sectorLeaders, setSectorLeaders] = useState([]);
   const [selectedSector, setSelectedSector] = useState('Technology');
-  const [searchSymbol, setSearchSymbol] = useState('');
-  const [stockScore, setStockScore] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [selectedStock, setSelectedStock] = useState('');
+  const [stockAnalysis, setStockAnalysis] = useState(null);
   const [activeTab, setActiveTab] = useState('top-picks');
+  const [loading, setLoading] = useState(false);
 
   const sectors = [
     'Technology', 'Healthcare', 'Financial Services', 'Consumer Cyclical',
