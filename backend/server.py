@@ -501,6 +501,16 @@ async def get_risk_analysis():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error performing risk analysis: {str(e)}")
 
+@api_router.get("/screener/sectors")
+async def get_available_sectors():
+    """Get list of available sectors for filtering"""
+    sectors = [
+        "All", "Technology", "Healthcare", "Financial Services", "Consumer Cyclical",
+        "Communication Services", "Industrials", "Consumer Defensive", "Energy",
+        "Utilities", "Real Estate", "Basic Materials"
+    ]
+    return {"sectors": sectors}
+
 # Original endpoints remain the same...
 @api_router.get("/stocks/search/{query}")
 async def search_stocks(query: str):
