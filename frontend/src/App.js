@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
@@ -40,8 +40,11 @@ import {
   Award,
   RefreshCw
 } from "lucide-react";
-import AdvancedScreener from "./components/AdvancedScreener";
-import InvestmentScoring from "./components/InvestmentScoring";
+
+// Lazy loading for heavy components
+const AdvancedScreener = React.lazy(() => import("./components/AdvancedScreener"));
+const InvestmentScoring = React.lazy(() => import("./components/InvestmentScoring"));
+
 import "./App.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
