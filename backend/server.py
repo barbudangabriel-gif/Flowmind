@@ -237,7 +237,7 @@ async def get_sp500_tickers():
 @api_router.get("/tickers/nasdaq")
 async def get_nasdaq_tickers():
     """Get NASDAQ ticker list"""
-    tickers = await ticker_manager.get_nasdaq_tickers()
+    tickers = await enhanced_ticker_manager.get_nasdaq_tickers()
     return {"tickers": tickers, "count": len(tickers)}
 
 @api_router.get("/tickers/all")
