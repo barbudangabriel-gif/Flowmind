@@ -47,6 +47,10 @@ const AdvancedScreener = () => {
     loadScreenerData();
   }, []);
 
+  useEffect(() => {
+    loadScreenerData(filters.exchange);
+  }, [filters.exchange]);
+
   const fetchSectors = async () => {
     try {
       const response = await axios.get(`${API}/screener/sectors`);
