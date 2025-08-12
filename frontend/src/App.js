@@ -104,7 +104,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       )}
 
       {/* Sidebar */}
-      <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-screen fixed left-0 top-0 overflow-y-auto shadow-xl border-r border-slate-700 z-50 transition-all duration-300`}>
+      <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-screen fixed left-0 top-0 overflow-y-auto shadow-xl border-r border-slate-700 z-50 transition-all duration-300 custom-scrollbar`}>
         <div className="p-4">
           {/* Toggle Button */}
           <button
