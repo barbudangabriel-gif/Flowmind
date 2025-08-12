@@ -286,20 +286,223 @@ class InvestmentScorer:
         else:
             return 50   # High volatility
     
-    def _get_investment_rating(self, score: float) -> str:
-        """Convert score to investment rating"""
-        if score >= 85:
-            return "BUY STRONG"
-        elif score >= 75:
-            return "BUY"
-        elif score >= 65:
-            return "HOLD +"
-        elif score >= 55:
-            return "HOLD"
-        elif score >= 45:
-            return "HOLD -"
+    def _get_enhanced_investment_rating(self, score: float, technical_data: Dict[str, Any]) -> str:
+        """Enhanced investment rating considering technical analysis"""
+        base_rating = self._get_investment_rating(score)
+        
+        # Adjust rating based on technical signals
+        trend_direction = technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL')
+        signals = technical_data.get('signals', [])
+        
+        # Count bullish vs bearish signals
+        buy_signals = len([s for s in signals if s.get('signal') == 'BUY'])
+        sell_signals = len([s for s in signals if s.get('signal') == 'SELL'])
+        
+        # Adjust rating based on technical confluence
+        if trend_direction == 'BULLISH' and buy_signals > sell_signals:
+            if base_rating == 'HOLD +':
+                return 'BUY'
+            elif base_rating == 'HOLD':
+                return 'HOLD +'
+        elif trend_direction == 'BEARISH' and sell_signals > buy_signals:
+            if base_rating == 'BUY':
+                return 'HOLD +'
+            elif base_rating == 'HOLD +':
+                return 'HOLD'
+        
+        return base_rating
+    
+    def _generate_enhanced_explanation(self, stock_data: Dict[str, Any], scores: Dict[str, float], total_score: float, technical_data: Dict[str, Any]) -> str:
+        """Generate enhanced explanation including technical analysis"""
+        symbol = stock_data.get('symbol', 'N/A')
+        sector = stock_data.get('sector', 'Unknown')
+        price = stock_data.get('price', 0)
+        
+        # Get technical information
+        trend_direction = technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL')
+        trend_strength = technical_data.get('trend_analysis', {}).get('strength', 50)
+        
+        explanation = f"{symbol} ({sector}) at ${price:.2f} "
+        
+        if total_score >= 75:
+            explanation += "shows strong investment potential with "
+        elif total_score >= 65:
+            explanation += "presents a solid investment opportunity with "
+        elif total_score >= 55:
+            explanation += "offers moderate investment appeal with "
         else:
-            return "AVOID"
+            explanation += "faces investment challenges with "
+        
+        # Add technical context
+        technical_context = ""
+        if trend_direction == 'BULLISH':
+            technical_context = f"bullish technical trend (strength: {trend_strength:.1f}%) "
+        elif trend_direction == 'BEARISH':
+            technical_context = f"bearish technical trend (strength: {trend_strength:.1f}%) "
+        else:
+            technical_context = "neutral technical conditions "
+        
+        # Combine fundamental and technical factors
+        fundamental_score = sum(scores[k] * self.weights[k] for k in ['pe_score', 'pb_score', 'value_score', 'growth_score', 'profitability_score', 'dividend_score', 'financial_health'] if k in scores)
+        technical_score = sum(scores[k] * self.weights[k] for k in ['trend_score', 'momentum_score', 'volume_score', 'price_action_score', 'support_resistance_score'] if k in scores)
+        
+        if fundamental_score > technical_score:
+            explanation += f"strong fundamentals and {technical_context}."
+        elif technical_score > fundamental_score:
+            explanation += f"{technical_context}and decent fundamentals."
+        else:
+            explanation += f"balanced fundamental and technical factors."
+        
+        return explanation
+    
+    def _assess_enhanced_risk_level(self, stock_data: Dict[str, Any], scores: Dict[str, float], technical_data: Dict[str, Any]) -> str:
+        """Enhanced risk assessment including technical volatility"""
+        # Base risk from fundamental analysis
+        volatility_score = scores.get('volatility_score', 50)
+        financial_health = scores.get('financial_health', 50)
+        
+        # Technical risk factors
+        trend_strength = technical_data.get('trend_analysis', {}).get('strength', 50)
+        price_action = technical_data.get('price_action', {})
+        volatility = price_action.get('volatility', 0.3)
+        
+        # Combine risk factors
+        base_risk_score = (volatility_score + financial_health) / 2
+        
+        # Adjust for technical volatility
+        if volatility > 0.5:  # High volatility
+            base_risk_score -= 10
+        elif volatility < 0.2:  # Low volatility
+            base_risk_score += 10
+        
+        # Adjust for trend reliability
+        trend_reliability = technical_data.get('trend_analysis', {}).get('short_term', {}).get('reliability', 'LOW')
+        if trend_reliability == 'LOW':
+            base_risk_score -= 5
+        
+        if base_risk_score >= 75:
+            return "LOW"
+        elif base_risk_score >= 60:
+            return "MODERATE"
+        else:
+            return "HIGH"
+    
+    def _recommend_enhanced_investment_horizon(self, scores: Dict[str, float], technical_data: Dict[str, Any]) -> str:
+        """Enhanced investment horizon recommendation"""
+        trend_direction = technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL')
+        momentum_score = scores.get('momentum_score', 50)
+        value_score = scores.get('value_score', 50)
+        
+        # Strong technical momentum suggests shorter-term opportunities
+        if momentum_score >= 80 and trend_direction in ['BULLISH', 'BEARISH']:
+            return "SHORT-TERM"
+        # Good value with neutral/positive technical suggests long-term
+        elif value_score >= 75 and trend_direction != 'BEARISH':
+            return "LONG-TERM"
+        else:
+            return "MEDIUM-TERM"
+    
+    def _identify_enhanced_key_strengths(self, scores: Dict[str, float], technical_data: Dict[str, Any]) -> List[str]:
+        """Enhanced key strengths identification"""
+        strengths = []
+        
+        # Fundamental strengths
+        if scores.get('pe_score', 0) >= 80:
+            strengths.append("Attractive Valuation")
+        if scores.get('dividend_score', 0) >= 80:
+            strengths.append("Strong Dividend")
+        if scores.get('financial_health', 0) >= 80:
+            strengths.append("Financial Stability")
+        if scores.get('profitability_score', 0) >= 80:
+            strengths.append("High Profitability")
+        
+        # Technical strengths
+        if scores.get('trend_score', 0) >= 80:
+            strengths.append("Strong Technical Trend")
+        if scores.get('momentum_score', 0) >= 80:
+            strengths.append("Positive Momentum")
+        if scores.get('volume_score', 0) >= 80:
+            strengths.append("Volume Confirmation")
+        
+        # Specific technical patterns
+        trend_direction = technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL')
+        if trend_direction == 'BULLISH':
+            strengths.append("Bullish Trend")
+        
+        signals = technical_data.get('signals', [])
+        buy_signals = len([s for s in signals if s.get('signal') == 'BUY'])
+        if buy_signals >= 2:
+            strengths.append("Multiple Buy Signals")
+        
+        return strengths[:4]  # Top 4 strengths
+    
+    def _identify_enhanced_key_risks(self, scores: Dict[str, float], technical_data: Dict[str, Any]) -> List[str]:
+        """Enhanced key risks identification"""
+        risks = []
+        
+        # Fundamental risks
+        if scores.get('pe_score', 100) <= 40:
+            risks.append("Valuation Concerns")
+        if scores.get('financial_health', 100) <= 40:
+            risks.append("Financial Risk")
+        if scores.get('volatility_score', 100) <= 40:
+            risks.append("High Volatility")
+        
+        # Technical risks
+        if scores.get('trend_score', 100) <= 40:
+            risks.append("Weak Technical Trend")
+        if scores.get('momentum_score', 100) <= 40:
+            risks.append("Negative Momentum")
+        
+        # Specific technical risks
+        trend_direction = technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL')
+        if trend_direction == 'BEARISH':
+            risks.append("Bearish Trend")
+        
+        # Support/Resistance risks
+        sr_data = technical_data.get('support_resistance', {})
+        distance_to_resistance = sr_data.get('distance_to_resistance', 10)
+        if distance_to_resistance < 3:
+            risks.append("Near Resistance Level")
+        
+        signals = technical_data.get('signals', [])
+        sell_signals = len([s for s in signals if s.get('signal') == 'SELL'])
+        if sell_signals >= 2:
+            risks.append("Multiple Sell Signals")
+        
+        return risks[:4]  # Top 4 risks
+    
+    def _get_key_technical_indicators(self, technical_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Extract key technical indicators for display"""
+        indicators = technical_data.get('indicators', {})
+        
+        key_indicators = {}
+        
+        # RSI
+        rsi_data = indicators.get('rsi', {})
+        if rsi_data:
+            key_indicators['RSI'] = {
+                'value': rsi_data.get('current', 50),
+                'signal': rsi_data.get('signal', 'NEUTRAL')
+            }
+        
+        # MACD
+        macd_data = indicators.get('macd', {})
+        if macd_data:
+            key_indicators['MACD'] = {
+                'crossover': macd_data.get('crossover', 'NEUTRAL'),
+                'momentum': macd_data.get('momentum', 'NEUTRAL')
+            }
+        
+        # Bollinger Bands
+        bb_data = indicators.get('bollinger_bands', {})
+        if bb_data:
+            key_indicators['Bollinger_Bands'] = {
+                'position': bb_data.get('position', 0.5),
+                'signal': bb_data.get('signal', 'NEUTRAL')
+            }
+        
+        return key_indicators
     
     def _generate_explanation(self, stock_data: Dict[str, Any], scores: Dict[str, float], total_score: float) -> str:
         """Generate human-readable explanation"""
