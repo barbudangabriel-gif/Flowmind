@@ -220,7 +220,7 @@ const AdvancedScreener = () => {
             <span>Export</span>
           </button>
           <button
-            onClick={loadScreenerData}
+            onClick={() => loadScreenerData(filters.exchange)}
             className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 flex items-center space-x-2"
           >
             <RefreshCw size={20} />
