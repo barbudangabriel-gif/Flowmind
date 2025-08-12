@@ -203,7 +203,7 @@ const AdvancedScreener = React.memo(() => {
     return num.toFixed(2);
   }, []);
 
-  const exportToCSV = () => {
+  const exportToCSV = useCallback(() => {
     const stocksToExport = getSortedStocks();
     if (stocksToExport.length === 0) {
       console.warn('No stocks to export');
@@ -232,7 +232,7 @@ const AdvancedScreener = React.memo(() => {
     a.download = 'stock_screener_results.csv';
     a.click();
     window.URL.revokeObjectURL(url);
-  };
+  }, []);
 
   const SortableHeader = ({ column, children }) => (
     <th 
