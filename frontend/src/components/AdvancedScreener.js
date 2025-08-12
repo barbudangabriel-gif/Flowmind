@@ -60,14 +60,15 @@ const AdvancedScreener = React.memo(() => {
     });
   }, [stocks, filteredStocks, loading]);
 
-  const fetchSectors = async () => {
+  // Memoized fetch functions
+  const fetchSectors = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/screener/sectors`);
       setSectors(response.data.sectors);
     } catch (error) {
       console.error('Error fetching sectors:', error);
     }
-  };
+  }, []);
 
   const loadScreenerData = async (exchange = 'all') => {
     console.log('🔄 Loading screener data for exchange:', exchange);
