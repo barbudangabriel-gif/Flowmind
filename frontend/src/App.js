@@ -1466,9 +1466,9 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-100 flex">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        <main className="flex-1 ml-64 p-6">
+        <main className="flex-1 ml-64 p-8">
           <div className="max-w-7xl mx-auto">
             {renderContent()}
           </div>
