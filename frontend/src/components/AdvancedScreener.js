@@ -44,11 +44,14 @@ const AdvancedScreener = () => {
 
   useEffect(() => {
     fetchSectors();
-    loadScreenerData();
+    loadScreenerData('all'); // Load data initially with 'all' exchange
   }, []);
 
+  // Separate useEffect for exchange changes (but avoid the initial load)
   useEffect(() => {
-    loadScreenerData(filters.exchange);
+    if (filters.exchange) {  // Only load if filters.exchange has a value
+      loadScreenerData(filters.exchange);
+    }
   }, [filters.exchange]);
 
   const fetchSectors = async () => {
