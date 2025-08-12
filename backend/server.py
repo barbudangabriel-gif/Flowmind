@@ -109,7 +109,7 @@ async def get_stock_quote(symbol: str) -> Dict[str, Any]:
         history = ticker.history(period="1d")
         
         if history.empty:
-            raise HTTPException(status_code=404, f"Stock data not found for {symbol}")
+            raise HTTPException(status_code=404, detail=f"Stock data not found for {symbol}")
             
         latest = history.iloc[-1]
         
