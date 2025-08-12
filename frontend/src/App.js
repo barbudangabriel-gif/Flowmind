@@ -428,8 +428,8 @@ const Portfolio = () => {
   );
 };
 
-// Stock Screener Component
-const StockScreener = () => {
+// Stock Screener Component (Simple version)
+const SimpleStockScreener = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [stockData, setStockData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -465,7 +465,7 @@ const StockScreener = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Stock Screener</h2>
+      <h2 className="text-2xl font-bold text-gray-800">Stock Search</h2>
       
       <form onSubmit={handleSearch} className="flex space-x-4">
         <input
