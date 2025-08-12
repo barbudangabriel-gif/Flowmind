@@ -243,7 +243,7 @@ async def get_nasdaq_tickers():
 @api_router.get("/tickers/all")
 async def get_all_tickers():
     """Get all available tickers"""
-    tickers = await ticker_manager.get_all_tickers()
+    tickers = await enhanced_ticker_manager.get_all_tickers()
     return {"tickers": tickers, "count": len(tickers)}
 
 @api_router.get("/screener/data")
