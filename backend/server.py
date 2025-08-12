@@ -416,6 +416,20 @@ async def get_investment_score(symbol: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error calculating investment score for {symbol}: {str(e)}")
 
+@api_router.get("/investments/smart-money/{symbol}", response_model=SmartMoneyAnalysis)
+async def get_smart_money_analysis(symbol: str, timeframe: str = Query("1D", description="Timeframe for analysis")):
+    """Get smart money analysis for a specific stock"""
+    try:
+        # Get enhanced stock data
+        stock_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
+        
+        # Perform smart money analysis
+        analysis_data = await smart_money_analyzer.analyze_smart_money_patterns(symbol, timeframe)
+        
+        return SmartMoneyAnalysis(**analysis_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error performing smart money analysis for {symbol}: {str(e)}")
+
 @api_router.get("/investments/top-picks", response_model=TopInvestments)
 async def get_top_investment_picks(
     limit: int = Query(10, description="Number of top picks to return"),
