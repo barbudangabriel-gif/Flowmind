@@ -135,6 +135,70 @@ class StockMarketAPITester:
         
         return success
 
+    def test_ticker_endpoints(self):
+        """Test new ticker endpoints for S&P 500 and NASDAQ"""
+        # Test S&P 500 tickers
+        success, sp500_data = self.run_test("S&P 500 Tickers", "GET", "tickers/sp500", 200)
+        if success and 'tickers' in sp500_data:
+            print(f"   Found {len(sp500_data['tickers'])} S&P 500 tickers")
+        
+        # Test NASDAQ tickers
+        success, nasdaq_data = self.run_test("NASDAQ Tickers", "GET", "tickers/nasdaq", 200)
+        if success and 'tickers' in nasdaq_data:
+            print(f"   Found {len(nasdaq_data['tickers'])} NASDAQ tickers")
+        
+        # Test all tickers
+        success, all_data = self.run_test("All Tickers", "GET", "tickers/all", 200)
+        if success and 'tickers' in all_data:
+            print(f"   Found {len(all_data['tickers'])} total tickers")
+        
+        return success
+
+    def test_screener_endpoints(self):
+        """Test advanced screener endpoints"""
+        # Test basic screener data
+        success, screener_data = self.run_test("Screener Data (All)", "GET", "screener/data", 200, params={"limit": 20, "exchange": "all"})
+        if success and 'stocks' in screener_data:
+            print(f"   Found {len(screener_data['stocks'])} stocks in screener")
+        
+        # Test S&P 500 screener data
+        success, sp500_screener = self.run_test("Screener Data (S&P 500)", "GET", "screener/data", 200, params={"limit": 15, "exchange": "sp500"})
+        if success and 'stocks' in sp500_screener:
+            print(f"   Found {len(sp500_screener['stocks'])} S&P 500 stocks")
+        
+        # Test NASDAQ screener data
+        success, nasdaq_screener = self.run_test("Screener Data (NASDAQ)", "GET", "screener/data", 200, params={"limit": 15, "exchange": "nasdaq"})
+        if success and 'stocks' in nasdaq_screener:
+            print(f"   Found {len(nasdaq_screener['stocks'])} NASDAQ stocks")
+        
+        # Test screener sectors
+        self.run_test("Available Sectors", "GET", "screener/sectors", 200)
+        
+        # Test advanced filtering
+        filter_criteria = {
+            "min_price": 50.0,
+            "max_price": 500.0,
+            "min_market_cap": 1000.0,  # 1B market cap
+            "sector": "Technology"
+        }
+        
+        success, filtered_data = self.run_test("Advanced Filter (Tech Stocks)", "POST", "screener/filter", 200, data=filter_criteria)
+        if success and 'stocks' in filtered_data:
+            print(f"   Found {len(filtered_data['stocks'])} filtered stocks")
+        
+        # Test filter with P/E ratio
+        pe_filter = {
+            "min_pe": 10.0,
+            "max_pe": 30.0,
+            "min_volume": 1000000
+        }
+        
+        success, pe_filtered = self.run_test("P/E Ratio Filter", "POST", "screener/filter", 200, data=pe_filter)
+        if success and 'stocks' in pe_filtered:
+            print(f"   Found {len(pe_filtered['stocks'])} stocks with P/E 10-30")
+        
+        return success
+
     def test_error_handling(self):
         """Test error handling for invalid requests"""
         # Test invalid stock symbol
