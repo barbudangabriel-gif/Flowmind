@@ -71,27 +71,41 @@ const AdvancedScreener = () => {
   };
 
   const loadScreenerData = async (exchange = 'all') => {
-    console.log('Loading screener data for exchange:', exchange);
+    console.log('🔄 Loading screener data for exchange:', exchange);
     setLoading(true);
     try {
       const response = await axios.get(`${API}/screener/data?limit=100&exchange=${exchange}`);
-      console.log('API response:', response.data);
+      console.log('📡 API response received:', {
+        status: response.status,
+        dataKeys: Object.keys(response.data || {}),
+        stocksCount: response.data?.stocks?.length || 0
+      });
       
-      // Handle the response structure properly
-      const stocksData = response.data?.stocks || response.data || [];
-      console.log('Extracted stocks data:', stocksData.length, 'items');
+      // Handle the response structure properly - be defensive
+      let stocksData = [];
+      if (response.data && response.data.stocks && Array.isArray(response.data.stocks)) {
+        stocksData = response.data.stocks;
+      } else if (response.data && Array.isArray(response.data)) {
+        stocksData = response.data;
+      } else {
+        console.warn('⚠️ Unexpected API response structure:', response.data);
+      }
       
-      // Force update state and log
-      setStocks(stocksData);
-      setFilteredStocks(stocksData);
+      console.log('📊 Extracted stocks data:', stocksData.length, 'items');
       
-      // Additional logging to debug state
-      setTimeout(() => {
-        console.log('State should now be updated with', stocksData.length, 'stocks');
-      }, 100);
+      // Force update state
+      if (stocksData.length > 0) {
+        setStocks(stocksData);
+        setFilteredStocks(stocksData);
+        console.log('✅ State updated successfully with', stocksData.length, 'stocks');
+      } else {
+        console.warn('⚠️ No stocks data found in response');
+        setStocks([]);
+        setFilteredStocks([]);
+      }
       
     } catch (error) {
-      console.error('Error loading screener data:', error);
+      console.error('❌ Error loading screener data:', error);
       setStocks([]);
       setFilteredStocks([]);
     } finally {
