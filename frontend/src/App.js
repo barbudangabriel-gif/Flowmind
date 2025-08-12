@@ -443,16 +443,26 @@ const SimpleStockScreener = () => {
     
     setLoading(true);
     try {
+      // Use enhanced endpoint for better data
       const [stockRes, historyRes] = await Promise.all([
-        axios.get(`${API}/stocks/${symbol}`),
+        axios.get(`${API}/stocks/${symbol}/enhanced`),
         axios.get(`${API}/stocks/${symbol}/history?period=1mo`)
       ]);
       
+      console.log('Stock search response:', stockRes.data);
       setStockData(stockRes.data);
       setHistoricalData(historyRes.data);
     } catch (error) {
       console.error('Error fetching stock data:', error);
-      setStockData(null);
+      // Fallback to basic endpoint if enhanced fails
+      try {
+        const stockRes = await axios.get(`${API}/stocks/${symbol}`);
+        console.log('Fallback stock response:', stockRes.data);
+        setStockData(stockRes.data);
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        setStockData(null);
+      }
       setHistoricalData(null);
     } finally {
       setLoading(false);
