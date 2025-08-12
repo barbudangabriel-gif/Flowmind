@@ -387,22 +387,25 @@ async def get_investment_score(symbol: str):
 async def get_top_investment_picks(
     limit: int = Query(10, description="Number of top picks to return"),
     min_market_cap: float = Query(1000, description="Minimum market cap in millions"),
-    exchange: str = Query("all", description="Exchange filter: sp500, nasdaq, or all")
+    exchange: str = Query("sp500", description="Exchange filter: sp500, nasdaq, or all")
 ):
-    """Get top investment picks based on comprehensive scoring"""
+    """Get top investment picks based on comprehensive scoring - OPTIMIZED VERSION"""
     try:
-        # Get ticker list based on exchange
+        # Use a curated list of high-quality stocks for faster processing
         if exchange == "sp500":
-            tickers = await enhanced_ticker_manager.get_sp500_tickers()
+            # Top 20 S&P 500 stocks by market cap for fast processing
+            tickers = ["AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", 
+                      "BRK.B", "UNH", "JNJ", "JPM", "V", "PG", "XOM", "HD", "CVX", "MA", "ABBV", "PFE"]
         elif exchange == "nasdaq":
-            tickers = await enhanced_ticker_manager.get_nasdaq_tickers()
+            # Top NASDAQ stocks
+            tickers = ["AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", 
+                      "NFLX", "ADBE", "CRM", "PYPL", "INTC", "CMCSA", "CSCO", "AVGO", "TXN", "QCOM", "COST", "AMD"]
         else:
-            tickers = await enhanced_ticker_manager.get_all_tickers()
+            # Mixed high-quality stocks from both exchanges
+            tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK.B", 
+                      "UNH", "JNJ", "JPM", "V", "PG", "HD", "MA", "NFLX", "ADBE", "CRM", "PYPL", "WMT"]
         
-        # Limit to top liquid stocks for faster processing
-        tickers = tickers[:min(50, len(tickers))]
-        
-        # Get enhanced data for all stocks
+        # Get enhanced data for selected stocks (much faster with curated list)
         stocks_data = await enhanced_ticker_manager.get_bulk_real_time_data(tickers)
         
         # Filter by market cap if specified
@@ -412,9 +415,9 @@ async def get_top_investment_picks(
             if market_cap and market_cap >= (min_market_cap * 1e6):
                 filtered_stocks.append(stock)
         
-        # Calculate investment scores for all stocks
+        # Calculate investment scores for filtered stocks
         scored_stocks = []
-        for stock_data in filtered_stocks[:30]:  # Limit for performance
+        for stock_data in filtered_stocks[:15]:  # Process max 15 for speed
             try:
                 score_data = await investment_scorer.calculate_investment_score(stock_data)
                 scored_stocks.append(score_data)
@@ -431,7 +434,7 @@ async def get_top_investment_picks(
         return TopInvestments(
             recommendations=[InvestmentScore(**pick) for pick in top_picks],
             total_analyzed=len(scored_stocks),
-            criteria=f"Min Market Cap: ${min_market_cap}M, Exchange: {exchange}",
+            criteria=f"Min Market Cap: ${min_market_cap}M, Exchange: {exchange}, Curated High-Quality Stocks",
             last_updated=datetime.utcnow().isoformat()
         )
         
