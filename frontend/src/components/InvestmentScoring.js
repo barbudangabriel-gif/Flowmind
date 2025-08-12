@@ -68,7 +68,7 @@ const InvestmentScoring = React.memo(() => {
     }
   }, []);
 
-  const loadRiskAnalysis = async () => {
+  const loadRiskAnalysis = useCallback(async () => {
     try {
       console.log('Loading risk analysis...');
       const response = await axios.get(`${API}/investments/risk-analysis`);
@@ -78,7 +78,7 @@ const InvestmentScoring = React.memo(() => {
       console.error('Error loading risk analysis:', error);
       setRiskAnalysis(null);
     }
-  };
+  }, []);
 
   const loadSectorLeaders = async () => {
     try {
