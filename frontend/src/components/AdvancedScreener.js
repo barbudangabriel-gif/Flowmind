@@ -475,7 +475,7 @@ const AdvancedScreener = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {paginatedStocks.map((stock, index) => (
+              {Array.isArray(paginatedStocks) && paginatedStocks.map((stock, index) => (
                 <tr key={stock.symbol} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 font-mono font-bold text-blue-600">{stock.symbol}</td>
                   <td className="px-4 py-3">
