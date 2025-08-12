@@ -70,11 +70,11 @@ const AdvancedScreener = React.memo(() => {
     }
   }, []);
 
-  const loadScreenerData = async (exchange = 'all') => {
+  const loadScreenerData = useCallback(async (exchange = 'all') => {
     console.log('🔄 Loading screener data for exchange:', exchange);
     setLoading(true);
     try {
-      const response = await axios.get(`${API}/screener/data?limit=100&exchange=${exchange}`);
+      const response = await axios.get(`${API}/screener/data?limit=500&exchange=${exchange}`); // Increased limit for virtual scrolling
       console.log('📡 API response received:', {
         status: response.status,
         dataKeys: Object.keys(response.data || {}),
@@ -111,7 +111,7 @@ const AdvancedScreener = React.memo(() => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const applyAdvancedFilter = async () => {
     setLoading(true);
