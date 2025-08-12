@@ -342,6 +342,10 @@ def main():
     
     tester = StockMarketAPITester()
     
+    # Test NEW Investment Scoring System - PRIORITY
+    print("\n🎯 Testing NEW Investment Scoring System - PRIORITY FEATURE")
+    tester.test_investment_scoring_endpoints()
+    
     # Test basic endpoints
     print("\n📊 Testing Basic Endpoints")
     tester.test_root_endpoint()
