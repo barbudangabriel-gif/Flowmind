@@ -1,31 +1,31 @@
-import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import axios from 'axios';
 import {
-  Search,
+  ChevronDown,
+  ChevronUp,
   Filter,
   Download,
-  ChevronUp,
-  ChevronDown,
   RefreshCw,
+  Loader,
   TrendingUp,
-  TrendingDown,
-  DollarSign,
-  BarChart3,
-  Loader
-} from "lucide-react";
+  TrendingDown
+} from 'lucide-react';
+import VirtualizedStockTable from './VirtualizedTable';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const AdvancedScreener = () => {
+// Memoized Advanced Screener Component
+const AdvancedScreener = React.memo(() => {
   const [stocks, setStocks] = useState([]);
   const [filteredStocks, setFilteredStocks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sectors, setSectors] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'market_cap', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(25);
+  const [itemsPerPage] = useState(50); // Increased for virtual scrolling
   const [showFilters, setShowFilters] = useState(false);
+  const [useVirtualScrolling, setUseVirtualScrolling] = useState(true);
   
   // Filter states
   const [filters, setFilters] = useState({
