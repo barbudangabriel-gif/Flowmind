@@ -860,6 +860,8 @@ function App() {
         return <Dashboard />;
       case 'portfolio':
         return <Portfolio />;
+      case 'investments':
+        return <InvestmentScoring />;
       case 'screener':
         return <AdvancedScreener />;
       case 'simple-screener':
