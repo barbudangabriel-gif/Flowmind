@@ -65,11 +65,20 @@ const AdvancedScreener = () => {
     try {
       const response = await axios.get(`${API}/screener/data?limit=100&exchange=${exchange}`);
       console.log('API response:', response.data);
-      const stocksData = response.data.stocks || [];
-      console.log('Setting stocks data:', stocksData);
+      
+      // Handle the response structure properly
+      const stocksData = response.data?.stocks || response.data || [];
+      console.log('Extracted stocks data:', stocksData.length, 'items');
+      
+      // Force update state and log
       setStocks(stocksData);
       setFilteredStocks(stocksData);
-      console.log('Stocks and filteredStocks set successfully');
+      
+      // Additional logging to debug state
+      setTimeout(() => {
+        console.log('State should now be updated with', stocksData.length, 'stocks');
+      }, 100);
+      
     } catch (error) {
       console.error('Error loading screener data:', error);
       setStocks([]);
