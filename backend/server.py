@@ -324,29 +324,46 @@ async def get_all_tickers():
 @api_router.get("/screener/data")
 async def get_screener_data(
     limit: int = Query(50, description="Maximum number of stocks to return"),
-    exchange: str = Query("all", description="Exchange filter: sp500, nasdaq, or all")
+    exchange: str = Query("sp500", description="Exchange filter: sp500, nasdaq, or all")
 ):
-    """Get enhanced screener data with real-time prices and extended hours"""
+    """Get enhanced screener data with real-time prices - OPTIMIZED VERSION"""
     try:
+        # Use optimized ticker selection for better performance
         if exchange == "sp500":
-            tickers = await enhanced_ticker_manager.get_sp500_tickers()
+            # Top S&P 500 stocks for reliable data
+            tickers = ["AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", "BRK.B", "UNH",
+                      "JNJ", "JPM", "V", "PG", "XOM", "HD", "CVX", "MA", "ABBV", "PFE", "KO", "WMT",
+                      "BAC", "DIS", "ADBE", "CRM", "NFLX", "PYPL", "INTC", "CMCSA", "VZ", "T", "MRK",
+                      "ABT", "TMO", "COST", "DHR", "NKE", "LLY", "MDT", "ORCL", "ACN", "TXN", "HON",
+                      "QCOM", "UPS", "PM", "NEE", "BMY", "IBM", "AVGO"][:limit]
         elif exchange == "nasdaq": 
-            tickers = await enhanced_ticker_manager.get_nasdaq_tickers()
+            # Top NASDAQ stocks
+            tickers = ["AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", "NFLX", "ADBE",
+                      "CRM", "PYPL", "INTC", "CMCSA", "CSCO", "AVGO", "TXN", "QCOM", "COST", "AMD",
+                      "SBUX", "GILD", "MDLZ", "ISRG", "BKNG", "REGN", "ADP", "FISV", "MRNA", "MU",
+                      "CSX", "ADI", "LRCX", "ATVI", "AMAT", "MELI", "KLAC", "EXC", "BIIB", "MAR",
+                      "ORLY", "CTAS", "CTSH", "SNPS", "CDNS", "ASML", "WDAY", "DXCM", "IDXX", "FAST"][:limit]
         else:
-            tickers = await enhanced_ticker_manager.get_all_tickers()
+            # Mixed high-quality stocks from both exchanges
+            tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK.B", "UNH", "JNJ",
+                      "JPM", "V", "PG", "HD", "MA", "NFLX", "ADBE", "CRM", "PYPL", "WMT", "BAC", "DIS",
+                      "KO", "XOM", "CVX", "ABBV", "PFE", "TMO", "COST", "DHR", "NKE", "LLY", "ORCL",
+                      "ACN", "TXN", "HON", "QCOM", "UPS", "PM", "NEE", "BMY", "IBM", "AVGO", "SBUX",
+                      "GILD", "MDLZ", "ISRG", "BKNG", "REGN", "ADP", "AMD"][:limit]
         
-        # Limit to prevent API overload but ensure good data
-        tickers = tickers[:limit]
-        
-        # Use enhanced real-time data collection
+        # Use enhanced real-time data collection with curated list
         stock_data = await enhanced_ticker_manager.get_bulk_real_time_data(tickers)
         
+        # Filter out any stocks with missing data
+        valid_stock_data = [stock for stock in stock_data if stock.get('price', 0) > 0]
+        
         return {
-            "stocks": stock_data,
-            "total_count": len(stock_data),
+            "stocks": valid_stock_data,
+            "total_count": len(valid_stock_data),
             "exchange": exchange,
             "market_state": enhanced_ticker_manager._get_market_state(),
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.utcnow().isoformat(),
+            "note": "Optimized with curated high-quality stocks for reliable data"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching enhanced screener data: {str(e)}")
