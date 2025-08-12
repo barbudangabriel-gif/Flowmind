@@ -167,9 +167,12 @@ const AdvancedScreener = () => {
   };
 
   const sortedStocks = useMemo(() => {
-    if (!sortConfig.key) return filteredStocks;
+    // Ensure filteredStocks is always an array
+    const stocksToSort = Array.isArray(filteredStocks) ? filteredStocks : [];
+    
+    if (!sortConfig.key || stocksToSort.length === 0) return stocksToSort;
 
-    return [...filteredStocks].sort((a, b) => {
+    return [...stocksToSort].sort((a, b) => {
       const aValue = a[sortConfig.key];
       const bValue = b[sortConfig.key];
 
@@ -185,11 +188,13 @@ const AdvancedScreener = () => {
   }, [filteredStocks, sortConfig]);
 
   const paginatedStocks = useMemo(() => {
+    // Ensure sortedStocks is always an array
+    const stocksToPage = Array.isArray(sortedStocks) ? sortedStocks : [];
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return sortedStocks.slice(startIndex, startIndex + itemsPerPage);
+    return stocksToPage.slice(startIndex, startIndex + itemsPerPage);
   }, [sortedStocks, currentPage, itemsPerPage]);
 
-  const totalPages = Math.ceil(sortedStocks.length / itemsPerPage);
+  const totalPages = Math.ceil((Array.isArray(sortedStocks) ? sortedStocks.length : 0) / itemsPerPage);
 
   const formatNumber = (num) => {
     if (num === null || num === undefined) return 'N/A';
