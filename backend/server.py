@@ -33,7 +33,7 @@ ts = TimeSeries(key=ALPHA_VANTAGE_API_KEY, output_format='pandas') if ALPHA_VANT
 ti = TechIndicators(key=ALPHA_VANTAGE_API_KEY, output_format='pandas') if ALPHA_VANTAGE_API_KEY else None
 
 # Create the main app without a prefix
-app = FastAPI(title="Stock Market Analysis API", version="2.0.0")
+app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
