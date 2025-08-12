@@ -590,8 +590,8 @@ class InvestmentScorer:
         
         return strengths[:5]  # Top 5 strengths
     
-    def _identify_enhanced_key_risks(self, scores: Dict[str, float], technical_data: Dict[str, Any]) -> List[str]:
-        """Enhanced key risks identification"""
+    def _identify_enhanced_key_risks(self, scores: Dict[str, float], technical_data: Dict[str, Any], sentiment_data: Dict[str, Any] = None) -> List[str]:
+        """Enhanced key risks identification including sentiment analysis"""
         risks = []
         
         # Fundamental risks
@@ -607,6 +607,14 @@ class InvestmentScorer:
             risks.append("Weak Technical Trend")
         if scores.get('momentum_score', 100) <= 40:
             risks.append("Negative Momentum")
+        
+        # Include sentiment risks
+        if sentiment_data:
+            sentiment_direction = sentiment_data.get('insights', {}).get('direction', 'NEUTRAL')
+            if sentiment_direction == 'NEGATIVE':
+                risks.append("Negative Market Sentiment")
+            elif sentiment_data.get('insights', {}).get('strength', 'Medium') == 'Weak':
+                risks.append("Weak Sentiment Conviction")
         
         # Specific technical risks
         trend_direction = technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL')
