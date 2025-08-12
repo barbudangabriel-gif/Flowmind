@@ -143,21 +143,29 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           <div className="mb-8">
             <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center'} mb-2`}>
               {isCollapsed ? (
-                // Collapsed state - only icon
-                <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                // Collapsed state - only icon (using PNG for better transparency)
+                <div className="flex items-center justify-center flex-shrink-0">
                   <img 
-                    src="/assets/logos/flowmind_icon.svg" 
+                    src="/assets/logos/flowmind_icon_256.png" 
                     alt="FlowMind" 
-                    className="w-8 h-8 filter brightness-0 invert"
+                    className="w-8 h-8 rounded-md"
+                    style={{
+                      filter: 'brightness(0) saturate(100%) invert(100%)',
+                      background: 'transparent'
+                    }}
                   />
                 </div>
               ) : (
-                // Expanded state - full horizontal logo
+                // Expanded state - full horizontal logo (using PNG for better control)  
                 <div className="flex items-center justify-center w-full">
                   <img 
-                    src="/assets/logos/flowmind_horizontal.svg" 
+                    src="/assets/logos/flowmind_horizontal_w1000.png" 
                     alt="FlowMind Analytics" 
-                    className="h-6 max-w-[180px] object-contain filter brightness-0 invert"
+                    className="h-6 max-w-[180px] object-contain rounded-sm"
+                    style={{
+                      filter: 'brightness(0) saturate(100%) invert(100%)',
+                      background: 'transparent'
+                    }}
                   />
                 </div>
               )}
