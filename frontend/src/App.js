@@ -148,23 +148,24 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                   <img 
                     src="/assets/logos/flowmind_icon_256.png" 
                     alt="FlowMind" 
-                    className="w-8 h-8 rounded-md"
+                    className="w-10 h-10"
                     style={{
-                      filter: 'brightness(0) saturate(100%) invert(100%)',
-                      background: 'transparent'
+                      filter: 'brightness(0) saturate(100%) invert(100%) contrast(100%)',
+                      mixBlendMode: 'screen'
                     }}
                   />
                 </div>
               ) : (
-                // Expanded state - full horizontal logo (using PNG for better control)  
-                <div className="flex items-center justify-center w-full">
+                // Expanded state - full horizontal logo (larger and transparent)
+                <div className="flex items-center justify-center w-full px-2">
                   <img 
-                    src="/assets/logos/flowmind_horizontal_w1000.png" 
+                    src="/assets/logos/flowmind_wordmark_w2000.png" 
                     alt="FlowMind Analytics" 
-                    className="h-6 max-w-[180px] object-contain rounded-sm"
+                    className="h-8 w-full max-w-[220px] object-contain"
                     style={{
-                      filter: 'brightness(0) saturate(100%) invert(100%)',
-                      background: 'transparent'
+                      filter: 'brightness(0) saturate(100%) invert(100%) contrast(100%)',
+                      mixBlendMode: 'screen',
+                      backgroundColor: 'transparent'
                     }}
                   />
                 </div>
