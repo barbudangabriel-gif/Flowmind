@@ -48,40 +48,119 @@ const API = `${BACKEND_URL}/api`;
 
 // Navigation Component
 const Sidebar = ({ activeTab, setActiveTab }) => {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'portfolio', label: 'Portfolio', icon: Briefcase },
-    { id: 'investments', label: '🎯 Investment Scoring', icon: Award },
-    { id: 'screener', label: 'Advanced Screener', icon: Database },
-    { id: 'simple-screener', label: 'Stock Search', icon: Search },
-    { id: 'watchlist', label: 'Watchlist', icon: Star },
-    { id: 'technical', label: 'Technical Analysis', icon: BarChart3 },
-    { id: 'news', label: 'Market News', icon: Newspaper }
+  const menuGroups = [
+    {
+      title: "Overview",
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: Home, color: 'from-blue-500 to-cyan-500' },
+        { id: 'portfolio', label: 'Portfolio', icon: Briefcase, color: 'from-emerald-500 to-teal-500' }
+      ]
+    },
+    {
+      title: "Analysis & Trading",
+      items: [
+        { id: 'investments', label: 'Investment Scoring', icon: Award, color: 'from-amber-500 to-orange-500', badge: '🎯' },
+        { id: 'screener', label: 'Advanced Screener', icon: Database, color: 'from-violet-500 to-purple-500' },
+        { id: 'simple-screener', label: 'Stock Search', icon: Search, color: 'from-pink-500 to-rose-500' },
+        { id: 'technical', label: 'Technical Analysis', icon: BarChart3, color: 'from-indigo-500 to-purple-500' }
+      ]
+    },
+    {
+      title: "Tools & Alerts",
+      items: [
+        { id: 'watchlist', label: 'Watchlist', icon: Star, color: 'from-yellow-500 to-amber-500' },
+        { id: 'news', label: 'Market News', icon: Newspaper, color: 'from-slate-500 to-gray-500' }
+      ]
+    }
   ];
 
   return (
-    <div className="w-64 bg-gray-900 text-white h-screen fixed left-0 top-0 overflow-y-auto">
-      <div className="p-4">
-        <h1 className="text-xl font-bold mb-8 text-blue-400">📈 Market Insight</h1>
-        <nav className="space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors ${
-                  activeTab === item.id
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-300 hover:bg-gray-700'
-                }`}
-              >
-                <Icon size={20} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
+    <div className="w-64 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white h-screen fixed left-0 top-0 overflow-y-auto shadow-xl border-r border-slate-700">
+      <div className="p-6">
+        {/* Logo/Header */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+              <span className="text-xl font-bold">📈</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                Market Insight
+              </h1>
+              <p className="text-xs text-slate-400">Professional Trading Platform</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Groups */}
+        <nav className="space-y-6">
+          {menuGroups.map((group, groupIndex) => (
+            <div key={groupIndex}>
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-3">
+                {group.title}
+              </h3>
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full group flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 relative ${
+                        isActive
+                          ? 'bg-gradient-to-r ' + item.color + ' text-white shadow-lg transform scale-105'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700/50 hover:transform hover:scale-102'
+                      }`}
+                    >
+                      {/* Active indicator */}
+                      {isActive && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full opacity-80"></div>
+                      )}
+                      
+                      {/* Icon with background */}
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
+                        isActive 
+                          ? 'bg-white/20' 
+                          : 'bg-slate-600/30 group-hover:bg-slate-600/50'
+                      }`}>
+                        <Icon size={18} className={isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'} />
+                      </div>
+                      
+                      {/* Label */}
+                      <div className="flex-1 text-left">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">{item.label}</span>
+                          {item.badge && (
+                            <span className="text-xs opacity-70">{item.badge}</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Hover effect */}
+                      {!isActive && (
+                        <div className="w-0 h-0 opacity-0 group-hover:w-1 group-hover:h-8 group-hover:opacity-50 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full transition-all duration-300"></div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
+
+        {/* Bottom section with version/status */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-600/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-xs text-slate-400">Live Data</span>
+              </div>
+              <span className="text-xs text-slate-500">v2.1.0</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
