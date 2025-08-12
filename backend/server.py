@@ -428,36 +428,114 @@ async def get_smart_money_analysis(symbol: str, timeframe: str = Query("3mo", de
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error performing smart money analysis for {symbol}: {str(e)}")
 
-@api_router.get("/technical-analysis/smart-money/{symbol}")
-async def get_smart_money_technical_analysis(symbol: str, period: str = Query("3mo")):
-    """Get Smart Money technical analysis with Order Blocks, FVGs, and Price Action"""
+@api_router.get("/market/sentiment/{symbol}")
+async def get_market_sentiment_analysis(symbol: str):
+    """Get comprehensive market sentiment analysis for a stock"""
     try:
-        analysis = await smart_money_analyzer.analyze_smart_money_concepts(symbol, period)
+        sentiment_data = await market_sentiment_analyzer.analyze_market_sentiment(symbol)
+        return sentiment_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error analyzing market sentiment for {symbol}: {str(e)}")
+
+@api_router.get("/analysis/comprehensive/{symbol}")
+async def get_comprehensive_stock_analysis(symbol: str):
+    """Get comprehensive analysis including fundamentals, technicals, smart money, and sentiment"""
+    try:
+        # Get enhanced stock data
+        stock_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
         
-        # Format for technical analysis display
+        # Run all analyses concurrently
+        investment_task = investment_scorer.calculate_investment_score(stock_data)
+        smart_money_task = smart_money_analyzer.analyze_smart_money_concepts(symbol)
+        sentiment_task = market_sentiment_analyzer.analyze_market_sentiment(symbol)
+        
+        investment_score, smart_money_analysis, sentiment_analysis = await asyncio.gather(
+            investment_task, smart_money_task, sentiment_task
+        )
+        
         return {
             "symbol": symbol.upper(),
-            "smart_money_verdict": analysis["smart_money_verdict"],
-            "market_structure": analysis["market_structure"],
-            "order_blocks": analysis["order_blocks"],
-            "fair_value_gaps": analysis["fair_value_gaps"],
-            "liquidity_sweeps": analysis["liquidity_sweeps"],
-            "premium_discount": analysis["premium_discount"],
-            "price_action": analysis["price_action"],
-            "trading_signals": analysis["trading_signals"],
-            "key_levels": {
-                "support_resistance": analysis["price_action"]["support_resistance"],
-                "supply_demand": analysis["price_action"]["supply_demand_zones"]
-            },
-            "patterns": {
-                "candlestick_patterns": analysis["price_action"]["candlestick_patterns"],
-                "imbalances": analysis["imbalances"]
-            },
-            "volume_analysis": analysis["price_action"]["volume_analysis"],
-            "analysis_timestamp": analysis["analysis_timestamp"]
+            "current_price": stock_data.get('price', 0),
+            "last_updated": datetime.utcnow().isoformat(),
+            "investment_score": investment_score,
+            "smart_money_analysis": smart_money_analysis,
+            "sentiment_analysis": sentiment_analysis,
+            "comprehensive_rating": _generate_comprehensive_rating(investment_score, smart_money_analysis, sentiment_analysis)
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in smart money technical analysis for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error in comprehensive analysis for {symbol}: {str(e)}")
+
+def _generate_comprehensive_rating(investment_score: Dict, smart_money: Dict, sentiment: Dict) -> Dict[str, Any]:
+    """Generate overall comprehensive rating from all analyses"""
+    try:
+        # Get individual ratings
+        investment_rating = investment_score.get('rating', 'HOLD')
+        smart_money_verdict = smart_money.get('smart_money_verdict', {}).get('verdict', 'NEUTRAL')
+        sentiment_direction = sentiment.get('insights', {}).get('direction', 'UNKNOWN')
+        
+        # Score components
+        total_score = investment_score.get('total_score', 50)
+        sentiment_score = sentiment.get('composite_sentiment', {}).get('score', 0.0)  # -1 to +1
+        
+        # Calculate confidence based on agreement
+        bullish_signals = 0
+        bearish_signals = 0
+        
+        if investment_rating in ['BUY', 'BUY STRONG']:
+            bullish_signals += 1
+        elif investment_rating.startswith('HOLD'):
+            pass  # neutral
+        else:
+            bearish_signals += 1
+            
+        if smart_money_verdict == 'BULLISH':
+            bullish_signals += 1
+        elif smart_money_verdict == 'BEARISH':
+            bearish_signals += 1
+            
+        if sentiment_direction == 'BULLISH':
+            bullish_signals += 1
+        elif sentiment_direction == 'BEARISH':
+            bearish_signals += 1
+        
+        # Overall verdict
+        if bullish_signals >= 2 and bearish_signals == 0:
+            overall_verdict = "STRONG BUY"
+            confidence = "HIGH"
+        elif bullish_signals > bearish_signals:
+            overall_verdict = "BUY"  
+            confidence = "MEDIUM" if bullish_signals >= 2 else "LOW"
+        elif bearish_signals > bullish_signals:
+            overall_verdict = "SELL"
+            confidence = "MEDIUM" if bearish_signals >= 2 else "LOW"
+        elif bearish_signals >= 2 and bullish_signals == 0:
+            overall_verdict = "STRONG SELL"
+            confidence = "HIGH"
+        else:
+            overall_verdict = "HOLD"
+            confidence = "LOW"
+        
+        return {
+            "overall_verdict": overall_verdict,
+            "confidence": confidence,
+            "agreement_score": abs(bullish_signals - bearish_signals),
+            "supporting_analyses": {
+                "investment_score": investment_rating,
+                "smart_money": smart_money_verdict,
+                "sentiment": sentiment_direction
+            },
+            "summary": f"Comprehensive analysis shows {overall_verdict} recommendation with {confidence.lower()} confidence based on {bullish_signals + bearish_signals} analytical approaches."
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating comprehensive rating: {str(e)}")
+        return {
+            "overall_verdict": "HOLD",
+            "confidence": "LOW", 
+            "agreement_score": 0,
+            "supporting_analyses": {},
+            "summary": "Unable to generate comprehensive rating due to analysis errors."
+        }
 
 @api_router.get("/investments/top-picks", response_model=TopInvestments)
 async def get_top_investment_picks(
