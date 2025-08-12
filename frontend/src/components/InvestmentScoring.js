@@ -80,19 +80,17 @@ const InvestmentScoring = React.memo(() => {
     }
   }, []);
 
-  const loadSectorLeaders = async () => {
+  const loadSectorLeaders = useCallback(async () => {
     try {
-      console.log('Loading sector leaders for:', selectedSector);
+      console.log(`Loading sector leaders for: ${selectedSector}`);
       const response = await axios.get(`${API}/investments/sector-leaders?sector=${selectedSector}`);
       console.log('Sector leaders response:', response.data);
-      const leaders = response.data.leaders || [];
-      console.log('Setting sectorLeaders to:', leaders);
-      setSectorLeaders(leaders);
+      setSectorLeaders(response.data.leaders || []);
     } catch (error) {
       console.error('Error loading sector leaders:', error);
       setSectorLeaders([]);
     }
-  };
+  }, [selectedSector]);
 
   const searchStockScore = async () => {
     if (!searchSymbol.trim()) return;
