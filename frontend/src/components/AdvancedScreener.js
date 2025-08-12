@@ -193,14 +193,15 @@ const AdvancedScreener = React.memo(() => {
   })();
   const totalPages = Math.ceil(sortedStocks.length / itemsPerPage);
 
-  const formatNumber = (num) => {
+  // Memoized format function
+  const formatNumber = useCallback((num) => {
     if (num === null || num === undefined) return 'N/A';
     if (num >= 1e12) return (num / 1e12).toFixed(1) + 'T';
     if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
     if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
     if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
     return num.toFixed(2);
-  };
+  }, []);
 
   const exportToCSV = () => {
     const stocksToExport = getSortedStocks();
