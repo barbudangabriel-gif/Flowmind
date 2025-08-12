@@ -143,33 +143,22 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           <div className="mb-8">
             <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center'} mb-2`}>
               {isCollapsed ? (
-                // Collapsed state - custom CSS icon
+                // Collapsed state - FlowMind icon glyph
                 <div className="flex items-center justify-center flex-shrink-0">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center relative">
-                    <div className="text-white font-bold text-lg">F</div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-8 h-1 bg-green-400 rounded-full transform rotate-12 opacity-60"></div>
-                      <div className="w-6 h-1 bg-green-300 rounded-full transform -rotate-12 opacity-50 ml-1"></div>
-                    </div>
-                  </div>
+                  <img 
+                    src="/assets/logos/flowmind_glyph.svg" 
+                    alt="FlowMind" 
+                    className="w-10 h-10"
+                  />
                 </div>
               ) : (
-                // Expanded state - CSS text logo (larger and clean)
+                // Expanded state - FlowMind horizontal logo (your original design)
                 <div className="flex items-center justify-center w-full px-2">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center space-x-1">
-                      <div className="relative">
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                          Flow
-                        </span>
-                        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-green-400 to-emerald-400 opacity-70 rounded-full transform -translate-y-1/2"></div>
-                      </div>
-                      <span className="text-2xl font-bold bg-gradient-to-r from-slate-200 to-white bg-clip-text text-transparent">
-                        Mind
-                      </span>
-                    </div>
-                    <div className="text-xs text-blue-300 font-medium tracking-wider">ANALYTICS</div>
-                  </div>
+                  <img 
+                    src="/assets/logos/flowmind_horizontal.svg" 
+                    alt="FlowMind Analytics" 
+                    className="h-8 w-full max-w-[220px] object-contain"
+                  />
                 </div>
               )}
             </div>
