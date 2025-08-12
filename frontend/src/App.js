@@ -36,9 +36,11 @@ import {
   Star,
   Newspaper,
   Settings,
-  Database
+  Database,
+  Target
 } from "lucide-react";
 import AdvancedScreener from "./components/AdvancedScreener";
+import InvestmentScoring from "./components/InvestmentScoring";
 import "./App.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
