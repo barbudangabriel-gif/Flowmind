@@ -530,8 +530,8 @@ class InvestmentScorer:
         else:
             return "MEDIUM-TERM"
     
-    def _identify_enhanced_key_strengths(self, scores: Dict[str, float], technical_data: Dict[str, Any]) -> List[str]:
-        """Enhanced key strengths identification"""
+    def _identify_enhanced_key_strengths(self, scores: Dict[str, float], technical_data: Dict[str, Any], sentiment_data: Dict[str, Any]) -> List[str]:
+        """Enhanced key strengths identification including sentiment"""
         strengths = []
         
         # Fundamental strengths
@@ -552,6 +552,24 @@ class InvestmentScorer:
         if scores.get('volume_score', 0) >= 80:
             strengths.append("Volume Confirmation")
         
+        # Sentiment strengths
+        sentiment_score = scores.get('sentiment_score', 50)
+        if sentiment_score >= 80:
+            strengths.append("Very Positive Sentiment")
+        elif sentiment_score >= 70:
+            strengths.append("Positive Market Sentiment")
+        
+        # Specific sentiment factors
+        sentiment_direction = sentiment_data.get('insights', {}).get('direction', 'UNKNOWN')
+        sentiment_confidence = sentiment_data.get('confidence_level', 0.0)
+        
+        if sentiment_direction == 'BULLISH' and sentiment_confidence > 0.7:
+            strengths.append("High-Confidence Bullish Sentiment")
+        
+        market_mood = sentiment_data.get('market_mood', 'UNCERTAIN')
+        if market_mood == 'OPTIMISTIC':
+            strengths.append("Optimistic Market Mood")
+        
         # Specific technical patterns
         trend_direction = technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL')
         if trend_direction == 'BULLISH':
@@ -562,7 +580,7 @@ class InvestmentScorer:
         if buy_signals >= 2:
             strengths.append("Multiple Buy Signals")
         
-        return strengths[:4]  # Top 4 strengths
+        return strengths[:5]  # Top 5 strengths
     
     def _identify_enhanced_key_risks(self, scores: Dict[str, float], technical_data: Dict[str, Any]) -> List[str]:
         """Enhanced key risks identification"""
