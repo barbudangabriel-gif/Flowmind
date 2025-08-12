@@ -36,21 +36,11 @@ const InvestmentScoring = React.memo(() => {
 
   const sectors = [
     'Technology', 'Healthcare', 'Financial Services', 'Consumer Cyclical',
-    'Communication Services', 'Industrials', 'Consumer Defensive', 'Energy'
+    'Communication Services', 'Industrials', 'Consumer Defensive', 'Energy',
+    'Utilities', 'Real Estate', 'Basic Materials'
   ];
 
-  useEffect(() => {
-    loadTopPicks();
-    loadRiskAnalysis();
-  }, []); // Remove dependencies for initial load
-
-  useEffect(() => {
-    if (selectedSector) {
-      loadSectorLeaders();
-    }
-  }, [selectedSector, loadSectorLeaders]);
-
-  // Memoized API functions
+  // Memoized API functions - MUST be declared before useEffect hooks
   const loadTopPicks = useCallback(async () => {
     setLoading(true);
     try {
@@ -108,6 +98,18 @@ const InvestmentScoring = React.memo(() => {
       setLoading(false);
     }
   }, [selectedStock]);
+
+  // useEffect hooks - MUST be declared after useCallback functions
+  useEffect(() => {
+    loadTopPicks();
+    loadRiskAnalysis();
+  }, []); // Remove dependencies for initial load
+
+  useEffect(() => {
+    if (selectedSector) {
+      loadSectorLeaders();
+    }
+  }, [selectedSector, loadSectorLeaders]);
 
   const getRatingColor = (rating) => {
     switch (rating) {
