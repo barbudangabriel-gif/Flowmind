@@ -294,7 +294,7 @@ const Dashboard = () => {
       </div>
       
       {/* Market Indices */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {marketData?.indices?.map((index, idx) => (
           <div key={idx} className="group relative">
             {/* Background gradient based on performance */}
@@ -304,26 +304,26 @@ const Dashboard = () => {
                 : 'bg-gradient-to-br from-red-400 to-red-500'
             }`}></div>
             
-            <div className="relative bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:transform hover:scale-105">
+            <div className="relative bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:transform hover:scale-105">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-sm font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                    <span className="text-xs md:text-sm font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                       {index.symbol}
                     </span>
                   </div>
-                  <p className="text-2xl font-bold text-gray-800">${index.price?.toFixed(2)}</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-800">${index.price?.toFixed(2)}</p>
                 </div>
-                <div className={`p-3 rounded-xl ${
+                <div className={`p-2 md:p-3 rounded-xl ${
                   index.change >= 0 
                     ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
                     : 'bg-gradient-to-r from-red-500 to-red-600'
                 } text-white`}>
-                  {index.change >= 0 ? <TrendingUp size={24} /> : <TrendingDown size={24} />}
+                  {index.change >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
                 </div>
               </div>
               
-              <div className={`flex items-center space-x-2 text-lg font-semibold ${
+              <div className={`flex items-center space-x-2 text-base md:text-lg font-semibold ${
                 index.change >= 0 ? 'text-emerald-600' : 'text-red-600'
               }`}>
                 <span>{index.change >= 0 ? '+' : ''}{index.change?.toFixed(2)}</span>
