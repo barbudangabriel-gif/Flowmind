@@ -165,15 +165,14 @@ const AdvancedScreener = () => {
     setSortConfig({ key, direction });
   };
 
-  const sortedStocks = useMemo(() => {
-    // Ensure filteredStocks is always an array
+  // Create sorted and paginated stocks with defensive programming
+  const getSortedStocks = () => {
     const stocksToSort = Array.isArray(filteredStocks) ? filteredStocks : [];
-    
     if (!sortConfig.key || stocksToSort.length === 0) return stocksToSort;
 
     return [...stocksToSort].sort((a, b) => {
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
+      const aValue = a?.[sortConfig.key];
+      const bValue = b?.[sortConfig.key];
 
       if (aValue === null || aValue === undefined) return 1;
       if (bValue === null || bValue === undefined) return -1;
@@ -184,16 +183,14 @@ const AdvancedScreener = () => {
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
     });
-  }, [filteredStocks, sortConfig]);
+  };
 
-  const paginatedStocks = useMemo(() => {
-    // Ensure sortedStocks is always an array
-    const stocksToPage = Array.isArray(sortedStocks) ? sortedStocks : [];
+  const sortedStocks = getSortedStocks();
+  const paginatedStocks = (() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return stocksToPage.slice(startIndex, startIndex + itemsPerPage);
-  }, [sortedStocks, currentPage, itemsPerPage]);
-
-  const totalPages = Math.ceil((Array.isArray(sortedStocks) ? sortedStocks.length : 0) / itemsPerPage);
+    return sortedStocks.slice(startIndex, startIndex + itemsPerPage);
+  })();
+  const totalPages = Math.ceil(sortedStocks.length / itemsPerPage);
 
   const formatNumber = (num) => {
     if (num === null || num === undefined) return 'N/A';
