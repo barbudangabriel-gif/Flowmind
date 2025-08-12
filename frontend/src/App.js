@@ -579,8 +579,11 @@ const Portfolio = () => {
 
       {/* Portfolio Chart */}
       {portfolioChartData.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4">Portfolio Allocation</h3>
+        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100 card-hover">
+          <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <PieChartIcon className="mr-3 text-blue-600" size={24} />
+            Portfolio Allocation
+          </h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -604,38 +607,44 @@ const Portfolio = () => {
       )}
 
       {/* Portfolio Items */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 py-4 bg-gray-50 border-b">
-          <h3 className="text-lg font-semibold">Holdings</h3>
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 overflow-hidden card-hover">
+        <div className="px-4 md:px-6 py-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-gray-200">
+          <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center">
+            <Briefcase className="mr-3 text-blue-600" size={24} />
+            Holdings
+          </h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shares</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg Cost</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Market Value</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shares</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg Cost</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Price</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Market Value</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {portfolio?.items?.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{item.symbol}</td>
-                  <td className="px-6 py-4 text-gray-600">{item.shares}</td>
-                  <td className="px-6 py-4 text-gray-600">${item.purchase_price?.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-gray-600">${item.current_price?.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-gray-600">${item.current_value?.toFixed(2)}</td>
-                  <td className={`px-6 py-4 font-medium ${item.profit_loss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    ${item.profit_loss?.toFixed(2)} ({item.profit_loss_percent?.toFixed(2)}%)
+                <tr key={item.id} className="hover:bg-blue-50 transition-colors duration-200">
+                  <td className="px-4 md:px-6 py-4 font-bold text-blue-600 font-mono">{item.symbol}</td>
+                  <td className="px-4 md:px-6 py-4 text-gray-600">{item.shares}</td>
+                  <td className="px-4 md:px-6 py-4 text-gray-600">${item.purchase_price?.toFixed(2)}</td>
+                  <td className="px-4 md:px-6 py-4 text-gray-900 font-medium">${item.current_price?.toFixed(2)}</td>
+                  <td className="px-4 md:px-6 py-4 text-gray-900 font-medium">${item.current_value?.toFixed(2)}</td>
+                  <td className={`px-4 md:px-6 py-4 font-bold ${item.profit_loss >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <div className="flex items-center space-x-1">
+                      {item.profit_loss >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                      <span>${item.profit_loss?.toFixed(2)} ({item.profit_loss_percent?.toFixed(2)}%)</span>
+                    </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 md:px-6 py-4">
                     <button
                       onClick={() => deleteItem(item.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-colors duration-200"
                     >
                       <Trash2 size={16} />
                     </button>
