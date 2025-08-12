@@ -50,19 +50,23 @@ const InvestmentScoring = React.memo(() => {
     }
   }, [selectedSector]);
 
-  const loadTopPicks = async () => {
+  // Memoized API functions
+  const loadTopPicks = useCallback(async () => {
+    setLoading(true);
     try {
       console.log('Loading top picks from:', `${API}/investments/top-picks?limit=10`);
       const response = await axios.get(`${API}/investments/top-picks?limit=10`);
       console.log('Top picks response:', response.data);
       const recommendations = response.data.recommendations || [];
-      console.log('Setting topPicks to:', recommendations);
+      console.log('Setting topPicks to:', recommendations.length, 'items');
       setTopPicks(recommendations);
     } catch (error) {
       console.error('Error loading top picks:', error);
       setTopPicks([]); // Ensure it's always an array
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
   const loadRiskAnalysis = async () => {
     try {
