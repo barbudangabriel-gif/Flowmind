@@ -1621,9 +1621,17 @@ function App() {
       case 'portfolio':
         return <Portfolio />;
       case 'investments':
-        return <InvestmentScoring />;
+        return (
+          <Suspense fallback={<LoadingFallback componentName="Investment Scoring" />}>
+            <InvestmentScoring />
+          </Suspense>
+        );
       case 'screener':
-        return <AdvancedScreener />;
+        return (
+          <Suspense fallback={<LoadingFallback componentName="Advanced Screener" />}>
+            <AdvancedScreener />
+          </Suspense>
+        );
       case 'simple-screener':
         return <SimpleStockScreener />;
       case 'watchlist':
