@@ -16,7 +16,6 @@ from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 import pandas as pd
 import numpy as np
-from ticker_data import ticker_manager
 from enhanced_ticker_data import enhanced_ticker_manager
 
 
