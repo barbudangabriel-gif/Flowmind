@@ -50,7 +50,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'screener', label: 'Stock Screener', icon: Search },
     { id: 'watchlist', label: 'Watchlist', icon: Star },
     { id: 'technical', label: 'Technical Analysis', icon: BarChart3 },
-    { id: 'news', label: 'Market News', icon: News }
+    { id: 'news', label: 'Market News', icon: Newspaper }
   ];
 
   return (
