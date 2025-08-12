@@ -896,7 +896,7 @@ const TechnicalAnalysis = () => {
     
     setLoading(true);
     try {
-      const response = await axios.get(`${API}/technical-analysis/smart-money/${symbol}?period=3mo`);
+      const response = await axios.get(`${API}/investments/smart-money/${symbol}?timeframe=3mo`);
       console.log('Smart Money Analysis Response:', response.data);
       setSmartMoneyData(response.data);
     } catch (error) {
