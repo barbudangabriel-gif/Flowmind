@@ -138,11 +138,15 @@ class InvestmentScore(BaseModel):
     total_score: float
     rating: str
     individual_scores: Dict[str, float]
+    fundamental_score: Optional[float] = None
+    technical_score: Optional[float] = None
     explanation: str
     risk_level: str
     investment_horizon: str
     key_strengths: List[str]
     key_risks: List[str]
+    technical_analysis: Optional[Dict[str, Any]] = None
+    analysis_type: Optional[str] = None
     last_updated: str
 
 class TopInvestments(BaseModel):
