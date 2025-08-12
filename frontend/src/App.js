@@ -141,23 +141,23 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
           {/* Logo/Header */}
           <div className="mb-8">
-            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} mb-2`}>
+            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center'} mb-2`}>
               {isCollapsed ? (
                 // Collapsed state - only icon
                 <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                   <img 
                     src="/assets/logos/flowmind_icon.svg" 
                     alt="FlowMind" 
-                    className="w-8 h-8"
+                    className="w-8 h-8 filter brightness-0 invert"
                   />
                 </div>
               ) : (
                 // Expanded state - full horizontal logo
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-center w-full">
                   <img 
                     src="/assets/logos/flowmind_horizontal.svg" 
                     alt="FlowMind Analytics" 
-                    className="h-8"
+                    className="h-6 max-w-[180px] object-contain filter brightness-0 invert"
                   />
                 </div>
               )}
