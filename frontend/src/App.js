@@ -403,9 +403,9 @@ const Dashboard = () => {
         </div>
 
         {/* Top Losers */}
-        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100">
+        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100 card-hover">
           <div className="flex items-center space-x-3 mb-4 md:mb-6">
-            <div className="p-2 md:p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-xl text-white">
+            <div className="p-2 md:p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-xl text-white animate-pulse-soft">
               <TrendingDown size={20} />
             </div>
             <div>
