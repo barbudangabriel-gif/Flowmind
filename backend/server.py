@@ -254,16 +254,16 @@ async def get_screener_data(
     """Get basic screener data for all stocks"""
     try:
         if exchange == "sp500":
-            tickers = await ticker_manager.get_sp500_tickers()
+            tickers = await enhanced_ticker_manager.get_sp500_tickers()
         elif exchange == "nasdaq": 
-            tickers = await ticker_manager.get_nasdaq_tickers()
+            tickers = await enhanced_ticker_manager.get_nasdaq_tickers()
         else:
-            tickers = await ticker_manager.get_all_tickers()
+            tickers = await enhanced_ticker_manager.get_all_tickers()
         
         # Limit to prevent API overload
         tickers = tickers[:limit]
         
-        stock_data = await ticker_manager.get_ticker_info_batch(tickers)
+        stock_data = await enhanced_ticker_manager.get_ticker_info_batch(tickers)
         return {
             "stocks": stock_data,
             "total_count": len(stock_data),
