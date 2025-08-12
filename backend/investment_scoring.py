@@ -337,8 +337,8 @@ class InvestmentScorer:
         else:
             return 50   # High volatility
     
-    def _get_enhanced_investment_rating(self, score: float, technical_data: Dict[str, Any]) -> str:
-        """Enhanced investment rating considering technical analysis"""
+    def _get_enhanced_investment_rating(self, score: float, technical_data: Dict[str, Any], sentiment_data: Dict[str, Any]) -> str:
+        """Enhanced investment rating considering technical analysis and sentiment"""
         base_rating = self._get_investment_rating(score)
         
         # Adjust rating based on technical signals
@@ -349,17 +349,58 @@ class InvestmentScorer:
         buy_signals = len([s for s in signals if s.get('signal') == 'BUY'])
         sell_signals = len([s for s in signals if s.get('signal') == 'SELL'])
         
-        # Adjust rating based on technical confluence
-        if trend_direction == 'BULLISH' and buy_signals > sell_signals:
+        # Get sentiment data
+        sentiment_direction = sentiment_data.get('insights', {}).get('direction', 'UNKNOWN')
+        sentiment_confidence = sentiment_data.get('confidence_level', 0.0)
+        
+        # Triple confluence: Fundamental + Technical + Sentiment
+        bullish_confluence = (
+            trend_direction == 'BULLISH' and 
+            buy_signals > sell_signals and 
+            sentiment_direction == 'BULLISH' and 
+            sentiment_confidence > 0.5
+        )
+        
+        bearish_confluence = (
+            trend_direction == 'BEARISH' and 
+            sell_signals > buy_signals and 
+            sentiment_direction == 'BEARISH' and 
+            sentiment_confidence > 0.5
+        )
+        
+        # Adjust rating based on confluence
+        if bullish_confluence:
             if base_rating == 'HOLD +':
-                return 'BUY'
+                return 'BUY STRONG'
             elif base_rating == 'HOLD':
-                return 'HOLD +'
-        elif trend_direction == 'BEARISH' and sell_signals > buy_signals:
-            if base_rating == 'BUY':
+                return 'BUY'
+            elif base_rating == 'BUY':
+                return 'BUY STRONG'
+        elif bearish_confluence:
+            if base_rating == 'BUY STRONG':
+                return 'BUY'
+            elif base_rating == 'BUY':
                 return 'HOLD +'
             elif base_rating == 'HOLD +':
                 return 'HOLD'
+        
+        # Partial adjustments for 2-way confluence
+        tech_sentiment_bullish = (
+            trend_direction == 'BULLISH' and 
+            sentiment_direction == 'BULLISH' and 
+            sentiment_confidence > 0.4
+        )
+        
+        tech_sentiment_bearish = (
+            trend_direction == 'BEARISH' and 
+            sentiment_direction == 'BEARISH' and 
+            sentiment_confidence > 0.4
+        )
+        
+        if tech_sentiment_bullish and base_rating == 'HOLD':
+            return 'HOLD +'
+        elif tech_sentiment_bearish and base_rating == 'BUY':
+            return 'HOLD +'
         
         return base_rating
     
