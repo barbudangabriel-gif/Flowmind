@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import logging
 from enhanced_ticker_data import enhanced_ticker_manager
 from technical_analysis_enhanced import technical_analyzer
+from market_sentiment_analyzer import market_sentiment_analyzer, sentiment_to_investment_score
 
 logger = logging.getLogger(__name__)
 
