@@ -51,28 +51,41 @@ const InvestmentScoring = () => {
 
   const loadTopPicks = async () => {
     try {
+      console.log('Loading top picks from:', `${API}/investments/top-picks?limit=10`);
       const response = await axios.get(`${API}/investments/top-picks?limit=10`);
-      setTopPicks(response.data.recommendations || []);
+      console.log('Top picks response:', response.data);
+      const recommendations = response.data.recommendations || [];
+      console.log('Setting topPicks to:', recommendations);
+      setTopPicks(recommendations);
     } catch (error) {
       console.error('Error loading top picks:', error);
+      setTopPicks([]); // Ensure it's always an array
     }
   };
 
   const loadRiskAnalysis = async () => {
     try {
+      console.log('Loading risk analysis...');
       const response = await axios.get(`${API}/investments/risk-analysis`);
+      console.log('Risk analysis response:', response.data);
       setRiskAnalysis(response.data);
     } catch (error) {
       console.error('Error loading risk analysis:', error);
+      setRiskAnalysis(null);
     }
   };
 
   const loadSectorLeaders = async () => {
     try {
+      console.log('Loading sector leaders for:', selectedSector);
       const response = await axios.get(`${API}/investments/sector-leaders?sector=${selectedSector}`);
-      setSectorLeaders(response.data.leaders || []);
+      console.log('Sector leaders response:', response.data);
+      const leaders = response.data.leaders || [];
+      console.log('Setting sectorLeaders to:', leaders);
+      setSectorLeaders(leaders);
     } catch (error) {
       console.error('Error loading sector leaders:', error);
+      setSectorLeaders([]);
     }
   };
 
