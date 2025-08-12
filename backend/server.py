@@ -208,7 +208,25 @@ async def get_technical_indicators(symbol: str) -> Dict[str, Any]:
 # API Routes
 @api_router.get("/")
 async def root():
-    return {"message": "Stock Market Analysis API", "version": "2.0.0", "features": ["S&P 500", "NASDAQ", "Advanced Screener"]}
+    return {
+        "message": "Enhanced Stock Market Analysis API", 
+        "version": "3.0.0", 
+        "features": [
+            "Real-time Stock Prices",
+            "Pre/Post Market Data", 
+            "S&P 500 & NASDAQ Tickers",
+            "Advanced Screener",
+            "Extended Hours Trading",
+            "Portfolio Management"
+        ],
+        "market_state": enhanced_ticker_manager._get_market_state(),
+        "endpoints": {
+            "enhanced_stock": "/stocks/{symbol}/enhanced",
+            "extended_hours": "/stocks/{symbol}/extended-hours",
+            "screener": "/screener/data",
+            "filter": "/screener/filter"
+        }
+    }
 
 # Stock Data Routes
 @api_router.get("/stocks/{symbol}", response_model=StockData)
