@@ -658,64 +658,89 @@ const Portfolio = () => {
 
       {/* Add Stock Modal */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Add Stock to Portfolio</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all duration-300">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md transform transition-all duration-300 scale-100 shadow-2xl border border-gray-200">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg text-white">
+                  <Plus size={20} />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800">Add Stock to Portfolio</h3>
+              </div>
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors duration-200"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Symbol</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Stock Symbol</label>
                 <input
                   type="text"
                   value={formData.symbol}
                   onChange={(e) => setFormData({...formData, symbol: e.target.value.toUpperCase()})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  placeholder="AAPL"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                  placeholder="e.g., AAPL, MSFT, GOOGL"
                   required
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Shares</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.shares}
-                  onChange={(e) => setFormData({...formData, shares: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Shares</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.shares}
+                    onChange={(e) => setFormData({...formData, shares: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                    placeholder="100"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Purchase Price</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.purchase_price}
+                    onChange={(e) => setFormData({...formData, purchase_price: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                    placeholder="150.00"
+                    required
+                  />
+                </div>
               </div>
+              
               <div>
-                <label className="block text-sm font-medium text-gray-700">Purchase Price</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.purchase_price}
-                  onChange={(e) => setFormData({...formData, purchase_price: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Purchase Date</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Purchase Date</label>
                 <input
                   type="date"
                   value={formData.purchase_date}
                   onChange={(e) => setFormData({...formData, purchase_date: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                   required
                 />
               </div>
-              <div className="flex space-x-4">
+              
+              <div className="flex space-x-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 font-semibold flex items-center justify-center space-x-2"
                 >
-                  Add Stock
+                  <Plus size={18} />
+                  <span>Add Stock</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-xl hover:bg-gray-300 transition-all duration-200 font-semibold"
                 >
                   Cancel
                 </button>
