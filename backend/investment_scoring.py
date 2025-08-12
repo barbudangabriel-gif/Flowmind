@@ -515,17 +515,25 @@ class InvestmentScorer:
         else:
             return "HIGH"
     
-    def _recommend_enhanced_investment_horizon(self, scores: Dict[str, float], technical_data: Dict[str, Any]) -> str:
-        """Enhanced investment horizon recommendation"""
+    def _recommend_enhanced_investment_horizon(self, scores: Dict[str, float], technical_data: Dict[str, Any], sentiment_data: Dict[str, Any] = None) -> str:
+        """Enhanced investment horizon recommendation including sentiment analysis"""
         trend_direction = technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL')
         momentum_score = scores.get('momentum_score', 50)
         value_score = scores.get('value_score', 50)
         
-        # Strong technical momentum suggests shorter-term opportunities
+        # Include sentiment in decision making
+        sentiment_direction = 'NEUTRAL'
+        if sentiment_data:
+            sentiment_direction = sentiment_data.get('insights', {}).get('direction', 'NEUTRAL')
+        
+        # Strong technical momentum + positive sentiment suggests shorter-term opportunities
         if momentum_score >= 80 and trend_direction in ['BULLISH', 'BEARISH']:
-            return "SHORT-TERM"
-        # Good value with neutral/positive technical suggests long-term
-        elif value_score >= 75 and trend_direction != 'BEARISH':
+            if sentiment_direction == 'POSITIVE':
+                return "SHORT-TERM"
+            else:
+                return "MEDIUM-TERM"
+        # Good value with neutral/positive technical and sentiment suggests long-term
+        elif value_score >= 75 and trend_direction != 'BEARISH' and sentiment_direction != 'NEGATIVE':
             return "LONG-TERM"
         else:
             return "MEDIUM-TERM"
