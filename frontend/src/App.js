@@ -255,9 +255,23 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="flex items-center space-x-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-3 border-blue-500 border-t-transparent"></div>
-          <span className="text-gray-600 font-medium">Loading market data...</span>
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            {/* Animated loading spinner with multiple rings */}
+            <div className="w-16 h-16 border-4 border-blue-200 rounded-full animate-spin"></div>
+            <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+            <div className="absolute top-2 left-2 w-12 h-12 border-4 border-blue-300 rounded-full border-t-transparent animate-spin animation-delay-150"></div>
+          </div>
+          <div className="text-center">
+            <span className="text-gray-700 font-medium text-lg">Loading market data...</span>
+            <p className="text-gray-500 text-sm mt-1">Getting real-time stock prices and market indices</p>
+          </div>
+          {/* Progress dots */}
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce animation-delay-150"></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce animation-delay-300"></div>
+          </div>
         </div>
       </div>
     );
