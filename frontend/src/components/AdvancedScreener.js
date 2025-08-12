@@ -113,7 +113,7 @@ const AdvancedScreener = React.memo(() => {
     }
   }, []);
 
-  const applyAdvancedFilter = async () => {
+  const applyAdvancedFilter = useCallback(async () => {
     setLoading(true);
     try {
       // Convert empty strings to null for API
@@ -138,7 +138,7 @@ const AdvancedScreener = React.memo(() => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   const clearFilters = () => {
     setFilters({
