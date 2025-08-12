@@ -69,8 +69,16 @@ class StockMarketAPITester:
         return self.run_test("Top Movers", "GET", "market/top-movers", 200)
 
     def test_stock_data(self, symbol="AAPL"):
-        """Test stock data endpoint"""
-        return self.run_test(f"Stock Data ({symbol})", "GET", f"stocks/{symbol}", 200)
+        """Test stock data endpoint - CRITICAL: Check for real prices"""
+        success, stock_data = self.run_test(f"Stock Data ({symbol})", "GET", f"stocks/{symbol}", 200)
+        if success and symbol == "AAPL":
+            price = stock_data.get('price', 0)
+            print(f"   💰 {symbol} Price: ${price:.2f} (Expected ~$227, NOT $0.00)")
+            if price == 0.0:
+                print(f"   ❌ CRITICAL: {symbol} showing $0.00 price!")
+            elif price > 200:
+                print(f"   ✅ GOOD: {symbol} showing real price")
+        return success
 
     def test_stock_history(self, symbol="AAPL"):
         """Test stock history endpoint"""
