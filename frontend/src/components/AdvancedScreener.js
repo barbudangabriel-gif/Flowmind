@@ -120,7 +120,7 @@ const AdvancedScreener = () => {
       maxChange: '',
       exchange: 'all'
     });
-    setFilteredStocks(stocks);
+    setFilteredStocks(stocks); // Reset to original stocks data
     setCurrentPage(1);
   };
 
