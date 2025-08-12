@@ -110,10 +110,10 @@ class SmartMoneyAnalyzer:
                 market_structure, bos_choch, current_price
             )
             
-            return {
+            result = {
                 "symbol": symbol.upper(),
                 "analysis_timestamp": datetime.now().isoformat(),
-                "current_price": current_price,
+                "current_price": float(current_price),
                 "timeframe": period,
                 
                 # Smart Money Concepts
@@ -144,6 +144,9 @@ class SmartMoneyAnalyzer:
                     market_structure, current_price
                 )
             }
+            
+            # Convert all numpy types to native Python types
+            return convert_numpy_types(result)
             
         except Exception as e:
             self.logger.error(f"Error in Smart Money analysis for {symbol}: {str(e)}")
