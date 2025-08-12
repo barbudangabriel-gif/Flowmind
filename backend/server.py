@@ -39,7 +39,33 @@ app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
+# Define Enhanced Models
+class ExtendedHoursData(BaseModel):
+    premarket: Optional[Dict[str, Any]] = None
+    postmarket: Optional[Dict[str, Any]] = None
+
+class EnhancedStockData(BaseModel):
+    symbol: str
+    name: str
+    sector: str
+    industry: str
+    price: float
+    change: float
+    change_percent: float
+    volume: int
+    market_cap: Optional[float] = None
+    pe_ratio: Optional[float] = None
+    dividend_yield: Optional[float] = None
+    week_52_high: Optional[float] = None
+    week_52_low: Optional[float] = None
+    beta: Optional[float] = None
+    avg_volume: Optional[int] = None
+    exchange: str
+    market_state: str = "UNKNOWN"
+    extended_hours: Dict[str, Any] = Field(default_factory=dict)
+    timestamp: str
+    data_source: str = "Enhanced"
+
 class StockData(BaseModel):
     symbol: str
     price: float
