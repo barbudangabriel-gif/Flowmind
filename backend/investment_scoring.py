@@ -1,5 +1,6 @@
 """
 Investment Scoring System - Algoritm pentru cele mai bune oportunități de investiții
+Enhanced with Technical Analysis: Overall Trend, Indicators, Price Action
 """
 import asyncio
 from typing import List, Dict, Any, Optional
@@ -7,29 +8,32 @@ import numpy as np
 from datetime import datetime, timedelta
 import logging
 from enhanced_ticker_data import enhanced_ticker_manager
+from technical_analysis_enhanced import technical_analyzer
 
 logger = logging.getLogger(__name__)
 
 class InvestmentScorer:
     def __init__(self):
+        # Updated weights to include technical analysis (50/50 split)
         self.weights = {
-            # Valuation metrics (35%)
-            'pe_score': 0.15,        # P/E ratio 
-            'pb_score': 0.10,        # Price-to-book
-            'value_score': 0.10,     # Overall valuation
+            # Fundamental Analysis (50%)
+            'pe_score': 0.08,           # P/E ratio 
+            'pb_score': 0.06,           # Price-to-book
+            'value_score': 0.08,        # Overall valuation
+            'growth_score': 0.08,       # Revenue/earnings growth
+            'profitability_score': 0.07, # ROE, margins
+            'dividend_score': 0.06,     # Dividend yield & stability
+            'financial_health': 0.07,   # Debt ratios, cash
             
-            # Growth metrics (25%)
-            'momentum_score': 0.15,   # Price momentum
-            'growth_score': 0.10,     # Revenue/earnings growth
+            # Technical Analysis (50%)
+            'trend_score': 0.15,        # Overall trend direction & strength
+            'momentum_score': 0.12,     # RSI, MACD, Stochastic
+            'volume_score': 0.08,       # Volume confirmation
+            'price_action_score': 0.10, # Price patterns, volatility
+            'support_resistance_score': 0.05, # S/R levels
             
-            # Quality metrics (25%)
-            'profitability_score': 0.10,  # ROE, margins
-            'dividend_score': 0.08,       # Dividend yield & stability
-            'financial_health': 0.07,     # Debt ratios, cash
-            
-            # Market metrics (15%)
-            'volume_score': 0.08,         # Trading volume
-            'volatility_score': 0.07,     # Risk (Beta, volatility)
+            # Market Metrics (Combined)
+            'volatility_score': 0.05,   # Risk (Beta, volatility)
         }
     
     async def calculate_investment_score(self, stock_data: Dict[str, Any]) -> Dict[str, Any]:
