@@ -140,7 +140,7 @@ const AdvancedScreener = React.memo(() => {
     }
   }, [filters]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setFilters({
       minPrice: '',
       maxPrice: '',
@@ -156,7 +156,7 @@ const AdvancedScreener = React.memo(() => {
     });
     setFilteredStocks(stocks); // Reset to original stocks data
     setCurrentPage(1);
-  };
+  }, [stocks]);
 
   const handleSort = (key) => {
     let direction = 'asc';
