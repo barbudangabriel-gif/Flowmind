@@ -222,6 +222,14 @@ def main():
     tester.test_market_overview()
     tester.test_top_movers()
     
+    # Test NEW ticker endpoints
+    print("\n🎯 Testing NEW Ticker Endpoints")
+    tester.test_ticker_endpoints()
+    
+    # Test NEW screener endpoints
+    print("\n🔍 Testing NEW Advanced Screener Endpoints")
+    tester.test_screener_endpoints()
+    
     # Test stock data endpoints
     print("\n📈 Testing Stock Data Endpoints")
     popular_stocks = ["AAPL", "GOOGL", "MSFT", "TSLA"]
