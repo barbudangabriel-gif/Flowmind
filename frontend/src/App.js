@@ -2448,6 +2448,8 @@ const CongressionalTrades = () => {
 const TradingStrategies = () => {
   const [strategies, setStrategies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAdvancedModal, setShowAdvancedModal] = useState(false);
+  const [selectedStrategy, setSelectedStrategy] = useState(null);
   const { isDarkMode } = useTheme();
 
   // Load Plotly dynamically
