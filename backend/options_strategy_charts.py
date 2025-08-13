@@ -89,7 +89,7 @@ class OptionsStrategyChartGenerator:
             mode='lines',
             name='P&L',
             line=dict(color='#3B82F6', width=3),
-            hovertemplate=f'<b>Price: $%{{x:.2f}}</b><br>P&L: $%{{y:.0f}}<extra></extra>'
+            hovertemplate='<b>Price: $%{x:.2f}</b><br>P&L: $%{y:.0f}<extra></extra>'
         ))
         
         # Add breakeven lines
