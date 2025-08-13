@@ -304,6 +304,20 @@ class UnusualWhalesService:
         except:
             return 25000  # Default estimate
     
+    def _convert_df_to_dict(self, df) -> Dict[str, Any]:
+        """Convert pandas DataFrame to JSON-serializable dictionary"""
+        try:
+            result = {}
+            for index, row in df.iterrows():
+                if isinstance(row, pd.Series):
+                    result[str(index)] = {str(k): float(v) if pd.api.types.is_numeric_dtype(type(v)) else str(v) for k, v in row.items()}
+                else:
+                    result[str(index)] = float(row) if pd.api.types.is_numeric_dtype(type(row)) else str(row)
+            return result
+        except Exception as e:
+            logger.error(f"Error converting DataFrame to dict: {str(e)}")
+            return {}
+    
     def _get_ticker_sector(self, ticker: str) -> str:
         """Get sector for ticker (simplified mapping)"""
         sector_mapping = {
