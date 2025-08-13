@@ -2005,6 +2005,14 @@ function App() {
         return <Watchlist />;
       case 'technical':
         return <TechnicalAnalysis />;
+      case 'options-flow':
+        return <OptionsFlow />;
+      case 'dark-pool':
+        return <DarkPool />;
+      case 'congressional':
+        return <CongressionalTrades />;
+      case 'trading-strategies':
+        return <TradingStrategies />;
       case 'news':
         return <MarketNews />;
       default:
