@@ -502,13 +502,13 @@ class UnusualWhalesService:
         return {
             "summary": {
                 "total_trades": len(trades),
-                "total_dark_volume": total_dark_volume,
-                "avg_dark_percentage": round(avg_dark_percentage, 2),
-                "high_significance_trades": high_significance,
-                "institutional_signals": institutional_signals
+                "total_dark_volume": int(total_dark_volume),
+                "avg_dark_percentage": round(float(avg_dark_percentage), 2),
+                "high_significance_trades": int(high_significance),
+                "institutional_signals": int(institutional_signals)
             },
             "implications": implications,
-            "top_tickers_by_volume": df.groupby('ticker')['dark_volume'].sum().nlargest(5).to_dict(),
+            "top_tickers_by_volume": {str(k): int(v) for k, v in df.groupby('ticker')['dark_volume'].sum().nlargest(5).to_dict().items()},
             "analysis_timestamp": datetime.now().isoformat()
         }
     
