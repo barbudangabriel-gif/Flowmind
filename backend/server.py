@@ -1638,6 +1638,7 @@ async def get_trading_strategies_from_unusual_whales():
                 "congressional_trades_analyzed": len(congressional_data)
             },
             "tradestation_ready": True,
+            "charts_included": True,
             "disclaimer": "These strategies are generated from unusual market activity patterns. Always perform your own due diligence and risk assessment before executing trades.",
             "timestamp": datetime.utcnow().isoformat()
         }
