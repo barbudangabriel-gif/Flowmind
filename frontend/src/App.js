@@ -1985,4 +1985,10 @@ function App() {
   );
 }
 
-export default App;
+export default function AppWithTheme() {
+  return (
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  );
+}
