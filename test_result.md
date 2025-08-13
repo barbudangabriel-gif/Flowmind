@@ -111,11 +111,14 @@ backend:
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: true
         - agent: "main"
         - comment: "Enhanced Portfolio component with TradeStation-inspired features implemented. Added multi-tab interface (Positions, Options, Performance, Risk), real-time P&L tracking, modern UI, and Add Position functionality. Need to test backend API compatibility."
+        - working: true
+        - agent: "testing"
+        - comment: "✅ WORKING: Enhanced Portfolio Management API fully operational with TradeStation-inspired features. All CRUD operations tested successfully: GET /api/portfolio returns proper structure with total_value, total_cost, total_profit_loss, total_profit_loss_percent, and items. POST /api/portfolio successfully creates positions with real-time P&L calculations (AAPL: $229.65, +2.07% P&L; MSFT: $529.24, +26.01% P&L). DELETE /api/portfolio/{id} works correctly. Portfolio summary calculations accurate with real-time pricing. All enhanced position fields (current_price, current_value, profit_loss, profit_loss_percent) working perfectly. API ready for production use with TradeStation-inspired frontend."
 
   - task: "Investment Scoring System"
     implemented: true
