@@ -253,8 +253,8 @@ async def get_technical_indicators(symbol: str) -> Dict[str, Any]:
 @api_router.get("/")
 async def root():
     return {
-        "message": "Enhanced Stock Market Analysis API", 
-        "version": "3.0.0", 
+        "message": "Enhanced Stock Market Analysis API with Unusual Whales Integration", 
+        "version": "4.0.0", 
         "features": [
             "Real-time Stock Prices",
             "Pre/Post Market Data", 
@@ -264,10 +264,22 @@ async def root():
             "Portfolio Management",
             "🎯 Investment Scoring System",
             "📊 Top Investment Picks",
-            "⚖️ Risk Analysis"
+            "⚖️ Risk Analysis",
+            "🐋 Unusual Whales Integration",
+            "📈 Options Flow Alerts",
+            "🌊 Dark Pool Analysis",
+            "🏛️ Congressional Trades Tracking",
+            "🎯 AI-Powered Trading Strategies"
         ],
         "market_state": enhanced_ticker_manager._get_market_state(),
-        "new_endpoints": {
+        "unusual_whales_endpoints": {
+            "options_flow": "/unusual-whales/options/flow-alerts",
+            "dark_pool": "/unusual-whales/dark-pool/recent", 
+            "congressional": "/unusual-whales/congressional/trades",
+            "comprehensive_analysis": "/unusual-whales/analysis/comprehensive",
+            "trading_strategies": "/unusual-whales/trading-strategies"
+        },
+        "investment_endpoints": {
             "investment_score": "/investments/score/{symbol}",
             "top_picks": "/investments/top-picks",
             "sector_leaders": "/investments/sector-leaders",
