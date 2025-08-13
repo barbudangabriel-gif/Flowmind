@@ -457,15 +457,15 @@ class UnusualWhalesService:
         return {
             "summary": {
                 "total_alerts": len(alerts),
-                "total_premium": total_premium,
-                "avg_premium": avg_premium,
-                "bullish_count": bullish_count,
-                "bearish_count": bearish_count,
+                "total_premium": float(total_premium),
+                "avg_premium": float(avg_premium),
+                "bullish_count": int(bullish_count),
+                "bearish_count": int(bearish_count),
                 "opening_trades": len(opening_trades),
                 "large_trades": len(large_trades)
             },
             "signals": signals,
-            "top_tickers": df.groupby('symbol')['premium'].sum().nlargest(5).to_dict(),
+            "top_tickers": {str(k): float(v) for k, v in df.groupby('symbol')['premium'].sum().nlargest(5).to_dict().items()},
             "analysis_timestamp": datetime.now().isoformat()
         }
     
