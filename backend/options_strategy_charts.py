@@ -341,9 +341,9 @@ class OptionsStrategyChartGenerator:
         return {
             'plotly_chart': plotly_json,
             'chart_type': 'volatility',
-            'max_loss': max_loss,
-            'breakeven_upper': upper_breakeven,
-            'breakeven_lower': lower_breakeven
+            'max_loss': float(max_loss),
+            'breakeven_upper': float(upper_breakeven),
+            'breakeven_lower': float(lower_breakeven)
         }
     
     def _generate_iron_condor_chart(self, strategy: Dict[str, Any]) -> Dict[str, str]:
