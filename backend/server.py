@@ -1339,135 +1339,290 @@ async def get_trading_strategies_from_unusual_whales():
         large_premium_alerts = [o for o in options_data if o.get('trade_size') in ['whale', 'large']]
         if large_premium_alerts:
             top_ticker = max(large_premium_alerts, key=lambda x: x.get('premium', 0))
+            sentiment = top_ticker.get('sentiment', 'neutral')
+            dte = top_ticker.get('dte', 0)
+            underlying_price = top_ticker.get('underlying_price', 0)
+            
+            # Generate specific options strategy based on sentiment and DTE
+            if sentiment == 'bullish' and dte > 14:
+                strategy_name = "Bull Call Spread"
+                strategy_type = "vertical_spread"
+                lower_strike = int(underlying_price * 0.98)
+                upper_strike = int(underlying_price * 1.05)
+            elif sentiment == 'bearish' and dte > 14:
+                strategy_name = "Bear Put Spread"
+                strategy_type = "vertical_spread"
+                lower_strike = int(underlying_price * 0.95)
+                upper_strike = int(underlying_price * 1.02)
+            elif sentiment == 'bullish' and dte <= 14:
+                strategy_name = "Long Call"
+                strategy_type = "directional"
+                lower_strike = int(underlying_price * 1.02)
+                upper_strike = None
+            else:
+                strategy_name = "Long Put"
+                strategy_type = "directional"
+                lower_strike = int(underlying_price * 0.98)
+                upper_strike = None
+                
             strategies.append({
-                "strategy_name": "Large Premium Flow Following",
+                "strategy_name": strategy_name,
                 "ticker": top_ticker['symbol'],
-                "strategy_type": "options_momentum",
-                "confidence": 0.7,
-                "timeframe": "1-3 days",
+                "strategy_type": strategy_type,
+                "confidence": 0.8,
+                "timeframe": f"{dte} days to expiration",
                 "entry_logic": {
-                    "condition": f"Follow large premium flow in {top_ticker['symbol']}",
+                    "condition": f"Large premium flow detected in {top_ticker['symbol']} ({sentiment})",
                     "premium_threshold": top_ticker.get('premium', 0),
-                    "sentiment": top_ticker.get('sentiment', 'neutral'),
-                    "dte": top_ticker.get('dte', 0)
+                    "sentiment": sentiment,
+                    "underlying_price": underlying_price,
+                    "volume": top_ticker.get('volume', 0),
+                    "dte": dte
                 },
                 "tradestation_execution": {
-                    "instrument_type": "options",
-                    "action": "buy_to_open" if top_ticker.get('sentiment') == 'bullish' else "buy_to_open",
-                    "strike_type": top_ticker.get('strike_type', ''),
+                    "strategy_type": strategy_name.lower().replace(" ", "_"),
+                    "underlying": top_ticker['symbol'],
+                    "legs": [
+                        {
+                            "action": "buy" if strategy_name in ["Long Call", "Long Put"] else "buy",
+                            "strike": lower_strike,
+                            "option_type": "call" if "Call" in strategy_name else "put",
+                            "quantity": 1
+                        }
+                    ] + ([{
+                        "action": "sell",
+                        "strike": upper_strike,
+                        "option_type": "call" if "Call" in strategy_name else "put", 
+                        "quantity": 1
+                    }] if upper_strike else []),
                     "expiration": top_ticker.get('expiration', ''),
-                    "stop_loss": "20% below entry",
-                    "profit_target": "50% above entry"
+                    "max_risk": f"${abs(upper_strike - lower_strike) * 100}" if upper_strike else "Premium paid",
+                    "max_profit": "Premium paid" if not upper_strike else f"${(upper_strike - lower_strike) * 100 - 200}",
+                    "breakeven": f"${lower_strike + 2}" if not upper_strike else f"${lower_strike + 2}"
                 },
                 "risk_management": {
                     "max_position_size": "2% of portfolio",
-                    "stop_loss_percentage": 20,
-                    "profit_target_percentage": 50
+                    "stop_loss_percentage": 50 if not upper_strike else 25,
+                    "profit_target_percentage": 100 if not upper_strike else 50,
+                    "max_loss": f"${200}" if upper_strike else "Premium paid"
                 }
             })
         
-        # Strategy 2: Dark Pool Accumulation Play
-        high_significance_dark = [d for d in dark_pool_data if d.get('significance') in ['high', 'very_high']]
-        if high_significance_dark:
-            top_dark_ticker = max(high_significance_dark, key=lambda x: x.get('dark_volume', 0))
-            strategies.append({
-                "strategy_name": "Dark Pool Accumulation",
-                "ticker": top_dark_ticker['ticker'],
-                "strategy_type": "equity_momentum",
-                "confidence": 0.6,
-                "timeframe": "3-10 days",
-                "entry_logic": {
-                    "condition": f"High institutional dark pool activity in {top_dark_ticker['ticker']}",
-                    "dark_percentage": top_dark_ticker.get('dark_percentage', 0),
-                    "volume": top_dark_ticker.get('dark_volume', 0)
-                },
-                "tradestation_execution": {
-                    "instrument_type": "equity",
-                    "action": "buy",
-                    "quantity": "calculated_based_on_position_size",
-                    "order_type": "limit_on_support",
-                    "stop_loss": "3% below entry",
-                    "profit_target": "breakout_above_resistance"
-                },
-                "risk_management": {
-                    "max_position_size": "3% of portfolio",
-                    "stop_loss_percentage": 3,
-                    "trailing_stop": True
-                }
-            })
+        # Strategy 2: High IV Options Strategies
+        high_vol_alerts = [o for o in options_data if o.get('volume_oi_ratio', 0) > 3.0]
+        if high_vol_alerts and len(strategies) < 4:
+            ticker_counts = {}
+            for alert in high_vol_alerts:
+                ticker = alert['symbol']
+                ticker_counts[ticker] = ticker_counts.get(ticker, 0) + 1
+            
+            if ticker_counts:
+                top_ticker_name = max(ticker_counts, key=ticker_counts.get)
+                ticker_alerts = [a for a in high_vol_alerts if a['symbol'] == top_ticker_name]
+                
+                # Check if we have both calls and puts (potential straddle/strangle)
+                has_calls = any(a.get('sentiment') == 'bullish' for a in ticker_alerts)
+                has_puts = any(a.get('sentiment') == 'bearish' for a in ticker_alerts)
+                
+                avg_dte = sum(a.get('dte', 0) for a in ticker_alerts) / len(ticker_alerts)
+                avg_price = sum(a.get('underlying_price', 0) for a in ticker_alerts) / len(ticker_alerts)
+                
+                if has_calls and has_puts and avg_dte > 7:
+                    # High volatility expected - Straddle or Strangle
+                    strategy_name = "Long Straddle" if len(ticker_alerts) >= 4 else "Long Strangle"
+                    atm_strike = int(avg_price)
+                    
+                    strategies.append({
+                        "strategy_name": strategy_name,
+                        "ticker": top_ticker_name,
+                        "strategy_type": "volatility",
+                        "confidence": 0.7,
+                        "timeframe": f"{int(avg_dte)} days to expiration",
+                        "entry_logic": {
+                            "condition": f"High volume/OI ratio in {top_ticker_name} suggesting volatility spike",
+                            "volume_oi_ratio": max(a.get('volume_oi_ratio', 0) for a in ticker_alerts),
+                            "both_calls_puts": True,
+                            "underlying_price": avg_price
+                        },
+                        "tradestation_execution": {
+                            "strategy_type": strategy_name.lower().replace(" ", "_"),
+                            "underlying": top_ticker_name,
+                            "legs": [
+                                {
+                                    "action": "buy",
+                                    "strike": atm_strike,
+                                    "option_type": "call",
+                                    "quantity": 1
+                                },
+                                {
+                                    "action": "buy", 
+                                    "strike": atm_strike + (5 if strategy_name == "Long Strangle" else 0),
+                                    "option_type": "put",
+                                    "quantity": 1
+                                }
+                            ],
+                            "expiration": ticker_alerts[0].get('expiration', ''),
+                            "max_risk": "Total premium paid",
+                            "max_profit": "Unlimited",
+                            "breakeven_upper": f"${atm_strike + 10}",
+                            "breakeven_lower": f"${atm_strike - 10}"
+                        },
+                        "risk_management": {
+                            "max_position_size": "1.5% of portfolio",
+                            "stop_loss_percentage": 50,
+                            "profit_target": "200% or significant move in underlying",
+                            "time_decay_risk": "High - monitor theta"
+                        }
+                    })
+                elif avg_dte > 30:  # Longer term, consider Iron Condor for income
+                    strategy_name = "Iron Condor"
+                    center_strike = int(avg_price)
+                    
+                    strategies.append({
+                        "strategy_name": strategy_name,
+                        "ticker": top_ticker_name,
+                        "strategy_type": "income",
+                        "confidence": 0.6,
+                        "timeframe": f"{int(avg_dte)} days to expiration",
+                        "entry_logic": {
+                            "condition": f"Range-bound movement expected in {top_ticker_name}",
+                            "underlying_price": avg_price,
+                            "dte": avg_dte,
+                            "market_assumption": "Low volatility/sideways movement"
+                        },
+                        "tradestation_execution": {
+                            "strategy_type": "iron_condor",
+                            "underlying": top_ticker_name,
+                            "legs": [
+                                {"action": "sell", "strike": center_strike - 5, "option_type": "put", "quantity": 1},
+                                {"action": "buy", "strike": center_strike - 15, "option_type": "put", "quantity": 1},
+                                {"action": "sell", "strike": center_strike + 5, "option_type": "call", "quantity": 1},
+                                {"action": "buy", "strike": center_strike + 15, "option_type": "call", "quantity": 1}
+                            ],
+                            "expiration": ticker_alerts[0].get('expiration', ''),
+                            "max_risk": "$1000",
+                            "max_profit": "Net credit received",
+                            "profit_range": f"${center_strike - 5} to ${center_strike + 5}"
+                        },
+                        "risk_management": {
+                            "max_position_size": "3% of portfolio", 
+                            "stop_loss": "50% of max risk",
+                            "profit_target": "25-50% of max profit",
+                            "management": "Close early if 21 DTE and profitable"
+                        }
+                    })
         
-        # Strategy 3: Congressional Insider Following
+        # Strategy 3: Congressional Insider Following with Options Overlay
         recent_purchases = [c for c in congressional_data 
                           if c.get('transaction_type') == 'Purchase' 
-                          and (datetime.now() - datetime.strptime(c.get('transaction_date', '1970-01-01'), '%Y-%m-%d')).days <= 14]
+                          and (datetime.now() - datetime.strptime(c.get('transaction_date', '1970-01-01'), '%Y-%m-%d')).days <= 21]
         
-        if recent_purchases:
-            # Group by ticker and find the most purchased
+        if recent_purchases and len(strategies) < 4:
             from collections import Counter
             ticker_purchases = Counter([c['ticker'] for c in recent_purchases])
             if ticker_purchases:
                 top_congress_ticker = ticker_purchases.most_common(1)[0][0]
+                purchase_count = ticker_purchases[top_congress_ticker]
+                
+                # Find if there's options flow on the same ticker
+                matching_options = [o for o in options_data if o.get('symbol') == top_congress_ticker]
+                
+                if matching_options:
+                    # Combine congressional and options signals
+                    avg_sentiment = Counter([o.get('sentiment') for o in matching_options]).most_common(1)[0][0]
+                    strategy_name = "Synthetic Long" if avg_sentiment == 'bullish' else "Protective Put"
+                else:
+                    # Pure congressional play
+                    strategy_name = "LEAPS Call" 
+                    avg_sentiment = 'bullish'
+                
                 strategies.append({
-                    "strategy_name": "Congressional Insider Following",
+                    "strategy_name": strategy_name,
                     "ticker": top_congress_ticker,
-                    "strategy_type": "equity_swing",
-                    "confidence": 0.5,
-                    "timeframe": "2-8 weeks",
+                    "strategy_type": "policy_play",
+                    "confidence": 0.75 if matching_options else 0.6,
+                    "timeframe": "3-6 months",
                     "entry_logic": {
-                        "condition": f"Recent congressional purchases in {top_congress_ticker}",
-                        "purchase_count": ticker_purchases[top_congress_ticker],
-                        "sector": [c.get('sector') for c in recent_purchases if c['ticker'] == top_congress_ticker][0]
+                        "condition": f"Congressional insider activity in {top_congress_ticker} + options confirmation",
+                        "congress_purchases": purchase_count,
+                        "options_confirmation": len(matching_options) > 0,
+                        "sector": [c.get('sector') for c in recent_purchases if c['ticker'] == top_congress_ticker][0],
+                        "policy_catalyst_expected": True
                     },
                     "tradestation_execution": {
-                        "instrument_type": "equity",
-                        "action": "buy",
-                        "quantity": "calculated_based_on_position_size",
-                        "order_type": "market_on_break",
-                        "stop_loss": "5% below entry",
-                        "profit_target": "policy_catalyst_dependent"
+                        "strategy_type": strategy_name.lower().replace(" ", "_"),
+                        "underlying": top_congress_ticker,
+                        "legs": [
+                            {
+                                "action": "buy",
+                                "strike": "ITM or ATM",
+                                "option_type": "call",
+                                "quantity": 1,
+                                "expiration": "6+ months out (LEAPS)"
+                            }
+                        ] + ([{
+                            "action": "buy",
+                            "strike": "OTM",
+                            "option_type": "put", 
+                            "quantity": 1,
+                            "expiration": "3 months out"
+                        }] if strategy_name == "Protective Put" else []),
+                        "max_risk": "Premium paid",
+                        "max_profit": "Unlimited upside potential",
+                        "catalyst_dependent": True
                     },
                     "risk_management": {
-                        "max_position_size": "2.5% of portfolio",
-                        "stop_loss_percentage": 5,
-                        "time_stop": "8_weeks"
+                        "max_position_size": "2% of portfolio",
+                        "stop_loss_percentage": 30,
+                        "time_stop": "Before earnings if no catalyst",
+                        "catalyst_monitoring": "Policy announcements, committee hearings"
                     }
                 })
         
-        # Strategy 4: Cross-Signal Confirmation
-        if len(strategies) >= 2:
-            # Look for tickers that appear in multiple data sources
-            all_tickers = []
-            all_tickers.extend([o.get('symbol') for o in options_data])
-            all_tickers.extend([d.get('ticker') for d in dark_pool_data])
-            all_tickers.extend([c.get('ticker') for c in congressional_data])
-            
-            ticker_counts = Counter(all_tickers)
-            multi_signal_tickers = [ticker for ticker, count in ticker_counts.items() if count >= 2]
-            
-            if multi_signal_tickers:
-                top_multi_signal = ticker_counts.most_common(1)[0][0]
+        # Strategy 4: Mean Reversion Play
+        if dark_pool_data and len(strategies) < 4:
+            high_dark_pool = [d for d in dark_pool_data if d.get('dark_percentage', 0) > 60]
+            if high_dark_pool:
+                top_dark_ticker = max(high_dark_pool, key=lambda x: x.get('dark_volume', 0))
+                ticker_symbol = top_dark_ticker['ticker']
+                
+                # Look for oversold/overbought conditions
+                strategy_name = "Cash-Secured Put" if top_dark_ticker.get('institutional_signal') else "Covered Call"
+                
                 strategies.append({
-                    "strategy_name": "Multi-Signal Confirmation",
-                    "ticker": top_multi_signal,
-                    "strategy_type": "high_conviction",
-                    "confidence": 0.8,
-                    "timeframe": "1-2 weeks",
+                    "strategy_name": strategy_name,
+                    "ticker": ticker_symbol,
+                    "strategy_type": "income_generation",
+                    "confidence": 0.65,
+                    "timeframe": "30-45 days",
                     "entry_logic": {
-                        "condition": f"Multiple unusual activity signals in {top_multi_signal}",
-                        "signal_count": ticker_counts[top_multi_signal],
-                        "sources": "options_flow, dark_pool, congressional"
+                        "condition": f"High dark pool activity suggests institutional accumulation in {ticker_symbol}",
+                        "dark_percentage": top_dark_ticker.get('dark_percentage', 0),
+                        "institutional_signal": top_dark_ticker.get('institutional_signal', False),
+                        "mean_reversion_expected": True
                     },
                     "tradestation_execution": {
-                        "instrument_type": "combo_strategy",
-                        "equity_position": "3% of portfolio",
-                        "options_overlay": "protective_puts_or_covered_calls",
-                        "stop_loss": "4% below equity entry",
-                        "profit_target": "technical_resistance_levels"
+                        "strategy_type": strategy_name.lower().replace("-", "_").replace(" ", "_"),
+                        "underlying": ticker_symbol,
+                        "legs": [
+                            {
+                                "action": "sell",
+                                "strike": "OTM",
+                                "option_type": "put" if "Put" in strategy_name else "call",
+                                "quantity": 1,
+                                "expiration": "30-45 DTE"
+                            }
+                        ],
+                        "collateral_required": "$10,000 cash" if "Put" in strategy_name else "100 shares",
+                        "max_risk": "Strike price - premium" if "Put" in strategy_name else "Unlimited upside",
+                        "max_profit": "Premium collected",
+                        "assignment_plan": "Ready to own stock" if "Put" in strategy_name else "Ready to sell shares"
                     },
                     "risk_management": {
-                        "max_position_size": "4% of portfolio",
-                        "diversified_approach": True,
-                        "hedge_with_options": True
+                        "max_position_size": "5% of portfolio",
+                        "profit_target": "50% of premium in 21 days",
+                        "roll_strategy": "Roll out and down/up if challenged",
+                        "assignment_ready": True
                     }
                 })
         
