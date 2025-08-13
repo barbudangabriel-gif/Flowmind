@@ -48,6 +48,12 @@ const InvestmentScoring = React.lazy(() => import("./components/InvestmentScorin
 import "./App.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Colors for portfolio charts
+const COLORS = [
+  '#2563eb', '#7c3aed', '#dc2626', '#ea580c', '#ca8a04', 
+  '#16a34a', '#0891b2', '#c2410c', '#9333ea', '#0d9488'
+];
 const API = `${BACKEND_URL}/api`;
 
 // Loading fallback component with enhanced design
