@@ -920,6 +920,12 @@ const Portfolio = React.memo(() => {
       </div>
     </div>
   );
+
+  return (
+    <div>
+      <p>Portfolio component placeholder</p>
+    </div>
+  );
 };
 
 // Stock Screener Component (Simple version)
