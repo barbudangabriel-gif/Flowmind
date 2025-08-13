@@ -1973,6 +1973,7 @@ const MarketNews = () => {
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { isDarkMode } = useTheme();
 
   // Function to handle sidebar state from Sidebar component
   const handleSidebarToggle = (collapsed) => {
