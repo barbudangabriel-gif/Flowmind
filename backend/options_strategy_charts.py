@@ -372,12 +372,12 @@ class OptionsStrategyChartGenerator:
         
         # Add P&L line
         fig.add_trace(go.Scatter(
-            x=price_range,
-            y=total_pl * 100,
+            x=price_range.tolist(),
+            y=(total_pl * 100).tolist(),
             mode='lines',
             name='P&L',
             line=dict(color='#F59E0B', width=3),
-            hovertemplate=f'<b>Price: $%{{x:.2f}}</b><br>P&L: $%{{y:.0f}}<extra></extra>'
+            hovertemplate='<b>Price: $%{x:.2f}</b><br>P&L: $%{y:.0f}<extra></extra>'
         ))
         
         # Add profit zone shading
