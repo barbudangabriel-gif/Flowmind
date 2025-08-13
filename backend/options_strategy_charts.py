@@ -179,8 +179,8 @@ class OptionsStrategyChartGenerator:
         colors = ['#EF4444' if pl < 0 else '#22C55E' for pl in total_pl]
         
         fig.add_trace(go.Scatter(
-            x=price_range,
-            y=total_pl * 100,
+            x=price_range.tolist(),
+            y=(total_pl * 100).tolist(),
             mode='lines',
             name='P&L',
             line=dict(color='#3B82F6', width=3),
