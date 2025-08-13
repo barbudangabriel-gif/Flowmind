@@ -236,8 +236,8 @@ class OptionsStrategyChartGenerator:
         return {
             'plotly_chart': plotly_json,
             'chart_type': 'directional',
-            'max_loss': max_loss,
-            'breakeven': breakeven
+            'max_loss': float(max_loss),
+            'breakeven': float(breakeven)
         }
     
     def _generate_volatility_chart(self, strategy: Dict[str, Any]) -> Dict[str, str]:
