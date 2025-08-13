@@ -148,6 +148,15 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       ]
     },
     {
+      title: "Unusual Whales 🐋",
+      items: [
+        { id: 'options-flow', label: 'Options Flow', icon: Activity, color: 'from-cyan-500 to-blue-600', badge: '📈', shortLabel: 'Flow' },
+        { id: 'dark-pool', label: 'Dark Pool', icon: Eye, color: 'from-gray-600 to-slate-700', badge: '🌊', shortLabel: 'Dark' },
+        { id: 'congressional', label: 'Congressional Trades', icon: Briefcase, color: 'from-red-500 to-pink-600', badge: '🏛️', shortLabel: 'Congress' },
+        { id: 'trading-strategies', label: 'Trading Strategies', icon: Target, color: 'from-green-500 to-emerald-600', badge: '🎯', shortLabel: 'Strategies' }
+      ]
+    },
+    {
       title: "Tools & Alerts",
       items: [
         { id: 'watchlist', label: 'Watchlist', icon: Star, color: 'from-yellow-500 to-amber-500', shortLabel: 'Watch' },
