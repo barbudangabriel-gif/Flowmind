@@ -2715,6 +2715,17 @@ const TradingStrategies = () => {
                 Charts show theoretical P&L at expiration. Always perform your own due diligence and risk assessment before executing trades.
               </p>
             </div>
+            
+            {/* Trade Execution Button */}
+            <div className="mt-4 flex justify-center">
+              <button
+                onClick={() => openAdvancedOptionsModal(strategy)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center space-x-2 transition-colors"
+              >
+                <TrendingUp className="w-5 h-5" />
+                <span>Execute Strategy</span>
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -2726,9 +2737,171 @@ const TradingStrategies = () => {
           <p className="text-sm text-gray-500 mt-2">Strategies are generated based on unusual market activity.</p>
         </div>
       )}
+
+      {/* Advanced Options Trading Modal */}
+      {showAdvancedModal && selectedStrategy && (
+        <AdvancedOptionsModal
+          strategy={selectedStrategy}
+          isOpen={showAdvancedModal}
+          onClose={() => {
+            setShowAdvancedModal(false);
+            setSelectedStrategy(null);
+          }}
+          isDarkMode={isDarkMode}
+        />
+      )}
     </div>
   );
 };
+
+// Advanced Options Trading Modal Component  
+const AdvancedOptionsModal = ({ strategy, isOpen, onClose, isDarkMode }) => {
+  const [activeTab, setActiveTab] = useState('expirations');
+  const [selectedExpiration, setSelectedExpiration] = useState('');
+  const [selectedStrike, setSelectedStrike] = useState('');
+  const [selectedStrategy, setSelectedStrategyType] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [priceRange, setPriceRange] = useState({ low: 0, high: 0 });
+  const [optionsChain, setOptionsChain] = useState([]);
+  const [underlyingData, setUnderlyingData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && strategy) {
+      fetchUnderlyingData();
+      generateMockOptionsChain();
+    }
+  }, [isOpen, strategy]);
+
+  const fetchUnderlyingData = async () => {
+    setLoading(true);
+    try {
+      // Simulate fetching underlying stock data
+      const mockData = {
+        symbol: strategy.ticker,
+        price: strategy.entry_logic?.underlying_price || 100,
+        change: 0.35,
+        changePercent: 1.12,
+        company: getCompanyName(strategy.ticker),
+        earnings: '63d',
+        volume: '2.4M',
+        avgVolume: '3.1M'
+      };
+      setUnderlyingData(mockData);
+      
+      // Set initial price range around current price
+      const price = mockData.price;
+      setPriceRange({ low: price * 0.85, high: price * 1.15 });
+      
+    } catch (error) {
+      console.error('Error fetching underlying data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateMockOptionsChain = () => {
+    const ticker = strategy.ticker;
+    const currentPrice = strategy.entry_logic?.underlying_price || 100;
+    
+    // Generate mock options chain with realistic data
+    const expirations = [
+      { date: 'Aug 15', dte: 2, type: 'Standard' },
+      { date: 'Aug 22', dte: 9, type: 'Weeklys' },
+      { date: 'Aug 29', dte: 16, type: 'EoM' },
+      { date: 'Sep 5', dte: 23, type: 'Weeklys' },
+      { date: 'Sep 12', dte: 30, type: 'Weeklys' },
+      { date: 'Sep 19', dte: 37, type: 'Standard' },
+      { date: 'Oct 17', dte: 65, type: 'Monthly' }
+    ];
+
+    const chainData = expirations.map((exp, index) => {
+      // Calculate expected range based on DTE and IV
+      const timeDecay = Math.sqrt(exp.dte / 365);
+      const impliedMove = currentPrice * 0.25 * timeDecay; // ~25% annual IV
+      const expectedLow = currentPrice - impliedMove;
+      const expectedHigh = currentPrice + impliedMove;
+      const movePercent = (impliedMove / currentPrice) * 100;
+      
+      // Calculate IV based on DTE (shorter term = higher IV usually)
+      const baseIV = 45 + (30 - exp.dte) * 0.5;
+      const iv = Math.max(25, Math.min(80, baseIV + Math.random() * 10 - 5));
+      
+      // Max Pain usually near current price
+      const maxPain = Math.round(currentPrice + (Math.random() * 4 - 2));
+      
+      return {
+        expiration: exp.date,
+        dte: exp.dte,
+        type: exp.type,
+        expectedRange: `${expectedLow.toFixed(2)} - ${expectedHigh.toFixed(2)}`,
+        movePercent: `+/- ${movePercent.toFixed(2)}%`,
+        iv: `${iv.toFixed(1)}%`,
+        maxPain: `${maxPain} strike`,
+        strikes: generateStrikesForExpiration(currentPrice, exp.dte)
+      };
+    });
+
+    setOptionsChain(chainData);
+  };
+
+  const generateStrikesForExpiration = (currentPrice, dte) => {
+    const strikes = [];
+    const strikeInterval = currentPrice > 100 ? 5 : (currentPrice > 50 ? 2.5 : 1);
+    const numStrikes = dte > 30 ? 20 : 15; // More strikes for longer expirations
+    
+    for (let i = -numStrikes/2; i <= numStrikes/2; i++) {
+      const strike = currentPrice + (i * strikeInterval);
+      if (strike > 0) {
+        const isITM = strike < currentPrice;
+        const distance = Math.abs(strike - currentPrice);
+        const timeValue = Math.max(0.05, 2 - (distance / currentPrice) * 10);
+        const intrinsicValue = isITM ? Math.max(0, currentPrice - strike) : 0;
+        
+        strikes.push({
+          strike: strike,
+          call: {
+            bid: (intrinsicValue + timeValue * 0.95).toFixed(2),
+            ask: (intrinsicValue + timeValue * 1.05).toFixed(2),
+            volume: Math.floor(Math.random() * 500),
+            oi: Math.floor(Math.random() * 2000),
+            iv: (45 + Math.random() * 20).toFixed(1)
+          },
+          put: {
+            bid: (Math.max(0, strike - currentPrice) + timeValue * 0.95).toFixed(2),
+            ask: (Math.max(0, strike - currentPrice) + timeValue * 1.05).toFixed(2), 
+            volume: Math.floor(Math.random() * 300),
+            oi: Math.floor(Math.random() * 1500),
+            iv: (50 + Math.random() * 15).toFixed(1)
+          }
+        });
+      }
+    }
+    
+    return strikes;
+  };
+
+  const getCompanyName = (ticker) => {
+    const companies = {
+      'AAPL': 'Apple Inc',
+      'MSFT': 'Microsoft Corp', 
+      'GOOGL': 'Alphabet Inc',
+      'TSLA': 'Tesla Inc',
+      'NVDA': 'NVIDIA Corp',
+      'META': 'Meta Platforms',
+      'AMZN': 'Amazon.com Inc'
+    };
+    return companies[ticker] || `${ticker} Corp`;
+  };
+
+  const handleTradeClick = (expiration, strike, optionType) => {
+    setSelectedExpiration(expiration.expiration);
+    setSelectedStrike(strike.strike);
+    // You could open another modal or navigate to order entry here
+    alert(`Selected: ${strategy.ticker} ${strike.strike}${optionType.toUpperCase()} ${expiration.expiration}`);
+  };
+
+  if (!isOpen) return null;
 
 // ==================== END UNUSUAL WHALES COMPONENTS ====================
 
