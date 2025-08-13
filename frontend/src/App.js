@@ -2761,6 +2761,111 @@ const TradingStrategies = () => {
   );
 };
 
+// Advanced Options Trading Modal Component  
+const AdvancedOptionsModal = ({ strategy, isOpen, onClose, isDarkMode }) => {
+  const [activeTab, setActiveTab] = useState('expirations');
+  const [selectedExpiration, setSelectedExpiration] = useState('');
+  const [selectedStrike, setSelectedStrike] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [optionsChain, setOptionsChain] = useState([]);
+  const [underlyingData, setUnderlyingData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && strategy) {
+      fetchUnderlyingData();
+      generateMockOptionsChain();
+    }
+  }, [isOpen, strategy]);
+
+  const fetchUnderlyingData = async () => {
+    setLoading(true);
+    try {
+      const mockData = {
+        symbol: strategy.ticker,
+        price: strategy.entry_logic?.underlying_price || 100,
+        change: 0.35,
+        changePercent: 1.12,
+        company: getCompanyName(strategy.ticker),
+        earnings: '63d'
+      };
+      setUnderlyingData(mockData);
+    } catch (error) {
+      console.error('Error fetching underlying data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateMockOptionsChain = () => {
+    const currentPrice = strategy.entry_logic?.underlying_price || 100;
+    
+    const expirations = [
+      { date: 'Aug 15', dte: 2, type: 'Standard' },
+      { date: 'Aug 22', dte: 9, type: 'Weeklys' },
+      { date: 'Aug 29', dte: 16, type: 'EoM' },
+      { date: 'Sep 5', dte: 23, type: 'Weeklys' },
+      { date: 'Sep 12', dte: 30, type: 'Weeklys' }
+    ];
+
+    const mockChain = expirations.map(exp => ({
+      expiration: exp.date,
+      dte: exp.dte,
+      type: exp.type,
+      strikes: generateStrikesForExpiration(currentPrice, exp.dte)
+    }));
+
+    setOptionsChain(mockChain);
+  };
+
+  const generateStrikesForExpiration = (currentPrice, dte) => {
+    const strikes = [];
+    const priceStep = currentPrice > 100 ? 5 : 2.5;
+    
+    for (let i = -10; i <= 10; i++) {
+      const strikePrice = currentPrice + (i * priceStep);
+      
+      const call = {
+        strike: strikePrice.toFixed(2),
+        type: 'call',
+        bid: (Math.max(0, currentPrice - strikePrice) + Math.random() * 2).toFixed(2),
+        ask: (Math.max(0, currentPrice - strikePrice) + 0.5 + Math.random() * 2).toFixed(2),
+        last: (Math.max(0, currentPrice - strikePrice) + 0.25 + Math.random() * 2).toFixed(2),
+        volume: Math.floor(Math.random() * 500),
+        oi: Math.floor(Math.random() * 2000),
+        iv: (50 + Math.random() * 20).toFixed(1)
+      };
+
+      const put = {
+        strike: strikePrice.toFixed(2),
+        type: 'put',
+        bid: (Math.max(0, strikePrice - currentPrice) + Math.random() * 2).toFixed(2),
+        ask: (Math.max(0, strikePrice - currentPrice) + 0.5 + Math.random() * 2).toFixed(2),
+        last: (Math.max(0, strikePrice - currentPrice) + 0.25 + Math.random() * 2).toFixed(2),
+        volume: Math.floor(Math.random() * 300),
+        oi: Math.floor(Math.random() * 1500),
+        iv: (50 + Math.random() * 15).toFixed(1)
+      };
+
+      strikes.push({ strike: strikePrice, call, put });
+    }
+    
+    return strikes;
+  };
+
+  const getCompanyName = (ticker) => {
+    const companies = {
+      'AAPL': 'Apple Inc',
+      'MSFT': 'Microsoft Corp', 
+      'GOOGL': 'Alphabet Inc',
+      'TSLA': 'Tesla Inc',
+      'NVDA': 'NVIDIA Corp',
+      'META': 'Meta Platforms',
+      'AMZN': 'Amazon.com Inc'
+    };
+    return companies[ticker] || `${ticker} Corp`;
+  };
+
   const handleTradeClick = (expiration, strike, optionType) => {
     setSelectedExpiration(expiration.expiration);
     setSelectedStrike(strike.strike);
