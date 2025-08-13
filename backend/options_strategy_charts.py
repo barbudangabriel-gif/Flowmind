@@ -184,9 +184,9 @@ class OptionsStrategyChartGenerator:
             mode='lines',
             name='P&L',
             line=dict(color='#3B82F6', width=3),
-            fill='tonexty' if is_call else 'tozeroy',
+            fill='tozeroy',
             fillcolor='rgba(59, 130, 246, 0.1)',
-            hovertemplate=f'<b>Price: $%{{x:.2f}}</b><br>P&L: $%{{y:.0f}}<extra></extra>'
+            hovertemplate='<b>Price: $%{x:.2f}</b><br>P&L: $%{y:.0f}<extra></extra>'
         ))
         
         # Add breakeven line
