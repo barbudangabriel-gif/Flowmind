@@ -180,8 +180,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           </button>
 
           {/* Logo/Header */}
-          <div className="mb-8">
-            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center'} mb-2`}>
+          <div className="mb-6">
+            <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center'} mb-3`}>
               {isCollapsed ? (
                 // Collapsed state - FlowMind transparent glyph (larger for better visibility)
                 <div className="flex items-center justify-center flex-shrink-0">
