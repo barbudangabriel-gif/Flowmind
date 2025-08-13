@@ -113,6 +113,7 @@ const LoadingFallback = ({ componentName }) => (
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   // Check if mobile on mount and resize
   useEffect(() => {
