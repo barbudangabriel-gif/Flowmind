@@ -542,7 +542,7 @@ class OptionsStrategyChartGenerator:
         return {
             'plotly_chart': plotly_json,
             'chart_type': 'income',
-            'breakeven': breakeven
+            'breakeven': float(breakeven)
         }
     
     def _generate_generic_chart(self, strategy: Dict[str, Any]) -> Dict[str, str]:
