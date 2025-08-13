@@ -506,13 +506,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Unusual Whales Options Flow API"
-    - "Options Flow Component - Unusual Whales Integration"
-    - "Unusual Whales Dark Pool API"
-    - "Dark Pool Analysis Component - Unusual Whales Integration"
-    - "Trading Strategies Generation API"
-    - "Trading Strategies Component - TradeStation Ready"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
