@@ -621,13 +621,22 @@ class StockMarketAPITester:
         self.run_test("Invalid Investment Score", "GET", "investments/score/INVALID123", 500)
 
 def main():
-    print("🚀 Starting Stock Market API Tests")
-    print("=" * 50)
+    print("🚀 Starting Stock Market API Tests with Unusual Whales Integration")
+    print("=" * 70)
     
     tester = StockMarketAPITester()
     
-    # Test NEW Investment Scoring System - PRIORITY
-    print("\n🎯 Testing NEW Investment Scoring System - PRIORITY FEATURE")
+    # Test UNUSUAL WHALES API INTEGRATION - PRIORITY
+    print("\n🐋 Testing UNUSUAL WHALES API INTEGRATION - PRIORITY FEATURE")
+    print("=" * 70)
+    tester.test_unusual_whales_options_flow()
+    tester.test_unusual_whales_dark_pool()
+    tester.test_unusual_whales_congressional_trades()
+    tester.test_unusual_whales_trading_strategies()
+    tester.test_unusual_whales_comprehensive_analysis()
+    
+    # Test NEW Investment Scoring System
+    print("\n🎯 Testing Investment Scoring System")
     tester.test_investment_scoring_endpoints()
     
     # Test basic endpoints
@@ -637,15 +646,15 @@ def main():
     tester.test_top_movers()
     
     # Test NEW ticker endpoints
-    print("\n🎯 Testing NEW Ticker Endpoints")
+    print("\n🎯 Testing Ticker Endpoints")
     tester.test_ticker_endpoints()
     
     # Test NEW screener endpoints
-    print("\n🔍 Testing NEW Advanced Screener Endpoints")
+    print("\n🔍 Testing Advanced Screener Endpoints")
     tester.test_screener_endpoints()
     
     # Test NEW enhanced endpoints
-    print("\n🚀 Testing NEW Enhanced Stock Endpoints")
+    print("\n🚀 Testing Enhanced Stock Endpoints")
     tester.test_enhanced_stock_endpoints()
     
     # Test stock data endpoints
@@ -673,7 +682,7 @@ def main():
     tester.test_error_handling()
     
     # Print final results
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 70)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
     if tester.tests_passed == tester.tests_run:
