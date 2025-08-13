@@ -16,6 +16,7 @@ from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 import pandas as pd
 import numpy as np
+from collections import Counter
 from enhanced_ticker_data import enhanced_ticker_manager
 from investment_scoring import investment_scorer
 from smart_money_analysis import smart_money_analyzer
