@@ -211,14 +211,14 @@ frontend:
     file: "App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: false
         - agent: "main"
         - comment: "Critical JavaScript syntax errors: duplicate handleSubmit declarations and await outside async function causing parsing failures"
         - working: true
         - agent: "main"
-        - comment: "✅ FIXED: Resolved all JavaScript syntax errors by removing orphaned code (lines 923-938). Enhanced Portfolio component now working with modern TradeStation-inspired interface including: multi-tab navigation (Positions, Options, Performance, Risk), professional portfolio summary cards, holdings table, Add Position modal, and Unusual Whales integration placeholders."
+        - comment: "✅ FIXED: Resolved all JavaScript syntax errors by removing orphaned code (lines 923-938). Enhanced Portfolio component now working with modern TradeStation-inspired interface including: multi-tab navigation (Positions, Options, Performance, Risk), professional portfolio summary cards, holdings table, Add Position modal, and Unusual Whales integration placeholders. Need comprehensive frontend testing."
 
   - task: "Night Mode Implementation"
     implemented: true
@@ -226,11 +226,11 @@ frontend:
     file: "App.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
         - agent: "main"
-        - comment: "✅ IMPLEMENTED: Complete Night Mode functionality added including: Theme Context with React Context API, localStorage persistence, dark mode toggle in sidebar (both collapsed and expanded states), dark theme styling for main layout, and smooth transitions. Toggle button visible in sidebar with Sun/Moon icons."
+        - comment: "✅ IMPLEMENTED: Complete Night Mode functionality added including: Theme Context with React Context API, localStorage persistence, dark mode toggle in sidebar (both collapsed and expanded states), dark theme styling for main layout, and smooth transitions. Toggle button visible in sidebar with Sun/Moon icons. Need to test theme switching and dark mode styling across all components."
 
   - task: "Dashboard Component - Market Overview Display"
     implemented: true
