@@ -20,6 +20,7 @@ from enhanced_ticker_data import enhanced_ticker_manager
 from investment_scoring import investment_scorer
 from smart_money_analysis import smart_money_analyzer
 from market_sentiment_analyzer import market_sentiment_analyzer
+from unusual_whales_service import UnusualWhalesService
 
 
 ROOT_DIR = Path(__file__).parent
