@@ -3,7 +3,7 @@ import requests
 import json
 
 try:
-    response = requests.get("http://localhost:8000/api/market/overview", timeout=10)
+    response = requests.get("http://localhost:8001/api/market/overview", timeout=10)
     print(f"Status Code: {response.status_code}")
     
     if response.status_code == 200:
