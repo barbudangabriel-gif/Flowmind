@@ -920,31 +920,6 @@ const Portfolio = React.memo(() => {
       </div>
     </div>
   );
-    e.preventDefault();
-    try {
-      await axios.post(`${API}/portfolio`, {
-        ...formData,
-        shares: parseFloat(formData.shares),
-        purchase_price: parseFloat(formData.purchase_price),
-        purchase_date: new Date(formData.purchase_date).toISOString()
-      });
-      
-      setFormData({ symbol: '', shares: '', purchase_price: '', purchase_date: new Date().toISOString().split('T')[0] });
-      setShowAddForm(false);
-      fetchPortfolio();
-    } catch (error) {
-      console.error('Error adding portfolio item:', error);
-    }
-  };
-
-  const deleteItem = async (itemId) => {
-    try {
-      await axios.delete(`${API}/portfolio/${itemId}`);
-      fetchPortfolio();
-    } catch (error) {
-      console.error('Error deleting portfolio item:', error);
-    }
-  };
 
   const portfolioChartData = portfolio?.items?.map(item => ({
     symbol: item.symbol,
