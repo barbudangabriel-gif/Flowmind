@@ -439,9 +439,9 @@ class OptionsStrategyChartGenerator:
         return {
             'plotly_chart': plotly_json,
             'chart_type': 'iron_condor',
-            'max_profit': max_profit,
-            'max_loss': max_loss,
-            'profit_range': (put_short_strike, call_short_strike)
+            'max_profit': float(max_profit),
+            'max_loss': float(max_loss),
+            'profit_range': (float(put_short_strike), float(call_short_strike))
         }
     
     def _generate_income_chart(self, strategy: Dict[str, Any]) -> Dict[str, str]:
