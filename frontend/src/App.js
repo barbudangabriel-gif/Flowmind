@@ -56,6 +56,37 @@ const COLORS = [
   '#2563eb', '#7c3aed', '#dc2626', '#ea580c', '#ca8a04', 
   '#16a34a', '#0891b2', '#c2410c', '#9333ea', '#0d9488'
 ];
+
+// Theme Context
+const ThemeContext = createContext();
+export const useTheme = () => useContext(ThemeContext);
+
+const ThemeProvider = ({ children }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const toggleDarkMode = useCallback(() => {
+    setIsDarkMode(prev => {
+      const newMode = !prev;
+      localStorage.setItem('darkMode', JSON.stringify(newMode));
+      return newMode;
+    });
+  }, []);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode) {
+      setIsDarkMode(JSON.parse(savedMode));
+    }
+  }, []);
+
+  return (
+    <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
+      <div className={isDarkMode ? 'dark' : ''}>
+        {children}
+      </div>
+    </ThemeContext.Provider>
+  );
+};
 const API = `${BACKEND_URL}/api`;
 
 // Loading fallback component with enhanced design
