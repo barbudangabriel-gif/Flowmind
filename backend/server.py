@@ -998,6 +998,487 @@ def get_fallback_top_movers():
     
     return {"gainers": gainers, "losers": losers}
 
+# ==================== UNUSUAL WHALES API ENDPOINTS ====================
+
+@api_router.get("/unusual-whales/options/flow-alerts")
+async def get_unusual_whales_options_flow(
+    minimum_premium: Optional[int] = Query(200000, description="Minimum premium in dollars"),
+    minimum_volume_oi_ratio: Optional[float] = Query(1.0, description="Minimum volume to OI ratio"),
+    limit: Optional[int] = Query(100, description="Maximum number of alerts to return"),
+    include_analysis: Optional[bool] = Query(True, description="Include pattern analysis")
+):
+    """Get options flow alerts from Unusual Whales with analysis"""
+    try:
+        # Get options flow alerts
+        alerts = await uw_service.get_options_flow_alerts(
+            minimum_premium=minimum_premium,
+            minimum_volume_oi_ratio=minimum_volume_oi_ratio,
+            limit=limit
+        )
+        
+        response_data = {
+            "status": "success",
+            "data": {
+                "alerts": alerts,
+                "summary": {
+                    "total_alerts": len(alerts),
+                    "total_premium": sum(alert.get('premium', 0) for alert in alerts),
+                    "avg_premium": sum(alert.get('premium', 0) for alert in alerts) / len(alerts) if alerts else 0,
+                    "bullish_count": len([a for a in alerts if a.get('sentiment') == 'bullish']),
+                    "bearish_count": len([a for a in alerts if a.get('sentiment') == 'bearish']),
+                    "opening_trades": len([a for a in alerts if a.get('is_opener', False)]),
+                    "unusual_activity": len([a for a in alerts if a.get('unusual_activity', False)])
+                }
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        # Add analysis if requested
+        if include_analysis and alerts:
+            analysis = await uw_service.analyze_options_flow_patterns(alerts)
+            response_data["analysis"] = analysis
+            
+        return response_data
+        
+    except Exception as e:
+        logger.error(f"Error in options flow endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching options flow: {str(e)}")
+
+@api_router.get("/unusual-whales/dark-pool/recent")
+async def get_unusual_whales_dark_pool(
+    limit: Optional[int] = Query(100, description="Maximum number of trades to return"),
+    minimum_volume: Optional[int] = Query(100000, description="Minimum dark volume"),
+    minimum_dark_percentage: Optional[float] = Query(30.0, description="Minimum dark pool percentage"),
+    include_analysis: Optional[bool] = Query(True, description="Include pattern analysis")
+):
+    """Get recent dark pool activity from Unusual Whales"""
+    try:
+        # Get dark pool trades
+        trades = await uw_service.get_recent_dark_pool_activity(
+            limit=limit,
+            minimum_volume=minimum_volume
+        )
+        
+        # Filter by dark percentage
+        filtered_trades = [
+            trade for trade in trades 
+            if trade.get('dark_percentage', 0) >= minimum_dark_percentage
+        ]
+        
+        # Sort by significance and volume
+        sorted_trades = sorted(
+            filtered_trades,
+            key=lambda x: (
+                {"very_high": 4, "high": 3, "medium": 2, "low": 1}.get(x.get('significance', 'low'), 1),
+                x.get('dark_volume', 0)
+            ),
+            reverse=True
+        )
+        
+        response_data = {
+            "status": "success", 
+            "data": {
+                "trades": sorted_trades,
+                "summary": {
+                    "total_trades": len(sorted_trades),
+                    "total_dark_volume": sum(trade.get('dark_volume', 0) for trade in sorted_trades),
+                    "avg_dark_percentage": sum(trade.get('dark_percentage', 0) for trade in sorted_trades) / len(sorted_trades) if sorted_trades else 0,
+                    "institutional_signals": len([t for t in sorted_trades if t.get('institutional_signal', False)]),
+                    "high_significance": len([t for t in sorted_trades if t.get('significance') in ['high', 'very_high']])
+                }
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        # Add analysis if requested
+        if include_analysis and sorted_trades:
+            analysis = await uw_service.analyze_dark_pool_patterns(sorted_trades)
+            response_data["analysis"] = analysis
+            
+        return response_data
+        
+    except Exception as e:
+        logger.error(f"Error in dark pool endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching dark pool data: {str(e)}")
+
+@api_router.get("/unusual-whales/congressional/trades")
+async def get_unusual_whales_congressional_trades(
+    days_back: Optional[int] = Query(30, description="Days to look back for trades"),
+    minimum_amount: Optional[int] = Query(15000, description="Minimum transaction amount"),
+    party_filter: Optional[str] = Query(None, description="Filter by party: Democrat or Republican"),
+    transaction_type: Optional[str] = Query(None, description="Filter by transaction type: Purchase or Sale"),
+    limit: Optional[int] = Query(100, description="Maximum number of trades to return"),
+    include_analysis: Optional[bool] = Query(True, description="Include pattern analysis")
+):
+    """Get congressional trading data from Unusual Whales"""
+    try:
+        # Get congressional trades
+        trades = await uw_service.get_congressional_trades(
+            days_back=days_back,
+            minimum_amount=minimum_amount,
+            limit=limit
+        )
+        
+        # Apply additional filters
+        if party_filter:
+            trades = [t for t in trades if t.get('party', '').lower() == party_filter.lower()]
+        
+        if transaction_type:
+            trades = [t for t in trades if t.get('transaction_type', '').lower() == transaction_type.lower()]
+        
+        # Sort by amount and recency
+        sorted_trades = sorted(
+            trades,
+            key=lambda x: (x.get('transaction_amount', 0), x.get('transaction_date', '')),
+            reverse=True
+        )
+        
+        response_data = {
+            "status": "success",
+            "data": {
+                "trades": sorted_trades,
+                "summary": {
+                    "total_trades": len(sorted_trades),
+                    "total_amount": sum(t.get('transaction_amount', 0) for t in sorted_trades),
+                    "unique_representatives": len(set(t.get('representative') for t in sorted_trades)),
+                    "unique_tickers": len(set(t.get('ticker') for t in sorted_trades)),
+                    "recent_trades": len([t for t in sorted_trades 
+                                       if (datetime.now() - datetime.strptime(t.get('transaction_date', '1970-01-01'), '%Y-%m-%d')).days <= 7]),
+                    "party_breakdown": {},
+                    "transaction_type_breakdown": {}
+                }
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        # Calculate party breakdown
+        from collections import Counter
+        parties = [t.get('party') for t in sorted_trades if t.get('party')]
+        response_data["data"]["summary"]["party_breakdown"] = dict(Counter(parties))
+        
+        # Calculate transaction type breakdown
+        transaction_types = [t.get('transaction_type') for t in sorted_trades if t.get('transaction_type')]
+        response_data["data"]["summary"]["transaction_type_breakdown"] = dict(Counter(transaction_types))
+        
+        # Add analysis if requested
+        if include_analysis and sorted_trades:
+            analysis = await uw_service.analyze_congressional_patterns(sorted_trades)
+            response_data["analysis"] = analysis
+            
+        return response_data
+        
+    except Exception as e:
+        logger.error(f"Error in congressional trades endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching congressional trades: {str(e)}")
+
+@api_router.get("/unusual-whales/analysis/comprehensive")
+async def get_unusual_whales_comprehensive_analysis():
+    """Get comprehensive analysis from all Unusual Whales data sources"""
+    try:
+        # Fetch data from all sources concurrently
+        options_task = uw_service.get_options_flow_alerts(limit=50)
+        dark_pool_task = uw_service.get_recent_dark_pool_activity(limit=50)
+        congressional_task = uw_service.get_congressional_trades(days_back=30, limit=50)
+        
+        options_data, dark_pool_data, congressional_data = await asyncio.gather(
+            options_task, dark_pool_task, congressional_task, return_exceptions=True
+        )
+        
+        # Handle potential errors
+        if isinstance(options_data, Exception):
+            options_data = []
+        if isinstance(dark_pool_data, Exception):
+            dark_pool_data = []
+        if isinstance(congressional_data, Exception):
+            congressional_data = []
+        
+        # Perform analyses
+        comprehensive_analysis = {
+            "options_flow": {
+                "data_available": len(options_data) > 0,
+                "analysis": await uw_service.analyze_options_flow_patterns(options_data) if options_data else {"analysis": "No data available"}
+            },
+            "dark_pool": {
+                "data_available": len(dark_pool_data) > 0,
+                "analysis": await uw_service.analyze_dark_pool_patterns(dark_pool_data) if dark_pool_data else {"analysis": "No data available"}
+            },
+            "congressional": {
+                "data_available": len(congressional_data) > 0,
+                "analysis": await uw_service.analyze_congressional_patterns(congressional_data) if congressional_data else {"analysis": "No data available"}
+            }
+        }
+        
+        # Generate market outlook based on all data
+        market_outlook = _generate_market_outlook(options_data, dark_pool_data, congressional_data)
+        
+        return {
+            "status": "success",
+            "comprehensive_analysis": comprehensive_analysis,
+            "market_outlook": market_outlook,
+            "data_summary": {
+                "options_alerts": len(options_data),
+                "dark_pool_trades": len(dark_pool_data),
+                "congressional_trades": len(congressional_data)
+            },
+            "analysis_timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in comprehensive analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error performing comprehensive analysis: {str(e)}")
+
+def _generate_market_outlook(options_data: List[Dict], dark_pool_data: List[Dict], congressional_data: List[Dict]) -> Dict[str, Any]:
+    """Generate overall market outlook from all data sources"""
+    try:
+        outlook = {
+            "overall_sentiment": "neutral",
+            "confidence": "low",
+            "key_signals": [],
+            "recommended_actions": [],
+            "risk_factors": []
+        }
+        
+        signals_count = {"bullish": 0, "bearish": 0, "neutral": 0}
+        
+        # Analyze options flow sentiment
+        if options_data:
+            bullish_options = len([o for o in options_data if o.get('sentiment') == 'bullish'])
+            bearish_options = len([o for o in options_data if o.get('sentiment') == 'bearish'])
+            
+            if bullish_options > bearish_options * 1.5:
+                signals_count["bullish"] += 1
+                outlook["key_signals"].append("Options flow shows bullish bias")
+            elif bearish_options > bullish_options * 1.5:
+                signals_count["bearish"] += 1
+                outlook["key_signals"].append("Options flow shows bearish bias")
+            else:
+                signals_count["neutral"] += 1
+        
+        # Analyze dark pool activity
+        if dark_pool_data:
+            institutional_signals = len([d for d in dark_pool_data if d.get('institutional_signal', False)])
+            if institutional_signals > len(dark_pool_data) * 0.6:
+                signals_count["bullish"] += 1
+                outlook["key_signals"].append("High institutional activity in dark pools")
+                outlook["recommended_actions"].append("Monitor for potential breakouts")
+        
+        # Analyze congressional trading
+        if congressional_data:
+            recent_purchases = len([c for c in congressional_data 
+                                 if c.get('transaction_type') == 'Purchase' 
+                                 and (datetime.now() - datetime.strptime(c.get('transaction_date', '1970-01-01'), '%Y-%m-%d')).days <= 14])
+            
+            if recent_purchases > len(congressional_data) * 0.4:
+                signals_count["bullish"] += 1
+                outlook["key_signals"].append("Recent congressional purchasing activity")
+        
+        # Determine overall sentiment
+        max_signals = max(signals_count.values())
+        if signals_count["bullish"] == max_signals and max_signals > 0:
+            outlook["overall_sentiment"] = "bullish"
+            outlook["confidence"] = "high" if max_signals >= 2 else "medium"
+        elif signals_count["bearish"] == max_signals and max_signals > 0:
+            outlook["overall_sentiment"] = "bearish"
+            outlook["confidence"] = "high" if max_signals >= 2 else "medium"
+        else:
+            outlook["overall_sentiment"] = "neutral"
+            outlook["confidence"] = "low"
+        
+        # Add general recommendations
+        if not outlook["recommended_actions"]:
+            outlook["recommended_actions"] = [
+                "Continue monitoring unusual activity",
+                "Stay alert for confirmation signals",
+                "Maintain risk management protocols"
+            ]
+        
+        # Add risk factors
+        outlook["risk_factors"] = [
+            "Market volatility during earnings season",
+            "Federal Reserve policy uncertainty",
+            "Geopolitical tensions affecting markets"
+        ]
+        
+        return outlook
+        
+    except Exception as e:
+        logger.error(f"Error generating market outlook: {str(e)}")
+        return {
+            "overall_sentiment": "neutral",
+            "confidence": "low",
+            "key_signals": [],
+            "recommended_actions": ["Monitor markets closely"],
+            "risk_factors": ["Analysis unavailable due to technical issues"],
+            "error": str(e)
+        }
+
+@api_router.get("/unusual-whales/trading-strategies")
+async def get_trading_strategies_from_unusual_whales():
+    """Generate trading strategies based on Unusual Whales data - designed for TradeStation execution"""
+    try:
+        # Get fresh data from all sources
+        options_data = await uw_service.get_options_flow_alerts(limit=25)
+        dark_pool_data = await uw_service.get_recent_dark_pool_activity(limit=25)
+        congressional_data = await uw_service.get_congressional_trades(days_back=14, limit=25)
+        
+        strategies = []
+        
+        # Strategy 1: Large Premium Flow Following
+        large_premium_alerts = [o for o in options_data if o.get('trade_size') in ['whale', 'large']]
+        if large_premium_alerts:
+            top_ticker = max(large_premium_alerts, key=lambda x: x.get('premium', 0))
+            strategies.append({
+                "strategy_name": "Large Premium Flow Following",
+                "ticker": top_ticker['symbol'],
+                "strategy_type": "options_momentum",
+                "confidence": 0.7,
+                "timeframe": "1-3 days",
+                "entry_logic": {
+                    "condition": f"Follow large premium flow in {top_ticker['symbol']}",
+                    "premium_threshold": top_ticker.get('premium', 0),
+                    "sentiment": top_ticker.get('sentiment', 'neutral'),
+                    "dte": top_ticker.get('dte', 0)
+                },
+                "tradestation_execution": {
+                    "instrument_type": "options",
+                    "action": "buy_to_open" if top_ticker.get('sentiment') == 'bullish' else "buy_to_open",
+                    "strike_type": top_ticker.get('strike_type', ''),
+                    "expiration": top_ticker.get('expiration', ''),
+                    "stop_loss": "20% below entry",
+                    "profit_target": "50% above entry"
+                },
+                "risk_management": {
+                    "max_position_size": "2% of portfolio",
+                    "stop_loss_percentage": 20,
+                    "profit_target_percentage": 50
+                }
+            })
+        
+        # Strategy 2: Dark Pool Accumulation Play
+        high_significance_dark = [d for d in dark_pool_data if d.get('significance') in ['high', 'very_high']]
+        if high_significance_dark:
+            top_dark_ticker = max(high_significance_dark, key=lambda x: x.get('dark_volume', 0))
+            strategies.append({
+                "strategy_name": "Dark Pool Accumulation",
+                "ticker": top_dark_ticker['ticker'],
+                "strategy_type": "equity_momentum",
+                "confidence": 0.6,
+                "timeframe": "3-10 days",
+                "entry_logic": {
+                    "condition": f"High institutional dark pool activity in {top_dark_ticker['ticker']}",
+                    "dark_percentage": top_dark_ticker.get('dark_percentage', 0),
+                    "volume": top_dark_ticker.get('dark_volume', 0)
+                },
+                "tradestation_execution": {
+                    "instrument_type": "equity",
+                    "action": "buy",
+                    "quantity": "calculated_based_on_position_size",
+                    "order_type": "limit_on_support",
+                    "stop_loss": "3% below entry",
+                    "profit_target": "breakout_above_resistance"
+                },
+                "risk_management": {
+                    "max_position_size": "3% of portfolio",
+                    "stop_loss_percentage": 3,
+                    "trailing_stop": True
+                }
+            })
+        
+        # Strategy 3: Congressional Insider Following
+        recent_purchases = [c for c in congressional_data 
+                          if c.get('transaction_type') == 'Purchase' 
+                          and (datetime.now() - datetime.strptime(c.get('transaction_date', '1970-01-01'), '%Y-%m-%d')).days <= 14]
+        
+        if recent_purchases:
+            # Group by ticker and find the most purchased
+            from collections import Counter
+            ticker_purchases = Counter([c['ticker'] for c in recent_purchases])
+            if ticker_purchases:
+                top_congress_ticker = ticker_purchases.most_common(1)[0][0]
+                strategies.append({
+                    "strategy_name": "Congressional Insider Following",
+                    "ticker": top_congress_ticker,
+                    "strategy_type": "equity_swing",
+                    "confidence": 0.5,
+                    "timeframe": "2-8 weeks",
+                    "entry_logic": {
+                        "condition": f"Recent congressional purchases in {top_congress_ticker}",
+                        "purchase_count": ticker_purchases[top_congress_ticker],
+                        "sector": [c.get('sector') for c in recent_purchases if c['ticker'] == top_congress_ticker][0]
+                    },
+                    "tradestation_execution": {
+                        "instrument_type": "equity",
+                        "action": "buy",
+                        "quantity": "calculated_based_on_position_size",
+                        "order_type": "market_on_break",
+                        "stop_loss": "5% below entry",
+                        "profit_target": "policy_catalyst_dependent"
+                    },
+                    "risk_management": {
+                        "max_position_size": "2.5% of portfolio",
+                        "stop_loss_percentage": 5,
+                        "time_stop": "8_weeks"
+                    }
+                })
+        
+        # Strategy 4: Cross-Signal Confirmation
+        if len(strategies) >= 2:
+            # Look for tickers that appear in multiple data sources
+            all_tickers = []
+            all_tickers.extend([o.get('symbol') for o in options_data])
+            all_tickers.extend([d.get('ticker') for d in dark_pool_data])
+            all_tickers.extend([c.get('ticker') for c in congressional_data])
+            
+            ticker_counts = Counter(all_tickers)
+            multi_signal_tickers = [ticker for ticker, count in ticker_counts.items() if count >= 2]
+            
+            if multi_signal_tickers:
+                top_multi_signal = ticker_counts.most_common(1)[0][0]
+                strategies.append({
+                    "strategy_name": "Multi-Signal Confirmation",
+                    "ticker": top_multi_signal,
+                    "strategy_type": "high_conviction",
+                    "confidence": 0.8,
+                    "timeframe": "1-2 weeks",
+                    "entry_logic": {
+                        "condition": f"Multiple unusual activity signals in {top_multi_signal}",
+                        "signal_count": ticker_counts[top_multi_signal],
+                        "sources": "options_flow, dark_pool, congressional"
+                    },
+                    "tradestation_execution": {
+                        "instrument_type": "combo_strategy",
+                        "equity_position": "3% of portfolio",
+                        "options_overlay": "protective_puts_or_covered_calls",
+                        "stop_loss": "4% below equity entry",
+                        "profit_target": "technical_resistance_levels"
+                    },
+                    "risk_management": {
+                        "max_position_size": "4% of portfolio",
+                        "diversified_approach": True,
+                        "hedge_with_options": True
+                    }
+                })
+        
+        return {
+            "status": "success",
+            "trading_strategies": strategies,
+            "total_strategies": len(strategies),
+            "data_analysis": {
+                "options_alerts_analyzed": len(options_data),
+                "dark_pool_trades_analyzed": len(dark_pool_data),
+                "congressional_trades_analyzed": len(congressional_data)
+            },
+            "tradestation_ready": True,
+            "disclaimer": "These strategies are generated from unusual market activity patterns. Always perform your own due diligence and risk assessment before executing trades.",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating trading strategies: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error generating trading strategies: {str(e)}")
+
+# ==================== END UNUSUAL WHALES API ENDPOINTS ====================
+
 # Include the router in the main app
 app.include_router(api_router)
 
