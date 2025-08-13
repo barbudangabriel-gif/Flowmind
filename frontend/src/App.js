@@ -203,7 +203,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               )}
             </div>
             {!isCollapsed && (
-              <p className="text-xs text-slate-400 text-center mt-2">Where Data Flows, Intelligence Grows</p>
+              <p className="text-xs text-slate-400 text-center mt-3">Where Data Flows, Intelligence Grows</p>
             )}
           </div>
 
