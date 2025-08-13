@@ -84,8 +84,8 @@ class OptionsStrategyChartGenerator:
         
         # Add P&L line
         fig.add_trace(go.Scatter(
-            x=price_range, 
-            y=total_pl * 100,  # Convert to dollars
+            x=price_range.tolist(), 
+            y=(total_pl * 100).tolist(),  # Convert to dollars
             mode='lines',
             name='P&L',
             line=dict(color='#3B82F6', width=3),
