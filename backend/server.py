@@ -22,6 +22,7 @@ from investment_scoring import investment_scorer
 from smart_money_analysis import smart_money_analyzer
 from market_sentiment_analyzer import market_sentiment_analyzer
 from unusual_whales_service import UnusualWhalesService
+from options_strategy_charts import chart_generator
 
 
 ROOT_DIR = Path(__file__).parent
