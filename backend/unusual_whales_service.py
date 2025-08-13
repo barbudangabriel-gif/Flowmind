@@ -9,7 +9,8 @@ import httpx
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('.env')
+from pathlib import Path
+load_dotenv(Path(__file__).parent / '.env')
 
 # Configure logging
 logger = logging.getLogger(__name__)
