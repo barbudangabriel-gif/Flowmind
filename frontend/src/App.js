@@ -2761,146 +2761,6 @@ const TradingStrategies = () => {
   );
 };
 
-// Advanced Options Trading Modal Component  
-const AdvancedOptionsModal = ({ strategy, isOpen, onClose, isDarkMode }) => {
-  const [activeTab, setActiveTab] = useState('expirations');
-  const [selectedExpiration, setSelectedExpiration] = useState('');
-  const [selectedStrike, setSelectedStrike] = useState('');
-  const [selectedStrategy, setSelectedStrategyType] = useState('');
-  const [quantity, setQuantity] = useState(1);
-  const [priceRange, setPriceRange] = useState({ low: 0, high: 0 });
-  const [optionsChain, setOptionsChain] = useState([]);
-  const [underlyingData, setUnderlyingData] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (isOpen && strategy) {
-      fetchUnderlyingData();
-      generateMockOptionsChain();
-    }
-  }, [isOpen, strategy]);
-
-  const fetchUnderlyingData = async () => {
-    setLoading(true);
-    try {
-      // Simulate fetching underlying stock data
-      const mockData = {
-        symbol: strategy.ticker,
-        price: strategy.entry_logic?.underlying_price || 100,
-        change: 0.35,
-        changePercent: 1.12,
-        company: getCompanyName(strategy.ticker),
-        earnings: '63d',
-        volume: '2.4M',
-        avgVolume: '3.1M'
-      };
-      setUnderlyingData(mockData);
-      
-      // Set initial price range around current price
-      const price = mockData.price;
-      setPriceRange({ low: price * 0.85, high: price * 1.15 });
-      
-    } catch (error) {
-      console.error('Error fetching underlying data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const generateMockOptionsChain = () => {
-    const ticker = strategy.ticker;
-    const currentPrice = strategy.entry_logic?.underlying_price || 100;
-    
-    // Generate mock options chain with realistic data
-    const expirations = [
-      { date: 'Aug 15', dte: 2, type: 'Standard' },
-      { date: 'Aug 22', dte: 9, type: 'Weeklys' },
-      { date: 'Aug 29', dte: 16, type: 'EoM' },
-      { date: 'Sep 5', dte: 23, type: 'Weeklys' },
-      { date: 'Sep 12', dte: 30, type: 'Weeklys' },
-      { date: 'Sep 19', dte: 37, type: 'Standard' },
-      { date: 'Oct 17', dte: 65, type: 'Monthly' }
-    ];
-
-    const chainData = expirations.map((exp, index) => {
-      // Calculate expected range based on DTE and IV
-      const timeDecay = Math.sqrt(exp.dte / 365);
-      const impliedMove = currentPrice * 0.25 * timeDecay; // ~25% annual IV
-      const expectedLow = currentPrice - impliedMove;
-      const expectedHigh = currentPrice + impliedMove;
-      const movePercent = (impliedMove / currentPrice) * 100;
-      
-      // Calculate IV based on DTE (shorter term = higher IV usually)
-      const baseIV = 45 + (30 - exp.dte) * 0.5;
-      const iv = Math.max(25, Math.min(80, baseIV + Math.random() * 10 - 5));
-      
-      // Max Pain usually near current price
-      const maxPain = Math.round(currentPrice + (Math.random() * 4 - 2));
-      
-      return {
-        expiration: exp.date,
-        dte: exp.dte,
-        type: exp.type,
-        expectedRange: `${expectedLow.toFixed(2)} - ${expectedHigh.toFixed(2)}`,
-        movePercent: `+/- ${movePercent.toFixed(2)}%`,
-        iv: `${iv.toFixed(1)}%`,
-        maxPain: `${maxPain} strike`,
-        strikes: generateStrikesForExpiration(currentPrice, exp.dte)
-      };
-    });
-
-    setOptionsChain(chainData);
-  };
-
-  const generateStrikesForExpiration = (currentPrice, dte) => {
-    const strikes = [];
-    const strikeInterval = currentPrice > 100 ? 5 : (currentPrice > 50 ? 2.5 : 1);
-    const numStrikes = dte > 30 ? 20 : 15; // More strikes for longer expirations
-    
-    for (let i = -numStrikes/2; i <= numStrikes/2; i++) {
-      const strike = currentPrice + (i * strikeInterval);
-      if (strike > 0) {
-        const isITM = strike < currentPrice;
-        const distance = Math.abs(strike - currentPrice);
-        const timeValue = Math.max(0.05, 2 - (distance / currentPrice) * 10);
-        const intrinsicValue = isITM ? Math.max(0, currentPrice - strike) : 0;
-        
-        strikes.push({
-          strike: strike,
-          call: {
-            bid: (intrinsicValue + timeValue * 0.95).toFixed(2),
-            ask: (intrinsicValue + timeValue * 1.05).toFixed(2),
-            volume: Math.floor(Math.random() * 500),
-            oi: Math.floor(Math.random() * 2000),
-            iv: (45 + Math.random() * 20).toFixed(1)
-          },
-          put: {
-            bid: (Math.max(0, strike - currentPrice) + timeValue * 0.95).toFixed(2),
-            ask: (Math.max(0, strike - currentPrice) + timeValue * 1.05).toFixed(2), 
-            volume: Math.floor(Math.random() * 300),
-            oi: Math.floor(Math.random() * 1500),
-            iv: (50 + Math.random() * 15).toFixed(1)
-          }
-        });
-      }
-    }
-    
-    return strikes;
-  };
-
-  const getCompanyName = (ticker) => {
-    const companies = {
-      'AAPL': 'Apple Inc',
-      'MSFT': 'Microsoft Corp', 
-      'GOOGL': 'Alphabet Inc',
-      'TSLA': 'Tesla Inc',
-      'NVDA': 'NVIDIA Corp',
-      'META': 'Meta Platforms',
-      'AMZN': 'Amazon.com Inc'
-    };
-    return companies[ticker] || `${ticker} Corp`;
-  };
-
   const handleTradeClick = (expiration, strike, optionType) => {
     setSelectedExpiration(expiration.expiration);
     setSelectedStrike(strike.strike);
@@ -2909,6 +2769,173 @@ const AdvancedOptionsModal = ({ strategy, isOpen, onClose, isDarkMode }) => {
   };
 
   if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`${isDarkMode ? 'bg-slate-800 text-white' : 'bg-white text-gray-900'} rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col`}>
+        {/* Modal Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                {underlyingData?.symbol?.charAt(0) || strategy.ticker.charAt(0)}
+              </div>
+              <div>
+                <h2 className="text-xl font-bold">{underlyingData?.symbol || strategy.ticker}</h2>
+                <p className="text-sm text-gray-500">{underlyingData?.company}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 ml-6">
+              <div className={`text-lg font-bold ${underlyingData?.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                ${underlyingData?.price?.toFixed(2) || '0.00'}
+              </div>
+              <div className={`text-sm ${underlyingData?.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {underlyingData?.change >= 0 ? '+' : ''}{underlyingData?.change?.toFixed(2) || '0.00'} ({underlyingData?.changePercent?.toFixed(2) || '0.00'}%)
+              </div>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Panel - Options Chain */}
+          <div className="flex-1 p-6 overflow-y-auto">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Options Chain</h3>
+                <div className="flex items-center space-x-2">
+                  <select className="px-3 py-1 border border-gray-300 rounded text-sm">
+                    <option>All Strikes</option>
+                    <option>ITM Only</option>
+                    <option>OTM Only</option>
+                  </select>
+                  <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm">
+                    Refresh
+                  </button>
+                </div>
+              </div>
+
+              {/* Options Chain Table */}
+              {optionsChain.length > 0 && (
+                <div className="space-y-4">
+                  {optionsChain.map((exp, index) => (
+                    <div key={index} className="border rounded-lg overflow-hidden">
+                      <div className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} px-4 py-2 border-b`}>
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold">{exp.expiration}</h4>
+                          <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <span>{exp.dte} DTE</span>
+                            <span>{exp.type}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className={`${isDarkMode ? 'bg-slate-600' : 'bg-gray-100'}`}>
+                            <tr>
+                              <th className="px-3 py-2 text-left">Calls</th>
+                              <th className="px-3 py-2 text-center">Strike</th>
+                              <th className="px-3 py-2 text-right">Puts</th>
+                              <th className="px-3 py-2 text-center">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {exp.strikes && exp.strikes.slice(0, 5).map((strike, strikeIndex) => (
+                              <tr key={strikeIndex} className="hover:bg-blue-50">
+                                <td className="px-3 py-2">
+                                  <div className="text-xs space-y-1">
+                                    <div>Bid/Ask: {strike.call.bid}/{strike.call.ask}</div>
+                                    <div>Vol: {strike.call.volume} | OI: {strike.call.oi}</div>
+                                    <div>IV: {strike.call.iv}%</div>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2 text-center font-bold">
+                                  ${strike.strike.toFixed(2)}
+                                </td>
+                                <td className="px-3 py-2 text-right">
+                                  <div className="text-xs space-y-1">
+                                    <div>Bid/Ask: {strike.put.bid}/{strike.put.ask}</div>
+                                    <div>Vol: {strike.put.volume} | OI: {strike.put.oi}</div>
+                                    <div>IV: {strike.put.iv}%</div>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2 text-center">
+                                  <button 
+                                    onClick={() => handleTradeClick(exp, strike, 'call')}
+                                    className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                                  >
+                                    Trade →
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Panel - Strategy Details */}
+          <div className="w-1/3 p-6">
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Strategy Overview</h3>
+                <div className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} p-3 rounded text-sm space-y-2`}>
+                  <p><strong>Type:</strong> {strategy.strategy_type}</p>
+                  <p><strong>Timeframe:</strong> {strategy.timeframe}</p>
+                  <p><strong>Confidence:</strong> {(strategy.confidence * 100).toFixed(0)}%</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Entry Conditions</h3>
+                <div className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} p-3 rounded text-sm`}>
+                  <p>{strategy.entry_logic?.condition || 'Strategy-based entry'}</p>
+                  {strategy.entry_logic?.sentiment && (
+                    <p className="mt-1">Market Bias: <span className="capitalize font-medium">{strategy.entry_logic.sentiment}</span></p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Risk Management</h3>
+                <div className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} p-3 rounded text-sm space-y-1`}>
+                  <p><strong>Max Position:</strong> {strategy.risk_management?.max_position_size || '2% of portfolio'}</p>
+                  <p><strong>Stop Loss:</strong> {strategy.risk_management?.stop_loss_percentage || '10'}%</p>
+                  {strategy.chart && (
+                    <>
+                      {strategy.chart.max_profit && <p><strong>Max Profit:</strong> ${strategy.chart.max_profit.toFixed(0)}</p>}
+                      {strategy.chart.max_loss && <p><strong>Max Loss:</strong> ${strategy.chart.max_loss.toFixed(0)}</p>}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-semibold">
+                  Execute Full Strategy
+                </button>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Based on Unusual Whales data analysis
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ==================== END UNUSUAL WHALES COMPONENTS ====================
 
