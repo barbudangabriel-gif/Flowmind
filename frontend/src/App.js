@@ -922,8 +922,37 @@ const Portfolio = React.memo(() => {
   );
 
   return (
-    <div>
-      <p>Portfolio component placeholder</p>
+    <div className="space-y-6">
+      {/* Portfolio Tab Navigation */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="flex border-b border-gray-200">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => !tab.disabled && setActiveTab(tab.id)}
+              disabled={tab.disabled}
+              className={`flex-1 flex items-center justify-center space-x-2 px-4 py-4 text-sm font-medium transition-all duration-200 ${
+                activeTab === tab.id
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white'
+                  : tab.disabled
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+              }`}
+            >
+              <span className="text-lg">{tab.icon}</span>
+              <span>{tab.label}</span>
+              {tab.disabled && (
+                <span className="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">Soon</span>
+              )}
+            </button>
+          ))}
+        </div>
+        
+        {/* Tab Content */}
+        <div className="p-6">
+          {renderTabContent()}
+        </div>
+      </div>
     </div>
   );
 });
