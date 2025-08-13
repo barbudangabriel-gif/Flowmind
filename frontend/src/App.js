@@ -518,29 +518,84 @@ const MemoizedStockRow = React.memo(({ stock, type }) => (
   </div>
 ));
 
-// Portfolio Component
-const Portfolio = () => {
+// Enhanced Portfolio Component - TradeStation Inspired
+const Portfolio = React.memo(() => {
   const [portfolio, setPortfolio] = useState(null);
+  const [portfolioChartData, setPortfolioChartData] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [activeTab, setActiveTab] = useState('positions');
+  const [whaleDataEnabled, setWhaleDataEnabled] = useState(false); // Will be true when API key is added
   const [formData, setFormData] = useState({
     symbol: '',
     shares: '',
     purchase_price: '',
-    purchase_date: new Date().toISOString().split('T')[0]
+    purchase_date: new Date().toISOString().split('T')[0],
+    position_type: 'stock' // stock, option_call, option_put
   });
 
-  useEffect(() => {
-    fetchPortfolio();
-  }, []);
-
-  const fetchPortfolio = async () => {
+  // Memoized API functions
+  const fetchPortfolio = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/portfolio`);
       setPortfolio(response.data);
+      
+      // Generate chart data
+      if (response.data.items) {
+        const chartData = response.data.items.map(item => ({
+          symbol: item.symbol,
+          value: item.current_value,
+          shares: item.shares,
+          sector: item.sector || 'Unknown'
+        }));
+        setPortfolioChartData(chartData);
+      }
     } catch (error) {
-      console.error('Error fetching portfolio:', error);
+      console.error('Error loading portfolio:', error);
     }
-  };
+  }, []);
+
+  const deleteItem = useCallback(async (itemId) => {
+    try {
+      await axios.delete(`${API}/portfolio/${itemId}`);
+      await fetchPortfolio();
+    } catch (error) {
+      console.error('Error deleting portfolio item:', error);
+    }
+  }, [fetchPortfolio]);
+
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/portfolio`, {
+        ...formData,
+        shares: parseFloat(formData.shares),
+        purchase_price: parseFloat(formData.purchase_price)
+      });
+      setShowAddForm(false);
+      setFormData({
+        symbol: '',
+        shares: '',
+        purchase_price: '',
+        purchase_date: new Date().toISOString().split('T')[0],
+        position_type: 'stock'
+      });
+      await fetchPortfolio();
+    } catch (error) {
+      console.error('Error adding portfolio item:', error);
+    }
+  }, [formData, fetchPortfolio]);
+
+  useEffect(() => {
+    fetchPortfolio();
+  }, [fetchPortfolio]);
+
+  // Tab navigation
+  const tabs = [
+    { id: 'positions', label: 'Positions', icon: '📊' },
+    { id: 'options', label: 'Options', icon: '🎯', disabled: !whaleDataEnabled },
+    { id: 'performance', label: 'Performance', icon: '📈' },
+    { id: 'risk', label: 'Risk Analysis', icon: '⚡', disabled: !whaleDataEnabled }
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
