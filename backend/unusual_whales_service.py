@@ -546,13 +546,13 @@ class UnusualWhalesService:
         return {
             "summary": {
                 "total_trades": len(trades),
-                "total_amount": df['transaction_amount'].sum(),
-                "unique_representatives": df['representative'].nunique(),
-                "unique_tickers": df['ticker'].nunique()
+                "total_amount": float(df['transaction_amount'].sum()),
+                "unique_representatives": int(df['representative'].nunique()),
+                "unique_tickers": int(df['ticker'].nunique())
             },
-            "party_breakdown": party_analysis.to_dict() if len(party_analysis) > 0 else {},
-            "transaction_breakdown": transaction_analysis.to_dict() if len(transaction_analysis) > 0 else {},
-            "sector_breakdown": sector_analysis.head().to_dict() if len(sector_analysis) > 0 else {},
+            "party_breakdown": self._convert_df_to_dict(party_analysis) if len(party_analysis) > 0 else {},
+            "transaction_breakdown": self._convert_df_to_dict(transaction_analysis) if len(transaction_analysis) > 0 else {},
+            "sector_breakdown": self._convert_df_to_dict(sector_analysis.head()) if len(sector_analysis) > 0 else {},
             "insights": insights,
             "analysis_timestamp": datetime.now().isoformat()
         }
