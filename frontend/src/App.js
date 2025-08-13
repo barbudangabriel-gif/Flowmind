@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, useMemo, useCallback } from "react";
+import React, { useState, useEffect, Suspense, useMemo, useCallback, createContext, useContext } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
@@ -38,7 +38,9 @@ import {
   Settings,
   Database,
   Award,
-  RefreshCw
+  RefreshCw,
+  Moon,
+  Sun
 } from "lucide-react";
 
 // Lazy loading for heavy components
