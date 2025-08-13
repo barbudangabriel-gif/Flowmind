@@ -1628,6 +1628,18 @@ async def get_trading_strategies_from_unusual_whales():
                     }
                 })
         
+        # Generate charts for all strategies
+        for strategy in strategies:
+            try:
+                chart_data = chart_generator.generate_strategy_chart(strategy)
+                strategy['chart'] = chart_data
+            except Exception as e:
+                logger.error(f"Error generating chart for {strategy.get('strategy_name', 'unknown')}: {str(e)}")
+                strategy['chart'] = {
+                    'chart_type': 'error',
+                    'error': f"Chart generation failed: {str(e)}"
+                }
+        
         return {
             "status": "success",
             "trading_strategies": strategies,
