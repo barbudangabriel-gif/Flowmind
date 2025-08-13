@@ -1955,6 +1955,658 @@ const Watchlist = () => {
   );
 };
 
+// ==================== UNUSUAL WHALES COMPONENTS ====================
+
+// Options Flow Component
+const OptionsFlow = () => {
+  const [optionsData, setOptionsData] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    minimum_premium: 200000,
+    minimum_volume_oi_ratio: 1.0,
+    limit: 50
+  });
+  const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    fetchOptionsFlow();
+  }, []);
+
+  const fetchOptionsFlow = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/unusual-whales/options/flow-alerts`, {
+        params: { ...filters, include_analysis: true }
+      });
+      
+      if (response.data.status === 'success') {
+        setOptionsData(response.data.data.alerts || []);
+        setAnalysis(response.data.analysis || null);
+      }
+    } catch (error) {
+      console.error('Error fetching options flow:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyFilters = () => {
+    fetchOptionsFlow();
+  };
+
+  const getSentimentColor = (sentiment) => {
+    switch (sentiment) {
+      case 'bullish': return 'text-green-600 bg-green-50';
+      case 'bearish': return 'text-red-600 bg-red-50';
+      default: return 'text-gray-600 bg-gray-50';
+    }
+  };
+
+  const getTradeSize = (size) => {
+    switch (size) {
+      case 'whale': return 'bg-purple-100 text-purple-800';
+      case 'large': return 'bg-blue-100 text-blue-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl md:text-3xl font-bold">
+          🐋 Options Flow Alerts
+        </h2>
+        <button
+          onClick={fetchOptionsFlow}
+          className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+        <h3 className="text-lg font-semibold mb-4">Filters</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Min Premium ($)</label>
+            <input
+              type="number"
+              value={filters.minimum_premium}
+              onChange={(e) => setFilters({...filters, minimum_premium: parseInt(e.target.value)})}
+              className={`w-full px-3 py-2 border rounded-md ${isDarkMode ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-300'}`}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Min Volume/OI Ratio</label>
+            <input
+              type="number"
+              step="0.1"
+              value={filters.minimum_volume_oi_ratio}
+              onChange={(e) => setFilters({...filters, minimum_volume_oi_ratio: parseFloat(e.target.value)})}
+              className={`w-full px-3 py-2 border rounded-md ${isDarkMode ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-300'}`}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Limit</label>
+            <select
+              value={filters.limit}
+              onChange={(e) => setFilters({...filters, limit: parseInt(e.target.value)})}
+              className={`w-full px-3 py-2 border rounded-md ${isDarkMode ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-300'}`}
+            >
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+        </div>
+        <button
+          onClick={applyFilters}
+          className="mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          Apply Filters
+        </button>
+      </div>
+
+      {/* Summary Stats */}
+      {analysis && analysis.summary && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Total Alerts</h3>
+            <p className="text-2xl font-bold text-blue-600">{analysis.summary.total_alerts}</p>
+          </div>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Total Premium</h3>
+            <p className="text-2xl font-bold text-green-600">
+              ${(analysis.summary.total_premium / 1000000).toFixed(1)}M
+            </p>
+          </div>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Bullish/Bearish</h3>
+            <p className="text-xl font-bold">
+              <span className="text-green-600">{analysis.summary.bullish_count}</span>/
+              <span className="text-red-600">{analysis.summary.bearish_count}</span>
+            </p>
+          </div>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Opening Trades</h3>
+            <p className="text-2xl font-bold text-purple-600">{analysis.summary.opening_trades}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Options Flow Table */}
+      <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg shadow-md overflow-hidden`}>
+        <h3 className="text-lg font-semibold p-4 border-b border-gray-200">Recent Flow Alerts</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+              <tr>
+                <th className="px-4 py-3 text-left">Symbol</th>
+                <th className="px-4 py-3 text-left">Strike/Type</th>
+                <th className="px-4 py-3 text-left">DTE</th>
+                <th className="px-4 py-3 text-left">Premium</th>
+                <th className="px-4 py-3 text-left">Volume</th>
+                <th className="px-4 py-3 text-left">Sentiment</th>
+                <th className="px-4 py-3 text-left">Size</th>
+                <th className="px-4 py-3 text-left">Opening</th>
+              </tr>
+            </thead>
+            <tbody>
+              {optionsData.slice(0, 20).map((alert, index) => (
+                <tr key={index} className={`border-b ${isDarkMode ? 'border-slate-600' : 'border-gray-100'} hover:${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                  <td className="px-4 py-3 font-semibold">{alert.symbol}</td>
+                  <td className="px-4 py-3">{alert.strike_type}</td>
+                  <td className="px-4 py-3">{alert.dte}</td>
+                  <td className="px-4 py-3 font-medium">${(alert.premium / 1000).toFixed(0)}K</td>
+                  <td className="px-4 py-3">{alert.volume?.toLocaleString()}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSentimentColor(alert.sentiment)}`}>
+                      {alert.sentiment}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTradeSize(alert.trade_size)}`}>
+                      {alert.trade_size}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {alert.is_opener ? 
+                      <span className="text-green-600">✓</span> : 
+                      <span className="text-gray-400">-</span>
+                    }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Analysis Signals */}
+      {analysis && analysis.signals && analysis.signals.length > 0 && (
+        <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-6 rounded-lg shadow-md`}>
+          <h3 className="text-lg font-semibold mb-4">Trading Signals</h3>
+          <div className="space-y-3">
+            {analysis.signals.map((signal, index) => (
+              <div key={index} className={`p-3 rounded-lg ${isDarkMode ? 'bg-slate-700' : 'bg-blue-50'} border-l-4 border-blue-500`}>
+                <h4 className="font-semibold">{signal.type}</h4>
+                <p className="text-sm">{signal.description}</p>
+                <p className="text-xs text-gray-500 mt-1">Confidence: {(signal.confidence * 100).toFixed(0)}%</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Dark Pool Component
+const DarkPool = () => {
+  const [darkPoolData, setDarkPoolData] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    minimum_volume: 100000,
+    minimum_dark_percentage: 30.0,
+    limit: 50
+  });
+  const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    fetchDarkPoolData();
+  }, []);
+
+  const fetchDarkPoolData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/unusual-whales/dark-pool/recent`, {
+        params: { ...filters, include_analysis: true }
+      });
+      
+      if (response.data.status === 'success') {
+        setDarkPoolData(response.data.data.trades || []);
+        setAnalysis(response.data.analysis || null);
+      }
+    } catch (error) {
+      console.error('Error fetching dark pool data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getSignificanceColor = (significance) => {
+    switch (significance) {
+      case 'very_high': return 'bg-red-100 text-red-800';
+      case 'high': return 'bg-orange-100 text-orange-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl md:text-3xl font-bold">
+          🌊 Dark Pool Analysis
+        </h2>
+        <button
+          onClick={fetchDarkPoolData}
+          className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      {/* Summary Stats */}
+      {analysis && analysis.summary && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Total Trades</h3>
+            <p className="text-2xl font-bold text-blue-600">{analysis.summary.total_trades}</p>
+          </div>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Dark Volume</h3>
+            <p className="text-2xl font-bold text-gray-600">
+              {(analysis.summary.total_dark_volume / 1000000).toFixed(1)}M
+            </p>
+          </div>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Avg Dark %</h3>
+            <p className="text-2xl font-bold text-purple-600">{analysis.summary.avg_dark_percentage}%</p>
+          </div>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Institutional</h3>
+            <p className="text-2xl font-bold text-green-600">{analysis.summary.institutional_signals}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Dark Pool Table */}
+      <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg shadow-md overflow-hidden`}>
+        <h3 className="text-lg font-semibold p-4 border-b border-gray-200">Recent Dark Pool Activity</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+              <tr>
+                <th className="px-4 py-3 text-left">Ticker</th>
+                <th className="px-4 py-3 text-left">Price</th>
+                <th className="px-4 py-3 text-left">Dark Volume</th>
+                <th className="px-4 py-3 text-left">Dark %</th>
+                <th className="px-4 py-3 text-left">Dollar Volume</th>
+                <th className="px-4 py-3 text-left">Significance</th>
+                <th className="px-4 py-3 text-left">Institutional</th>
+              </tr>
+            </thead>
+            <tbody>
+              {darkPoolData.slice(0, 20).map((trade, index) => (
+                <tr key={index} className={`border-b ${isDarkMode ? 'border-slate-600' : 'border-gray-100'} hover:${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                  <td className="px-4 py-3 font-semibold">{trade.ticker}</td>
+                  <td className="px-4 py-3">${trade.price?.toFixed(2)}</td>
+                  <td className="px-4 py-3">{trade.dark_volume?.toLocaleString()}</td>
+                  <td className="px-4 py-3 font-medium">{trade.dark_percentage}%</td>
+                  <td className="px-4 py-3">${(trade.dollar_volume / 1000000).toFixed(1)}M</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSignificanceColor(trade.significance)}`}>
+                      {trade.significance}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    {trade.institutional_signal ? 
+                      <span className="text-green-600">✓</span> : 
+                      <span className="text-gray-400">-</span>
+                    }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Congressional Trades Component  
+const CongressionalTrades = () => {
+  const [congressionalData, setCongressionalData] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    days_back: 30,
+    minimum_amount: 15000,
+    party_filter: '',
+    transaction_type: ''
+  });
+  const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    fetchCongressionalData();
+  }, []);
+
+  const fetchCongressionalData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/unusual-whales/congressional/trades`, {
+        params: { ...filters, include_analysis: true }
+      });
+      
+      if (response.data.status === 'success') {
+        setCongressionalData(response.data.data.trades || []);
+        setAnalysis(response.data.analysis || null);
+      }
+    } catch (error) {
+      console.error('Error fetching congressional data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPartyColor = (party) => {
+    switch (party?.toLowerCase()) {
+      case 'democrat': return 'bg-blue-100 text-blue-800';
+      case 'republican': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTransactionColor = (type) => {
+    return type === 'Purchase' ? 'text-green-600' : 'text-red-600';
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl md:text-3xl font-bold">
+          🏛️ Congressional Trades
+        </h2>
+        <button
+          onClick={fetchCongressionalData}
+          className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      {/* Summary Stats */}
+      {analysis && analysis.summary && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Total Trades</h3>
+            <p className="text-2xl font-bold text-blue-600">{analysis.summary.total_trades}</p>
+          </div>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Total Amount</h3>
+            <p className="text-2xl font-bold text-green-600">
+              ${(analysis.summary.total_amount / 1000000).toFixed(1)}M
+            </p>
+          </div>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Representatives</h3>
+            <p className="text-2xl font-bold text-purple-600">{analysis.summary.unique_representatives}</p>
+          </div>
+          <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+            <h3 className="text-lg font-semibold">Recent (7d)</h3>
+            <p className="text-2xl font-bold text-orange-600">{analysis.summary.recent_trades}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Congressional Trades Table */}
+      <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} rounded-lg shadow-md overflow-hidden`}>
+        <h3 className="text-lg font-semibold p-4 border-b border-gray-200">Recent Congressional Activity</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+              <tr>
+                <th className="px-4 py-3 text-left">Representative</th>
+                <th className="px-4 py-3 text-left">Party</th>
+                <th className="px-4 py-3 text-left">Ticker</th>
+                <th className="px-4 py-3 text-left">Type</th>
+                <th className="px-4 py-3 text-left">Amount</th>
+                <th className="px-4 py-3 text-left">Date</th>
+                <th className="px-4 py-3 text-left">Sector</th>
+              </tr>
+            </thead>
+            <tbody>
+              {congressionalData.slice(0, 20).map((trade, index) => (
+                <tr key={index} className={`border-b ${isDarkMode ? 'border-slate-600' : 'border-gray-100'} hover:${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                  <td className="px-4 py-3 font-medium">{trade.representative}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPartyColor(trade.party)}`}>
+                      {trade.party}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 font-semibold">{trade.ticker}</td>
+                  <td className={`px-4 py-3 font-medium ${getTransactionColor(trade.transaction_type)}`}>
+                    {trade.transaction_type}
+                  </td>
+                  <td className="px-4 py-3">${trade.transaction_amount?.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm">{trade.transaction_date}</td>
+                  <td className="px-4 py-3 text-sm">{trade.sector}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Trading Strategies Component
+const TradingStrategies = () => {
+  const [strategies, setStrategies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    fetchTradingStrategies();
+  }, []);
+
+  const fetchTradingStrategies = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/unusual-whales/trading-strategies`);
+      
+      if (response.data.status === 'success') {
+        setStrategies(response.data.trading_strategies || []);
+      }
+    } catch (error) {
+      console.error('Error fetching trading strategies:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getConfidenceColor = (confidence) => {
+    if (confidence >= 0.7) return 'bg-green-100 text-green-800';
+    if (confidence >= 0.5) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
+  };
+
+  const getStrategyTypeColor = (type) => {
+    switch (type) {
+      case 'options_momentum': return 'bg-purple-100 text-purple-800';
+      case 'equity_momentum': return 'bg-blue-100 text-blue-800';
+      case 'equity_swing': return 'bg-green-100 text-green-800';
+      case 'high_conviction': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl md:text-3xl font-bold">
+          🎯 AI Trading Strategies
+        </h2>
+        <button
+          onClick={fetchTradingStrategies}
+          className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          <RefreshCw className="w-4 h-4" />
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
+        <div className="flex items-center space-x-2 mb-4">
+          <Target className="w-5 h-5 text-green-500" />
+          <h3 className="text-lg font-semibold">TradeStation Ready Strategies</h3>
+        </div>
+        <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+          These strategies are generated from real-time Unusual Whales data and designed for direct execution on TradeStation.
+        </p>
+      </div>
+
+      {/* Strategies */}
+      <div className="space-y-4">
+        {strategies.map((strategy, index) => (
+          <div key={index} className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-6 rounded-lg shadow-md border-l-4 ${
+            strategy.confidence >= 0.7 ? 'border-green-500' : 
+            strategy.confidence >= 0.5 ? 'border-yellow-500' : 'border-red-500'
+          }`}>
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-xl font-bold">{strategy.strategy_name}</h3>
+                <p className="text-lg font-semibold text-blue-600">{strategy.ticker}</p>
+              </div>
+              <div className="text-right">
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getConfidenceColor(strategy.confidence)}`}>
+                  {(strategy.confidence * 100).toFixed(0)}% Confidence
+                </span>
+                <br />
+                <span className={`mt-2 inline-block px-3 py-1 rounded-full text-sm font-medium ${getStrategyTypeColor(strategy.strategy_type)}`}>
+                  {strategy.strategy_type}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold mb-2">Entry Logic</h4>
+                <div className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} p-3 rounded text-sm`}>
+                  <p>{strategy.entry_logic.condition}</p>
+                  {strategy.entry_logic.premium_threshold && (
+                    <p className="mt-1">Premium: ${(strategy.entry_logic.premium_threshold / 1000).toFixed(0)}K</p>
+                  )}
+                  {strategy.entry_logic.sentiment && (
+                    <p className="mt-1">Sentiment: <span className="capitalize">{strategy.entry_logic.sentiment}</span></p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">TradeStation Execution</h4>
+                <div className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} p-3 rounded text-sm`}>
+                  <p><strong>Type:</strong> {strategy.tradestation_execution.instrument_type}</p>
+                  <p><strong>Action:</strong> {strategy.tradestation_execution.action}</p>
+                  <p><strong>Stop Loss:</strong> {strategy.tradestation_execution.stop_loss}</p>
+                  <p><strong>Target:</strong> {strategy.tradestation_execution.profit_target}</p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">Risk Management</h4>
+                <div className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} p-3 rounded text-sm`}>
+                  <p><strong>Max Position:</strong> {strategy.risk_management.max_position_size}</p>
+                  <p><strong>Stop Loss:</strong> {strategy.risk_management.stop_loss_percentage}%</p>
+                  {strategy.risk_management.trailing_stop && <p><strong>Trailing Stop:</strong> Enabled</p>}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold mb-2">Timeframe & Details</h4>
+                <div className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} p-3 rounded text-sm`}>
+                  <p><strong>Timeframe:</strong> {strategy.timeframe}</p>
+                  {strategy.entry_logic.dte && <p><strong>DTE:</strong> {strategy.entry_logic.dte}</p>}
+                  {strategy.entry_logic.sector && <p><strong>Sector:</strong> {strategy.entry_logic.sector}</p>}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <p className="text-sm text-yellow-800">
+                <strong>Disclaimer:</strong> Strategy generated from unusual market activity patterns. 
+                Always perform your own due diligence and risk assessment before executing trades.
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {strategies.length === 0 && (
+        <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-6 rounded-lg shadow-md text-center`}>
+          <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">No trading strategies available at the moment.</p>
+          <p className="text-sm text-gray-500 mt-2">Strategies are generated based on unusual market activity.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ==================== END UNUSUAL WHALES COMPONENTS ====================
+
 // Market News Component  
 const MarketNews = () => {
   return (
