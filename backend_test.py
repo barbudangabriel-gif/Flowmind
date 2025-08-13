@@ -322,6 +322,290 @@ class StockMarketAPITester:
         
         return success
 
+    def test_unusual_whales_options_flow(self):
+        """Test Unusual Whales Options Flow API endpoints"""
+        print("\n🐋 Testing Unusual Whales Options Flow API")
+        
+        # Test basic options flow alerts
+        success, flow_data = self.run_test("Options Flow Alerts (Default)", "GET", "unusual-whales/options/flow-alerts", 200)
+        if success:
+            data = flow_data.get('data', {})
+            alerts = data.get('alerts', [])
+            summary = data.get('summary', {})
+            
+            print(f"   📊 Found {len(alerts)} options flow alerts")
+            print(f"   💰 Total Premium: ${summary.get('total_premium', 0):,.0f}")
+            print(f"   📈 Bullish Count: {summary.get('bullish_count', 0)}")
+            print(f"   📉 Bearish Count: {summary.get('bearish_count', 0)}")
+            print(f"   🔥 Unusual Activity: {summary.get('unusual_activity', 0)}")
+            
+            # Verify data structure
+            if alerts:
+                first_alert = alerts[0]
+                required_fields = ['symbol', 'strike_type', 'premium', 'sentiment', 'volume']
+                missing_fields = [field for field in required_fields if field not in first_alert]
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields in alert: {missing_fields}")
+                else:
+                    print(f"   ✅ Alert data structure complete")
+                    print(f"   Example: {first_alert.get('symbol')} {first_alert.get('strike_type')} - ${first_alert.get('premium', 0):,.0f}")
+        
+        # Test with filters
+        params = {
+            "minimum_premium": 500000,
+            "minimum_volume_oi_ratio": 2.0,
+            "limit": 50,
+            "include_analysis": True
+        }
+        success, filtered_data = self.run_test("Options Flow (Filtered)", "GET", "unusual-whales/options/flow-alerts", 200, params=params)
+        if success:
+            alerts = filtered_data.get('data', {}).get('alerts', [])
+            analysis = filtered_data.get('analysis', {})
+            print(f"   🔍 Filtered alerts: {len(alerts)} (premium >= $500K)")
+            if analysis and 'signals' in analysis:
+                signals = analysis.get('signals', [])
+                print(f"   🎯 Trading signals generated: {len(signals)}")
+                for signal in signals[:2]:  # Show first 2 signals
+                    print(f"     - {signal.get('type', 'unknown')}: {signal.get('description', 'N/A')}")
+        
+        return success
+
+    def test_unusual_whales_dark_pool(self):
+        """Test Unusual Whales Dark Pool API endpoints"""
+        print("\n🌊 Testing Unusual Whales Dark Pool API")
+        
+        # Test basic dark pool data
+        success, dark_pool_data = self.run_test("Dark Pool Recent Activity", "GET", "unusual-whales/dark-pool/recent", 200)
+        if success:
+            data = dark_pool_data.get('data', {})
+            trades = data.get('trades', [])
+            summary = data.get('summary', {})
+            
+            print(f"   📊 Found {len(trades)} dark pool trades")
+            print(f"   📈 Total Dark Volume: {summary.get('total_dark_volume', 0):,}")
+            print(f"   🎯 Avg Dark %: {summary.get('avg_dark_percentage', 0):.1f}%")
+            print(f"   🏛️  Institutional Signals: {summary.get('institutional_signals', 0)}")
+            print(f"   🔥 High Significance: {summary.get('high_significance', 0)}")
+            
+            # Verify data structure
+            if trades:
+                first_trade = trades[0]
+                required_fields = ['ticker', 'dark_volume', 'dark_percentage', 'significance']
+                missing_fields = [field for field in required_fields if field not in first_trade]
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields in trade: {missing_fields}")
+                else:
+                    print(f"   ✅ Trade data structure complete")
+                    print(f"   Example: {first_trade.get('ticker')} - {first_trade.get('dark_volume', 0):,} vol ({first_trade.get('dark_percentage', 0):.1f}% dark)")
+        
+        # Test with filters
+        params = {
+            "minimum_volume": 200000,
+            "minimum_dark_percentage": 40.0,
+            "limit": 25,
+            "include_analysis": True
+        }
+        success, filtered_data = self.run_test("Dark Pool (Filtered)", "GET", "unusual-whales/dark-pool/recent", 200, params=params)
+        if success:
+            trades = filtered_data.get('data', {}).get('trades', [])
+            analysis = filtered_data.get('analysis', {})
+            print(f"   🔍 Filtered trades: {len(trades)} (vol >= 200K, dark >= 40%)")
+            if analysis and 'implications' in analysis:
+                implications = analysis.get('implications', [])
+                print(f"   💡 Analysis implications: {len(implications)}")
+                for implication in implications[:2]:
+                    print(f"     - {implication.get('type', 'unknown')}: {implication.get('description', 'N/A')}")
+        
+        return success
+
+    def test_unusual_whales_congressional_trades(self):
+        """Test Unusual Whales Congressional Trades API endpoints"""
+        print("\n🏛️  Testing Unusual Whales Congressional Trades API")
+        
+        # Test basic congressional trades
+        success, congress_data = self.run_test("Congressional Trades", "GET", "unusual-whales/congressional/trades", 200)
+        if success:
+            data = congress_data.get('data', {})
+            trades = data.get('trades', [])
+            summary = data.get('summary', {})
+            
+            print(f"   📊 Found {len(trades)} congressional trades")
+            print(f"   💰 Total Amount: ${summary.get('total_amount', 0):,.0f}")
+            print(f"   👥 Unique Representatives: {summary.get('unique_representatives', 0)}")
+            print(f"   📈 Unique Tickers: {summary.get('unique_tickers', 0)}")
+            print(f"   🕐 Recent Trades (7d): {summary.get('recent_trades', 0)}")
+            
+            # Show party breakdown
+            party_breakdown = summary.get('party_breakdown', {})
+            if party_breakdown:
+                print(f"   🗳️  Party Breakdown:")
+                for party, count in party_breakdown.items():
+                    print(f"     - {party}: {count} trades")
+            
+            # Show transaction type breakdown
+            transaction_breakdown = summary.get('transaction_type_breakdown', {})
+            if transaction_breakdown:
+                print(f"   💼 Transaction Types:")
+                for tx_type, count in transaction_breakdown.items():
+                    print(f"     - {tx_type}: {count} trades")
+            
+            # Verify data structure
+            if trades:
+                first_trade = trades[0]
+                required_fields = ['representative', 'party', 'ticker', 'transaction_type', 'transaction_amount']
+                missing_fields = [field for field in required_fields if field not in first_trade]
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields in trade: {missing_fields}")
+                else:
+                    print(f"   ✅ Trade data structure complete")
+                    print(f"   Example: {first_trade.get('representative')} ({first_trade.get('party')}) - {first_trade.get('transaction_type')} {first_trade.get('ticker')} ${first_trade.get('transaction_amount', 0):,.0f}")
+        
+        # Test with filters
+        params = {
+            "days_back": 14,
+            "minimum_amount": 50000,
+            "party_filter": "Democrat",
+            "transaction_type": "Purchase",
+            "limit": 20,
+            "include_analysis": True
+        }
+        success, filtered_data = self.run_test("Congressional Trades (Filtered)", "GET", "unusual-whales/congressional/trades", 200, params=params)
+        if success:
+            trades = filtered_data.get('data', {}).get('trades', [])
+            analysis = filtered_data.get('analysis', {})
+            print(f"   🔍 Filtered trades: {len(trades)} (Democrat purchases >= $50K, 14d)")
+            if analysis and 'insights' in analysis:
+                insights = analysis.get('insights', [])
+                print(f"   💡 Analysis insights: {len(insights)}")
+                for insight in insights[:2]:
+                    print(f"     - {insight.get('type', 'unknown')}: {insight.get('description', 'N/A')}")
+        
+        return success
+
+    def test_unusual_whales_trading_strategies(self):
+        """Test Unusual Whales Trading Strategies API endpoint"""
+        print("\n🎯 Testing Unusual Whales Trading Strategies API")
+        
+        success, strategies_data = self.run_test("Trading Strategies Generation", "GET", "unusual-whales/trading-strategies", 200)
+        if success:
+            strategies = strategies_data.get('strategies', [])
+            market_context = strategies_data.get('market_context', {})
+            
+            print(f"   📊 Generated {len(strategies)} trading strategies")
+            print(f"   📈 Market Sentiment: {market_context.get('overall_sentiment', 'unknown')}")
+            print(f"   🎯 Confidence Level: {market_context.get('confidence_level', 'unknown')}")
+            
+            # Analyze strategies
+            if strategies:
+                strategy_types = {}
+                confidence_levels = []
+                
+                for strategy in strategies:
+                    strategy_type = strategy.get('strategy_type', 'unknown')
+                    strategy_types[strategy_type] = strategy_types.get(strategy_type, 0) + 1
+                    confidence_levels.append(strategy.get('confidence', 0))
+                
+                print(f"   📋 Strategy Types:")
+                for s_type, count in strategy_types.items():
+                    print(f"     - {s_type}: {count} strategies")
+                
+                avg_confidence = sum(confidence_levels) / len(confidence_levels) if confidence_levels else 0
+                print(f"   🎯 Average Confidence: {avg_confidence:.2f}")
+                
+                # Show first strategy details
+                first_strategy = strategies[0]
+                print(f"   💡 Top Strategy: {first_strategy.get('strategy_name', 'N/A')}")
+                print(f"     - Ticker: {first_strategy.get('ticker', 'N/A')}")
+                print(f"     - Type: {first_strategy.get('strategy_type', 'N/A')}")
+                print(f"     - Confidence: {first_strategy.get('confidence', 0):.2f}")
+                print(f"     - Timeframe: {first_strategy.get('timeframe', 'N/A')}")
+                
+                # Check TradeStation execution details
+                tradestation = first_strategy.get('tradestation_execution', {})
+                if tradestation:
+                    print(f"     - TradeStation Ready: ✅")
+                    print(f"       * Instrument: {tradestation.get('instrument_type', 'N/A')}")
+                    print(f"       * Action: {tradestation.get('action', 'N/A')}")
+                    print(f"       * Stop Loss: {tradestation.get('stop_loss', 'N/A')}")
+                else:
+                    print(f"     - TradeStation Ready: ❌")
+                
+                # Verify required fields
+                required_fields = ['strategy_name', 'ticker', 'confidence', 'entry_logic', 'risk_management']
+                missing_fields = [field for field in required_fields if field not in first_strategy]
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields in strategy: {missing_fields}")
+                else:
+                    print(f"   ✅ Strategy data structure complete")
+        
+        return success
+
+    def test_unusual_whales_comprehensive_analysis(self):
+        """Test Unusual Whales Comprehensive Analysis API endpoint"""
+        print("\n🔬 Testing Unusual Whales Comprehensive Analysis API")
+        
+        success, analysis_data = self.run_test("Comprehensive Analysis", "GET", "unusual-whales/analysis/comprehensive", 200)
+        if success:
+            comprehensive_analysis = analysis_data.get('comprehensive_analysis', {})
+            market_outlook = analysis_data.get('market_outlook', {})
+            data_summary = analysis_data.get('data_summary', {})
+            
+            print(f"   📊 Data Sources:")
+            print(f"     - Options Alerts: {data_summary.get('options_alerts', 0)}")
+            print(f"     - Dark Pool Trades: {data_summary.get('dark_pool_trades', 0)}")
+            print(f"     - Congressional Trades: {data_summary.get('congressional_trades', 0)}")
+            
+            # Check each analysis component
+            for source, analysis in comprehensive_analysis.items():
+                data_available = analysis.get('data_available', False)
+                print(f"   {source.replace('_', ' ').title()}: {'✅ Available' if data_available else '❌ No Data'}")
+                
+                if data_available and 'analysis' in analysis:
+                    source_analysis = analysis['analysis']
+                    if isinstance(source_analysis, dict):
+                        if 'signals' in source_analysis:
+                            signals = source_analysis.get('signals', [])
+                            print(f"     - Signals: {len(signals)}")
+                        if 'implications' in source_analysis:
+                            implications = source_analysis.get('implications', [])
+                            print(f"     - Implications: {len(implications)}")
+                        if 'insights' in source_analysis:
+                            insights = source_analysis.get('insights', [])
+                            print(f"     - Insights: {len(insights)}")
+            
+            # Market outlook analysis
+            print(f"   🔮 Market Outlook:")
+            print(f"     - Overall Sentiment: {market_outlook.get('overall_sentiment', 'unknown')}")
+            print(f"     - Confidence: {market_outlook.get('confidence', 'unknown')}")
+            
+            key_signals = market_outlook.get('key_signals', [])
+            if key_signals:
+                print(f"     - Key Signals ({len(key_signals)}):")
+                for signal in key_signals[:3]:  # Show first 3
+                    print(f"       * {signal}")
+            
+            recommended_actions = market_outlook.get('recommended_actions', [])
+            if recommended_actions:
+                print(f"     - Recommended Actions ({len(recommended_actions)}):")
+                for action in recommended_actions[:2]:  # Show first 2
+                    print(f"       * {action}")
+            
+            risk_factors = market_outlook.get('risk_factors', [])
+            if risk_factors:
+                print(f"     - Risk Factors ({len(risk_factors)}):")
+                for risk in risk_factors[:2]:  # Show first 2
+                    print(f"       * {risk}")
+            
+            # Verify comprehensive analysis structure
+            required_components = ['options_flow', 'dark_pool', 'congressional']
+            missing_components = [comp for comp in required_components if comp not in comprehensive_analysis]
+            if missing_components:
+                print(f"   ⚠️  Missing analysis components: {missing_components}")
+            else:
+                print(f"   ✅ All analysis components present")
+        
+        return success
+
     def test_error_handling(self):
         """Test error handling for invalid requests"""
         # Test invalid stock symbol
