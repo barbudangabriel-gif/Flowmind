@@ -483,36 +483,137 @@ class StockMarketAPITester:
         return success
 
     def test_unusual_whales_trading_strategies(self):
-        """Test Unusual Whales Trading Strategies API endpoint"""
-        print("\n🎯 Testing Unusual Whales Trading Strategies API")
+        """Test Unusual Whales Trading Strategies API endpoint with ENHANCED CHART INTEGRATION"""
+        print("\n🎯 Testing Unusual Whales Trading Strategies API - ENHANCED WITH CHARTS")
         
         success, strategies_data = self.run_test("Trading Strategies Generation", "GET", "unusual-whales/trading-strategies", 200)
         if success:
-            strategies = strategies_data.get('strategies', [])
-            market_context = strategies_data.get('market_context', {})
+            strategies = strategies_data.get('trading_strategies', [])  # Updated field name
+            charts_included = strategies_data.get('charts_included', False)
             
             print(f"   📊 Generated {len(strategies)} trading strategies")
-            print(f"   📈 Market Sentiment: {market_context.get('overall_sentiment', 'unknown')}")
-            print(f"   🎯 Confidence Level: {market_context.get('confidence_level', 'unknown')}")
+            print(f"   📈 Charts Included: {'✅ YES' if charts_included else '❌ NO'}")
             
-            # Analyze strategies
+            # Test chart integration for each strategy
+            chart_test_results = {
+                'total_strategies': len(strategies),
+                'strategies_with_charts': 0,
+                'chart_types_found': set(),
+                'plotly_charts_valid': 0,
+                'chart_errors': 0
+            }
+            
             if strategies:
-                strategy_types = {}
-                confidence_levels = []
+                print(f"\n   🎨 CHART INTEGRATION TESTING:")
                 
-                for strategy in strategies:
-                    strategy_type = strategy.get('strategy_type', 'unknown')
-                    strategy_types[strategy_type] = strategy_types.get(strategy_type, 0) + 1
-                    confidence_levels.append(strategy.get('confidence', 0))
+                for i, strategy in enumerate(strategies):
+                    strategy_name = strategy.get('strategy_name', f'Strategy {i+1}')
+                    print(f"   📋 Strategy {i+1}: {strategy_name}")
+                    
+                    # Test 1: Check if strategy has chart field
+                    if 'chart' in strategy:
+                        chart_test_results['strategies_with_charts'] += 1
+                        chart_data = strategy['chart']
+                        
+                        # Test 2: Verify chart data structure
+                        if 'chart_type' in chart_data:
+                            chart_type = chart_data['chart_type']
+                            chart_test_results['chart_types_found'].add(chart_type)
+                            print(f"     - Chart Type: {chart_type}")
+                            
+                            # Test 3: Verify plotly chart JSON
+                            if 'plotly_chart' in chart_data:
+                                try:
+                                    plotly_json = chart_data['plotly_chart']
+                                    if isinstance(plotly_json, str):
+                                        # Try to parse JSON
+                                        import json
+                                        parsed_chart = json.loads(plotly_json)
+                                        if 'data' in parsed_chart and 'layout' in parsed_chart:
+                                            chart_test_results['plotly_charts_valid'] += 1
+                                            print(f"     - Plotly Chart: ✅ Valid JSON structure")
+                                            
+                                            # Test 4: Verify chart contains P&L data
+                                            if 'data' in parsed_chart and len(parsed_chart['data']) > 0:
+                                                first_trace = parsed_chart['data'][0]
+                                                if 'x' in first_trace and 'y' in first_trace:
+                                                    print(f"     - P&L Data Points: ✅ {len(first_trace['x'])} points")
+                                                else:
+                                                    print(f"     - P&L Data Points: ❌ Missing x/y data")
+                                            
+                                            # Test 5: Verify chart metrics
+                                            metrics_found = []
+                                            if 'max_profit' in chart_data:
+                                                metrics_found.append(f"Max Profit: ${chart_data['max_profit']:.0f}")
+                                            if 'max_loss' in chart_data:
+                                                metrics_found.append(f"Max Loss: ${chart_data['max_loss']:.0f}")
+                                            if 'breakeven_points' in chart_data:
+                                                be_points = chart_data['breakeven_points']
+                                                if be_points:
+                                                    metrics_found.append(f"Breakeven: ${be_points[0]:.2f}")
+                                            if 'breakeven' in chart_data:
+                                                metrics_found.append(f"Breakeven: ${chart_data['breakeven']:.2f}")
+                                            
+                                            if metrics_found:
+                                                print(f"     - Chart Metrics: ✅ {', '.join(metrics_found)}")
+                                            else:
+                                                print(f"     - Chart Metrics: ⚠️  No metrics found")
+                                        else:
+                                            print(f"     - Plotly Chart: ❌ Invalid structure")
+                                    else:
+                                        print(f"     - Plotly Chart: ❌ Not a string")
+                                except Exception as e:
+                                    print(f"     - Plotly Chart: ❌ JSON parse error: {str(e)}")
+                                    chart_test_results['chart_errors'] += 1
+                            else:
+                                print(f"     - Plotly Chart: ❌ Missing plotly_chart field")
+                        else:
+                            print(f"     - Chart Type: ❌ Missing chart_type field")
+                            
+                        # Test 6: Verify strategy-specific chart types
+                        expected_chart_types = {
+                            'bull call spread': 'vertical_spread',
+                            'bear put spread': 'vertical_spread', 
+                            'long call': 'directional',
+                            'long put': 'directional',
+                            'long straddle': 'volatility',
+                            'long strangle': 'volatility',
+                            'iron condor': 'iron_condor',
+                            'cash-secured put': 'income',
+                            'covered call': 'income'
+                        }
+                        
+                        strategy_name_lower = strategy_name.lower()
+                        expected_type = None
+                        for name_pattern, chart_type in expected_chart_types.items():
+                            if name_pattern in strategy_name_lower:
+                                expected_type = chart_type
+                                break
+                        
+                        if expected_type and 'chart' in strategy:
+                            actual_type = strategy['chart'].get('chart_type')
+                            if actual_type == expected_type:
+                                print(f"     - Chart Type Match: ✅ {actual_type} (expected)")
+                            else:
+                                print(f"     - Chart Type Match: ⚠️  {actual_type} (expected {expected_type})")
+                    else:
+                        print(f"     - Chart: ❌ Missing chart field")
                 
-                print(f"   📋 Strategy Types:")
-                for s_type, count in strategy_types.items():
-                    print(f"     - {s_type}: {count} strategies")
+                # Print chart testing summary
+                print(f"\n   📊 CHART TESTING SUMMARY:")
+                print(f"     - Total Strategies: {chart_test_results['total_strategies']}")
+                print(f"     - Strategies with Charts: {chart_test_results['strategies_with_charts']}")
+                print(f"     - Valid Plotly Charts: {chart_test_results['plotly_charts_valid']}")
+                print(f"     - Chart Types Found: {', '.join(chart_test_results['chart_types_found'])}")
+                print(f"     - Chart Errors: {chart_test_results['chart_errors']}")
                 
-                avg_confidence = sum(confidence_levels) / len(confidence_levels) if confidence_levels else 0
-                print(f"   🎯 Average Confidence: {avg_confidence:.2f}")
+                # Calculate success rate
+                if chart_test_results['total_strategies'] > 0:
+                    chart_success_rate = (chart_test_results['plotly_charts_valid'] / chart_test_results['total_strategies']) * 100
+                    print(f"     - Chart Success Rate: {chart_success_rate:.1f}%")
                 
-                # Show first strategy details
+                # Test 7: Verify TradeStation execution details
+                print(f"\n   🎯 TRADESTATION EXECUTION TESTING:")
                 first_strategy = strategies[0]
                 print(f"   💡 Top Strategy: {first_strategy.get('strategy_name', 'N/A')}")
                 print(f"     - Ticker: {first_strategy.get('ticker', 'N/A')}")
@@ -524,19 +625,32 @@ class StockMarketAPITester:
                 tradestation = first_strategy.get('tradestation_execution', {})
                 if tradestation:
                     print(f"     - TradeStation Ready: ✅")
-                    print(f"       * Instrument: {tradestation.get('instrument_type', 'N/A')}")
-                    print(f"       * Action: {tradestation.get('action', 'N/A')}")
-                    print(f"       * Stop Loss: {tradestation.get('stop_loss', 'N/A')}")
+                    print(f"       * Underlying: {tradestation.get('underlying', 'N/A')}")
+                    print(f"       * Max Risk: {tradestation.get('max_risk', 'N/A')}")
+                    print(f"       * Max Profit: {tradestation.get('max_profit', 'N/A')}")
+                    print(f"       * Breakeven: {tradestation.get('breakeven', 'N/A')}")
+                    
+                    # Check legs structure
+                    legs = tradestation.get('legs', [])
+                    if legs:
+                        print(f"       * Strategy Legs: {len(legs)} legs")
+                        for j, leg in enumerate(legs):
+                            action = leg.get('action', 'N/A')
+                            strike = leg.get('strike', 'N/A')
+                            option_type = leg.get('option_type', 'N/A')
+                            print(f"         - Leg {j+1}: {action} {option_type} @ ${strike}")
+                    else:
+                        print(f"       * Strategy Legs: ❌ No legs found")
                 else:
                     print(f"     - TradeStation Ready: ❌")
                 
                 # Verify required fields
-                required_fields = ['strategy_name', 'ticker', 'confidence', 'entry_logic', 'risk_management']
+                required_fields = ['strategy_name', 'ticker', 'confidence', 'entry_logic', 'risk_management', 'chart']
                 missing_fields = [field for field in required_fields if field not in first_strategy]
                 if missing_fields:
                     print(f"   ⚠️  Missing fields in strategy: {missing_fields}")
                 else:
-                    print(f"   ✅ Strategy data structure complete")
+                    print(f"   ✅ Strategy data structure complete with charts")
         
         return success
 
