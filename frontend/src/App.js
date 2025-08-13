@@ -2013,7 +2013,11 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex">
+      <div className={`min-h-screen flex transition-all duration-300 ${
+        isDarkMode 
+          ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' 
+          : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
+      }`}>
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
         <main className={`flex-1 transition-all duration-300 ${
           // Dynamic margin based on screen size and sidebar state
