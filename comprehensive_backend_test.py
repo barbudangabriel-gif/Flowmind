@@ -10,7 +10,7 @@ from datetime import datetime
 import sys
 
 class ComprehensiveAPITester:
-    def __init__(self, base_url="https://marketpulse-46.preview.emergentagent.com"):
+    def __init__(self, base_url="https://stockflow-app-6.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
