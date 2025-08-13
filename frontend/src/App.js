@@ -2450,6 +2450,20 @@ const TradingStrategies = () => {
   const [loading, setLoading] = useState(true);
   const { isDarkMode } = useTheme();
 
+  // Load Plotly dynamically
+  useEffect(() => {
+    if (!window.Plotly) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.plot.ly/plotly-latest.min.js';
+      script.async = true;
+      document.head.appendChild(script);
+      
+      script.onload = () => {
+        console.log('Plotly loaded successfully');
+      };
+    }
+  }, []);
+
   useEffect(() => {
     fetchTradingStrategies();
   }, []);
@@ -2461,12 +2475,50 @@ const TradingStrategies = () => {
       
       if (response.data.status === 'success') {
         setStrategies(response.data.trading_strategies || []);
+        
+        // Render charts after strategies are loaded
+        setTimeout(() => {
+          renderCharts(response.data.trading_strategies || []);
+        }, 500);
       }
     } catch (error) {
       console.error('Error fetching trading strategies:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderCharts = (strategiesData) => {
+    strategiesData.forEach((strategy, index) => {
+      if (strategy.chart && strategy.chart.plotly_chart && window.Plotly) {
+        try {
+          const chartData = JSON.parse(strategy.chart.plotly_chart);
+          const chartDiv = document.getElementById(`strategy-chart-${index}`);
+          
+          if (chartDiv && chartData) {
+            // Configure chart for dark/light mode
+            const config = {
+              displayModeBar: false,
+              responsive: true,
+              displaylogo: false
+            };
+            
+            // Update layout for theme
+            if (chartData.layout) {
+              chartData.layout.paper_bgcolor = isDarkMode ? '#1e293b' : '#ffffff';
+              chartData.layout.plot_bgcolor = isDarkMode ? '#1e293b' : '#ffffff';
+              chartData.layout.font = {
+                color: isDarkMode ? '#ffffff' : '#000000'
+              };
+            }
+            
+            window.Plotly.newPlot(chartDiv, chartData.data, chartData.layout, config);
+          }
+        } catch (error) {
+          console.error('Error rendering chart:', error);
+        }
+      }
+    });
   };
 
   const getConfidenceColor = (confidence) => {
@@ -2477,11 +2529,24 @@ const TradingStrategies = () => {
 
   const getStrategyTypeColor = (type) => {
     switch (type) {
-      case 'options_momentum': return 'bg-purple-100 text-purple-800';
-      case 'equity_momentum': return 'bg-blue-100 text-blue-800';
-      case 'equity_swing': return 'bg-green-100 text-green-800';
-      case 'high_conviction': return 'bg-red-100 text-red-800';
+      case 'vertical_spread': return 'bg-purple-100 text-purple-800';
+      case 'directional': return 'bg-blue-100 text-blue-800';
+      case 'volatility': return 'bg-pink-100 text-pink-800';
+      case 'income': return 'bg-green-100 text-green-800';
+      case 'policy_play': return 'bg-red-100 text-red-800';
+      case 'income_generation': return 'bg-teal-100 text-teal-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getChartTypeIcon = (chartType) => {
+    switch (chartType) {
+      case 'vertical_spread': return '📊';
+      case 'directional': return '📈';
+      case 'volatility': return '⚡';
+      case 'iron_condor': return '🦅';
+      case 'income': return '💰';
+      default: return '📉';
     }
   };
 
@@ -2511,15 +2576,15 @@ const TradingStrategies = () => {
       <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
         <div className="flex items-center space-x-2 mb-4">
           <Target className="w-5 h-5 text-green-500" />
-          <h3 className="text-lg font-semibold">TradeStation Ready Strategies</h3>
+          <h3 className="text-lg font-semibold">TradeStation Ready Strategies with Interactive Charts</h3>
         </div>
         <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-          These strategies are generated from real-time Unusual Whales data and designed for direct execution on TradeStation.
+          These strategies include visual P&L diagrams and are designed for direct execution on TradeStation.
         </p>
       </div>
 
       {/* Strategies */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {strategies.map((strategy, index) => (
           <div key={index} className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-6 rounded-lg shadow-md border-l-4 ${
             strategy.confidence >= 0.7 ? 'border-green-500' : 
@@ -2527,7 +2592,10 @@ const TradingStrategies = () => {
           }`}>
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-xl font-bold">{strategy.strategy_name}</h3>
+                <h3 className="text-xl font-bold flex items-center space-x-2">
+                  <span>{getChartTypeIcon(strategy.chart?.chart_type)}</span>
+                  <span>{strategy.strategy_name}</span>
+                </h3>
                 <p className="text-lg font-semibold text-blue-600">{strategy.ticker}</p>
               </div>
               <div className="text-right">
@@ -2541,6 +2609,49 @@ const TradingStrategies = () => {
               </div>
             </div>
 
+            {/* Interactive P&L Chart */}
+            {strategy.chart && strategy.chart.plotly_chart && (
+              <div className={`mb-6 ${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} p-4 rounded-lg`}>
+                <h4 className="font-semibold mb-3 flex items-center space-x-2">
+                  <BarChart3 className="w-4 h-4" />
+                  <span>Profit/Loss Diagram</span>
+                </h4>
+                <div 
+                  id={`strategy-chart-${index}`} 
+                  className="w-full"
+                  style={{ height: '400px' }}
+                ></div>
+                
+                {/* Chart Key Metrics */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                  {strategy.chart.max_profit && (
+                    <div className={`${isDarkMode ? 'bg-slate-600' : 'bg-green-50'} p-2 rounded text-center`}>
+                      <p className="text-xs text-green-600 font-medium">Max Profit</p>
+                      <p className="text-sm font-bold">${strategy.chart.max_profit.toFixed(0)}</p>
+                    </div>
+                  )}
+                  {strategy.chart.max_loss && (
+                    <div className={`${isDarkMode ? 'bg-slate-600' : 'bg-red-50'} p-2 rounded text-center`}>
+                      <p className="text-xs text-red-600 font-medium">Max Loss</p>
+                      <p className="text-sm font-bold">${strategy.chart.max_loss.toFixed(0)}</p>
+                    </div>
+                  )}
+                  {strategy.chart.breakeven && (
+                    <div className={`${isDarkMode ? 'bg-slate-600' : 'bg-yellow-50'} p-2 rounded text-center`}>
+                      <p className="text-xs text-yellow-600 font-medium">Breakeven</p>
+                      <p className="text-sm font-bold">${strategy.chart.breakeven.toFixed(2)}</p>
+                    </div>
+                  )}
+                  {strategy.chart.breakeven_points && strategy.chart.breakeven_points.length > 1 && (
+                    <div className={`${isDarkMode ? 'bg-slate-600' : 'bg-yellow-50'} p-2 rounded text-center`}>
+                      <p className="text-xs text-yellow-600 font-medium">Breakevens</p>
+                      <p className="text-sm font-bold">{strategy.chart.breakeven_points.length}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h4 className="font-semibold mb-2">Entry Logic</h4>
@@ -2552,16 +2663,28 @@ const TradingStrategies = () => {
                   {strategy.entry_logic.sentiment && (
                     <p className="mt-1">Sentiment: <span className="capitalize">{strategy.entry_logic.sentiment}</span></p>
                   )}
+                  {strategy.entry_logic.underlying_price && (
+                    <p className="mt-1">Underlying: ${strategy.entry_logic.underlying_price.toFixed(2)}</p>
+                  )}
                 </div>
               </div>
 
               <div>
                 <h4 className="font-semibold mb-2">TradeStation Execution</h4>
                 <div className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'} p-3 rounded text-sm`}>
-                  <p><strong>Type:</strong> {strategy.tradestation_execution.instrument_type}</p>
-                  <p><strong>Action:</strong> {strategy.tradestation_execution.action}</p>
-                  <p><strong>Stop Loss:</strong> {strategy.tradestation_execution.stop_loss}</p>
-                  <p><strong>Target:</strong> {strategy.tradestation_execution.profit_target}</p>
+                  <p><strong>Strategy:</strong> {strategy.tradestation_execution.strategy_type || strategy.tradestation_execution.instrument_type}</p>
+                  {strategy.tradestation_execution.legs && strategy.tradestation_execution.legs.length > 0 && (
+                    <div className="mt-2">
+                      <strong>Legs:</strong>
+                      {strategy.tradestation_execution.legs.map((leg, idx) => (
+                        <div key={idx} className="ml-2 text-xs">
+                          {leg.action} {leg.option_type} @ ${leg.strike} ({leg.quantity}x)
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p><strong>Max Risk:</strong> {strategy.tradestation_execution.max_risk}</p>
+                  <p><strong>Max Profit:</strong> {strategy.tradestation_execution.max_profit}</p>
                 </div>
               </div>
 
@@ -2571,6 +2694,7 @@ const TradingStrategies = () => {
                   <p><strong>Max Position:</strong> {strategy.risk_management.max_position_size}</p>
                   <p><strong>Stop Loss:</strong> {strategy.risk_management.stop_loss_percentage}%</p>
                   {strategy.risk_management.trailing_stop && <p><strong>Trailing Stop:</strong> Enabled</p>}
+                  {strategy.risk_management.time_stop && <p><strong>Time Stop:</strong> {strategy.risk_management.time_stop}</p>}
                 </div>
               </div>
 
@@ -2580,6 +2704,7 @@ const TradingStrategies = () => {
                   <p><strong>Timeframe:</strong> {strategy.timeframe}</p>
                   {strategy.entry_logic.dte && <p><strong>DTE:</strong> {strategy.entry_logic.dte}</p>}
                   {strategy.entry_logic.sector && <p><strong>Sector:</strong> {strategy.entry_logic.sector}</p>}
+                  {strategy.entry_logic.volume && <p><strong>Volume:</strong> {strategy.entry_logic.volume.toLocaleString()}</p>}
                 </div>
               </div>
             </div>
@@ -2587,7 +2712,7 @@ const TradingStrategies = () => {
             <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
               <p className="text-sm text-yellow-800">
                 <strong>Disclaimer:</strong> Strategy generated from unusual market activity patterns. 
-                Always perform your own due diligence and risk assessment before executing trades.
+                Charts show theoretical P&L at expiration. Always perform your own due diligence and risk assessment before executing trades.
               </p>
             </div>
           </div>
