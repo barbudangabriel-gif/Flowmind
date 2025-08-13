@@ -434,7 +434,9 @@ class EnhancedTradingStrategiesTest:
             return False
         
         # Extract strategies from response
-        strategies = data.get('strategies', [])
+        strategies = data.get('trading_strategies', [])
+        if not strategies:
+            strategies = data.get('strategies', [])  # Fallback
         if not strategies:
             print(f"\n⚠️  No strategies returned. Full response: {json.dumps(data, indent=2)}")
             strategies = []
