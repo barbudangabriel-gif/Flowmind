@@ -597,7 +597,329 @@ const Portfolio = React.memo(() => {
     { id: 'risk', label: 'Risk Analysis', icon: '⚡', disabled: !whaleDataEnabled }
   ];
 
-  const handleSubmit = async (e) => {
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'positions':
+        return renderPositionsTab();
+      case 'options':
+        return renderOptionsTab();
+      case 'performance':
+        return renderPerformanceTab();
+      case 'risk':
+        return renderRiskTab();
+      default:
+        return renderPositionsTab();
+    }
+  };
+
+  const renderPositionsTab = () => (
+    <div className="space-y-6">
+      {/* Portfolio Summary Cards */}
+      {portfolio && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg border border-gray-100 card-hover">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg text-white">
+                <DollarSign size={20} />
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">Total Value</h3>
+            </div>
+            <p className="text-2xl md:text-3xl font-bold text-gray-800">${portfolio.total_value?.toFixed(2)}</p>
+            <div className="mt-2 flex items-center space-x-1 text-xs text-gray-500">
+              <span>Market Value</span>
+              {whaleDataEnabled && <span className="text-green-500">• Live Whale Data</span>}
+            </div>
+          </div>
+          
+          <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg border border-gray-100 card-hover">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg text-white">
+                <Briefcase size={20} />
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">Total Cost</h3>
+            </div>
+            <p className="text-2xl md:text-3xl font-bold text-gray-800">${portfolio.total_cost?.toFixed(2)}</p>
+            <div className="mt-2 text-xs text-gray-500">Cost Basis</div>
+          </div>
+          
+          <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg border border-gray-100 card-hover">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className={`p-2 rounded-lg text-white ${
+                portfolio.total_profit_loss >= 0 
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
+                  : 'bg-gradient-to-r from-red-500 to-red-600'
+              }`}>
+                {portfolio.total_profit_loss >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">P&L</h3>
+            </div>
+            <p className={`text-2xl md:text-3xl font-bold ${portfolio.total_profit_loss >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              ${portfolio.total_profit_loss?.toFixed(2)}
+            </p>
+            <div className="mt-2 text-xs text-gray-500">Unrealized</div>
+          </div>
+          
+          <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-xl shadow-lg border border-gray-100 card-hover">
+            <div className="flex items-center space-x-3 mb-2">
+              <div className={`p-2 rounded-lg text-white ${
+                portfolio.total_profit_loss_percent >= 0 
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
+                  : 'bg-gradient-to-r from-red-500 to-red-600'
+              }`}>
+                <Activity size={20} />
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">Return %</h3>
+            </div>
+            <p className={`text-2xl md:text-3xl font-bold ${portfolio.total_profit_loss_percent >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+              {portfolio.total_profit_loss_percent?.toFixed(2)}%
+            </p>
+            <div className="mt-2 text-xs text-gray-500">Total Return</div>
+          </div>
+        </div>
+      )}
+
+      {/* Portfolio Allocation Chart */}
+      {portfolioChartData.length > 0 && (
+        <div className="bg-white/80 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100 card-hover">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center">
+              <PieChartIcon className="mr-3 text-blue-600" size={24} />
+              Portfolio Allocation
+            </h3>
+            {whaleDataEnabled && (
+              <span className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">
+                🐋 Whale Data Active
+              </span>
+            )}
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={portfolioChartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ symbol, percent }) => `${symbol} (${(percent * 100).toFixed(1)}%)`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {portfolioChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={`hsl(${index * 45}, 70%, 60%)`} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Value']} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Holdings Table */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-100 overflow-hidden card-hover">
+        <div className="px-4 md:px-6 py-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 flex items-center">
+              <Briefcase className="mr-3 text-blue-600" size={24} />
+              Holdings
+            </h3>
+            <div className="flex items-center space-x-2">
+              {!whaleDataEnabled && (
+                <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs rounded-full">
+                  ⏳ Whale Features Coming Soon
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Shares</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg Cost</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Price</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Market Value</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
+                <th className="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  {whaleDataEnabled ? 'Whale Activity' : 'Actions'}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {portfolio?.items?.map((item) => (
+                <tr key={item.id} className="hover:bg-blue-50 transition-colors duration-200">
+                  <td className="px-4 md:px-6 py-4">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-bold text-blue-600 font-mono">{item.symbol}</span>
+                      {whaleDataEnabled && (
+                        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
+                          🐋 Active
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 md:px-6 py-4 text-gray-600">{item.shares}</td>
+                  <td className="px-4 md:px-6 py-4 text-gray-600">${item.purchase_price?.toFixed(2)}</td>
+                  <td className="px-4 md:px-6 py-4 text-gray-900 font-medium">${item.current_price?.toFixed(2)}</td>
+                  <td className="px-4 md:px-6 py-4 text-gray-900 font-medium">${item.current_value?.toFixed(2)}</td>
+                  <td className={`px-4 md:px-6 py-4 font-bold ${item.profit_loss >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <div className="flex items-center space-x-1">
+                      {item.profit_loss >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                      <span>${item.profit_loss?.toFixed(2)} ({item.profit_loss_percent?.toFixed(2)}%)</span>
+                    </div>
+                  </td>
+                  <td className="px-4 md:px-6 py-4">
+                    {whaleDataEnabled ? (
+                      <div className="flex items-center space-x-2">
+                        <button className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-lg transition-colors duration-200">
+                          🐋 Flow
+                        </button>
+                        <button className="text-purple-600 hover:text-purple-800 hover:bg-purple-50 p-2 rounded-lg transition-colors duration-200">
+                          📊 Dark Pool
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => deleteItem(item.id)}
+                        className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded-lg transition-colors duration-200"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderOptionsTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-gray-100 text-center">
+        <div className="max-w-md mx-auto">
+          <div className="w-16 h-16 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">🐋</span>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Options Tracking Coming Soon</h3>
+          <p className="text-gray-600 mb-4">
+            Options positions, unusual flow, and smart money analysis will be available when you connect your Unusual Whales API.
+          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-amber-800">
+              <strong>Planned Features:</strong><br />
+              • Options positions tracking<br />
+              • Unusual options flow alerts<br />
+              • Dark pool activity for holdings<br />
+              • Congressional trades monitoring
+            </p>
+          </div>
+          <button 
+            onClick={() => setWhaleDataEnabled(true)}
+            className="px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+          >
+            🔜 Preview Mode
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPerformanceTab = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-100 card-hover">
+          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            📈 Performance Metrics
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Return</span>
+              <span className="font-bold text-emerald-600">
+                {portfolio?.total_profit_loss_percent ? `${portfolio.total_profit_loss_percent.toFixed(2)}%` : '0.00%'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Best Performer</span>
+              <span className="font-bold text-green-600">
+                {portfolio?.items?.length > 0 ? 
+                  portfolio.items.reduce((best, item) => 
+                    (item.profit_loss_percent || 0) > (best.profit_loss_percent || 0) ? item : best
+                  ).symbol : 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Worst Performer</span>
+              <span className="font-bold text-red-600">
+                {portfolio?.items?.length > 0 ? 
+                  portfolio.items.reduce((worst, item) => 
+                    (item.profit_loss_percent || 0) < (worst.profit_loss_percent || 0) ? item : worst
+                  ).symbol : 'N/A'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-100 card-hover">
+          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
+            📊 Allocation Analysis
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Positions</span>
+              <span className="font-bold text-blue-600">{portfolio?.items?.length || 0}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Largest Position</span>
+              <span className="font-bold text-purple-600">
+                {portfolio?.items?.length > 0 ? 
+                  portfolio.items.reduce((largest, item) => 
+                    (item.current_value || 0) > (largest.current_value || 0) ? item : largest
+                  ).symbol : 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Concentration Risk</span>
+              <span className="font-bold text-amber-600">
+                {portfolio?.items?.length > 0 ? 
+                  `${((portfolio.items.reduce((largest, item) => 
+                    (item.current_value || 0) > (largest.current_value || 0) ? item : largest
+                  ).current_value / portfolio.total_value) * 100).toFixed(1)}%` : '0%'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderRiskTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-gray-100 text-center">
+        <div className="max-w-md mx-auto">
+          <div className="w-16 h-16 bg-gradient-to-r from-red-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚡</span>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Advanced Risk Analysis</h3>
+          <p className="text-gray-600 mb-4">
+            VaR calculations, correlation analysis, and smart money risk alerts coming with Unusual Whales integration.
+          </p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-red-800">
+              <strong>Planned Risk Features:</strong><br />
+              • Value at Risk (VaR) calculations<br />
+              • Portfolio correlation matrix<br />
+              • Smart money divergence alerts<br />
+              • Sector concentration warnings
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
     e.preventDefault();
     try {
       await axios.post(`${API}/portfolio`, {
