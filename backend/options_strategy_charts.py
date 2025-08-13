@@ -96,9 +96,11 @@ class OptionsStrategyChartGenerator:
         breakeven_points = []
         for i, pl in enumerate(total_pl):
             if abs(pl) < 0.1:  # Close to breakeven
-                breakeven_points.append(price_range[i])
+                breakeven_points.append(float(price_range[i]))
         
-        for be in breakeven_points[:2]:  # Max 2 breakeven points
+        # Limit to 2 breakeven points and ensure they're floats
+        breakeven_points = breakeven_points[:2]
+        for be in breakeven_points:
             fig.add_vline(x=be, line_dash="dash", line_color='#F59E0B', 
                          annotation_text=f"BE: ${be:.2f}")
         
