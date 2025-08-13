@@ -926,7 +926,7 @@ const Portfolio = React.memo(() => {
       <p>Portfolio component placeholder</p>
     </div>
   );
-};
+});
 
 // Stock Screener Component (Simple version)
 const SimpleStockScreener = () => {
