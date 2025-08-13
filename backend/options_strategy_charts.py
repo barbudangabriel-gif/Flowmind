@@ -148,8 +148,8 @@ class OptionsStrategyChartGenerator:
         return {
             'plotly_chart': plotly_json,
             'chart_type': 'vertical_spread',
-            'max_profit': max_profit,
-            'max_loss': abs(max_loss),
+            'max_profit': float(max_profit),
+            'max_loss': float(abs(max_loss)),
             'breakeven_points': breakeven_points
         }
     
