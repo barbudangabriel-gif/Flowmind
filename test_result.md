@@ -105,20 +105,17 @@
 user_problem_statement: "Enhanced Portfolio section with TradeStation-inspired features and implemented Night Mode functionality for FlowMind Analytics. Fixed critical JavaScript syntax errors and completed the modern portfolio interface with multi-tab navigation."
 
 backend:
-  - task: "Market Overview API - Dashboard Data Loading"
+  - task: "Portfolio Management API - Enhanced"
     implemented: true
     working: true
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-        - working: "unknown"
-        - agent: "main"
-        - comment: "Dashboard shows loading spinner, need to verify /api/market/overview and /api/market/top-movers endpoints"
         - working: true
-        - agent: "testing"
-        - comment: "✅ WORKING: Market Overview API tested successfully. Returns 4 major indices (S&P 500, Dow, NASDAQ, Russell) with real price data and proper change calculations. Response time: 1.38s. Dashboard loading issue should be resolved from backend perspective."
+        - agent: "main"
+        - comment: "Enhanced Portfolio component with TradeStation-inspired features implemented. Added multi-tab interface (Positions, Options, Performance, Risk), real-time P&L tracking, modern UI, and Add Position functionality. Need to test backend API compatibility."
 
   - task: "Investment Scoring System"
     implemented: true
