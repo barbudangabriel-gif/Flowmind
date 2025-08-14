@@ -3205,6 +3205,7 @@ const AutoOptionsTrading = () => {
   const [learningInsights, setLearningInsights] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedSymbol, setSelectedSymbol] = useState('SPY');
+  const [showOptionsDropdown, setShowOptionsDropdown] = useState(false);
 
   const [activeTrades, setActiveTrades] = useState([
     {
