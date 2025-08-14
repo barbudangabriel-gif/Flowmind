@@ -1375,7 +1375,12 @@ const TechnicalAnalysis = () => {
   };
 
   const getSignalColor = (signal) => {
-    switch (signal) {
+    // Defensive programming - ensure signal is valid
+    if (!signal || typeof signal !== 'string') {
+      return 'text-gray-600 bg-gray-50';
+    }
+    
+    switch (signal.toLowerCase()) {
       case 'bullish': return 'text-green-600 bg-green-50';
       case 'bearish': return 'text-red-600 bg-red-50';
       case 'buy': return 'text-green-700 bg-green-100';
