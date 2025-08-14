@@ -513,6 +513,7 @@ const AdvancedScreener = React.memo(() => {
                   <SortableHeader column="market_cap">Market Cap</SortableHeader>
                   <SortableHeader column="pe_ratio">P/E</SortableHeader>
                   <SortableHeader column="dividend_yield">Div Yield</SortableHeader>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">🐋 UW Signals</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
