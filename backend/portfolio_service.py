@@ -299,8 +299,9 @@ class PortfolioService:
     async def get_comprehensive_portfolio_analysis(self, account_id: str) -> Dict[str, Any]:
         """Get comprehensive portfolio analysis combining all metrics"""
         try:
-            # Get account data
-            account_summary = await self.ts_client.get_account_summary(account_id)
+            # Get account data using context manager
+            async with self.ts_client:
+                account_summary = await self.ts_client.get_account_summary(account_id)
             
             # Parse positions
             positions = []
