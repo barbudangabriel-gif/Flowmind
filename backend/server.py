@@ -916,9 +916,10 @@ async def get_market_overview():
         return {
             "indices": fallback_indices,
             "data_source": "Fallback Data (ETF Futures Style)",
-            "note": "Using mock ETF data due to API failures - check Unusual Whales API connection",
+            "note": "Using mock ETF data due to API failures - ETF symbols provide tradeable futures alternatives",
             "last_updated": datetime.utcnow().isoformat(),
-            "unusual_whales_coverage": "0/4 ETFs"
+            "unusual_whales_coverage": "0/4 ETFs",
+            "live_data_status": "Mock data only"
         }
 
 def get_fallback_market_data(symbol):
