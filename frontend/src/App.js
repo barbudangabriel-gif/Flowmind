@@ -3849,6 +3849,432 @@ const PerformanceAnalytics = () => {
   );
 };
 
+const TradingHistory = () => {
+  const { isDarkMode } = useTheme();
+  const [filter, setFilter] = useState('all'); // all, profitable, losses
+  const [dateRange, setDateRange] = useState('30d'); // 7d, 30d, 90d, 1y
+  
+  const [tradingHistory] = useState([
+    {
+      id: 1,
+      symbol: 'SPY',
+      strategy: 'Long Call',
+      entry_date: '2024-08-10',
+      exit_date: '2024-08-12',
+      entry_price: 2.30,
+      exit_price: 3.80,
+      quantity: 10,
+      pnl: 1500,
+      pnl_percent: 65.2,
+      duration: '2 days',
+      strike: 640,
+      expiration: '2024-08-16'
+    },
+    {
+      id: 2,
+      symbol: 'QQQ',
+      strategy: 'Bull Call Spread',
+      entry_date: '2024-08-08',
+      exit_date: '2024-08-09',
+      entry_price: 1.80,
+      exit_price: 1.20,
+      quantity: 5,
+      pnl: -300,
+      pnl_percent: -33.3,
+      duration: '1 day',
+      strike: '575/580',
+      expiration: '2024-08-16'
+    },
+    {
+      id: 3,
+      symbol: 'AAPL',
+      strategy: 'Long Put',
+      entry_date: '2024-08-05',
+      exit_date: '2024-08-07',
+      entry_price: 3.50,
+      exit_price: 4.20,
+      quantity: 3,
+      pnl: 210,
+      pnl_percent: 20.0,
+      duration: '2 days',
+      strike: 220,
+      expiration: '2024-08-09'
+    },
+    {
+      id: 4,
+      symbol: 'MSFT',
+      strategy: 'Iron Condor',
+      entry_date: '2024-08-01',
+      exit_date: '2024-08-03',
+      entry_price: 2.00,
+      exit_price: 0.50,
+      quantity: 2,
+      pnl: -300,
+      pnl_percent: -75.0,
+      duration: '2 days',
+      strike: '410/415/425/430',
+      expiration: '2024-08-09'
+    },
+    {
+      id: 5,
+      symbol: 'SPY',
+      strategy: 'Long Straddle',
+      entry_date: '2024-07-28',
+      exit_date: '2024-07-30',
+      entry_price: 5.20,
+      exit_price: 7.80,
+      quantity: 4,
+      pnl: 1040,
+      pnl_percent: 50.0,
+      duration: '2 days',
+      strike: 645,
+      expiration: '2024-08-02'
+    }
+  ]);
+
+  const filteredHistory = tradingHistory.filter(trade => {
+    if (filter === 'profitable') return trade.pnl > 0;
+    if (filter === 'losses') return trade.pnl < 0;
+    return true;
+  });
+
+  const totalPnL = tradingHistory.reduce((sum, trade) => sum + trade.pnl, 0);
+  const winningTrades = tradingHistory.filter(trade => trade.pnl > 0).length;
+  const losingTrades = tradingHistory.filter(trade => trade.pnl < 0).length;
+  const winRate = tradingHistory.length > 0 ? (winningTrades / tradingHistory.length * 100) : 0;
+  const avgWin = winningTrades > 0 ? tradingHistory.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0) / winningTrades : 0;
+  const avgLoss = losingTrades > 0 ? Math.abs(tradingHistory.filter(t => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0) / losingTrades) : 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800">📊 Trading History</h2>
+          <p className="text-gray-600">Complete record of all automated trades</p>
+        </div>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Total P&L</div>
+          <div className={`text-2xl font-bold ${totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            ${totalPnL >= 0 ? '+' : ''}{totalPnL.toLocaleString()}
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Win Rate</div>
+          <div className="text-2xl font-bold text-blue-600">{winRate.toFixed(1)}%</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Avg Win</div>
+          <div className="text-2xl font-bold text-green-600">${avgWin.toFixed(0)}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Avg Loss</div>
+          <div className="text-2xl font-bold text-red-600">${avgLoss.toFixed(0)}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Total Trades</div>
+          <div className="text-2xl font-bold text-purple-600">{tradingHistory.length}</div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Filter Trades</label>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">All Trades</option>
+              <option value="profitable">Profitable Only</option>
+              <option value="losses">Losses Only</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="90d">Last 90 Days</option>
+              <option value="1y">Last Year</option>
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+              <Download className="mr-2" size={16} />
+              Export CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Trading History Table */}
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold flex items-center">
+            <History className="mr-2" size={20} />
+            Trade History ({filteredHistory.length} trades)
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Strategy</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Strike/Exp</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Exit</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredHistory.map((trade) => (
+                <tr key={trade.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 font-semibold text-blue-600">{trade.symbol}</td>
+                  <td className="px-6 py-4 text-sm">{trade.strategy}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <div>${trade.strike}</div>
+                    <div className="text-gray-500">{trade.expiration}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <div>${trade.entry_price}</div>
+                    <div className="text-gray-500">{trade.entry_date}</div>
+                    <div className="text-gray-500">x{trade.quantity}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <div>${trade.exit_price}</div>
+                    <div className="text-gray-500">{trade.exit_date}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{trade.duration}</td>
+                  <td className="px-6 py-4">
+                    <div className={`font-semibold ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ${trade.pnl >= 0 ? '+' : ''}{trade.pnl}
+                    </div>
+                    <div className={`text-sm ${trade.pnl_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ({trade.pnl_percent >= 0 ? '+' : ''}{trade.pnl_percent}%)
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PerformanceAnalytics = () => {
+  const { isDarkMode } = useTheme();
+  
+  // Mock performance data
+  const [performanceData] = useState({
+    totalReturn: 15.8,
+    sharpeRatio: 1.42,
+    maxDrawdown: -8.3,
+    winRate: 68.5,
+    profitFactor: 2.15,
+    totalTrades: 156,
+    avgHoldTime: '2.3 days',
+    bestTrade: 2850,
+    worstTrade: -890,
+    consecutiveWins: 7,
+    consecutiveLosses: 3
+  });
+
+  const [chartData] = useState([
+    { date: '2024-01', value: 10000 },
+    { date: '2024-02', value: 10450 },
+    { date: '2024-03', value: 10890 },
+    { date: '2024-04', value: 10320 },
+    { date: '2024-05', value: 11150 },
+    { date: '2024-06', value: 11580 },
+    { date: '2024-07', value: 11320 },
+    { date: '2024-08', value: 11580 }
+  ]);
+
+  const [monthlyStats] = useState([
+    { month: 'Jan 2024', trades: 18, pnl: 450, winRate: 72.2 },
+    { month: 'Feb 2024', trades: 22, pnl: 890, winRate: 68.2 },
+    { month: 'Mar 2024', trades: 20, pnl: -570, winRate: 45.0 },
+    { month: 'Apr 2024', trades: 25, pnl: 830, winRate: 76.0 },
+    { month: 'May 2024', trades: 19, pnl: 430, winRate: 63.2 },
+    { month: 'Jun 2024', trades: 21, pnl: 320, winRate: 66.7 },
+    { month: 'Jul 2024', trades: 16, pnl: -260, winRate: 43.8 },
+    { month: 'Aug 2024', trades: 15, pnl: 580, winRate: 80.0 }
+  ]);
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800">📈 Performance Analytics</h2>
+          <p className="text-gray-600">Detailed analysis of trading performance and risk metrics</p>
+        </div>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Total Return</div>
+          <div className="text-2xl font-bold text-green-600">+{performanceData.totalReturn}%</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Sharpe Ratio</div>
+          <div className="text-2xl font-bold text-blue-600">{performanceData.sharpeRatio}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Max Drawdown</div>
+          <div className="text-2xl font-bold text-red-600">{performanceData.maxDrawdown}%</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Win Rate</div>
+          <div className="text-2xl font-bold text-purple-600">{performanceData.winRate}%</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Profit Factor</div>
+          <div className="text-2xl font-bold text-orange-600">{performanceData.profitFactor}</div>
+        </div>
+      </div>
+
+      {/* Portfolio Value Chart */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold mb-4 flex items-center">
+          <BarChart3 className="mr-2" size={20} />
+          Portfolio Value Over Time
+        </h3>
+        <div className="h-64 w-full">
+          <div className="text-gray-500 text-center mt-20">
+            Interactive chart showing portfolio growth over time
+            <br />
+            <span className="text-sm">(Chart integration with Recharts/Chart.js coming in next update)</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Statistics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Trade Statistics */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold mb-4">Trade Statistics</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Total Trades</span>
+              <span className="font-semibold">{performanceData.totalTrades}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Average Hold Time</span>
+              <span className="font-semibold">{performanceData.avgHoldTime}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Best Trade</span>
+              <span className="font-semibold text-green-600">+${performanceData.bestTrade}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Worst Trade</span>
+              <span className="font-semibold text-red-600">${performanceData.worstTrade}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Consecutive Wins</span>
+              <span className="font-semibold text-green-600">{performanceData.consecutiveWins}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Consecutive Losses</span>
+              <span className="font-semibold text-red-600">{performanceData.consecutiveLosses}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Risk Analysis */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold mb-4">Risk Analysis</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Value at Risk (VaR)</span>
+              <span className="font-semibold text-red-600">-$850</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Beta</span>
+              <span className="font-semibold">0.85</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Calmar Ratio</span>
+              <span className="font-semibold">1.90</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Sortino Ratio</span>
+              <span className="font-semibold">2.15</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Maximum Loss Streak</span>
+              <span className="font-semibold text-red-600">3 trades</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Recovery Factor</span>
+              <span className="font-semibold text-green-600">1.92</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Monthly Performance */}
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold flex items-center">
+            <Calendar className="mr-2" size={20} />
+            Monthly Performance Breakdown
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Month</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trades</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Win Rate</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Performance</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {monthlyStats.map((month, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 font-medium">{month.month}</td>
+                  <td className="px-6 py-4">{month.trades}</td>
+                  <td className={`px-6 py-4 font-semibold ${month.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    ${month.pnl >= 0 ? '+' : ''}{month.pnl}
+                  </td>
+                  <td className="px-6 py-4">{month.winRate}%</td>
+                  <td className="px-6 py-4">
+                    <div className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                      month.pnl >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {month.pnl >= 0 ? 'Profitable' : 'Loss'}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Market News Component  
 const MarketNews = () => {
   return (
