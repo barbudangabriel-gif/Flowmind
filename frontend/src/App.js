@@ -2251,8 +2251,8 @@ const OptionsFlow = () => {
               </span>
             </button>
             {autoRefresh && (
-              <span className="text-sm text-gray-500">
-                {refreshCountdown}s
+              <span className="text-sm text-green-600 font-medium">
+                Actualizare în {refreshCountdown}s
               </span>
             )}
           </div>
