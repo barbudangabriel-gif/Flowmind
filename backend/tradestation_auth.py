@@ -271,9 +271,10 @@ class TradeStationAuth:
                     detail=f"Network error during authentication: {str(e)}"
                 )
     
-    def get_auth_headers(self) -> Dict[str, str]:
-        """Get authorization headers for API requests"""
-        if not self.access_token:
+    async def get_auth_headers(self) -> Dict[str, str]:
+        """Get authorization headers for API requests with auto-refresh"""
+        # Ensure token is valid (auto-refresh if needed)
+        if not await self.ensure_valid_token():
             raise HTTPException(
                 status_code=401, 
                 detail="No access token available. Please authenticate first."
