@@ -1605,13 +1605,13 @@ async def get_trading_strategies_from_unusual_whales():
                     "legs": [
                         {
                             "action": "buy" if strategy_name in ["Long Call", "Long Put"] else "buy",
-                            "strike": lower_strike,
+                            "strike": lower_strike or 100,
                             "option_type": "call" if "Call" in strategy_name else "put",
                             "quantity": 1
                         }
                     ] + ([{
                         "action": "sell",
-                        "strike": upper_strike,
+                        "strike": upper_strike or 105,
                         "option_type": "call" if "Call" in strategy_name else "put", 
                         "quantity": 1
                     }] if upper_strike else []),
