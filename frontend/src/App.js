@@ -2220,15 +2220,50 @@ const OptionsFlow = () => {
             <span className="text-sm text-gray-500">
               Options Flow de la Unusual Whales API
             </span>
+            {lastUpdate && (
+              <span className="text-xs text-gray-400">
+                Ultima actualizare: {formatLastUpdate(lastUpdate)}
+              </span>
+            )}
           </div>
         </div>
-        <button
-          onClick={fetchOptionsFlow}
-          className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
-          <span>Refresh</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          {/* Auto-refresh toggle */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={toggleAutoRefresh}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                autoRefresh 
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <div className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+              <span className="text-sm font-medium">
+                {autoRefresh ? 'Auto ON' : 'Auto OFF'}
+              </span>
+            </button>
+            {autoRefresh && (
+              <span className="text-sm text-gray-500">
+                {refreshCountdown}s
+              </span>
+            )}
+          </div>
+          
+          {/* Manual refresh button */}
+          <button
+            onClick={manualRefresh}
+            disabled={loading || isRefreshing}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+              loading || isRefreshing
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600 text-white'
+            }`}
+          >
+            <RefreshCw className={`w-4 h-4 ${(loading || isRefreshing) ? 'animate-spin' : ''}`} />
+            <span>{loading ? 'Loading...' : isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
