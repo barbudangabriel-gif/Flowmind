@@ -1573,15 +1573,21 @@ const TechnicalAnalysis = () => {
                   Active Signals
                 </h3>
                 <div className="space-y-2">
-                  {smartMoneyData.trading_signals?.slice(0, 3).map((signal, index) => (
-                    <div key={index} className={`px-3 py-2 rounded text-sm ${getSignalColor(signal.type)}`}>
-                      <div className="font-medium">{signal.type.toUpperCase()}</div>
-                      <div className="text-xs mt-1">{signal.reason}</div>
-                      <div className="text-xs mt-1">
-                        Entry: ${signal.entry?.toFixed(2)} | Target: ${signal.target?.toFixed(2)}
+                  {smartMoneyData.trading_signals?.slice(0, 3).map((signal, index) => {
+                    // Defensive programming against browser extension interference
+                    if (!signal || typeof signal !== 'object') return null;
+                    const signalType = signal.type || 'UNKNOWN';
+                    
+                    return (
+                      <div key={index} className={`px-3 py-2 rounded text-sm ${getSignalColor(signalType)}`}>
+                        <div className="font-medium">{signalType.toUpperCase()}</div>
+                        <div className="text-xs mt-1">{signal.reason || 'No reason provided'}</div>
+                        <div className="text-xs mt-1">
+                          Entry: ${signal.entry?.toFixed(2) || 'N/A'} | Target: ${signal.target?.toFixed(2) || 'N/A'}
+                        </div>
                       </div>
-                    </div>
-                  )) || <div className="text-gray-500 text-sm">No active signals</div>}
+                    );
+                  }).filter(Boolean) || <div className="text-gray-500 text-sm">No active signals</div>}
                 </div>
               </div>
             </div>
