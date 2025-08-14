@@ -1670,7 +1670,7 @@ async def get_trading_strategies_from_unusual_whales():
                             "legs": [
                                 {
                                     "action": "buy",
-                                    "strike": atm_strike,
+                                    "strike": int(atm_strike),
                                     "option_type": "call",
                                     "quantity": 1
                                 },
