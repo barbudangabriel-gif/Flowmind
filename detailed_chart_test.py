@@ -10,7 +10,7 @@ import sys
 
 def test_chart_data_details():
     """Test detailed chart data structure"""
-    url = "https://market-insight-26.preview.emergentagent.com/api/unusual-whales/trading-strategies"
+    url = "https://market-ai-2.preview.emergentagent.com/api/unusual-whales/trading-strategies"
     
     try:
         response = requests.get(url, timeout=30)

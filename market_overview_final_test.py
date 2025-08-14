@@ -5,7 +5,7 @@ from datetime import datetime
 import json
 
 class MarketOverviewFinalTester:
-    def __init__(self, base_url="https://7a773a8a-2f25-4f93-af2e-50c73530caf1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://market-ai-2.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
