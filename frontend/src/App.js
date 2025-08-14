@@ -5585,6 +5585,14 @@ function App() {
     setSidebarCollapsed(collapsed);
   };
 
+  // Get the current URL path to handle callback
+  const currentPath = window.location.pathname;
+  
+  // Handle TradeStation callback
+  if (currentPath === '/tradestation-callback') {
+    return <TradeStationCallback />;
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
