@@ -22,6 +22,7 @@ from investment_scoring import investment_scorer
 from smart_money_analysis import smart_money_analyzer
 from market_sentiment_analyzer import market_sentiment_analyzer
 from unusual_whales_service import UnusualWhalesService
+from expert_options_system import expert_system, StrategyType
 from options_strategy_charts import chart_generator
 
 
