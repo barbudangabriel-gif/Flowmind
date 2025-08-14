@@ -2379,7 +2379,6 @@ const OptionsFlow = () => {
                 <th className="px-4 py-3 text-left">Action Type</th>
                 <th className="px-4 py-3 text-left">Sentiment</th>
                 <th className="px-4 py-3 text-left">Size</th>
-                <th className="px-4 py-3 text-left">Opening</th>
               </tr>
             </thead>
             <tbody>
