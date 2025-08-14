@@ -156,20 +156,20 @@ backend:
         - agent: "testing"
         - comment: "✅ WORKING: Comprehensive re-testing confirms enhanced stock data API excellent performance. Real-time prices: AAPL ($229.20), MSFT ($528.97), GOOGL ($203.92), TSLA ($341.24) with proper change calculations and extended hours data. Response times 0.35-0.54s. Screener API working with all exchanges (sp500/nasdaq/all). Historical data working for all periods (1mo/3mo/6mo). API ready for production use."
 
-  - task: "Unusual Whales Options Flow API"
+  - task: "Options Flow API Implementation - Real Data Integration"
     implemented: true
-    working: true
+    working: false
     file: "server.py,unusual_whales_service.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-        - working: false
-        - agent: "main"
-        - comment: "Implemented comprehensive Unusual Whales integration with Options Flow alerts, filtering, and analysis. Added mock data fallback when API key is not configured. Need to test endpoint functionality and data processing."
         - working: true
         - agent: "testing"
         - comment: "✅ WORKING: Options Flow API fully operational with real API key (5809ee6a-bcb6-48ce-a16d-9f3bd634fd50). Successfully tested with default parameters returning 5 alerts with $2.25M total premium (3 bullish, 2 bearish). High premium filter (≥$500K) working correctly with trading signal generation. Response times excellent (0.15-0.28s). Data structure complete with all required fields: symbol, strike_type, premium, sentiment, volume_oi_ratio. Analysis includes pattern detection and trading signals. Mock data fallback working when API unavailable. Ready for production use."
+        - working: false  
+        - agent: "main"
+        - comment: "🔧 NEW API KEY PROVIDED: User provided updated Unusual Whales API key (5809ee6a-bcb6-48ce-a16d-9f3bd634fd50) and requests to implement real Options Flow data using correct endpoint. Frontend currently shows 'Demo Data' badge indicating mock data usage. Need to verify Options Flow endpoint uses correct API path and test with new key."
 
   - task: "Unusual Whales Dark Pool API"
     implemented: true
