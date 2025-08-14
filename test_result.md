@@ -107,15 +107,18 @@ user_problem_statement: "Integrate TradeStation API for portfolio and trading fu
 backend:
   - task: "TradeStation OAuth Authentication System"
     implemented: true
-    working: "unknown"
+    working: "partial"
     file: "tradestation_auth.py,server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "unknown"
         - agent: "main"
         - comment: "Implemented comprehensive OAuth 2.0 authentication system with TradeStation API. Created authentication endpoints: /auth/tradestation/status, /auth/tradestation/login, /auth/tradestation/callback. Includes token management, refresh logic, and connection testing. Need to test authentication flow and API connectivity."
+        - working: "partial"
+        - agent: "testing"
+        - comment: "✅ PARTIAL WORKING: TradeStation OAuth authentication endpoints are functional but not authenticated. Auth status endpoint (200 OK, 3.73s) correctly shows authenticated: false, environment: LIVE, credentials_configured: true, base_url configured. OAuth login endpoint (200 OK, 0.02s) successfully generates auth URL (322 chars) with proper OAuth parameters and provides clear instructions. Authentication system is properly implemented and ready for user authentication flow. Issue: Most endpoints require authentication to function fully."
 
   - task: "TradeStation API Client Implementation"
     implemented: true
