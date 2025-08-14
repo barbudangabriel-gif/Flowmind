@@ -2088,19 +2088,28 @@ const OptionsFlow = () => {
   const [optionsData, setOptionsData] = useState([]);
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     minimum_premium: 200000,
     minimum_volume_oi_ratio: 1.0,
     limit: 50
   });
   const { isDarkMode } = useTheme();
+  
+  // Auto-refresh state
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [refreshCountdown, setRefreshCountdown] = useState(30);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchOptionsFlow();
-  }, []);
-
-  const fetchOptionsFlow = async () => {
-    setLoading(true);
+  const fetchOptionsFlow = async (showLoading = true) => {
+    if (showLoading) {
+      setLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
+    setError(null);
+    
     try {
       const response = await axios.get(`${API}/unusual-whales/options/flow-alerts`, {
         params: { ...filters, include_analysis: true }
@@ -2109,12 +2118,63 @@ const OptionsFlow = () => {
       if (response.data.status === 'success') {
         setOptionsData(response.data.data.alerts || []);
         setAnalysis(response.data.analysis || null);
+        setLastUpdate(new Date());
+        setRefreshCountdown(30); // Reset countdown
       }
-    } catch (error) {
-      console.error('Error fetching options flow:', error);
+    } catch (err) {
+      console.error('Error fetching options flow:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
+  };
+
+  // Auto-refresh effect
+  useEffect(() => {
+    if (autoRefresh && !loading) {
+      const interval = setInterval(() => {
+        setRefreshCountdown(prev => {
+          if (prev <= 1) {
+            fetchOptionsFlow(false); // Silent refresh
+            return 30;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [autoRefresh, loading, filters]);
+
+  // Initial load
+  useEffect(() => {
+    fetchOptionsFlow();
+  }, []);
+
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
+    fetchOptionsFlow();
+  };
+
+  const toggleAutoRefresh = () => {
+    setAutoRefresh(!autoRefresh);
+    if (!autoRefresh) {
+      setRefreshCountdown(30);
+    }
+  };
+
+  const manualRefresh = () => {
+    fetchOptionsFlow();
+  };
+
+  const formatLastUpdate = (date) => {
+    if (!date) return 'Niciodată';
+    return date.toLocaleTimeString('ro-RO', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    });
   };
 
   const applyFilters = () => {
