@@ -1363,7 +1363,169 @@ class StockMarketAPITester:
         
         return success
 
-    def test_unusual_whales_trading_strategies(self):
+    def test_all_unusual_whales_endpoints(self):
+        """Test ALL Unusual Whales API endpoints comprehensively with API key 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50"""
+        print("\n🐋 COMPREHENSIVE UNUSUAL WHALES API TESTING")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Test all Unusual Whales endpoints with provided API key")
+        print("🔑 API KEY: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50")
+        print("🎯 PRIMARY FOCUS: Options Flow endpoint (main priority)")
+        print("📊 SECONDARY: Dark Pool, Congressional Trades, Trading Strategies")
+        
+        endpoint_results = {}
+        
+        # Test 1: Options Flow Endpoint (MAIN PRIORITY)
+        print(f"\n🎯 PRIORITY 1: OPTIONS FLOW ENDPOINT")
+        print("=" * 60)
+        
+        options_flow_success = self.test_unusual_whales_options_flow()
+        endpoint_results['options_flow'] = options_flow_success
+        
+        # Test 2: Dark Pool Endpoint
+        print(f"\n🌊 PRIORITY 2: DARK POOL ENDPOINT")
+        print("=" * 60)
+        
+        dark_pool_success = self.test_unusual_whales_dark_pool_fix()
+        endpoint_results['dark_pool'] = dark_pool_success
+        
+        # Test 3: Congressional Trades Endpoint
+        print(f"\n🏛️  PRIORITY 3: CONGRESSIONAL TRADES ENDPOINT")
+        print("=" * 60)
+        
+        congressional_success = self.test_unusual_whales_congressional_trades()
+        endpoint_results['congressional_trades'] = congressional_success
+        
+        # Test 4: Trading Strategies Endpoint
+        print(f"\n🎯 PRIORITY 4: TRADING STRATEGIES ENDPOINT")
+        print("=" * 60)
+        
+        strategies_success = self.test_unusual_whales_trading_strategies()
+        endpoint_results['trading_strategies'] = strategies_success
+        
+        # Test 5: Comprehensive Analysis Endpoint
+        print(f"\n📊 BONUS: COMPREHENSIVE ANALYSIS ENDPOINT")
+        print("=" * 60)
+        
+        success, analysis_data = self.run_test("Comprehensive Analysis", "GET", "unusual-whales/analysis/comprehensive", 200)
+        endpoint_results['comprehensive_analysis'] = success
+        
+        if success:
+            comprehensive_analysis = analysis_data.get('comprehensive_analysis', {})
+            market_outlook = analysis_data.get('market_outlook', {})
+            data_summary = analysis_data.get('data_summary', {})
+            
+            print(f"   📊 Data Summary:")
+            print(f"     - Options Alerts: {data_summary.get('options_alerts', 0)}")
+            print(f"     - Dark Pool Trades: {data_summary.get('dark_pool_trades', 0)}")
+            print(f"     - Congressional Trades: {data_summary.get('congressional_trades', 0)}")
+            
+            print(f"   🎯 Market Outlook:")
+            print(f"     - Overall Sentiment: {market_outlook.get('overall_sentiment', 'unknown')}")
+            print(f"     - Confidence: {market_outlook.get('confidence', 'unknown')}")
+            print(f"     - Key Signals: {len(market_outlook.get('key_signals', []))}")
+        
+        # Test 6: Debug Endpoints (if available)
+        print(f"\n🔧 DEBUG ENDPOINTS TESTING")
+        print("=" * 60)
+        
+        debug_endpoints = [
+            "unusual-whales/options/flow-alerts/debug",
+            "unusual-whales/dark-pool/debug"
+        ]
+        
+        for debug_endpoint in debug_endpoints:
+            debug_success, debug_data = self.run_test(f"Debug ({debug_endpoint})", "GET", debug_endpoint, 200)
+            if debug_success:
+                print(f"   ✅ Debug endpoint accessible: {debug_endpoint}")
+            else:
+                print(f"   ❌ Debug endpoint failed: {debug_endpoint}")
+        
+        # Final Comprehensive Assessment
+        print(f"\n🎯 FINAL COMPREHENSIVE ASSESSMENT")
+        print("=" * 80)
+        
+        total_endpoints = len(endpoint_results)
+        working_endpoints = sum(1 for success in endpoint_results.values() if success)
+        success_rate = (working_endpoints / total_endpoints) * 100
+        
+        print(f"\n📊 ENDPOINT RESULTS SUMMARY:")
+        priority_order = [
+            ('options_flow', '🎯 Options Flow (MAIN PRIORITY)'),
+            ('dark_pool', '🌊 Dark Pool'),
+            ('congressional_trades', '🏛️  Congressional Trades'),
+            ('trading_strategies', '🎯 Trading Strategies'),
+            ('comprehensive_analysis', '📊 Comprehensive Analysis')
+        ]
+        
+        for endpoint_key, endpoint_name in priority_order:
+            if endpoint_key in endpoint_results:
+                status = "✅ WORKING" if endpoint_results[endpoint_key] else "❌ FAILED"
+                print(f"   {status} {endpoint_name}")
+        
+        print(f"\n🎯 OVERALL SUCCESS RATE: {success_rate:.1f}% ({working_endpoints}/{total_endpoints} endpoints working)")
+        
+        # Specific findings for each endpoint
+        print(f"\n🔍 DETAILED FINDINGS:")
+        
+        if endpoint_results.get('options_flow', False):
+            print(f"   ✅ Options Flow: Working with real data - main priority achieved")
+        else:
+            print(f"   ❌ Options Flow: Failed - main priority NOT achieved")
+        
+        if endpoint_results.get('dark_pool', False):
+            print(f"   ✅ Dark Pool: Working correctly")
+        else:
+            print(f"   ❌ Dark Pool: Issues detected")
+        
+        if endpoint_results.get('congressional_trades', False):
+            print(f"   ✅ Congressional Trades: Working correctly")
+        else:
+            print(f"   ❌ Congressional Trades: Issues detected")
+        
+        if endpoint_results.get('trading_strategies', False):
+            print(f"   ✅ Trading Strategies: Working correctly")
+        else:
+            print(f"   ❌ Trading Strategies: Issues detected")
+        
+        # 404 Error Analysis
+        print(f"\n🚫 404 ERROR ANALYSIS:")
+        failed_endpoints = [name for name, success in endpoint_results.items() if not success]
+        
+        if failed_endpoints:
+            print(f"   ❌ Endpoints returning 404 or other errors: {failed_endpoints}")
+            print(f"   💡 RECOMMENDATIONS:")
+            print(f"     - Verify API key is correctly configured in backend/.env")
+            print(f"     - Check Unusual Whales API documentation for correct endpoint paths")
+            print(f"     - Ensure API key has proper permissions for all endpoints")
+        else:
+            print(f"   ✅ No 404 errors detected - all endpoints accessible")
+        
+        # API Key Status
+        print(f"\n🔑 API KEY STATUS:")
+        print(f"   - API Key: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50")
+        print(f"   - Working Endpoints: {working_endpoints}/{total_endpoints}")
+        
+        if working_endpoints >= 4:
+            print(f"   ✅ API key appears to be working correctly")
+        elif working_endpoints >= 2:
+            print(f"   ⚠️  API key partially working - some endpoints may need attention")
+        else:
+            print(f"   ❌ API key may be invalid or endpoints are incorrect")
+        
+        # Final verdict
+        if success_rate >= 80:
+            print(f"\n🎉 VERDICT: EXCELLENT - Unusual Whales API integration working well!")
+            print(f"   Most endpoints are operational with the provided API key.")
+            if endpoint_results.get('options_flow', False):
+                print(f"   ✅ MAIN PRIORITY ACHIEVED: Options Flow working with real data")
+        elif success_rate >= 60:
+            print(f"\n✅ VERDICT: GOOD - Most Unusual Whales endpoints working.")
+            print(f"   Some endpoints may need attention but core functionality is operational.")
+        else:
+            print(f"\n❌ VERDICT: NEEDS ATTENTION - Multiple Unusual Whales endpoints failing.")
+            print(f"   API key or endpoint configurations may need review.")
+        
+        return endpoint_results
         """Test Unusual Whales Trading Strategies API endpoint with ENHANCED CHART INTEGRATION"""
         print("\n🎯 Testing Unusual Whales Trading Strategies API - ENHANCED WITH CHARTS")
         
