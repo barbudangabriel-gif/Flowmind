@@ -2130,14 +2130,14 @@ const OptionsFlow = () => {
     }
   };
 
-  // Auto-refresh effect - runs every second, refreshes every 5 seconds
+  // Auto-refresh effect - runs every second for real-time flow like OptionStrat
   useEffect(() => {
     if (autoRefresh && !loading) {
       const interval = setInterval(() => {
         setRefreshCountdown(prev => {
           if (prev <= 1) {
-            fetchOptionsFlow(false); // Silent refresh
-            return 5; // Reset to 5 seconds
+            fetchOptionsFlow(false); // Silent refresh every second
+            return 1; // Reset to 1 second
           }
           return prev - 1;
         });
