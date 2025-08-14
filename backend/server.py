@@ -1561,7 +1561,7 @@ async def get_trading_strategies_from_unusual_whales():
             top_ticker = max(large_premium_alerts, key=lambda x: x.get('premium', 0))
             sentiment = top_ticker.get('sentiment', 'neutral')
             dte = int(top_ticker.get('dte', 0)) if top_ticker.get('dte') else 0
-            underlying_price = top_ticker.get('underlying_price', 0)
+            underlying_price = float(top_ticker.get('underlying_price', 0)) if top_ticker.get('underlying_price') else 0
             
             # Generate specific options strategy based on sentiment and DTE
             if sentiment == 'bullish' and dte > 14:
