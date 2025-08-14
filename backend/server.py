@@ -977,13 +977,52 @@ def get_fallback_etf_data(etf_symbol, futures_symbol, display_name):
         "options_flow_signal": "neutral"
     }
 
+def get_fallback_etf_data(etf_symbol, futures_symbol, display_name):
+    """Generate realistic fallback ETF data for futures-style display"""
+    import random
+    
+    etf_mapping = {
+        'SPY': {'name': 'SPDR S&P 500 ETF', 'base_price': 642, 'volatility': 5},
+        'QQQ': {'name': 'Invesco QQQ Trust', 'base_price': 580, 'volatility': 10},
+        'DIA': {'name': 'SPDR Dow Jones Industrial Average ETF', 'base_price': 449, 'volatility': 8},
+        'IWM': {'name': 'iShares Russell 2000 ETF', 'base_price': 231, 'volatility': 3}
+    }
+    
+    if etf_symbol not in etf_mapping:
+        # Default fallback
+        data = {'name': display_name, 'base_price': 100, 'volatility': 5}
+    else:
+        data = etf_mapping[etf_symbol]
+    
+    # Generate realistic price movement
+    current_price = data['base_price'] + random.uniform(-data['volatility'], data['volatility'])
+    previous_close = current_price + random.uniform(-2, 2)
+    change = current_price - previous_close
+    change_percent = (change / previous_close) * 100
+    
+    # Generate unusual activity with lower probability for ETFs
+    unusual_activity = random.random() < 0.15  # 15% chance
+    options_signals = ['bullish', 'bearish', 'neutral', 'neutral', 'neutral']  # Mostly neutral
+    
+    return {
+        "symbol": futures_symbol,  # Display as futures symbol (SPX, NQ, YM, RTY)
+        "name": display_name,
+        "price": round(current_price, 2),
+        "change": round(change, 2),
+        "change_percent": round(change_percent, 2),
+        "underlying_symbol": etf_symbol,  # Track the ETF symbol used
+        "data_source": "Mock Data (ETF Futures Style)",
+        "unusual_activity": unusual_activity,
+        "options_flow_signal": random.choice(options_signals)
+    }
+
 def get_complete_fallback_dataset():
-    """Generate complete fallback dataset for all indices"""
+    """Generate complete fallback dataset for all ETF equivalents"""
     return [
-        get_fallback_market_data('^GSPC'),
-        get_fallback_market_data('^DJI'), 
-        get_fallback_market_data('^IXIC'),
-        get_fallback_market_data('^RUT')
+        get_fallback_etf_data('SPY', 'SPX', 'SPX (via SPY ETF)'),
+        get_fallback_etf_data('QQQ', 'NQ', 'NQ (via QQQ ETF)'), 
+        get_fallback_etf_data('DIA', 'YM', 'YM (via DIA ETF)'),
+        get_fallback_etf_data('IWM', 'RTY', 'RTY (via IWM ETF)')
     ]
 
 @api_router.get("/market/top-movers")
