@@ -254,8 +254,8 @@ const AdvancedScreener = React.memo(() => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Advanced Stock Screener</h2>
-          <p className="text-gray-600">Screen stocks from S&P 500, NASDAQ, and more</p>
+          <h2 className="text-2xl font-bold text-gray-800">🐋 Advanced Stock Screener</h2>
+          <p className="text-gray-600">Powered by Unusual Whales API with options flow signals</p>
         </div>
         <div className="flex space-x-3">
           <button
