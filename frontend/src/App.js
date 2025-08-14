@@ -418,22 +418,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               </div>
             </div>
           )}
-
-          {/* Collapsed state dark mode toggle */}
-          {isCollapsed && (
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              <button
-                onClick={toggleDarkMode}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-200 ${
-                  isDarkMode 
-                    ? 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/30' 
-                    : 'bg-amber-500/20 border-amber-500/30 text-amber-400 hover:bg-amber-500/30'
-                }`}
-              >
-                {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </>
