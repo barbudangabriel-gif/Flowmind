@@ -31,6 +31,22 @@ class TradeStationAuth:
         # API Base URLs
         self.api_base = "https://api.tradestation.com/v3" if self.environment == "LIVE" else "https://sim-api.tradestation.com/v3"
         
+        # Token persistence
+        self.token_file = Path("/app/backend/tradestation_tokens.json")
+        
+        # Token storage
+        self.access_token: Optional[str] = None
+        self.refresh_token: Optional[str] = None
+        self.token_expires: Optional[datetime] = None
+        self.token_type: str = "Bearer"
+        
+        # Auto-refresh settings
+        self.auto_refresh_enabled = True
+        self.refresh_buffer_minutes = 5  # Refresh 5 minutes before expiry
+        
+        # Load existing tokens on initialization
+        self._load_tokens()
+        
         # Token storage
         self.access_token = None
         self.refresh_token = None
