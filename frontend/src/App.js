@@ -4370,41 +4370,61 @@ const TradeStationAuth = () => {
           throw new Error('Popup window blocked. Please allow popups for this site.');
         }
         
-        // For out-of-band flow, user needs to copy the authorization code manually
-        setError(null);
-        
-        // Show instructions to user
-        const instructions = `
-          After you complete authentication in the popup window:
-          1. TradeStation will show you an authorization code
-          2. Copy the code and close the popup window
-          3. We'll provide a way to enter the code here
-        `;
-        
-        // Set up polling to check if window is closed
-        let checkInterval = setInterval(() => {
-          if (authWindow.closed) {
-            clearInterval(checkInterval);
+        // Listen for messages from the callback window
+        const messageListener = (event) => {
+          // Verify origin for security (allow localhost for TradeStation callback)
+          if (!event.origin.includes('localhost') && event.origin !== window.location.origin) return;
+          
+          if (event.data.type === 'TRADESTATION_AUTH_SUCCESS') {
             setLoading(false);
-            
-            // Show manual code entry interface
-            const code = prompt('Please enter the authorization code from TradeStation:');
-            if (code && code.trim()) {
-              exchangeCodeManually(code.trim());
-            } else {
-              setError('Authorization code is required to complete authentication.');
-            }
+            setError(null);
+            // Refresh auth status
+            checkAuthStatus();
+            window.removeEventListener('message', messageListener);
+          } else if (event.data.type === 'TRADESTATION_AUTH_ERROR') {
+            setLoading(false);
+            setError(event.data.error || 'Authentication failed');
+            window.removeEventListener('message', messageListener);
           }
-        }, 1000);
+        };
         
-        // Clear interval after 10 minutes
-        setTimeout(() => {
-          clearInterval(checkInterval);
-          if (!authWindow.closed) {
-            authWindow.close();
+        window.addEventListener('message', messageListener);
+        
+        // Set up polling as backup and to detect window closure
+        let checkCount = 0;
+        const maxChecks = 60; // 3 minutes maximum
+        
+        const authCheckInterval = setInterval(async () => {
+          try {
+            checkCount++;
+            
+            // Check if window was closed by user
+            if (authWindow.closed) {
+              clearInterval(authCheckInterval);
+              window.removeEventListener('message', messageListener);
+              setLoading(false);
+              
+              // Only show error if closed very quickly (before authentication could complete)
+              if (checkCount < 3) {
+                setError('Authentication window was closed. Please try again.');
+              }
+              return;
+            }
+            
+            // Stop after maximum checks
+            if (checkCount >= maxChecks) {
+              clearInterval(authCheckInterval);
+              window.removeEventListener('message', messageListener);
+              setLoading(false);
+              setError('Authentication timeout. Please try again.');
+              if (!authWindow.closed) {
+                authWindow.close();
+              }
+            }
+          } catch (err) {
+            console.error('Auth check error:', err);
           }
-          setLoading(false);
-        }, 600000);
+        }, 3000);
         
       } else {
         throw new Error('Failed to generate authentication URL');
@@ -4412,31 +4432,6 @@ const TradeStationAuth = () => {
     } catch (err) {
       setError(err.message || 'Failed to initiate login');
       console.error('Login error:', err);
-      setLoading(false);
-    }
-  };
-
-  const exchangeCodeManually = async (code) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Exchange the authorization code for tokens
-      const response = await axios.post(`${API}/auth/tradestation/exchange-code`, {
-        code: code
-      });
-      
-      if (response.data.status === 'success') {
-        // Refresh auth status
-        await checkAuthStatus();
-        setError(null);
-      } else {
-        setError(response.data.message || 'Failed to exchange authorization code');
-      }
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to exchange authorization code');
-      console.error('Code exchange error:', err);
-    } finally {
       setLoading(false);
     }
   };
