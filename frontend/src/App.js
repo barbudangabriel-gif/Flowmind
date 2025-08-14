@@ -203,8 +203,16 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       items: [
         { id: 'options-flow', label: 'Options Flow', icon: Activity, color: 'from-cyan-500 to-blue-600', badge: '📈', shortLabel: 'Flow' },
         { id: 'dark-pool', label: 'Dark Pool', icon: Eye, color: 'from-gray-600 to-slate-700', badge: '🌊', shortLabel: 'Dark' },
-        { id: 'congressional', label: 'Congressional Trades', icon: Briefcase, color: 'from-red-500 to-pink-600', badge: '🏛️', shortLabel: 'Congress' },
+        { id: 'congressional', label: 'Congressional Trades', icon: Users, color: 'from-red-500 to-pink-600', badge: '🏛️', shortLabel: 'Congress' },
         { id: 'trading-strategies', label: 'Trading Strategies', icon: Target, color: 'from-green-500 to-emerald-600', badge: '🎯', shortLabel: 'Strategies' }
+      ]
+    },
+    {
+      title: "Automated Trading 🤖",
+      items: [
+        { id: 'auto-trading', label: 'Auto Options Trading', icon: Bot, color: 'from-purple-500 to-indigo-600', badge: '🤖', shortLabel: 'Auto' },
+        { id: 'trading-history', label: 'Trading History', icon: History, color: 'from-blue-500 to-cyan-600', badge: '📊', shortLabel: 'History' },
+        { id: 'performance', label: 'Performance Analytics', icon: BarChart3, color: 'from-green-500 to-teal-600', badge: '📈', shortLabel: 'Analytics' }
       ]
     },
     {
