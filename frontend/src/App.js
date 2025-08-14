@@ -1367,17 +1367,20 @@ const TechnicalAnalysis = () => {
               : strength === 'medium'
               ? 'bg-blue-100 text-blue-700'
               : 'bg-gray-100 text-gray-700'
-        }`}>
-          {orderBlock.strength}
-        </span>
+          }`}>
+            {strength}
+          </span>
+        </div>
+        <div className="text-sm space-y-1">
+          <div>High: <span className="font-medium">${orderBlock.high?.toFixed(2) || 'N/A'}</span></div>
+          <div>Low: <span className="font-medium">${orderBlock.low?.toFixed(2) || 'N/A'}</span></div>
+          <div>Status: <span className={`font-medium ${orderBlock.tested ? 'text-red-600' : 'text-green-600'}`}>
+            {orderBlock.tested ? 'Tested' : 'Untested'}
+          </span></div>
+        </div>
       </div>
-      <div className="text-sm space-y-1">
-        <div>High: <span className="font-medium">${orderBlock.high?.toFixed(2)}</span></div>
-        <div>Low: <span className="font-medium">${orderBlock.low?.toFixed(2)}</span></div>
-        <div>Status: <span className={`font-medium ${orderBlock.tested ? 'text-red-600' : 'text-green-600'}`}>
-          {orderBlock.tested ? 'Tested' : 'Untested'}
-        </span></div>
-      </div>
+    );
+  };
     </div>
   );
 
