@@ -1430,23 +1430,128 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
         async with ts_client:
             connection_test = await ts_client.test_connection()
         
-        return {
-            "status": "success",
-            "message": "TradeStation authentication successful",
-            "token_info": {
-                "token_type": token_data.get("token_type"),
-                "expires_in": token_data.get("expires_in"),
-                "scope": token_data.get("scope")
-            },
-            "connection_test": connection_test,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+        # Return HTML page that closes the popup and notifies parent
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>TradeStation Authentication</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    margin: 0;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                }}
+                .container {{
+                    text-align: center;
+                    background: rgba(255,255,255,0.1);
+                    padding: 40px;
+                    border-radius: 10px;
+                    backdrop-filter: blur(10px);
+                }}
+                .success {{
+                    font-size: 64px;
+                    margin-bottom: 20px;
+                }}
+                h1 {{
+                    margin: 0 0 10px 0;
+                }}
+                p {{
+                    margin: 0;
+                    opacity: 0.8;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="success">✅</div>
+                <h1>Authentication Successful!</h1>
+                <p>TradeStation connection established.</p>
+                <p>This window will close automatically...</p>
+            </div>
+            
+            <script>
+                // Notify parent window of successful authentication
+                if (window.opener) {{
+                    window.opener.postMessage({{
+                        type: 'TRADESTATION_AUTH_SUCCESS',
+                        data: {token_data}
+                    }}, '*');
+                }}
+                
+                // Close window after 2 seconds
+                setTimeout(() => {{
+                    window.close();
+                }}, 2000);
+            </script>
+        </body>
+        </html>
+        """
+        
+        return HTMLResponse(content=html_content)
         
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"OAuth callback error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Authentication callback failed: {str(e)}")
+        
+        # Return error HTML page
+        error_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>TradeStation Authentication Error</title>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    margin: 0;
+                    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+                    color: white;
+                }}
+                .container {{
+                    text-align: center;
+                    background: rgba(255,255,255,0.1);
+                    padding: 40px;
+                    border-radius: 10px;
+                    backdrop-filter: blur(10px);
+                }}
+                .error {{
+                    font-size: 64px;
+                    margin-bottom: 20px;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="error">❌</div>
+                <h1>Authentication Failed</h1>
+                <p>Error: {str(e)}</p>
+                <p>Please close this window and try again.</p>
+            </div>
+            
+            <script>
+                // Notify parent window of authentication failure
+                if (window.opener) {{
+                    window.opener.postMessage({{
+                        type: 'TRADESTATION_AUTH_ERROR',
+                        error: '{str(e)}'
+                    }}, '*');
+                }}
+            </script>
+        </body>
+        </html>
+        """
+        
+        return HTMLResponse(content=error_html)
 
 # ==================== PORTFOLIO ENDPOINTS ====================
 
