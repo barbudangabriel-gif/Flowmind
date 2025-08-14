@@ -2416,12 +2416,6 @@ const OptionsFlow = () => {
                       {alert.trade_size}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    {alert.is_opener ? 
-                      <span className="text-green-600">✓</span> : 
-                      <span className="text-gray-400">-</span>
-                    }
-                  </td>
                 </tr>
               ))}
             </tbody>
