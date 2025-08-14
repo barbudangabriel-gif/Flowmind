@@ -126,8 +126,14 @@ class ExpertOptionsAPITester:
                     # Show key metrics
                     max_profit = rec.get('max_profit', 0)
                     max_loss = rec.get('max_loss', 0)
-                    print(f"        💰 Max Profit: ${max_profit:.2f}")
-                    print(f"        💸 Max Loss: ${max_loss:.2f}")
+                    if isinstance(max_profit, (int, float)):
+                        print(f"        💰 Max Profit: ${max_profit:.2f}")
+                    else:
+                        print(f"        💰 Max Profit: {max_profit}")
+                    if isinstance(max_loss, (int, float)):
+                        print(f"        💸 Max Loss: ${max_loss:.2f}")
+                    else:
+                        print(f"        💸 Max Loss: {max_loss}")
             
             # Verify all expected strategies are present
             missing_strategies = [s for s in expected_strategies if s not in found_strategies]
