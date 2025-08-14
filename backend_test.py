@@ -1346,32 +1346,52 @@ class StockMarketAPITester:
         self.run_test("Invalid Investment Score", "GET", "investments/score/INVALID123", 500)
 
 def main():
-    print("🚀 Testing Advanced Screener with Unusual Whales API Integration")
+    print("🚀 Testing Unusual Whales API Futures Data Support")
     print("=" * 80)
     
     tester = StockMarketAPITester()
     
-    # PRIORITY: Test Advanced Screener with Unusual Whales Integration
-    print("\n🐋 PRIORITY: Testing Advanced Screener Unusual Whales Integration")
+    # PRIORITY: Test Futures Data Support in Unusual Whales API
+    print("\n🔮 PRIORITY: Testing Futures Data Support (SPX, NQ, YM, RTY)")
     print("=" * 80)
-    tester.test_advanced_screener_unusual_whales_integration()
+    futures_results = tester.test_unusual_whales_futures_support()
     
-    # Test original screener endpoints for comparison
-    print("\n🔍 Testing Original Advanced Screener Endpoints")
-    tester.test_screener_endpoints()
-    
-    # Test basic API functionality
-    print("\n📊 Testing Basic API Endpoints")
+    # Test basic API functionality to ensure system is working
+    print("\n📊 Testing Basic API Health")
+    print("-" * 40)
     tester.test_root_endpoint()
     
-    # Test a few key stock endpoints to verify overall API health
-    print("\n📈 Testing Key Stock Data Endpoints")
-    for stock in ["AAPL", "MSFT"]:
-        tester.test_stock_data(stock)
+    # Test a few Unusual Whales endpoints to verify API key is working
+    print("\n🐋 Testing Unusual Whales API Connectivity")
+    print("-" * 40)
+    tester.test_unusual_whales_options_flow()
+    tester.test_unusual_whales_dark_pool()
+    tester.test_unusual_whales_congressional_trades()
     
     # Print final results
     print("\n" + "=" * 80)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    # Provide specific futures testing summary
+    if futures_results:
+        total_futures_matches = (futures_results.get('options_flow_found', 0) + 
+                               futures_results.get('dark_pool_found', 0) + 
+                               futures_results.get('congressional_found', 0) + 
+                               futures_results.get('stock_data_found', 0))
+        
+        working_alternatives = sum(len(alts) for alts in futures_results.get('alternative_formats_working', {}).values())
+        
+        print(f"\n🎯 FUTURES TESTING SUMMARY:")
+        print(f"   📊 Direct Futures Support: {total_futures_matches}/4 symbols found")
+        print(f"   🔄 Alternative Formats: {working_alternatives} working alternatives")
+        print(f"   🌐 API Endpoints Tested: {futures_results.get('api_endpoints_tested', 0)}")
+        
+        if total_futures_matches > 0:
+            print(f"   ✅ RESULT: Partial futures support detected")
+        elif working_alternatives > 0:
+            print(f"   🔄 RESULT: Use alternative symbols (SPY, QQQ, DIA, IWM)")
+        else:
+            print(f"   ❌ RESULT: No futures support - recommend TradeStation API")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed!")
