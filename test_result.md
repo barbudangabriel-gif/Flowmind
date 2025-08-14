@@ -623,3 +623,27 @@ agent_communication:
     - message: "🔍 MARKET OVERVIEW FUTURES SYMBOLS DEBUG COMPLETE - FRONTEND CACHING ISSUE IDENTIFIED: Comprehensive debugging of user-reported issue where frontend shows old symbols (^GSPC, ^DJI, ^IXIC, ^RUT) instead of futures symbols (SPX, NQ, YM, RTY). ✅ BACKEND VERIFICATION COMPLETE: Market Overview API (/api/market/overview) working perfectly - returns correct futures symbols (SPX, NQ, YM, RTY) with ETF underlying symbols (SPY, QQQ, DIA, IWM). Raw JSON response confirmed: symbol fields show ['SPX', 'NQ', 'YM', 'RTY'], underlying_symbol fields show ['SPY', 'QQQ', 'DIA', 'IWM']. Zero old index symbols found in API response. ✅ API RESPONSE STRUCTURE VERIFIED: Complete JSON structure validated - all required fields present (symbol, underlying_symbol, name, price, change, change_percent). Data source shows 'Live Market Data (Real-time ETF prices for 4/4 ETFs)' with fresh timestamp (2025-08-14T07:07:17.163668). ✅ FRONTEND API CALL TESTED: Direct test of exact frontend API endpoint confirms correct futures symbols returned to frontend. Frontend should receive ['SPX', 'NQ', 'YM', 'RTY'] symbols. ✅ FRONTEND CODE VERIFIED: Frontend App.js correctly uses index.symbol on line 498 to display symbols. No code issues found. ❌ ROOT CAUSE IDENTIFIED: Issue is FRONTEND CACHING or browser cache, NOT backend implementation. Backend is 100% correct and returns proper futures symbols. 💡 SOLUTION: Clear browser cache, hard refresh (Ctrl+F5), disable browser cache in DevTools, or check for service worker caching. Backend requires no changes - implementation is perfect."
     - agent: "testing"
     - message: "🎉 EXPERT AUTO OPTIONS TRADING INTERFACE TESTING COMPLETE - PERFECT IMPLEMENTATION: Comprehensive testing of the new Expert Auto Options Trading interface confirms OUTSTANDING functionality with 100% success rate (20/20 tests passed). ✅ ALL PRIMARY TESTING GOALS ACHIEVED: Successfully navigated to 'Auto Options Trading' in AUTOMATED TRADING sidebar, verified AI Expert interface loads with all components, tested AI Strategy Recommendations functionality with symbol selection and 'Get AI Recommendations' button, confirmed Learning Insights section displays correctly with all subsections, verified AI-enhanced elements are visible and functional. ✅ TECHNICAL VERIFICATION: API calls to /api/expert-options/ endpoints working, no JavaScript errors, loading states functional, responsive design confirmed. ✅ KEY FEATURES VERIFIED: Expert header with AI-powered subtitle, AI Trading Status (INACTIVE), symbol dropdown (SPY/QQQ/AAPL/MSFT), strategy cards with confidence percentages and proper colors, Learning Insights with 3 subsections and optimization buttons, AI-Managed Active Trades with confidence scores, AI Expert Strategies with emoji icons and ML labels. The Expert Auto Options Trading System with Machine Learning is fully integrated and working perfectly in the frontend interface."
+
+## ISSUE RESOLVED: Dark Pool Data Empty
+
+**Problem**: Dark Pool Analysis page was showing no data despite Unusual Whales API being connected.
+
+**Root Cause**: The minimum_dark_percentage filter was set to 30.0% by default, which filtered out all real dark pool trades (most are <1% to 20% dark pool percentage).
+
+**Solution Applied**: 
+1. ✅ Updated minimum_dark_percentage default from 30.0% to 0.01%
+2. ✅ Enhanced data processing to work with Unusual Whales API format
+3. ✅ Added debug logging and fallback to mock data
+4. ✅ Verified API connection and data processing
+
+**API Status**: ✅ WORKING - Unusual Whales dark pool API returning real data
+**Backend Endpoint**: ✅ WORKING - /api/unusual-whales/dark-pool/recent
+**Data Processing**: ✅ WORKING - Successfully processing trade data
+**UI**: ✅ READY - Dark Pool menu item visible in sidebar
+
+**Real Data Example**:
+- XLF: 0.07% dark, $509K volume
+- BBEU: 11.89% dark, $382K volume  
+- COIN: 0.02% dark, $319K volume
+
+**Testing Status**: ✅ BACKEND API VERIFIED - Ready for frontend testing
