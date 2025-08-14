@@ -5284,7 +5284,7 @@ const TradeStationOrders = () => {
       const response = await axios.get(`${API}/tradestation/accounts`);
       setAccounts(response.data.accounts || []);
       if (response.data.accounts?.length > 0) {
-        setSelectedAccount(response.data.accounts[0].AccountID);
+        setSelectedAccount(response.data.accounts[0].Key);
       }
     } catch (err) {
       setError('Failed to load accounts. Please ensure you are authenticated.');
