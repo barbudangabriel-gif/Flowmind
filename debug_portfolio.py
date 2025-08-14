@@ -5,9 +5,12 @@ Debug script to test portfolio service data processing
 
 import asyncio
 import json
-from backend.portfolio_service import PortfolioService, Position
-from backend.tradestation_client import TradeStationClient
-from backend.tradestation_auth import TradeStationAuth
+import sys
+import os
+sys.path.append('/app/backend')
+
+from portfolio_service import PortfolioService, PortfolioMetrics
+from tradestation_client import Position
 
 def simulate_tradestation_response():
     """Simulate a TradeStation API response based on expected format"""
