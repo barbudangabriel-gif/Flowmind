@@ -2153,14 +2153,6 @@ const OptionsFlow = () => {
           <h2 className="text-2xl md:text-3xl font-bold">
             🐋 Options Flow Alerts
           </h2>
-          <div className="flex items-center space-x-2 mt-1">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-              📊 Demo Data
-            </span>
-            <span className="text-sm text-gray-500">
-              Live options flow data not available - showing sample data
-            </span>
-          </div>
         </div>
         <button
           onClick={fetchOptionsFlow}
