@@ -4356,36 +4356,72 @@ const TradeStationAuth = () => {
   const initiateLogin = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await axios.get(`${API}/auth/tradestation/login`);
       
       if (response.data.auth_url) {
         // Open OAuth URL in new window
-        window.open(response.data.auth_url, 'tradestation-auth', 
+        const authWindow = window.open(response.data.auth_url, 'tradestation-auth', 
           'width=800,height=600,scrollbars=yes,resizable=yes');
         
+        if (!authWindow) {
+          throw new Error('Popup window blocked. Please allow popups for this site.');
+        }
+        
         // Set up listener for auth completion
-        const authCheckInterval = setInterval(async () => {
+        let authCheckInterval;
+        let checkCount = 0;
+        const maxChecks = 60; // 3 minutes maximum
+        
+        authCheckInterval = setInterval(async () => {
           try {
+            checkCount++;
+            
+            // Check if window was closed by user
+            if (authWindow.closed) {
+              clearInterval(authCheckInterval);
+              setLoading(false);
+              setError('Authentication window was closed. Please try again.');
+              return;
+            }
+            
+            // Check authentication status
             const statusResponse = await axios.get(`${API}/auth/tradestation/status`);
             if (statusResponse.data.authentication?.authenticated) {
               setAuthStatus(statusResponse.data);
               clearInterval(authCheckInterval);
               setLoading(false);
+              authWindow.close();
+              return;
+            }
+            
+            // Stop after maximum checks
+            if (checkCount >= maxChecks) {
+              clearInterval(authCheckInterval);
+              setLoading(false);
+              setError('Authentication timeout. Please try again.');
+              if (!authWindow.closed) {
+                authWindow.close();
+              }
             }
           } catch (err) {
             console.error('Auth check error:', err);
+            // Continue checking even if there's an error
           }
         }, 3000);
-
-        // Clear interval after 5 minutes
+        
+        // Also stop loading if nothing happens after 10 seconds (initial timeout)
         setTimeout(() => {
-          clearInterval(authCheckInterval);
-          setLoading(false);
-        }, 300000);
+          if (checkCount === 0) {
+            setLoading(false);
+            setError('Authentication process may have failed. Please check if the popup opened.');
+          }
+        }, 10000);
+      } else {
+        throw new Error('Failed to generate authentication URL');
       }
-      setError(null);
     } catch (err) {
-      setError('Failed to initiate login');
+      setError(err.message || 'Failed to initiate login');
       console.error('Login error:', err);
       setLoading(false);
     }
