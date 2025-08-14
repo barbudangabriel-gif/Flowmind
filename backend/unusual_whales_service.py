@@ -378,96 +378,166 @@ class UnusualWhalesService:
     
     # MOCK DATA METHODS (for when API key is not available or API fails)
     async def _get_mock_options_flow(self) -> List[Dict[str, Any]]:
-        """Generate realistic mock options flow data for development - includes buy/sell actions and proper premiums"""
+        """Generate highly realistic mock options flow data based on actual market patterns"""
         import random
+        from datetime import datetime, timedelta
         
-        # Mix of popular US tickers that often have options activity
-        mock_tickers = [
-            "AAPL", "MSFT", "NVDA", "TSLA", "GOOGL", "META", "AMZN", "SPY", "QQQ", "IWM",
-            "PLTR", "AMD", "INTC", "NFLX", "DIS", "BABA", "NIO", "SOFI", "COIN", "GME"
+        # Real market symbols with actual option activity (August 14, 2025)
+        symbols_with_details = [
+            {"symbol": "NVDA", "price": 182.0, "activity": "high"},
+            {"symbol": "TSLA", "price": 332.0, "activity": "high"}, 
+            {"symbol": "AAPL", "price": 233.0, "activity": "high"},
+            {"symbol": "AMD", "price": 182.0, "activity": "medium"},
+            {"symbol": "SPY", "price": 644.0, "activity": "high"},
+            {"symbol": "QQQ", "price": 470.0, "activity": "high"},
+            {"symbol": "MSFT", "price": 524.0, "activity": "medium"},
+            {"symbol": "META", "price": 495.0, "activity": "medium"},
+            {"symbol": "PLTR", "price": 180.0, "activity": "high"},
+            {"symbol": "COIN", "price": 319.0, "activity": "medium"},
+            {"symbol": "AMZN", "price": 231.0, "activity": "medium"},
+            {"symbol": "GOOGL", "price": 205.0, "activity": "medium"},
+            {"symbol": "MSTR", "price": 370.0, "activity": "high"},
+            {"symbol": "AVGO", "price": 311.0, "activity": "medium"},
+            {"symbol": "BABA", "price": 97.0, "activity": "medium"},
         ]
         
         mock_alerts = []
         
-        # Generate 50 realistic options trades
-        for i in range(50):
-            ticker = random.choice(mock_tickers)
+        # Generate 80 realistic options trades based on today's market activity
+        for i in range(80):
+            stock = random.choice(symbols_with_details)
+            symbol = stock["symbol"]
+            underlying_price = stock["price"]
             
-            # Realistic underlying prices based on actual ranges
-            price_ranges = {
-                "AAPL": (220, 240), "MSFT": (400, 440), "NVDA": (800, 900), "TSLA": (200, 300),
-                "GOOGL": (160, 180), "META": (480, 520), "AMZN": (170, 190), "SPY": (540, 560),
-                "QQQ": (470, 490), "PLTR": (25, 35), "AMD": (140, 160), "SOFI": (8, 12)
-            }
+            # Realistic DTE distribution (0-60 days, weighted toward shorter terms)
+            dte_weights = [30, 25, 20, 10, 8, 4, 2, 1]  # 0, 1, 7, 14, 21, 30, 45, 60 days
+            dte_options = [0, 1, 7, 14, 21, 30, 45, 60]
+            dte = random.choices(dte_options, weights=dte_weights)[0]
             
-            underlying_price = random.uniform(*price_ranges.get(ticker, (50, 200)))
-            
-            # Determine option type and strike
-            is_call = random.choice([True, False])
+            # Option type based on market sentiment (more bearish lately)
+            is_call = random.choices([True, False], weights=[40, 60])[0]
             option_type = "call" if is_call else "put"
             
-            # Strikes relative to underlying price
+            # Strike selection based on moneyness probabilities
             if is_call:
-                strike = underlying_price * random.uniform(0.95, 1.15)  # Mix of ITM/OTM calls
+                # Calls: mix of ATM, OTM, and some ITM
+                strike_multipliers = [0.98, 0.99, 1.00, 1.01, 1.02, 1.03, 1.05, 1.10]
+                strike_weights = [5, 10, 25, 30, 15, 10, 3, 2]
                 sentiment = "bullish"
             else:
-                strike = underlying_price * random.uniform(0.85, 1.05)  # Mix of ITM/OTM puts  
+                # Puts: mix of ATM, OTM, and some ITM  
+                strike_multipliers = [0.90, 0.95, 0.98, 0.99, 1.00, 1.01, 1.02, 1.03]
+                strike_weights = [2, 5, 15, 25, 30, 15, 5, 3]
                 sentiment = "bearish"
             
-            strike = round(strike)
+            strike_multiplier = random.choices(strike_multipliers, weights=strike_weights)[0]
+            strike = round(underlying_price * strike_multiplier)
             
-            # Days to expiration (realistic DTE distribution)
-            dte = random.choices([0, 1, 2, 7, 14, 21, 30, 45, 60], weights=[5, 10, 15, 25, 20, 15, 5, 3, 2])[0]
+            # Volume based on stock activity and DTE
+            if stock["activity"] == "high":
+                base_volume = random.randint(50, 5000)
+            elif stock["activity"] == "medium":
+                base_volume = random.randint(20, 2000)
+            else:
+                base_volume = random.randint(5, 500)
+                
+            # Expiring options have higher volume
+            if dte <= 1:
+                base_volume *= random.uniform(2, 5)
+                
+            volume = int(base_volume)
             
-            # Volume and Open Interest
-            volume = random.randint(10, 50000)
-            open_interest = random.randint(1, volume * 2)
-            volume_oi_ratio = volume / max(open_interest, 1)
+            # Open Interest (usually higher than volume for non-expiring options)
+            if dte <= 1:
+                open_interest = random.randint(1, volume)
+            else:
+                open_interest = random.randint(volume // 2, volume * 3)
             
-            # Premium calculation - more realistic based on moneyness and DTE
-            if dte == 0:  # Expiring today
-                premium = random.randint(1, 500) * volume  # Very low premium
-            elif dte <= 7:  # Weekly
-                premium = random.randint(100, 2000) * volume
-            else:  # Monthly
-                premium = random.randint(500, 5000) * volume
+            volume_oi_ratio = round(volume / max(open_interest, 1), 2)
             
-            # Determine if it's a buy or sell based on volume/OI ratio and premium
-            is_buy = volume_oi_ratio > 1.5 or premium > 100000
-            action = "BUY" if is_buy else "SELL"
+            # Premium calculation based on multiple factors
+            if dte == 0:
+                # Expiring today - very low premium
+                base_premium = random.uniform(0.05, 2.0) * volume
+            elif dte <= 7:
+                # Weekly options
+                base_premium = random.uniform(0.5, 8.0) * volume
+            elif dte <= 30:
+                # Monthly options
+                base_premium = random.uniform(1.0, 15.0) * volume
+            else:
+                # LEAPS
+                base_premium = random.uniform(5.0, 50.0) * volume
             
-            # Trade size based on premium
-            if premium >= 1000000:
+            # Adjust premium based on moneyness
+            if is_call:
+                if strike < underlying_price:  # ITM call
+                    base_premium *= random.uniform(1.5, 3.0)
+                elif strike > underlying_price * 1.05:  # Far OTM call
+                    base_premium *= random.uniform(0.2, 0.6)
+            else:
+                if strike > underlying_price:  # ITM put
+                    base_premium *= random.uniform(1.5, 3.0)
+                elif strike < underlying_price * 0.95:  # Far OTM put
+                    base_premium *= random.uniform(0.2, 0.6)
+            
+            premium = int(base_premium * 100)  # Convert to cents
+            
+            # Buy/Sell determination based on volume/OI ratio and other factors
+            is_opener = volume_oi_ratio > 2.0 or random.choice([True, False])
+            action = "BUY" if is_opener else "SELL"
+            
+            # Trade size classification
+            if premium >= 1000000:  # $10K+
                 trade_size = "whale"
-            elif premium >= 500000:
-                trade_size = "large" 
-            elif premium >= 100000:
+            elif premium >= 500000:  # $5K+
+                trade_size = "large"
+            elif premium >= 100000:  # $1K+
                 trade_size = "medium"
             else:
                 trade_size = "small"
             
+            # Moneyness classification
+            if is_call:
+                if strike <= underlying_price:
+                    moneyness = "ITM"
+                elif strike <= underlying_price * 1.05:
+                    moneyness = "ATM" 
+                else:
+                    moneyness = "OTM"
+            else:
+                if strike >= underlying_price:
+                    moneyness = "ITM"
+                elif strike >= underlying_price * 0.95:
+                    moneyness = "ATM"
+                else:
+                    moneyness = "OTM"
+            
+            # Expiration date
+            expiration_date = (datetime.now() + timedelta(days=dte)).strftime("%Y-%m-%d")
+            
             mock_alerts.append({
-                "symbol": ticker,
+                "symbol": symbol,
                 "strike_type": f"{strike}{'C' if is_call else 'P'}",
-                "expiration": (datetime.now() + timedelta(days=dte)).strftime("%Y-%m-%d"),
+                "expiration": expiration_date,
                 "dte": dte,
                 "volume": volume,
                 "open_interest": open_interest,
-                "volume_oi_ratio": round(volume_oi_ratio, 2),
+                "volume_oi_ratio": volume_oi_ratio,
                 "premium": premium,
-                "underlying_price": round(underlying_price, 2),
-                "is_opener": is_buy,
+                "underlying_price": underlying_price,
+                "is_opener": is_opener,
                 "timestamp": datetime.now().isoformat(),
                 "trade_size": trade_size,
                 "sentiment": sentiment,
-                "unusual_activity": premium > 500000 or volume_oi_ratio > 3.0,
-                "action": action,  # NEW: BUY or SELL
+                "unusual_activity": premium > 200000 or volume_oi_ratio > 3.0 or volume > 1000,
+                "action": action,
                 "option_type": option_type,
                 "strike": strike,
-                "moneyness": "ITM" if (is_call and strike < underlying_price) or (not is_call and strike > underlying_price) else "OTM"
+                "moneyness": moneyness
             })
         
-        # Sort by premium descending to show most significant trades first
+        # Sort by premium descending to show highest value trades first
         mock_alerts.sort(key=lambda x: x.get('premium', 0), reverse=True)
         
         return mock_alerts
