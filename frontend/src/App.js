@@ -2306,7 +2306,7 @@ const DarkPool = () => {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     minimum_volume: 100000,
-    minimum_dark_percentage: 30.0,
+    minimum_dark_percentage: 0.01,
     limit: 50
   });
   const { isDarkMode } = useTheme();
