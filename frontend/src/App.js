@@ -2398,10 +2398,13 @@ const OptionsFlow = () => {
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-bold ${
                       alert.action === 'BUY' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? (alert.is_opener ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800')
+                        : (alert.is_opener ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800')
                     }`}>
-                      {alert.action || 'N/A'}
+                      {alert.action && alert.is_opener !== undefined ? 
+                        `${alert.action} TO ${alert.is_opener ? 'OPEN' : 'CLOSE'}` : 
+                        'N/A'
+                      }
                     </span>
                   </td>
                   <td className="px-4 py-3">
