@@ -270,7 +270,7 @@ backend:
         - agent: "testing"
         - comment: "✅ WORKING: Comprehensive re-testing confirms portfolio management API fully operational. GET /portfolio returns proper structure, POST /portfolio successfully creates items with real-time P&L calculations, DELETE /portfolio/{id} works correctly. All CRUD operations tested and working. API ready for production use."
 
-  - task: "Market Overview API - Futures Headers Implementation"
+  - task: "Market Overview API - ETF Alternatives Implementation"
     implemented: true
     working: true
     file: "server.py"
@@ -284,6 +284,9 @@ backend:
         - working: true
         - agent: "testing"
         - comment: "🎉 EXCELLENT: Market Overview futures headers implementation is working perfectly! Comprehensive testing confirms all requirements met: ✅ Futures Symbol Display (4/4 correct: SPX, NQ, YM, RTY), ✅ Symbol Mapping (100% accuracy: SPX→^GSPC, NQ→^IXIC, YM→^DJI, RTY→^RUT), ✅ Data Quality (real prices: SPX $6,466.58, NQ $21,713.14, YM $44,922.27, RTY $2,328.06), ✅ Response Structure (underlying_symbol, data_source fields present), ✅ Enhanced Metadata (comprehensive futures display note), ✅ Fallback Functionality (maintains futures symbols), ✅ Price Accuracy (realistic current market data with proper changes). SUCCESS RATE: 100% (7/7 test phases passed). The Market Dashboard will now show SPX, NQ, YM, RTY as requested by the user while maintaining data accuracy through underlying index equivalents."
+        - working: true
+        - agent: "testing"
+        - comment: "🐋 COMPREHENSIVE ETF ALTERNATIVES TESTING COMPLETE - ALL REQUIREMENTS MET: Extensive testing of updated Market Overview endpoint with ETF alternatives (SPY, QQQ, DIA, IWM) confirms PERFECT implementation. ✅ ETF DATA INTEGRATION: Market Overview now uses SPY, QQQ, DIA, IWM instead of index symbols - all 4 ETF symbols found in underlying_symbol field. ✅ UNUSUAL WHALES PRIORITY: API tries Unusual Whales first before falling back to yfinance (currently using yfinance fallback with proper ETF data). ✅ FUTURES SYMBOL DISPLAY: Response correctly shows SPX, NQ, YM, RTY as display symbols (4/4 correct). ✅ ETF PRICE DATA: Realistic ETF prices confirmed - SPY $644.89, QQQ $580.34, DIA $449.42, IWM $231.22 (all within expected ranges). ✅ ENHANCED DATA FIELDS: All indices include unusual_activity and options_flow_signal fields from Unusual Whales integration. ✅ DATA SOURCE TRACKING: underlying_symbol properly shows ETF symbols (SPY, QQQ, DIA, IWM) for accurate tracking. ✅ FALLBACK FUNCTIONALITY: System maintains ETF-style data structure in fallback scenarios. SUCCESS RATE: 100% (7/7 requirements passed). Market Overview endpoint successfully implements ETF alternatives with tradeable equivalents for futures, providing more realistic and accessible market data for users."
 
   - task: "Advanced Screener API"
     implemented: true
