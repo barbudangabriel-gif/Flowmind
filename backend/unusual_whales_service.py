@@ -85,7 +85,15 @@ class UnusualWhalesService:
             
             if not response.get('data'):
                 logger.warning("No options flow data from API, using mock data")
-                return await self._get_mock_options_flow()
+                # Return mock data directly without additional processing
+                mock_data = await self._get_mock_options_flow()
+                # Apply filtering to mock data
+                filtered_data = []
+                for alert in mock_data:
+                    if (alert.get('premium', 0) >= minimum_premium and 
+                        alert.get('volume_oi_ratio', 0) >= minimum_volume_oi_ratio):
+                        filtered_data.append(alert)
+                return filtered_data[:limit]
             
             processed_alerts = []
             for alert in response['data']:
@@ -96,9 +104,16 @@ class UnusualWhalesService:
             
         except Exception as e:
             logger.error(f"Error fetching options flow alerts: {str(e)}")
-            # Return mock data if API fails for development/testing
+            # Return mock data if API fails for development/testing  
             logger.info("Using mock options flow data due to API unavailability")
-            return await self._get_mock_options_flow()
+            mock_data = await self._get_mock_options_flow()
+            # Apply filtering to mock data
+            filtered_data = []
+            for alert in mock_data:
+                if (alert.get('premium', 0) >= minimum_premium and 
+                    alert.get('volume_oi_ratio', 0) >= minimum_volume_oi_ratio):
+                    filtered_data.append(alert)
+            return filtered_data[:limit]
     
     def _process_flow_alert(self, alert: Dict[str, Any]) -> Dict[str, Any]:
         """Process and enhance individual flow alert data"""
