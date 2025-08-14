@@ -99,8 +99,8 @@ class TradeStationClient:
             # Construct URL
             url = f"{self.base_url}{endpoint}"
             
-            # Get headers
-            headers = self.auth.get_auth_headers()
+            # Get headers with auto-refresh
+            headers = await self.auth.get_auth_headers()
             
             # Initialize session if needed
             if self.session is None:
