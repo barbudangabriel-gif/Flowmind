@@ -538,6 +538,29 @@ const AdvancedScreener = React.memo(() => {
                     <td className="px-4 py-3 text-sm">${formatNumber(stock.market_cap)}</td>
                     <td className="px-4 py-3 text-sm">{stock.pe_ratio ? stock.pe_ratio.toFixed(2) : 'N/A'}</td>
                     <td className="px-4 py-3 text-sm">{stock.dividend_yield ? (stock.dividend_yield * 100).toFixed(2) + '%' : 'N/A'}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center space-x-1">
+                        {stock.unusual_activity && (
+                          <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-full">
+                            🔥 Hot
+                          </span>
+                        )}
+                        {stock.options_flow_signal && stock.options_flow_signal !== 'neutral' && (
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            stock.options_flow_signal === 'bullish' 
+                              ? 'bg-green-100 text-green-700'
+                              : stock.options_flow_signal === 'bearish'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {stock.options_flow_signal === 'bullish' ? '📈' : '📉'} {stock.options_flow_signal}
+                          </span>
+                        )}
+                        {!stock.unusual_activity && (!stock.options_flow_signal || stock.options_flow_signal === 'neutral') && (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
