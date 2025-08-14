@@ -212,9 +212,9 @@ backend:
 
   - task: "Trading Strategies Generation API"
     implemented: true
-    working: true
+    working: false
     file: "server.py,unusual_whales_service.py,options_strategy_charts.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -230,6 +230,9 @@ backend:
         - working: true
         - agent: "testing"
         - comment: "🎯 ENHANCED CHART INTEGRATION TESTING COMPLETE - ALL REQUIREMENTS MET: Comprehensive testing of enhanced Trading Strategies endpoint with interactive charts integration confirms EXCELLENT functionality. ✅ CHART GENERATION: GET /api/unusual-whales/trading-strategies returns 200 status with charts_included: true flag. All 2 strategies include chart field with valid plotly_chart JSON. ✅ CHART DATA VALIDATION: Valid plotly JSON structure with data/layout fields, 100 P&L data points per chart (fixed numpy array conversion issue), realistic price ranges ($250-$375), proper hover templates and dark theme styling. ✅ STRATEGY-SPECIFIC CHART TYPES: Long Put correctly mapped to 'directional' chart type, Synthetic Long uses 'generic' fallback chart. Chart type categorization working (vertical_spread, directional, volatility, iron_condor, income). ✅ CHART METRICS VERIFICATION: Max profit/loss calculations realistic and accurate (Long Put: max_loss $300, breakeven $310.60), underlying price properly used for strike calculations ($313 MSFT), breakeven point calculations correct. ✅ ERROR HANDLING: Chart generation failures handled gracefully with fallback charts, charts_included flag present, no chart errors detected. Fixed plotly data conversion issues by converting numpy arrays to Python lists. SUCCESS RATE: 100% (15/15 requirements passed). Enhanced Trading Strategies endpoint with interactive P&L charts ready for frontend display and production use."
+        - working: false
+        - agent: "testing"
+        - comment: "❌ CRITICAL ERROR DETECTED: Final verification testing reveals Trading Strategies endpoint now returning 500 error with 'unsupported operand type(s) for +: 'int' and 'str'' error. This is a string concatenation bug that was supposedly fixed but has reoccurred. The endpoint was working in previous tests but is now failing. This indicates a regression or incomplete fix. Error occurs during strategy generation logic. All other Unusual Whales endpoints (Options Flow, Dark Pool, Congressional, Comprehensive Analysis) are working correctly with 80% overall success rate."
 
   - task: "Comprehensive Market Analysis API"
     implemented: true
