@@ -4562,6 +4562,30 @@ const TradeStationAuth = () => {
               <p className="text-sm text-gray-500 mt-2">
                 This will open TradeStation's OAuth login in a new window
               </p>
+              
+              {/* Manual Code Entry Option */}
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                <p className="text-sm text-gray-600 mb-3">Or enter authorization code manually:</p>
+                <div className="flex gap-2 max-w-md mx-auto">
+                  <input
+                    type="text"
+                    placeholder="Authorization code from TradeStation"
+                    value={manualCode}
+                    onChange={(e) => setManualCode(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  />
+                  <button
+                    onClick={() => exchangeCodeManually(manualCode)}
+                    disabled={!manualCode.trim() || loading}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm"
+                  >
+                    Connect
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Get the code from TradeStation OAuth page manually
+                </p>
+              </div>
             </div>
           ) : (
             <div className="text-center">
