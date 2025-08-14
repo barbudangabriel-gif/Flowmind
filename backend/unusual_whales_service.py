@@ -23,11 +23,11 @@ class UnusualWhalesException(Exception):
 
 class UnusualWhalesService:
     def __init__(self):
-        self.api_token = os.getenv("UW_API_TOKEN")
+        self.api_token = os.getenv("UNUSUAL_WHALES_API_KEY") or os.getenv("UW_API_TOKEN")
         self.base_url = os.getenv("UW_BASE_URL", "https://api.unusualwhales.com")
         
         if not self.api_token:
-            logger.warning("UW_API_TOKEN not set in environment variables")
+            logger.warning("UNUSUAL_WHALES_API_KEY or UW_API_TOKEN not set in environment variables")
             
         self.headers = {
             "Authorization": f"Bearer {self.api_token}" if self.api_token else "",
