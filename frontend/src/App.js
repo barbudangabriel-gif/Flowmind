@@ -1381,10 +1381,8 @@ const TechnicalAnalysis = () => {
       </div>
     );
   };
-    </div>
-  );
 
-  const FairValueGapCard = ({ fvg }) => (
+  const FairValueGapCard = ({ fvg }) => {
     <div className={`p-3 rounded-lg border-l-4 ${
       fvg.type === 'bullish' 
         ? 'border-blue-500 bg-blue-50' 
