@@ -43,7 +43,12 @@ import {
   Sun,
   Bot,
   History,
-  Users
+  Users,
+  ChevronDown,
+  Settings,
+  Info,
+  Zap,
+  MoreVertical
 } from "lucide-react";
 
 // Lazy loading for heavy components
