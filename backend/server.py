@@ -920,6 +920,41 @@ def get_fallback_market_data(symbol):
         "change_percent": round(change_percent, 2)
     }
 
+def get_fallback_etf_data(etf_symbol, futures_symbol, display_name):
+    """Generate realistic fallback ETF data for futures-style display"""
+    import random
+    
+    etf_mapping = {
+        'SPY': {'name': 'SPDR S&P 500 ETF', 'base_price': 642, 'volatility': 5},
+        'QQQ': {'name': 'Invesco QQQ Trust', 'base_price': 216, 'volatility': 10},
+        'DIA': {'name': 'SPDR Dow Jones Industrial Average ETF', 'base_price': 444, 'volatility': 8},
+        'IWM': {'name': 'iShares Russell 2000 ETF', 'base_price': 228, 'volatility': 3}
+    }
+    
+    if etf_symbol not in etf_mapping:
+        # Default fallback
+        data = {'name': display_name, 'base_price': 100, 'volatility': 5}
+    else:
+        data = etf_mapping[etf_symbol]
+    
+    # Generate realistic price movements (small daily changes)
+    price_change = random.uniform(-data['volatility'], data['volatility'])
+    current_price = data['base_price'] + price_change
+    change_percent = random.uniform(-2.5, 2.5)  # Realistic daily change
+    change = (change_percent / 100) * current_price
+    
+    return {
+        "symbol": futures_symbol,  # Display as futures symbol
+        "name": display_name,
+        "price": round(current_price, 2),
+        "change": round(change, 2),
+        "change_percent": round(change_percent, 2),
+        "underlying_symbol": etf_symbol,  # Track the ETF symbol used
+        "data_source": "Mock Data (ETF Futures Style)",
+        "unusual_activity": False,
+        "options_flow_signal": "neutral"
+    }
+
 def get_complete_fallback_dataset():
     """Generate complete fallback dataset for all indices"""
     return [
