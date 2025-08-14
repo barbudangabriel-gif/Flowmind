@@ -2096,10 +2096,10 @@ const OptionsFlow = () => {
   });
   const { isDarkMode } = useTheme();
   
-  // Auto-refresh state
+  // Auto-refresh state - every 1 second for real-time flow
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [refreshCountdown, setRefreshCountdown] = useState(5); // Reduced to 5 seconds
+  const [refreshCountdown, setRefreshCountdown] = useState(1); // 1 second for real-time
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchOptionsFlow = async (showLoading = true) => {
