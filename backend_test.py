@@ -1697,7 +1697,45 @@ class StockMarketAPITester:
         
         return success
 
-    def test_unusual_whales_comprehensive_analysis(self):
+    def test_unusual_whales_trading_strategies(self):
+        """Test Unusual Whales Trading Strategies API endpoint"""
+        print("\n🎯 Testing Unusual Whales Trading Strategies API")
+        
+        success, strategies_data = self.run_test("Trading Strategies Generation", "GET", "unusual-whales/trading-strategies", 200)
+        if success:
+            strategies = strategies_data.get('trading_strategies', [])
+            charts_included = strategies_data.get('charts_included', False)
+            
+            print(f"   📊 Generated {len(strategies)} trading strategies")
+            print(f"   📈 Charts Included: {'✅ YES' if charts_included else '❌ NO'}")
+            
+            if strategies:
+                first_strategy = strategies[0]
+                print(f"   💡 Top Strategy: {first_strategy.get('strategy_name', 'N/A')}")
+                print(f"     - Ticker: {first_strategy.get('ticker', 'N/A')}")
+                print(f"     - Type: {first_strategy.get('strategy_type', 'N/A')}")
+                print(f"     - Confidence: {first_strategy.get('confidence', 0):.2f}")
+                print(f"     - Timeframe: {first_strategy.get('timeframe', 'N/A')}")
+                
+                # Check TradeStation execution details
+                tradestation = first_strategy.get('tradestation_execution', {})
+                if tradestation:
+                    print(f"     - TradeStation Ready: ✅")
+                    print(f"       * Underlying: {tradestation.get('underlying', 'N/A')}")
+                    print(f"       * Max Risk: {tradestation.get('max_risk', 'N/A')}")
+                    print(f"       * Max Profit: {tradestation.get('max_profit', 'N/A')}")
+                else:
+                    print(f"     - TradeStation Ready: ❌")
+                
+                # Verify required fields
+                required_fields = ['strategy_name', 'ticker', 'confidence', 'entry_logic', 'risk_management']
+                missing_fields = [field for field in required_fields if field not in first_strategy]
+                if missing_fields:
+                    print(f"   ⚠️  Missing fields in strategy: {missing_fields}")
+                else:
+                    print(f"   ✅ Strategy data structure complete")
+        
+        return success
         """Test Unusual Whales Comprehensive Analysis API endpoint"""
         print("\n🔬 Testing Unusual Whales Comprehensive Analysis API")
         
