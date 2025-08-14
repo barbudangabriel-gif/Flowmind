@@ -364,13 +364,14 @@ const Dashboard = React.memo(() => {
     
     setIsRefreshing(true);
     try {
-      const [overviewRes, moversRes] = await Promise.all([
-        axios.get(`${API}/market/overview`),
-        axios.get(`${API}/market/top-movers`)
-      ]);
-      
+      // Fetch market overview first
+      const overviewRes = await axios.get(`${API}/market/overview`);
       setMarketData(overviewRes.data);
+      
+      // Then fetch top movers
+      const moversRes = await axios.get(`${API}/market/top-movers`);
       setTopMovers(moversRes.data);
+      
     } catch (error) {
       console.error('Error fetching market data:', error);
     } finally {
