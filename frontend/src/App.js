@@ -51,6 +51,10 @@ import "./App.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Configure axios with timeout and better error handling
+axios.defaults.timeout = 30000; // 30 seconds timeout
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+
 // Colors for portfolio charts
 const COLORS = [
   '#2563eb', '#7c3aed', '#dc2626', '#ea580c', '#ca8a04', 
