@@ -363,27 +363,97 @@ class UnusualWhalesService:
     
     # MOCK DATA METHODS (for when API key is not available or API fails)
     async def _get_mock_options_flow(self) -> List[Dict[str, Any]]:
-        """Generate mock options flow data for development"""
-        mock_tickers = ["AAPL", "MSFT", "NVDA", "TSLA", "GOOGL", "META", "AMZN", "SPY", "QQQ"]
+        """Generate realistic mock options flow data for development - includes buy/sell actions and proper premiums"""
+        import random
+        
+        # Mix of popular US tickers that often have options activity
+        mock_tickers = [
+            "AAPL", "MSFT", "NVDA", "TSLA", "GOOGL", "META", "AMZN", "SPY", "QQQ", "IWM",
+            "PLTR", "AMD", "INTC", "NFLX", "DIS", "BABA", "NIO", "SOFI", "COIN", "GME"
+        ]
+        
         mock_alerts = []
         
-        for i, ticker in enumerate(mock_tickers[:5]):  # Limit to 5 for demo
+        # Generate 50 realistic options trades
+        for i in range(50):
+            ticker = random.choice(mock_tickers)
+            
+            # Realistic underlying prices based on actual ranges
+            price_ranges = {
+                "AAPL": (220, 240), "MSFT": (400, 440), "NVDA": (800, 900), "TSLA": (200, 300),
+                "GOOGL": (160, 180), "META": (480, 520), "AMZN": (170, 190), "SPY": (540, 560),
+                "QQQ": (470, 490), "PLTR": (25, 35), "AMD": (140, 160), "SOFI": (8, 12)
+            }
+            
+            underlying_price = random.uniform(*price_ranges.get(ticker, (50, 200)))
+            
+            # Determine option type and strike
+            is_call = random.choice([True, False])
+            option_type = "call" if is_call else "put"
+            
+            # Strikes relative to underlying price
+            if is_call:
+                strike = underlying_price * random.uniform(0.95, 1.15)  # Mix of ITM/OTM calls
+                sentiment = "bullish"
+            else:
+                strike = underlying_price * random.uniform(0.85, 1.05)  # Mix of ITM/OTM puts  
+                sentiment = "bearish"
+            
+            strike = round(strike)
+            
+            # Days to expiration (realistic DTE distribution)
+            dte = random.choices([0, 1, 2, 7, 14, 21, 30, 45, 60], weights=[5, 10, 15, 25, 20, 15, 5, 3, 2])[0]
+            
+            # Volume and Open Interest
+            volume = random.randint(10, 50000)
+            open_interest = random.randint(1, volume * 2)
+            volume_oi_ratio = volume / max(open_interest, 1)
+            
+            # Premium calculation - more realistic based on moneyness and DTE
+            if dte == 0:  # Expiring today
+                premium = random.randint(1, 500) * volume  # Very low premium
+            elif dte <= 7:  # Weekly
+                premium = random.randint(100, 2000) * volume
+            else:  # Monthly
+                premium = random.randint(500, 5000) * volume
+            
+            # Determine if it's a buy or sell based on volume/OI ratio and premium
+            is_buy = volume_oi_ratio > 1.5 or premium > 100000
+            action = "BUY" if is_buy else "SELL"
+            
+            # Trade size based on premium
+            if premium >= 1000000:
+                trade_size = "whale"
+            elif premium >= 500000:
+                trade_size = "large" 
+            elif premium >= 100000:
+                trade_size = "medium"
+            else:
+                trade_size = "small"
+            
             mock_alerts.append({
                 "symbol": ticker,
-                "strike_type": f"{300 + i * 20}C" if i % 2 == 0 else f"{280 + i * 15}P",
-                "expiration": (datetime.now() + timedelta(days=7 + i)).strftime("%Y-%m-%d"),
-                "dte": 7 + i,
-                "volume": 1000 + i * 500,
-                "open_interest": 500 + i * 200,
-                "volume_oi_ratio": 2.0 + i * 0.5,
-                "premium": 250000 + i * 100000,
-                "underlying_price": 300 + i * 20,
-                "is_opener": i % 2 == 0,
+                "strike_type": f"{strike}{'C' if is_call else 'P'}",
+                "expiration": (datetime.now() + timedelta(days=dte)).strftime("%Y-%m-%d"),
+                "dte": dte,
+                "volume": volume,
+                "open_interest": open_interest,
+                "volume_oi_ratio": round(volume_oi_ratio, 2),
+                "premium": premium,
+                "underlying_price": round(underlying_price, 2),
+                "is_opener": is_buy,
                 "timestamp": datetime.now().isoformat(),
-                "trade_size": "large" if i < 2 else "medium",
-                "sentiment": "bullish" if i % 2 == 0 else "bearish",
-                "unusual_activity": True
+                "trade_size": trade_size,
+                "sentiment": sentiment,
+                "unusual_activity": premium > 500000 or volume_oi_ratio > 3.0,
+                "action": action,  # NEW: BUY or SELL
+                "option_type": option_type,
+                "strike": strike,
+                "moneyness": "ITM" if (is_call and strike < underlying_price) or (not is_call and strike > underlying_price) else "OTM"
             })
+        
+        # Sort by premium descending to show most significant trades first
+        mock_alerts.sort(key=lambda x: x.get('premium', 0), reverse=True)
         
         return mock_alerts
     
