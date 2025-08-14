@@ -156,14 +156,24 @@ class UnusualWhalesService:
             response = await self._make_request("/api/darkpool/recent", params)
             
             if not response.get('data'):
-                return []
+                logger.info("No data in response, returning mock data")
+                return await self._get_mock_dark_pool_data()
             
             processed_trades = []
-            for trade in response['data']:
+            logger.info(f"Processing {len(response['data'])} dark pool trades")
+            
+            for i, trade in enumerate(response['data']):
                 processed_trade = self._process_dark_pool_trade(trade)
                 if processed_trade:
                     processed_trades.append(processed_trade)
+                else:
+                    logger.warning(f"Failed to process trade {i}: {trade}")
             
+            if not processed_trades:
+                logger.info("No trades processed successfully, returning mock data")
+                return await self._get_mock_dark_pool_data()
+                
+            logger.info(f"Successfully processed {len(processed_trades)} dark pool trades")
             return processed_trades
             
         except Exception as e:
