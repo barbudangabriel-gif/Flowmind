@@ -47,11 +47,6 @@ class TradeStationAuth:
         # Load existing tokens on initialization
         self._load_tokens()
         
-        # Token storage
-        self.access_token = None
-        self.refresh_token = None
-        self.token_expires = None
-        
         # Default redirect URI
         self.redirect_uri = os.getenv("TRADESTATION_REDIRECT_URI", "http://localhost:8001/api/auth/tradestation/callback")
         
