@@ -1676,7 +1676,7 @@ async def get_trading_strategies_from_unusual_whales():
                                 },
                                 {
                                     "action": "buy", 
-                                    "strike": atm_strike + (5 if strategy_name == "Long Strangle" else 0),
+                                    "strike": int(atm_strike) + (5 if strategy_name == "Long Strangle" else 0),
                                     "option_type": "put",
                                     "quantity": 1
                                 }
