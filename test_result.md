@@ -122,15 +122,18 @@ backend:
 
   - task: "TradeStation API Client Implementation"
     implemented: true
-    working: "unknown"
+    working: false
     file: "tradestation_client.py,server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "unknown"
         - agent: "main"
         - comment: "Implemented comprehensive TradeStation API client with async support. Includes account management, position tracking, order operations, market data, and historical data retrieval. Supports both simulation and live environments. Uses proper error handling and rate limiting awareness. Need to test all API operations."
+        - working: false
+        - agent: "testing"
+        - comment: "❌ NOT WORKING: TradeStation API client endpoints failing due to authentication requirement. Accounts endpoint (500 error): 'No access token available. Please authenticate first.' All data-dependent endpoints (accounts, positions, balances, orders, quotes) return 401 authentication errors. The API client is properly implemented but requires OAuth authentication to function. This is expected behavior for a secure trading API."
 
   - task: "Portfolio Management Service"
     implemented: true
