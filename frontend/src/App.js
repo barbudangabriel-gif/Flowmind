@@ -453,10 +453,15 @@ const Dashboard = React.memo(() => {
             <div className="text-blue-100 font-medium mb-2">{new Date().toLocaleTimeString()}</div>
             <button
               onClick={fetchMarketData}
-              className="bg-white/20 hover:bg-white/30 px-3 md:px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2"
+              disabled={isRefreshing}
+              className={`px-3 md:px-4 py-2 rounded-lg transition-colors duration-200 flex items-center space-x-2 ${
+                isRefreshing 
+                  ? 'bg-white/10 cursor-not-allowed' 
+                  : 'bg-white/20 hover:bg-white/30'
+              }`}
             >
-              <RefreshCw size={16} />
-              <span>Refresh</span>
+              <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
             </button>
           </div>
         </div>
