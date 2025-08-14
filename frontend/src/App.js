@@ -2312,25 +2312,25 @@ const OptionsFlow = () => {
             ))}
           </div>
         </div>
-        
-        {/* Data Source Information */}
-        <div className={`${isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4`}>
-          <div className="flex items-start space-x-3">
-            <div className={`${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`}>
-              ℹ️
-            </div>
-            <div>
-              <h4 className={`font-semibold ${isDarkMode ? 'text-blue-300' : 'text-blue-800'}`}>
-                Date despre Options Flow
-              </h4>
-              <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-300' : 'text-blue-700'}`}>
-                Afișez date live de la Unusual Whales API. Informațiile despre premii pot varia în funcție de nivelul abonamentului. 
-                Tranzacțiile afișate includ atât cumpărări cât și vânzări de opțiuni pe diverse simboluri US.
-              </p>
-            </div>
+      )}
+
+      {/* Data Source Information */}
+      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-600' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4`}>
+        <div className="flex items-start space-x-3">
+          <div className={`${isDarkMode ? 'text-blue-400' : 'text-blue-500'}`}>
+            ℹ️
+          </div>
+          <div>
+            <h4 className={`font-semibold ${isDarkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+              Date despre Options Flow
+            </h4>
+            <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-300' : 'text-blue-700'}`}>
+              Afișez date live de la Unusual Whales API. Informațiile despre premii pot varia în funcție de nivelul abonamentului. 
+              Tranzacțiile afișate includ atât cumpărări cât și vânzări de opțiuni pe diverse simboluri US.
+            </p>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
