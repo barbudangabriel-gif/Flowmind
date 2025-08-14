@@ -286,17 +286,11 @@ class TradeStationAuth:
             "Content-Type": "application/json"
         }
     
-    def is_authenticated(self) -> bool:
-        """Check if user is currently authenticated"""
-        return (
-            self.access_token is not None and 
-            self.token_expires is not None and 
-            datetime.now() < self.token_expires
-        )
+    # Note: is_authenticated method is defined above in the new implementation
     
     def get_auth_status(self) -> Dict[str, Any]:
         """Get current authentication status"""
-        if not self.access_token:
+        if not self.is_authenticated():
             return {
                 "authenticated": False,
                 "status": "Not authenticated",
