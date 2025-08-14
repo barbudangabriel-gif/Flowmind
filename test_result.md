@@ -137,15 +137,18 @@ backend:
 
   - task: "Portfolio Management Service"
     implemented: true
-    working: "unknown"
+    working: "partial"
     file: "portfolio_service.py,server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "unknown"
         - agent: "main"
         - comment: "Implemented advanced portfolio analytics service including performance metrics, risk analysis, sector allocation, and position analysis. Provides comprehensive portfolio summary, concentration risk analysis, and performance tracking. Added endpoints: /tradestation/accounts/{account_id}/summary, /tradestation/accounts/{account_id}/positions, /tradestation/accounts/{account_id}/balances. Need to test portfolio analysis and data accuracy."
+        - working: "partial"
+        - agent: "testing"
+        - comment: "✅ PARTIAL WORKING: Portfolio Management Service partially functional. Account summary endpoint (200 OK, 0.02s) works and returns performance_metrics and risk_analysis data structures. However, most portfolio endpoints fail with authentication errors (500/401): accounts, positions, balances all require OAuth authentication. The service architecture is properly implemented with comprehensive analytics capabilities, but requires authenticated TradeStation connection to access real portfolio data."
 
   - task: "Trading Service with Risk Management"
     implemented: true
