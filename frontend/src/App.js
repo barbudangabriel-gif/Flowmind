@@ -4368,7 +4368,22 @@ const TradeStationAuth = () => {
           throw new Error('Popup window blocked. Please allow popups for this site.');
         }
         
-        // Set up listener for auth completion
+        // Listen for messages from the callback window
+        const messageListener = (event) => {
+          // Verify origin for security
+          if (event.origin !== window.location.origin) return;
+          
+          if (event.data.type === 'TRADESTATION_AUTH_SUCCESS') {
+            setLoading(false);
+            // Refresh auth status
+            checkAuthStatus();
+            window.removeEventListener('message', messageListener);
+          }
+        };
+        
+        window.addEventListener('message', messageListener);
+        
+        // Also set up polling as backup
         let authCheckInterval;
         let checkCount = 0;
         const maxChecks = 60; // 3 minutes maximum
@@ -4380,8 +4395,11 @@ const TradeStationAuth = () => {
             // Check if window was closed by user
             if (authWindow.closed) {
               clearInterval(authCheckInterval);
+              window.removeEventListener('message', messageListener);
               setLoading(false);
-              setError('Authentication window was closed. Please try again.');
+              if (checkCount < 5) { // Only show error if closed very quickly
+                setError('Authentication window was closed. Please try again.');
+              }
               return;
             }
             
@@ -4390,6 +4408,7 @@ const TradeStationAuth = () => {
             if (statusResponse.data.authentication?.authenticated) {
               setAuthStatus(statusResponse.data);
               clearInterval(authCheckInterval);
+              window.removeEventListener('message', messageListener);
               setLoading(false);
               authWindow.close();
               return;
@@ -4398,6 +4417,7 @@ const TradeStationAuth = () => {
             // Stop after maximum checks
             if (checkCount >= maxChecks) {
               clearInterval(authCheckInterval);
+              window.removeEventListener('message', messageListener);
               setLoading(false);
               setError('Authentication timeout. Please try again.');
               if (!authWindow.closed) {
@@ -4412,9 +4432,9 @@ const TradeStationAuth = () => {
         
         // Also stop loading if nothing happens after 10 seconds (initial timeout)
         setTimeout(() => {
-          if (checkCount === 0) {
+          if (checkCount === 0 && authWindow && !authWindow.closed) {
             setLoading(false);
-            setError('Authentication process may have failed. Please check if the popup opened.');
+            setError('Authentication process may have failed. Please check if the popup opened correctly.');
           }
         }, 10000);
       } else {
