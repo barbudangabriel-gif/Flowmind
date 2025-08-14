@@ -25,6 +25,12 @@ from unusual_whales_service import UnusualWhalesService
 from expert_options_system import expert_system, StrategyType
 from options_strategy_charts import chart_generator
 
+# TradeStation Integration
+from tradestation_auth import ts_auth
+from tradestation_client import TradeStationClient
+from portfolio_service import PortfolioService
+from trading_service import TradingService, OrderRequest, OrderModification, RiskLimits
+
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
