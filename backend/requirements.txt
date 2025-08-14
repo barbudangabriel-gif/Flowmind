@@ -34,3 +34,5 @@ unusualwhales-python-client>=5.0.0
 polars>=0.20.0
 matplotlib>=3.7.0
 plotly>=5.17.0
+scikit-learn
+scipy
