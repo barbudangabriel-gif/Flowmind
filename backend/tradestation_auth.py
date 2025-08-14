@@ -52,6 +52,144 @@ class TradeStationAuth:
         
         logger.info(f"TradeStation Auth initialized for {self.environment} environment")
     
+    def _save_tokens(self) -> None:
+        """Save current tokens to persistent storage"""
+        try:
+            token_data = {
+                "access_token": self.access_token,
+                "refresh_token": self.refresh_token,
+                "token_expires": self.token_expires.isoformat() if self.token_expires else None,
+                "token_type": self.token_type,
+                "environment": self.environment,
+                "saved_at": datetime.utcnow().isoformat()
+            }
+            
+            with open(self.token_file, 'w') as f:
+                json.dump(token_data, f, indent=2)
+            
+            logger.info("TradeStation tokens saved successfully")
+        except Exception as e:
+            logger.error(f"Failed to save tokens: {e}")
+    
+    def _load_tokens(self) -> bool:
+        """Load tokens from persistent storage"""
+        try:
+            if not self.token_file.exists():
+                logger.info("No saved tokens found")
+                return False
+            
+            with open(self.token_file, 'r') as f:
+                token_data = json.load(f)
+            
+            # Validate token data
+            if not token_data.get("access_token"):
+                logger.info("No access token in saved data")
+                return False
+            
+            # Check if tokens are expired
+            if token_data.get("token_expires"):
+                expires_at = datetime.fromisoformat(token_data["token_expires"])
+                if expires_at <= datetime.utcnow():
+                    logger.info("Saved tokens are expired")
+                    return False
+            
+            # Load token data
+            self.access_token = token_data["access_token"]
+            self.refresh_token = token_data.get("refresh_token")
+            self.token_expires = datetime.fromisoformat(token_data["token_expires"]) if token_data.get("token_expires") else None
+            self.token_type = token_data.get("token_type", "Bearer")
+            
+            logger.info(f"TradeStation tokens loaded successfully. Expires: {self.token_expires}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to load tokens: {e}")
+            return False
+    
+    def _clear_tokens(self) -> None:
+        """Clear tokens from memory and storage"""
+        self.access_token = None
+        self.refresh_token = None
+        self.token_expires = None
+        
+        try:
+            if self.token_file.exists():
+                self.token_file.unlink()
+                logger.info("Token file deleted")
+        except Exception as e:
+            logger.error(f"Failed to delete token file: {e}")
+    
+    async def refresh_access_token(self) -> bool:
+        """Refresh access token using refresh token"""
+        if not self.refresh_token:
+            logger.error("No refresh token available")
+            return False
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                data = {
+                    "grant_type": "refresh_token",
+                    "refresh_token": self.refresh_token,
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret
+                }
+                
+                response = await client.post(self.token_url, data=data)
+                
+                if response.status_code == 200:
+                    token_data = response.json()
+                    
+                    # Update tokens
+                    self.access_token = token_data["access_token"]
+                    if "refresh_token" in token_data:
+                        self.refresh_token = token_data["refresh_token"]
+                    
+                    # Calculate expiry
+                    expires_in = token_data.get("expires_in", 3600)
+                    self.token_expires = datetime.utcnow() + timedelta(seconds=expires_in)
+                    
+                    # Save tokens
+                    self._save_tokens()
+                    
+                    logger.info(f"Tokens refreshed successfully. New expiry: {self.token_expires}")
+                    return True
+                else:
+                    logger.error(f"Token refresh failed: {response.status_code} - {response.text}")
+                    return False
+                    
+        except Exception as e:
+            logger.error(f"Error refreshing token: {e}")
+            return False
+    
+    def needs_refresh(self) -> bool:
+        """Check if token needs to be refreshed"""
+        if not self.token_expires:
+            return False
+        
+        buffer_time = timedelta(minutes=self.refresh_buffer_minutes)
+        return datetime.utcnow() >= (self.token_expires - buffer_time)
+    
+    def is_authenticated(self) -> bool:
+        """Check if currently authenticated with valid token"""
+        if not self.access_token:
+            return False
+        
+        if self.token_expires and datetime.utcnow() >= self.token_expires:
+            return False
+        
+        return True
+    
+    async def ensure_valid_token(self) -> bool:
+        """Ensure we have a valid token, refresh if needed"""
+        if not self.access_token:
+            return False
+        
+        if self.needs_refresh() and self.refresh_token:
+            logger.info("Token needs refresh, attempting automatic refresh...")
+            return await self.refresh_access_token()
+        
+        return self.is_authenticated()
+    
     def generate_auth_url(self, state: Optional[str] = None) -> str:
         """Generate TradeStation authorization URL with proper parameters"""
         if not state:
