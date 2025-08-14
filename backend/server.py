@@ -788,42 +788,43 @@ async def delete_watchlist_item(item_id: str):
 # Market Overview Routes (unchanged)
 @api_router.get("/market/overview")
 async def get_market_overview():
-    """Get market overview with live ETF data from Unusual Whales - OPTIMIZED FOR LIVE DATA"""
+    """Get market overview with ETF symbols for direct trading - UPDATED TO SHOW ETF SYMBOLS"""
     try:
-        # Use tradeable ETF equivalents with priority on Unusual Whales live data
-        futures_etf_symbols = ['SPY', 'QQQ', 'DIA', 'IWM']
+        # Use tradeable ETF symbols directly for display
+        etf_symbols = ['SPY', 'QQQ', 'DIA', 'IWM']
         
-        # Display names for futures-style headers using ETF alternatives
-        futures_display_names = [
-            'SPX (via SPY ETF)',      # Will show as SPX
-            'NQ (via QQQ ETF)',       # Will show as NQ  
-            'YM (via DIA ETF)',       # Will show as YM
-            'RTY (via IWM ETF)'       # Will show as RTY
+        # Display names for ETFs
+        etf_display_names = [
+            'SPY (SPDR S&P 500 ETF)',
+            'QQQ (Invesco QQQ Trust)',
+            'DIA (SPDR Dow Jones ETF)',
+            'IWM (iShares Russell 2000 ETF)'
         ]
         
         indices_data = []
         
         # Get ETF data from Unusual Whales API first
         uw_service = UnusualWhalesService()
-        etf_data_dict = await uw_service.get_etf_data_for_futures(futures_etf_symbols)
+        etf_data_dict = await uw_service.get_etf_data_for_futures(etf_symbols)
         
         logger.info(f"Unusual Whales returned data for {len(etf_data_dict)} ETFs: {list(etf_data_dict.keys())}")
         
-        for i, symbol in enumerate(futures_etf_symbols):
+        for i, symbol in enumerate(etf_symbols):
             try:
-                futures_symbol = ['SPX', 'NQ', 'YM', 'RTY'][i]
+                # Use ETF symbol directly for display (no futures mapping)
+                display_symbol = symbol  # SPY, QQQ, DIA, IWM
                 
                 # Check if we have live data from Unusual Whales
                 if symbol in etf_data_dict:
                     etf_data = etf_data_dict[symbol]
                     
                     indices_data.append({
-                        "symbol": futures_symbol,  # Display as futures symbol
-                        "name": futures_display_names[i],
+                        "symbol": display_symbol,  # Display ETF symbol directly
+                        "name": etf_display_names[i],
                         "price": round(etf_data.get('price', 0), 2),
                         "change": round(etf_data.get('change', 0), 2),
                         "change_percent": round(etf_data.get('change_percent', 0), 2),
-                        "underlying_symbol": symbol,  # Track the ETF symbol used
+                        "underlying_symbol": symbol,  # Same as display symbol for ETFs
                         "data_source": "Unusual Whales API (Live ETF Data)",
                         "unusual_activity": etf_data.get('unusual_activity', False),
                         "options_flow_signal": etf_data.get('options_flow_signal', 'neutral'),
@@ -847,29 +848,29 @@ async def get_market_overview():
                     change_percent = (change / previous_close) * 100
                     
                     indices_data.append({
-                        "symbol": futures_symbol,  # Display as futures symbol
-                        "name": futures_display_names[i],
+                        "symbol": display_symbol,  # Display ETF symbol directly
+                        "name": etf_display_names[i],
                         "price": round(current_price, 2),
                         "change": round(change, 2),
                         "change_percent": round(change_percent, 2),
-                        "underlying_symbol": symbol,  # Track the ETF symbol used
-                        "data_source": "Yahoo Finance (ETF Fallback)",
+                        "underlying_symbol": symbol,  # Same as display symbol for ETFs
+                        "data_source": "Yahoo Finance (ETF Live Data)",
                         "unusual_activity": False,  # Not available from yfinance
                         "options_flow_signal": "neutral",  # Not available from yfinance
                         "volume": info.get('regularMarketVolume', 0),
                         "market_cap": info.get('marketCap', 0)
                     })
-                    logger.info(f"Using yfinance fallback for {symbol}: ${current_price:.2f}")
+                    logger.info(f"Using yfinance data for {symbol}: ${current_price:.2f}")
                 else:
                     # Use fallback data if yfinance also fails
                     logger.error(f"Both Unusual Whales and yfinance failed for {symbol}")
-                    fallback_data = get_fallback_etf_data(symbol, futures_symbol, futures_display_names[i])
+                    fallback_data = get_fallback_etf_data(symbol, display_symbol, etf_display_names[i])
                     indices_data.append(fallback_data)
                     
             except Exception as e:
                 logger.error(f"Error processing {symbol}: {str(e)}")
                 # Use fallback data for this ETF
-                fallback_data = get_fallback_etf_data(symbol, futures_symbol, futures_display_names[i])
+                fallback_data = get_fallback_etf_data(symbol, symbol, etf_display_names[i])
                 indices_data.append(fallback_data)
         
         # Determine primary data source with better messaging
@@ -882,7 +883,7 @@ async def get_market_overview():
             note_text = f"Live ETF data from Unusual Whales API. {uw_count} ETFs with UW data, {yf_count} with real-time market data."
         elif yf_count >= 2:
             primary_source = f"Live Market Data (Real-time ETF prices for {yf_count}/4 ETFs)"
-            note_text = f"Live ETF market data with real-time prices. ETFs provide liquid alternatives to futures trading."
+            note_text = f"Live ETF market data with real-time prices. Showing actual tradeable ETF symbols."
         else:
             primary_source = f"Fallback Data ({mock_count}/4 using mock data)"
             note_text = f"Using mock data due to API issues. {mock_count} ETFs with simulated data."
@@ -898,25 +899,24 @@ async def get_market_overview():
         
     except Exception as e:
         logger.error(f"Error fetching market overview: {str(e)}")
-        # Return complete fallback with futures styling using ETFs
+        # Return complete fallback with ETF symbols
         fallback_indices = []
-        futures_symbols = ['SPX', 'NQ', 'YM', 'RTY']
-        etf_symbols = ['SPY', 'QQQ', 'DIA', 'IWM']
-        display_names = [
-            'SPX (via SPY ETF)',
-            'NQ (via QQQ ETF)', 
-            'YM (via DIA ETF)',
-            'RTY (via IWM ETF)'
+        etf_symbols_fallback = ['SPY', 'QQQ', 'DIA', 'IWM']
+        display_names_fallback = [
+            'SPY (SPDR S&P 500 ETF)',
+            'QQQ (Invesco QQQ Trust)',
+            'DIA (SPDR Dow Jones ETF)',
+            'IWM (iShares Russell 2000 ETF)'
         ]
         
-        for i, (futures_sym, etf_sym, display_name) in enumerate(zip(futures_symbols, etf_symbols, display_names)):
-            fallback_data = get_fallback_etf_data(etf_sym, futures_sym, display_name)
+        for i, (etf_sym, display_name) in enumerate(zip(etf_symbols_fallback, display_names_fallback)):
+            fallback_data = get_fallback_etf_data(etf_sym, etf_sym, display_name)
             fallback_indices.append(fallback_data)
         
         return {
             "indices": fallback_indices,
-            "data_source": "Fallback Data (ETF Futures Style)",
-            "note": "Using mock ETF data due to API failures - ETF symbols provide tradeable futures alternatives",
+            "data_source": "Fallback Data (ETF Symbols)",
+            "note": "Using mock ETF data due to API failures - ETF symbols provide tradeable instruments",
             "last_updated": datetime.utcnow().isoformat(),
             "unusual_whales_coverage": "0/4 ETFs",
             "live_data_status": "Mock data only"
