@@ -81,7 +81,7 @@ class UnusualWhalesService:
             # Remove None values
             params = {k: v for k, v in params.items() if v is not None}
             
-            response = await self._make_request("/api/options/flow-alerts", params)
+            response = await self._make_request("/api/option-trades/flow-alerts", params)
             
             if not response.get('data'):
                 return []
