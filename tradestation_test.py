@@ -413,8 +413,11 @@ class TradeStationAPITester:
             status_data = order_status.get('status', {})
             
             print(f"   📊 Order Status:")
-            for key, value in status_data.items():
-                print(f"     - {key}: {value}")
+            if isinstance(status_data, dict):
+                for key, value in status_data.items():
+                    print(f"     - {key}: {value}")
+            else:
+                print(f"     - Status: {status_data}")
         
         return success
 
