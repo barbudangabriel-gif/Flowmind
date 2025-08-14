@@ -965,6 +965,372 @@ class StockMarketAPITester:
         print(f"\n🎯 Advanced Screener Unusual Whales Integration Testing Complete")
         return True
 
+    def test_unusual_whales_futures_support(self):
+        """Test if Unusual Whales API supports futures data for SPX, NQ, YM, RTY symbols"""
+        print("\n🔮 Testing Unusual Whales API Futures Data Support")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Test futures symbols SPX, NQ, YM, RTY using Unusual Whales API")
+        print("🔑 API Key: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50")
+        print("🌐 Base URL: https://api.unusualwhales.com")
+        
+        # Define futures symbols to test
+        futures_symbols = {
+            'SPX': 'S&P 500 Index Futures',
+            'NQ': 'NASDAQ-100 Futures', 
+            'YM': 'Dow Jones Futures',
+            'RTY': 'Russell 2000 Futures'
+        }
+        
+        # Alternative symbol formats to try
+        alternative_formats = {
+            'SPX': ['/ES', 'ES', 'SPY', '^GSPC'],
+            'NQ': ['/NQ', 'NQ', 'QQQ', '^IXIC'],
+            'YM': ['/YM', 'YM', 'DIA', '^DJI'],
+            'RTY': ['/RTY', 'RTY', 'IWM', '^RUT']
+        }
+        
+        futures_test_results = {
+            'symbols_tested': 0,
+            'successful_responses': 0,
+            'options_flow_found': 0,
+            'dark_pool_found': 0,
+            'congressional_found': 0,
+            'stock_data_found': 0,
+            'alternative_formats_working': {},
+            'api_endpoints_tested': 0,
+            'working_endpoints': []
+        }
+        
+        print(f"\n📊 PHASE 1: Testing Primary Futures Symbols")
+        print("-" * 60)
+        
+        # Test 1: Try futures symbols in Options Flow endpoint
+        print(f"\n🐋 Testing Options Flow for Futures Symbols")
+        for symbol, description in futures_symbols.items():
+            futures_test_results['symbols_tested'] += 1
+            print(f"\n   🎯 Testing {symbol} ({description})")
+            
+            # Test options flow with symbol filter (if API supports it)
+            success, flow_data = self.run_test(
+                f"Options Flow - {symbol}",
+                "GET",
+                "unusual-whales/options/flow-alerts",
+                200,
+                params={"limit": 100}
+            )
+            
+            if success:
+                futures_test_results['successful_responses'] += 1
+                alerts = flow_data.get('data', {}).get('alerts', [])
+                
+                # Check if any alerts contain our futures symbol
+                symbol_alerts = [alert for alert in alerts if alert.get('symbol', '').upper() == symbol.upper()]
+                if symbol_alerts:
+                    futures_test_results['options_flow_found'] += 1
+                    print(f"     ✅ Found {len(symbol_alerts)} options flow alerts for {symbol}")
+                    
+                    # Show sample alert
+                    sample_alert = symbol_alerts[0]
+                    print(f"     📊 Sample: {sample_alert.get('symbol')} {sample_alert.get('strike_type', 'N/A')} - ${sample_alert.get('premium', 0):,.0f}")
+                else:
+                    print(f"     ❌ No options flow alerts found for {symbol}")
+            else:
+                print(f"     ❌ Failed to get options flow data")
+        
+        # Test 2: Try futures symbols in Dark Pool endpoint
+        print(f"\n🌊 Testing Dark Pool for Futures Symbols")
+        success, dark_pool_data = self.run_test(
+            "Dark Pool - All Recent",
+            "GET", 
+            "unusual-whales/dark-pool/recent",
+            200,
+            params={"limit": 100}
+        )
+        
+        if success:
+            trades = dark_pool_data.get('data', {}).get('trades', [])
+            print(f"   📊 Retrieved {len(trades)} dark pool trades")
+            
+            for symbol in futures_symbols.keys():
+                symbol_trades = [trade for trade in trades if trade.get('ticker', '').upper() == symbol.upper()]
+                if symbol_trades:
+                    futures_test_results['dark_pool_found'] += 1
+                    print(f"     ✅ Found {len(symbol_trades)} dark pool trades for {symbol}")
+                    
+                    # Show sample trade
+                    sample_trade = symbol_trades[0]
+                    print(f"     📊 Sample: {sample_trade.get('ticker')} - {sample_trade.get('dark_volume', 0):,} vol ({sample_trade.get('dark_percentage', 0):.1f}% dark)")
+                else:
+                    print(f"     ❌ No dark pool trades found for {symbol}")
+        
+        # Test 3: Try futures symbols in Congressional Trades endpoint
+        print(f"\n🏛️  Testing Congressional Trades for Futures Symbols")
+        success, congress_data = self.run_test(
+            "Congressional Trades - All Recent",
+            "GET",
+            "unusual-whales/congressional/trades", 
+            200,
+            params={"limit": 100}
+        )
+        
+        if success:
+            trades = congress_data.get('data', {}).get('trades', [])
+            print(f"   📊 Retrieved {len(trades)} congressional trades")
+            
+            for symbol in futures_symbols.keys():
+                symbol_trades = [trade for trade in trades if trade.get('ticker', '').upper() == symbol.upper()]
+                if symbol_trades:
+                    futures_test_results['congressional_found'] += 1
+                    print(f"     ✅ Found {len(symbol_trades)} congressional trades for {symbol}")
+                    
+                    # Show sample trade
+                    sample_trade = symbol_trades[0]
+                    print(f"     📊 Sample: {sample_trade.get('representative')} - {sample_trade.get('transaction_type')} {sample_trade.get('ticker')} ${sample_trade.get('transaction_amount', 0):,.0f}")
+                else:
+                    print(f"     ❌ No congressional trades found for {symbol}")
+        
+        # Test 4: Try futures symbols in regular stock data endpoints
+        print(f"\n📈 Testing Stock Data Endpoints for Futures Symbols")
+        for symbol, description in futures_symbols.items():
+            print(f"\n   🎯 Testing {symbol} ({description})")
+            
+            # Test basic stock data
+            success, stock_data = self.run_test(
+                f"Stock Data - {symbol}",
+                "GET",
+                f"stocks/{symbol}",
+                200
+            )
+            
+            if success and stock_data.get('price', 0) > 0:
+                futures_test_results['stock_data_found'] += 1
+                print(f"     ✅ Stock data available: ${stock_data.get('price', 0):.2f}")
+            else:
+                print(f"     ❌ No stock data available for {symbol}")
+            
+            # Test enhanced stock data
+            success, enhanced_data = self.run_test(
+                f"Enhanced Stock Data - {symbol}",
+                "GET",
+                f"stocks/{symbol}/enhanced",
+                200
+            )
+            
+            if success and enhanced_data.get('price', 0) > 0:
+                print(f"     ✅ Enhanced stock data available: ${enhanced_data.get('price', 0):.2f}")
+                print(f"     📊 Market State: {enhanced_data.get('market_state', 'UNKNOWN')}")
+            else:
+                print(f"     ❌ No enhanced stock data available for {symbol}")
+        
+        print(f"\n📊 PHASE 2: Testing Alternative Symbol Formats")
+        print("-" * 60)
+        
+        # Test 5: Try alternative symbol formats
+        for primary_symbol, alternatives in alternative_formats.items():
+            print(f"\n🔄 Testing alternatives for {primary_symbol} ({futures_symbols[primary_symbol]})")
+            
+            working_alternatives = []
+            for alt_symbol in alternatives:
+                print(f"   🧪 Testing alternative format: {alt_symbol}")
+                
+                # Test stock data for alternative format
+                success, alt_data = self.run_test(
+                    f"Stock Data - {alt_symbol}",
+                    "GET",
+                    f"stocks/{alt_symbol}",
+                    200
+                )
+                
+                if success and alt_data.get('price', 0) > 0:
+                    working_alternatives.append(alt_symbol)
+                    print(f"     ✅ {alt_symbol} works: ${alt_data.get('price', 0):.2f}")
+                    
+                    # Test if this alternative appears in screener data
+                    success, screener_data = self.run_test(
+                        f"Screener Check - {alt_symbol}",
+                        "GET",
+                        "screener/data",
+                        200,
+                        params={"limit": 50, "exchange": "all"}
+                    )
+                    
+                    if success:
+                        stocks = screener_data.get('stocks', [])
+                        alt_in_screener = any(stock.get('symbol', '').upper() == alt_symbol.upper() for stock in stocks)
+                        if alt_in_screener:
+                            print(f"     📊 {alt_symbol} found in screener data")
+                        else:
+                            print(f"     📊 {alt_symbol} not in screener data")
+                else:
+                    print(f"     ❌ {alt_symbol} not available")
+            
+            futures_test_results['alternative_formats_working'][primary_symbol] = working_alternatives
+            if working_alternatives:
+                print(f"   ✅ Working alternatives for {primary_symbol}: {', '.join(working_alternatives)}")
+            else:
+                print(f"   ❌ No working alternatives found for {primary_symbol}")
+        
+        print(f"\n📊 PHASE 3: Testing Futures-Specific API Endpoints")
+        print("-" * 60)
+        
+        # Test 6: Check if there are any futures-specific endpoints
+        futures_endpoints_to_test = [
+            "futures/data",
+            "futures/options",
+            "futures/flow",
+            "market/futures",
+            "derivatives/futures",
+            "unusual-whales/futures",
+            "unusual-whales/derivatives"
+        ]
+        
+        print(f"🔍 Testing potential futures-specific endpoints:")
+        for endpoint in futures_endpoints_to_test:
+            futures_test_results['api_endpoints_tested'] += 1
+            print(f"\n   🧪 Testing endpoint: /{endpoint}")
+            
+            success, endpoint_data = self.run_test(
+                f"Futures Endpoint - {endpoint}",
+                "GET",
+                endpoint,
+                200
+            )
+            
+            if success:
+                futures_test_results['working_endpoints'].append(endpoint)
+                print(f"     ✅ Endpoint exists and responds")
+                
+                # Check if response contains futures data
+                if isinstance(endpoint_data, dict):
+                    if any(symbol in str(endpoint_data).upper() for symbol in futures_symbols.keys()):
+                        print(f"     🎯 Response contains futures symbols!")
+                    else:
+                        print(f"     📊 Response structure: {list(endpoint_data.keys()) if endpoint_data else 'Empty'}")
+            else:
+                print(f"     ❌ Endpoint not available")
+        
+        # Test 7: Direct API call to Unusual Whales (if we can access it directly)
+        print(f"\n🌐 PHASE 4: Direct Unusual Whales API Testing")
+        print("-" * 60)
+        
+        try:
+            import requests
+            import os
+            
+            # Get API credentials from environment
+            uw_api_token = "5809ee6a-bcb6-48ce-a16d-9f3bd634fd50"
+            uw_base_url = "https://api.unusualwhales.com"
+            
+            print(f"🔑 Testing direct API access with token: {uw_api_token[:8]}...")
+            
+            # Test direct API endpoints that might support futures
+            direct_endpoints = [
+                "/api/stock/options-flow",
+                "/api/market/overview", 
+                "/api/derivatives/futures",
+                "/api/options/flow",
+                "/api/market/indices"
+            ]
+            
+            headers = {
+                'Authorization': f'Bearer {uw_api_token}',
+                'Content-Type': 'application/json'
+            }
+            
+            for endpoint in direct_endpoints:
+                try:
+                    url = f"{uw_base_url}{endpoint}"
+                    print(f"\n   🌐 Direct API call: {url}")
+                    
+                    response = requests.get(url, headers=headers, timeout=10)
+                    print(f"     📡 Status: {response.status_code}")
+                    
+                    if response.status_code == 200:
+                        try:
+                            data = response.json()
+                            print(f"     ✅ Success - Response received")
+                            
+                            # Check for futures symbols in response
+                            response_text = str(data).upper()
+                            found_symbols = [symbol for symbol in futures_symbols.keys() if symbol in response_text]
+                            if found_symbols:
+                                print(f"     🎯 Found futures symbols: {', '.join(found_symbols)}")
+                            else:
+                                print(f"     📊 No futures symbols in response")
+                                
+                        except Exception as e:
+                            print(f"     📊 Response not JSON: {str(e)}")
+                    else:
+                        print(f"     ❌ Failed: {response.status_code} - {response.text[:100]}")
+                        
+                except Exception as e:
+                    print(f"     ❌ Request failed: {str(e)}")
+                    
+        except Exception as e:
+            print(f"❌ Direct API testing failed: {str(e)}")
+        
+        # Print comprehensive results
+        print(f"\n" + "=" * 80)
+        print(f"📊 FUTURES DATA SUPPORT TEST RESULTS")
+        print(f"=" * 80)
+        
+        print(f"🎯 SYMBOLS TESTED: {futures_test_results['symbols_tested']}")
+        print(f"✅ SUCCESSFUL API RESPONSES: {futures_test_results['successful_responses']}")
+        print(f"📈 OPTIONS FLOW MATCHES: {futures_test_results['options_flow_found']}")
+        print(f"🌊 DARK POOL MATCHES: {futures_test_results['dark_pool_found']}")
+        print(f"🏛️  CONGRESSIONAL MATCHES: {futures_test_results['congressional_found']}")
+        print(f"📊 STOCK DATA AVAILABLE: {futures_test_results['stock_data_found']}")
+        print(f"🔍 ENDPOINTS TESTED: {futures_test_results['api_endpoints_tested']}")
+        print(f"✅ WORKING ENDPOINTS: {len(futures_test_results['working_endpoints'])}")
+        
+        print(f"\n🔄 ALTERNATIVE SYMBOL FORMATS:")
+        for symbol, alternatives in futures_test_results['alternative_formats_working'].items():
+            if alternatives:
+                print(f"   {symbol}: ✅ {', '.join(alternatives)}")
+            else:
+                print(f"   {symbol}: ❌ No working alternatives")
+        
+        if futures_test_results['working_endpoints']:
+            print(f"\n🌐 WORKING ENDPOINTS:")
+            for endpoint in futures_test_results['working_endpoints']:
+                print(f"   ✅ /{endpoint}")
+        
+        # Final assessment
+        total_matches = (futures_test_results['options_flow_found'] + 
+                        futures_test_results['dark_pool_found'] + 
+                        futures_test_results['congressional_found'] + 
+                        futures_test_results['stock_data_found'])
+        
+        print(f"\n🎯 FINAL ASSESSMENT:")
+        if total_matches > 0:
+            print(f"✅ PARTIAL FUTURES SUPPORT DETECTED ({total_matches} data sources)")
+            print(f"📊 Unusual Whales API has some futures-related data available")
+        else:
+            print(f"❌ NO DIRECT FUTURES SUPPORT DETECTED")
+            print(f"📊 Unusual Whales API may not support futures symbols SPX, NQ, YM, RTY")
+        
+        # Check if alternatives can substitute
+        working_alternatives_count = sum(len(alts) for alts in futures_test_results['alternative_formats_working'].values())
+        if working_alternatives_count > 0:
+            print(f"🔄 ALTERNATIVE SYMBOLS AVAILABLE ({working_alternatives_count} working formats)")
+            print(f"💡 Consider using index ETFs or index symbols as futures substitutes")
+        
+        print(f"\n💡 RECOMMENDATIONS:")
+        if total_matches == 0 and working_alternatives_count > 0:
+            print(f"   1. Use alternative symbols like SPY (for SPX), QQQ (for NQ), DIA (for YM), IWM (for RTY)")
+            print(f"   2. Use index symbols like ^GSPC, ^IXIC, ^DJI, ^RUT for market data")
+            print(f"   3. Consider waiting for TradeStation API integration for true futures data")
+        elif total_matches > 0:
+            print(f"   1. Some futures data is available through Unusual Whales API")
+            print(f"   2. Test with larger datasets to confirm consistent availability")
+            print(f"   3. Implement fallback to alternative symbols when futures data unavailable")
+        else:
+            print(f"   1. Unusual Whales API does not appear to support futures symbols")
+            print(f"   2. Recommend proceeding with TradeStation API for futures data")
+            print(f"   3. Use index ETFs as temporary substitutes for market dashboard")
+        
+        return futures_test_results
+
     def test_error_handling(self):
         """Test error handling for invalid requests"""
         # Test invalid stock symbol
