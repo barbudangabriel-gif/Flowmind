@@ -872,24 +872,28 @@ async def get_market_overview():
                 fallback_data = get_fallback_etf_data(symbol, futures_symbol, futures_display_names[i])
                 indices_data.append(fallback_data)
         
-        # Determine primary data source
+        # Determine primary data source with better messaging
         uw_count = sum(1 for index in indices_data if "Unusual Whales" in index.get('data_source', ''))
         yf_count = sum(1 for index in indices_data if "Yahoo Finance" in index.get('data_source', ''))
         mock_count = sum(1 for index in indices_data if "Mock Data" in index.get('data_source', ''))
         
         if uw_count >= 2:
             primary_source = f"Unusual Whales API (Live Data for {uw_count}/4 ETFs)"
+            note_text = f"Live ETF data from Unusual Whales API. {uw_count} ETFs with UW data, {yf_count} with real-time market data."
         elif yf_count >= 2:
-            primary_source = f"Mixed Sources (Yahoo Finance fallback for {yf_count}/4 ETFs)"
+            primary_source = f"Live Market Data (Real-time ETF prices for {yf_count}/4 ETFs)"
+            note_text = f"Live ETF market data with real-time prices. ETFs provide liquid alternatives to futures trading."
         else:
             primary_source = f"Fallback Data ({mock_count}/4 using mock data)"
+            note_text = f"Using mock data due to API issues. {mock_count} ETFs with simulated data."
         
         return {
             "indices": indices_data,
             "data_source": primary_source,
-            "note": f"Live ETF data from Unusual Whales API. {uw_count} ETFs with live data, {yf_count} with yfinance fallback.",
+            "note": note_text,
             "last_updated": datetime.utcnow().isoformat(),
-            "unusual_whales_coverage": f"{uw_count}/4 ETFs"
+            "unusual_whales_coverage": f"{uw_count}/4 ETFs",
+            "live_data_status": "Live ETF prices available" if yf_count >= 2 else "Limited live data"
         }
         
     except Exception as e:
