@@ -573,6 +573,68 @@ class UnusualWhalesService:
         }
     
     # STOCK SCREENER METHODS
+    async def get_etf_data_for_futures(self, etf_symbols: List[str]) -> Dict[str, Dict[str, Any]]:
+        """Get specific ETF data for futures display from Unusual Whales API"""
+        try:
+            # Try direct API calls for individual ETF data
+            etf_results = {}
+            
+            for symbol in etf_symbols:
+                try:
+                    # First try to get from stock screener data
+                    screener_data = await self.get_stock_screener_data(limit=500, exchange="all")
+                    
+                    # Look for the ETF in screener data
+                    etf_found = None
+                    for stock in screener_data:
+                        if stock.get('symbol', '').upper() == symbol.upper():
+                            etf_found = stock
+                            break
+                    
+                    if etf_found:
+                        etf_results[symbol] = etf_found
+                        logger.info(f"Found {symbol} in Unusual Whales screener data: ${etf_found.get('price', 0):.2f}")
+                        continue
+                    
+                    # If not found in screener, try individual stock lookup
+                    try:
+                        # Try to make direct API call for individual stock
+                        individual_data = await self._make_request(f"/api/stock/{symbol}")
+                        
+                        if individual_data and individual_data.get('price', 0) > 0:
+                            processed_data = self._process_stock_data(individual_data)
+                            etf_results[symbol] = processed_data
+                            logger.info(f"Found {symbol} via individual API call: ${processed_data.get('price', 0):.2f}")
+                            continue
+                    except:
+                        pass
+                    
+                    # Try alternative API endpoints for stock data
+                    try:
+                        params = {"symbol": symbol}
+                        stock_response = await self._make_request("/api/stocks/quote", params)
+                        
+                        if stock_response and stock_response.get('data'):
+                            stock_data = stock_response['data']
+                            processed_data = self._process_stock_data(stock_data)
+                            etf_results[symbol] = processed_data
+                            logger.info(f"Found {symbol} via quote endpoint: ${processed_data.get('price', 0):.2f}")
+                            continue
+                    except:
+                        pass
+                    
+                    logger.warning(f"Could not find {symbol} in Unusual Whales API")
+                    
+                except Exception as e:
+                    logger.error(f"Error fetching {symbol} from Unusual Whales: {str(e)}")
+                    continue
+            
+            return etf_results
+            
+        except Exception as e:
+            logger.error(f"Error fetching ETF data from Unusual Whales: {str(e)}")
+            return {}
+    
     async def get_stock_screener_data(
         self,
         limit: Optional[int] = 100,
