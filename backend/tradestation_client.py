@@ -399,14 +399,27 @@ class TradeStationClient:
             if isinstance(balances, Exception):
                 logger.error(f"Error fetching balances: {balances}")
                 balances = {}
+            else:
+                logger.info(f"Balances retrieved successfully: {type(balances)}")
             
             if isinstance(positions, Exception):
                 logger.error(f"Error fetching positions: {positions}")
                 positions = []
+            else:
+                logger.info(f"Positions retrieved successfully: {len(positions)} positions")
             
             if isinstance(recent_orders, Exception):
                 logger.error(f"Error fetching orders: {recent_orders}")
                 recent_orders = []
+            else:
+                logger.info(f"Orders retrieved successfully: {len(recent_orders)} orders")
+            
+            # Check for authentication issues
+            if not positions and not balances:
+                logger.warning("No positions or balances retrieved - possible authentication issue")
+                logger.warning(f"Auth status: {self.auth.is_authenticated()}")
+                logger.warning(f"Token expires: {self.auth.token_expires}")
+                logger.warning(f"Current time: {datetime.now()}")
             
             # Convert positions to dict format
             positions_data = []
