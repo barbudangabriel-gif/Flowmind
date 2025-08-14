@@ -2119,7 +2119,7 @@ const OptionsFlow = () => {
         setOptionsData(response.data.data.alerts || []);
         setAnalysis(response.data.analysis || null);
         setLastUpdate(new Date());
-        setRefreshCountdown(30); // Reset countdown
+        setRefreshCountdown(5); // Reset to 5 seconds
       }
     } catch (err) {
       console.error('Error fetching options flow:', err);
