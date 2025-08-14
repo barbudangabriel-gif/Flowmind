@@ -403,33 +403,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             ))}
           </nav>
 
-          {/* Bottom section with version/status and dark mode toggle */}
+          {/* Bottom section with version/status */}
           {!isCollapsed && (
             <div className="absolute bottom-4 left-4 right-4 space-y-3">
-              {/* Dark Mode Toggle */}
-              <button
-                onClick={toggleDarkMode}
-                className="w-full flex items-center justify-between bg-slate-800/50 hover:bg-slate-700/50 rounded-xl p-3 border border-slate-600/30 transition-all duration-200 group"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                    isDarkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400'
-                  }`}>
-                    {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
-                  </div>
-                  <span className="text-sm text-slate-300 group-hover:text-white">
-                    {isDarkMode ? 'Dark Mode' : 'Light Mode'}
-                  </span>
-                </div>
-                <div className={`w-12 h-6 rounded-full p-1 transition-all duration-200 ${
-                  isDarkMode ? 'bg-indigo-600' : 'bg-slate-600'
-                }`}>
-                  <div className={`w-4 h-4 rounded-full bg-white transition-all duration-200 transform ${
-                    isDarkMode ? 'translate-x-6' : 'translate-x-0'
-                  }`}></div>
-                </div>
-              </button>
-
               {/* Status Info */}
               <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-600/30">
                 <div className="flex items-center justify-between">
