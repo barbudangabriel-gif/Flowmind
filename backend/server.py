@@ -788,16 +788,10 @@ async def delete_watchlist_item(item_id: str):
 # Market Overview Routes (unchanged)
 @api_router.get("/market/overview")
 async def get_market_overview():
-    """Get market overview with tradeable ETF equivalents for futures - UPDATED FOR ETF ALTERNATIVES"""
+    """Get market overview with live ETF data from Unusual Whales - OPTIMIZED FOR LIVE DATA"""
     try:
-        # Use tradeable ETF equivalents that closely track futures movements
-        # These are more liquid and closer to actual futures trading
-        futures_etf_symbols = [
-            'SPY',   # SPDR S&P 500 ETF (SPX equivalent)
-            'QQQ',   # Invesco QQQ Trust (NQ equivalent) 
-            'DIA',   # SPDR Dow Jones Industrial Average ETF (YM equivalent)
-            'IWM'    # iShares Russell 2000 ETF (RTY equivalent)
-        ]
+        # Use tradeable ETF equivalents with priority on Unusual Whales live data
+        futures_etf_symbols = ['SPY', 'QQQ', 'DIA', 'IWM']
         
         # Display names for futures-style headers using ETF alternatives
         futures_display_names = [
@@ -809,85 +803,95 @@ async def get_market_overview():
         
         indices_data = []
         
+        # Get ETF data from Unusual Whales API first
+        uw_service = UnusualWhalesService()
+        etf_data_dict = await uw_service.get_etf_data_for_futures(futures_etf_symbols)
+        
+        logger.info(f"Unusual Whales returned data for {len(etf_data_dict)} ETFs: {list(etf_data_dict.keys())}")
+        
         for i, symbol in enumerate(futures_etf_symbols):
             try:
-                # Try Unusual Whales API first for ETF data
-                try:
-                    uw_service = UnusualWhalesService()
-                    stock_data = await uw_service.get_stock_screener_data(limit=200, exchange="all")
+                futures_symbol = ['SPX', 'NQ', 'YM', 'RTY'][i]
+                
+                # Check if we have live data from Unusual Whales
+                if symbol in etf_data_dict:
+                    etf_data = etf_data_dict[symbol]
                     
-                    # Find the ETF in the stock data
-                    etf_data = None
-                    for stock in stock_data:
-                        if stock.get('symbol', '').upper() == symbol.upper():
-                            etf_data = stock
-                            break
+                    indices_data.append({
+                        "symbol": futures_symbol,  # Display as futures symbol
+                        "name": futures_display_names[i],
+                        "price": round(etf_data.get('price', 0), 2),
+                        "change": round(etf_data.get('change', 0), 2),
+                        "change_percent": round(etf_data.get('change_percent', 0), 2),
+                        "underlying_symbol": symbol,  # Track the ETF symbol used
+                        "data_source": "Unusual Whales API (Live ETF Data)",
+                        "unusual_activity": etf_data.get('unusual_activity', False),
+                        "options_flow_signal": etf_data.get('options_flow_signal', 'neutral'),
+                        "volume": etf_data.get('volume', 0),
+                        "market_cap": etf_data.get('market_cap', 0)
+                    })
+                    logger.info(f"Using live Unusual Whales data for {symbol}: ${etf_data.get('price', 0):.2f}")
+                    continue
+                
+                # Fallback to yfinance if Unusual Whales doesn't have the ETF
+                logger.warning(f"No Unusual Whales data for {symbol}, using yfinance fallback")
+                ticker = yf.Ticker(symbol)
+                info = ticker.info
+                hist = ticker.history(period="1d")
+                
+                if not hist.empty and 'regularMarketPrice' in info:
+                    current_price = info.get('regularMarketPrice', hist['Close'].iloc[-1])
+                    previous_close = info.get('regularMarketPreviousClose', hist['Close'].iloc[0])
                     
-                    if etf_data and etf_data.get('price', 0) > 0:
-                        # Map to futures-style display
-                        futures_symbol = ['SPX', 'NQ', 'YM', 'RTY'][i]
-                        
-                        indices_data.append({
-                            "symbol": futures_symbol,  # Display as futures symbol
-                            "name": futures_display_names[i],
-                            "price": round(etf_data.get('price', 0), 2),
-                            "change": round(etf_data.get('change', 0), 2),
-                            "change_percent": round(etf_data.get('change_percent', 0), 2),
-                            "underlying_symbol": symbol,  # Track the ETF symbol used
-                            "data_source": "Unusual Whales API (ETF Equivalent)",
-                            "unusual_activity": etf_data.get('unusual_activity', False),
-                            "options_flow_signal": etf_data.get('options_flow_signal', 'neutral')
-                        })
-                        continue
-                    else:
-                        # ETF not found in Unusual Whales, use yfinance fallback
-                        raise Exception("ETF not found in Unusual Whales data")
-                        
-                except Exception as uw_error:
-                    logger.warning(f"Unusual Whales failed for {symbol}: {uw_error}. Trying yfinance.")
-                    # Use yfinance as fallback for ETF data
-                    ticker = yf.Ticker(symbol)
-                    info = ticker.info
-                    hist = ticker.history(period="1d")
+                    change = current_price - previous_close
+                    change_percent = (change / previous_close) * 100
                     
-                    if not hist.empty and 'regularMarketPrice' in info:
-                        current_price = info.get('regularMarketPrice', hist['Close'].iloc[-1])
-                        previous_close = info.get('regularMarketPreviousClose', hist['Close'].iloc[0])
-                        
-                        change = current_price - previous_close
-                        change_percent = (change / previous_close) * 100
-                        
-                        # Map to futures-style display
-                        futures_symbol = ['SPX', 'NQ', 'YM', 'RTY'][i]
-                        
-                        indices_data.append({
-                            "symbol": futures_symbol,  # Display as futures symbol
-                            "name": futures_display_names[i],
-                            "price": round(current_price, 2),
-                            "change": round(change, 2),
-                            "change_percent": round(change_percent, 2),
-                            "underlying_symbol": symbol,  # Track the ETF symbol used
-                            "data_source": "Yahoo Finance (ETF Equivalent)",
-                            "unusual_activity": False,  # Not available from yfinance
-                            "options_flow_signal": "neutral"  # Not available from yfinance
-                        })
-                    else:
-                        # Use fallback data if yfinance fails for this ETF
-                        raise Exception(f"No data for {symbol}")
+                    indices_data.append({
+                        "symbol": futures_symbol,  # Display as futures symbol
+                        "name": futures_display_names[i],
+                        "price": round(current_price, 2),
+                        "change": round(change, 2),
+                        "change_percent": round(change_percent, 2),
+                        "underlying_symbol": symbol,  # Track the ETF symbol used
+                        "data_source": "Yahoo Finance (ETF Fallback)",
+                        "unusual_activity": False,  # Not available from yfinance
+                        "options_flow_signal": "neutral",  # Not available from yfinance
+                        "volume": info.get('regularMarketVolume', 0),
+                        "market_cap": info.get('marketCap', 0)
+                    })
+                    logger.info(f"Using yfinance fallback for {symbol}: ${current_price:.2f}")
+                else:
+                    # Use fallback data if yfinance also fails
+                    logger.error(f"Both Unusual Whales and yfinance failed for {symbol}")
+                    fallback_data = get_fallback_etf_data(symbol, futures_symbol, futures_display_names[i])
+                    indices_data.append(fallback_data)
                     
             except Exception as e:
-                logger.warning(f"Failed to fetch data for {symbol}: {str(e)}")
-                # Use fallback data with futures styling for ETFs
-                futures_symbol = ['SPX', 'NQ', 'YM', 'RTY'][i]
+                logger.error(f"Error processing {symbol}: {str(e)}")
+                # Use fallback data for this ETF
                 fallback_data = get_fallback_etf_data(symbol, futures_symbol, futures_display_names[i])
                 indices_data.append(fallback_data)
         
+        # Determine primary data source
+        uw_count = sum(1 for index in indices_data if "Unusual Whales" in index.get('data_source', ''))
+        yf_count = sum(1 for index in indices_data if "Yahoo Finance" in index.get('data_source', ''))
+        mock_count = sum(1 for index in indices_data if "Mock Data" in index.get('data_source', ''))
+        
+        if uw_count >= 2:
+            primary_source = f"Unusual Whales API (Live Data for {uw_count}/4 ETFs)"
+        elif yf_count >= 2:
+            primary_source = f"Mixed Sources (Yahoo Finance fallback for {yf_count}/4 ETFs)"
+        else:
+            primary_source = f"Fallback Data ({mock_count}/4 using mock data)"
+        
         return {
             "indices": indices_data,
-            "data_source": "Mixed (ETF Equivalents for Futures)",
-            "note": "Displaying tradeable ETF equivalents as futures symbols (SPX via SPY, NQ via QQQ, YM via DIA, RTY via IWM)",
-            "last_updated": datetime.utcnow().isoformat()
+            "data_source": primary_source,
+            "note": f"Live ETF data from Unusual Whales API. {uw_count} ETFs with live data, {yf_count} with yfinance fallback.",
+            "last_updated": datetime.utcnow().isoformat(),
+            "unusual_whales_coverage": f"{uw_count}/4 ETFs"
         }
+        
     except Exception as e:
         logger.error(f"Error fetching market overview: {str(e)}")
         # Return complete fallback with futures styling using ETFs
@@ -908,8 +912,9 @@ async def get_market_overview():
         return {
             "indices": fallback_indices,
             "data_source": "Fallback Data (ETF Futures Style)",
-            "note": "Using mock ETF data for futures display - TradeStation API needed for real futures",
-            "last_updated": datetime.utcnow().isoformat()
+            "note": "Using mock ETF data due to API failures - check Unusual Whales API connection",
+            "last_updated": datetime.utcnow().isoformat(),
+            "unusual_whales_coverage": "0/4 ETFs"
         }
 
 def get_fallback_market_data(symbol):
