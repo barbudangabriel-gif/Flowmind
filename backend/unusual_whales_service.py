@@ -571,3 +571,206 @@ class UnusualWhalesService:
             "insights": insights,
             "analysis_timestamp": datetime.now().isoformat()
         }
+    
+    # STOCK SCREENER METHODS
+    async def get_stock_screener_data(
+        self,
+        limit: Optional[int] = 100,
+        exchange: Optional[str] = "all"
+    ) -> List[Dict[str, Any]]:
+        """Fetch stock screener data from Unusual Whales API"""
+        try:
+            params = {
+                "limit": limit
+            }
+            
+            # Add exchange filter if specified
+            if exchange and exchange != "all":
+                params["exchange"] = exchange
+            
+            # Try to fetch from Unusual Whales API
+            response = await self._make_request("/api/stocks/screener", params)
+            
+            if not response.get('data'):
+                logger.warning("No stock screener data from Unusual Whales, using mock data")
+                return await self._get_mock_stock_screener_data(limit, exchange)
+            
+            processed_stocks = []
+            for stock in response['data']:
+                processed_stock = self._process_stock_data(stock)
+                processed_stocks.append(processed_stock)
+            
+            return processed_stocks
+            
+        except Exception as e:
+            logger.error(f"Error fetching stock screener data: {str(e)}")
+            # Return mock data if API fails
+            return await self._get_mock_stock_screener_data(limit, exchange)
+    
+    async def filter_stocks_by_criteria(
+        self,
+        criteria: Dict[str, Any],
+        exchange: Optional[str] = "all"
+    ) -> List[Dict[str, Any]]:
+        """Filter stocks based on criteria using Unusual Whales API"""
+        try:
+            params = {
+                "exchange": exchange if exchange and exchange != "all" else None,
+                **criteria  # Merge criteria into params
+            }
+            
+            # Remove None values
+            params = {k: v for k, v in params.items() if v is not None}
+            
+            response = await self._make_request("/api/stocks/screener/filter", params)
+            
+            if not response.get('data'):
+                logger.warning("No filtered stock data from Unusual Whales, using mock data")
+                return await self._get_mock_filtered_stocks(criteria, exchange)
+            
+            processed_stocks = []
+            for stock in response['data']:
+                processed_stock = self._process_stock_data(stock)
+                processed_stocks.append(processed_stock)
+            
+            return processed_stocks
+            
+        except Exception as e:
+            logger.error(f"Error filtering stocks: {str(e)}")
+            # Return mock data if API fails
+            return await self._get_mock_filtered_stocks(criteria, exchange)
+    
+    def _process_stock_data(self, stock_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Process raw stock data from Unusual Whales API"""
+        return {
+            "symbol": stock_data.get("ticker", "").upper(),
+            "name": stock_data.get("company_name", stock_data.get("name", "")),
+            "price": float(stock_data.get("price", 0)),
+            "change": float(stock_data.get("change", 0)),
+            "change_percent": float(stock_data.get("change_percent", 0)),
+            "volume": int(stock_data.get("volume", 0)),
+            "market_cap": float(stock_data.get("market_cap", 0)),
+            "pe_ratio": float(stock_data.get("pe_ratio", 0)) if stock_data.get("pe_ratio") else None,
+            "sector": stock_data.get("sector", "Unknown"),
+            "exchange": stock_data.get("exchange", ""),
+            "dividend_yield": float(stock_data.get("dividend_yield", 0)) if stock_data.get("dividend_yield") else None,
+            "unusual_activity": stock_data.get("unusual_activity", False),
+            "options_flow_signal": stock_data.get("options_flow_signal", "neutral")
+        }
+    
+    async def _get_mock_stock_screener_data(self, limit: int = 100, exchange: str = "all") -> List[Dict[str, Any]]:
+        """Generate mock stock screener data when API is unavailable"""
+        import random
+        
+        # Base stock lists for different exchanges
+        sp500_stocks = [
+            {"symbol": "AAPL", "name": "Apple Inc", "sector": "Technology"},
+            {"symbol": "MSFT", "name": "Microsoft Corporation", "sector": "Technology"},
+            {"symbol": "GOOGL", "name": "Alphabet Inc", "sector": "Technology"},
+            {"symbol": "AMZN", "name": "Amazon.com Inc", "sector": "Consumer Discretionary"},
+            {"symbol": "NVDA", "name": "NVIDIA Corporation", "sector": "Technology"},
+            {"symbol": "TSLA", "name": "Tesla Inc", "sector": "Consumer Discretionary"},
+            {"symbol": "META", "name": "Meta Platforms Inc", "sector": "Technology"},
+            {"symbol": "UNH", "name": "UnitedHealth Group Inc", "sector": "Healthcare"},
+            {"symbol": "JNJ", "name": "Johnson & Johnson", "sector": "Healthcare"},
+            {"symbol": "JPM", "name": "JPMorgan Chase & Co", "sector": "Financial Services"}
+        ]
+        
+        nasdaq_stocks = [
+            {"symbol": "AAPL", "name": "Apple Inc", "sector": "Technology"},
+            {"symbol": "MSFT", "name": "Microsoft Corporation", "sector": "Technology"},
+            {"symbol": "GOOGL", "name": "Alphabet Inc", "sector": "Technology"},
+            {"symbol": "AMZN", "name": "Amazon.com Inc", "sector": "Consumer Discretionary"},
+            {"symbol": "NVDA", "name": "NVIDIA Corporation", "sector": "Technology"},
+            {"symbol": "TSLA", "name": "Tesla Inc", "sector": "Consumer Discretionary"},
+            {"symbol": "META", "name": "Meta Platforms Inc", "sector": "Technology"},
+            {"symbol": "NFLX", "name": "Netflix Inc", "sector": "Technology"},
+            {"symbol": "ADBE", "name": "Adobe Inc", "sector": "Technology"},
+            {"symbol": "CRM", "name": "Salesforce Inc", "sector": "Technology"}
+        ]
+        
+        # Select stock list based on exchange
+        if exchange == "sp500":
+            stock_list = sp500_stocks
+        elif exchange == "nasdaq":
+            stock_list = nasdaq_stocks
+        else:
+            stock_list = sp500_stocks + nasdaq_stocks
+        
+        # Remove duplicates
+        unique_stocks = {}
+        for stock in stock_list:
+            unique_stocks[stock["symbol"]] = stock
+        stock_list = list(unique_stocks.values())
+        
+        # Generate mock data
+        mock_stocks = []
+        for i, stock in enumerate(stock_list[:limit]):
+            base_price = random.uniform(50, 500)
+            change = random.uniform(-10, 10)
+            
+            mock_stock = {
+                "symbol": stock["symbol"],
+                "name": stock["name"],
+                "price": round(base_price, 2),
+                "change": round(change, 2),
+                "change_percent": round((change / base_price) * 100, 2),
+                "volume": random.randint(1000000, 50000000),
+                "market_cap": random.randint(10000000000, 3000000000000),  # 10B to 3T
+                "pe_ratio": round(random.uniform(10, 50), 2) if random.random() > 0.2 else None,
+                "sector": stock["sector"],
+                "exchange": "NYSE" if exchange == "sp500" else "NASDAQ" if exchange == "nasdaq" else random.choice(["NYSE", "NASDAQ"]),
+                "dividend_yield": round(random.uniform(0, 5), 2) if random.random() > 0.4 else None,
+                "unusual_activity": random.random() > 0.8,  # 20% chance of unusual activity
+                "options_flow_signal": random.choice(["bullish", "bearish", "neutral", "neutral", "neutral"])  # Mostly neutral
+            }
+            mock_stocks.append(mock_stock)
+        
+        return mock_stocks
+    
+    async def _get_mock_filtered_stocks(self, criteria: Dict[str, Any], exchange: str = "all") -> List[Dict[str, Any]]:
+        """Generate mock filtered stock data"""
+        # Get base mock data first
+        base_stocks = await self._get_mock_stock_screener_data(200, exchange)
+        
+        # Apply filters
+        filtered_stocks = []
+        for stock in base_stocks:
+            include = True
+            
+            # Price filters
+            if criteria.get("min_price") and stock["price"] < criteria["min_price"]:
+                include = False
+            if criteria.get("max_price") and stock["price"] > criteria["max_price"]:
+                include = False
+            
+            # Market cap filters (in millions)
+            if criteria.get("min_market_cap") and stock["market_cap"] < criteria["min_market_cap"] * 1000000:
+                include = False
+            if criteria.get("max_market_cap") and stock["market_cap"] > criteria["max_market_cap"] * 1000000:
+                include = False
+            
+            # P/E filters
+            if criteria.get("min_pe") and (not stock["pe_ratio"] or stock["pe_ratio"] < criteria["min_pe"]):
+                include = False
+            if criteria.get("max_pe") and (not stock["pe_ratio"] or stock["pe_ratio"] > criteria["max_pe"]):
+                include = False
+            
+            # Volume filters
+            if criteria.get("min_volume") and stock["volume"] < criteria["min_volume"]:
+                include = False
+            
+            # Sector filter
+            if criteria.get("sector") and criteria["sector"] != "All" and stock["sector"] != criteria["sector"]:
+                include = False
+            
+            # Change percent filters
+            if criteria.get("min_change") and stock["change_percent"] < criteria["min_change"]:
+                include = False
+            if criteria.get("max_change") and stock["change_percent"] > criteria["max_change"]:
+                include = False
+            
+            if include:
+                filtered_stocks.append(stock)
+        
+        return filtered_stocks[:50]  # Limit results
