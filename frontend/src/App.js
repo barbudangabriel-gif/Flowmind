@@ -2265,7 +2265,12 @@ const OptionsFlow = () => {
                   <td className="px-4 py-3 font-semibold">{alert.symbol}</td>
                   <td className="px-4 py-3">{alert.strike_type}</td>
                   <td className="px-4 py-3">{alert.dte}</td>
-                  <td className="px-4 py-3 font-medium">${(alert.premium / 1000).toFixed(0)}K</td>
+                  <td className="px-4 py-3 font-medium">
+                    {alert.premium && alert.premium > 0 ? 
+                      `$${(alert.premium / 1000).toFixed(0)}K` : 
+                      <span className="text-gray-400">N/A</span>
+                    }
+                  </td>
                   <td className="px-4 py-3">{alert.volume?.toLocaleString()}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSentimentColor(alert.sentiment)}`}>
