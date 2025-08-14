@@ -84,7 +84,8 @@ class UnusualWhalesService:
             response = await self._make_request("/api/option-trades/flow-alerts", params)
             
             if not response.get('data'):
-                return []
+                logger.warning("No options flow data from API, using mock data")
+                return await self._get_mock_options_flow()
             
             processed_alerts = []
             for alert in response['data']:
@@ -96,6 +97,7 @@ class UnusualWhalesService:
         except Exception as e:
             logger.error(f"Error fetching options flow alerts: {str(e)}")
             # Return mock data if API fails for development/testing
+            logger.info("Using mock options flow data due to API unavailability")
             return await self._get_mock_options_flow()
     
     def _process_flow_alert(self, alert: Dict[str, Any]) -> Dict[str, Any]:
