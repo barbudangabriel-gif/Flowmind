@@ -93,13 +93,10 @@ class TradeStationClient:
     async def _make_request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
         """Make authenticated request to TradeStation API"""
         try:
-            # Ensure valid token
-            await self.auth.ensure_valid_token()
-            
             # Construct URL
             url = f"{self.base_url}{endpoint}"
             
-            # Get headers with auto-refresh
+            # Get headers with auto-refresh (includes ensure_valid_token)
             headers = await self.auth.get_auth_headers()
             
             # Initialize session if needed
