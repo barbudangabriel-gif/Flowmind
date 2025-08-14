@@ -3309,10 +3309,68 @@ const AutoOptionsTrading = () => {
           <h2 className="text-3xl font-bold text-gray-800">🤖 Expert Auto Options Trading</h2>
           <p className="text-gray-600">AI-powered options trading with machine learning optimization</p>
         </div>
-        <div className="text-right">
+        <div className="flex items-center space-x-3">
           <div className="text-sm text-gray-500">AI Trading Status</div>
           <div className={`text-lg font-semibold ${config.enabled ? 'text-green-600' : 'text-gray-500'}`}>
             {config.enabled ? '🟢 LEARNING & ACTIVE' : '🔴 INACTIVE'}
+          </div>
+          
+          {/* Options Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowOptionsDropdown(!showOptionsDropdown)}
+              className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg"
+            >
+              <Settings size={16} />
+              <span className="font-medium">Options</span>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showOptionsDropdown ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {showOptionsDropdown && (
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-4 py-3">
+                  <h3 className="text-white font-semibold">Trading Options</h3>
+                  <p className="text-purple-100 text-sm">Configure your automated trading</p>
+                </div>
+                
+                {/* Menu Items */}
+                <div className="py-2">
+                  <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-3 text-gray-700">
+                    <Zap className="w-4 h-4 text-yellow-500" />
+                    <span>Strategy Settings</span>
+                  </button>
+                  
+                  <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-3 text-gray-700">
+                    <Target className="w-4 h-4 text-blue-500" />
+                    <span>Risk Management</span>
+                  </button>
+                  
+                  <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-3 text-gray-700">
+                    <BarChart3 className="w-4 h-4 text-green-500" />
+                    <span>Performance Analytics</span>
+                  </button>
+                  
+                  <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-3 text-gray-700">
+                    <Bot className="w-4 h-4 text-purple-500" />
+                    <span>AI Learning Config</span>
+                  </button>
+                  
+                  <hr className="my-2" />
+                  
+                  <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-3 text-gray-700">
+                    <Info className="w-4 h-4 text-gray-500" />
+                    <span>Help & Documentation</span>
+                  </button>
+                  
+                  <button className="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center space-x-3 text-red-600">
+                    <MoreVertical className="w-4 h-4" />
+                    <span>Advanced Settings</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
