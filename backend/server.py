@@ -267,8 +267,8 @@ async def get_technical_indicators(symbol: str) -> Dict[str, Any]:
 @api_router.get("/")
 async def root():
     return {
-        "message": "Enhanced Stock Market Analysis API with Unusual Whales Integration", 
-        "version": "4.0.0", 
+        "message": "Enhanced Stock Market Analysis API with TradeStation Integration", 
+        "version": "5.0.0", 
         "features": [
             "Real-time Stock Prices",
             "Pre/Post Market Data", 
@@ -283,9 +283,24 @@ async def root():
             "📈 Options Flow Alerts",
             "🌊 Dark Pool Analysis",
             "🏛️ Congressional Trades Tracking",
-            "🎯 AI-Powered Trading Strategies"
+            "🎯 AI-Powered Trading Strategies",
+            "🏛️ TradeStation Integration",
+            "📊 Live Portfolio Management",
+            "⚡ Real-Time Trading",
+            "🛡️ Risk Management Controls"
         ],
         "market_state": enhanced_ticker_manager._get_market_state(),
+        "tradestation_endpoints": {
+            "authentication": "/auth/tradestation/login",
+            "auth_status": "/auth/tradestation/status",
+            "accounts": "/tradestation/accounts",
+            "portfolio_summary": "/tradestation/accounts/{account_id}/summary",
+            "positions": "/tradestation/accounts/{account_id}/positions",
+            "balances": "/tradestation/accounts/{account_id}/balances",
+            "place_order": "/tradestation/accounts/{account_id}/orders",
+            "orders_history": "/tradestation/accounts/{account_id}/orders",
+            "trading_summary": "/tradestation/accounts/{account_id}/trading-summary"
+        },
         "unusual_whales_endpoints": {
             "options_flow": "/unusual-whales/options/flow-alerts",
             "dark_pool": "/unusual-whales/dark-pool/recent", 
