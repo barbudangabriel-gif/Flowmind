@@ -47,7 +47,9 @@ import {
   ChevronDown,
   Info,
   Zap,
-  MoreVertical
+  MoreVertical,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
 
 // Lazy loading for heavy components
