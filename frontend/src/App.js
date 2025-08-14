@@ -4325,6 +4325,1113 @@ const MarketNews = () => {
   );
 };
 
+// ==================== TRADESTATION COMPONENTS ====================
+
+// TradeStation Authentication Component
+const TradeStationAuth = () => {
+  const [authStatus, setAuthStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { isDarkMode } = useTheme();
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API}/auth/tradestation/status`);
+      setAuthStatus(response.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to check authentication status');
+      console.error('Auth status error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const initiateLogin = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API}/auth/tradestation/login`);
+      
+      if (response.data.auth_url) {
+        // Open OAuth URL in new window
+        window.open(response.data.auth_url, 'tradestation-auth', 
+          'width=800,height=600,scrollbars=yes,resizable=yes');
+        
+        // Set up listener for auth completion
+        const authCheckInterval = setInterval(async () => {
+          try {
+            const statusResponse = await axios.get(`${API}/auth/tradestation/status`);
+            if (statusResponse.data.authentication?.authenticated) {
+              setAuthStatus(statusResponse.data);
+              clearInterval(authCheckInterval);
+              setLoading(false);
+            }
+          } catch (err) {
+            console.error('Auth check error:', err);
+          }
+        }, 3000);
+
+        // Clear interval after 5 minutes
+        setTimeout(() => {
+          clearInterval(authCheckInterval);
+          setLoading(false);
+        }, 300000);
+      }
+      setError(null);
+    } catch (err) {
+      setError('Failed to initiate login');
+      console.error('Login error:', err);
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    if (status?.authentication?.authenticated) return 'text-green-600';
+    return 'text-red-600';
+  };
+
+  const getStatusText = (status) => {
+    if (status?.authentication?.authenticated) return 'Connected';
+    return 'Not Connected';
+  };
+
+  return (
+    <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+            🏛️
+          </div>
+          TradeStation Authentication
+        </h2>
+        <button
+          onClick={checkAuthStatus}
+          disabled={loading}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Refresh Status
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            {error}
+          </div>
+        </div>
+      )}
+
+      {/* Authentication Status Card */}
+      <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Status Overview */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold mb-4">Connection Status</h3>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Status:</span>
+                <span className={`font-semibold ${getStatusColor(authStatus)}`}>
+                  {loading ? 'Checking...' : getStatusText(authStatus)}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Environment:</span>
+                <span className="font-medium text-blue-600">
+                  {authStatus?.api_configuration?.environment || 'LIVE'}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Credentials:</span>
+                <span className={`font-medium ${authStatus?.api_configuration?.credentials_configured ? 'text-green-600' : 'text-red-600'}`}>
+                  {authStatus?.api_configuration?.credentials_configured ? 'Configured' : 'Missing'}
+                </span>
+              </div>
+
+              {authStatus?.authentication?.authenticated && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Expires In:</span>
+                  <span className="font-medium text-amber-600">
+                    {authStatus.authentication.expires_in_minutes} minutes
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Connection Details */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold mb-4">Connection Details</h3>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">API URL:</span>
+                <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+                  {authStatus?.api_configuration?.base_url || 'Not configured'}
+                </span>
+              </div>
+              
+              {authStatus?.connection_test && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">API Test:</span>
+                  <span className={`font-medium ${authStatus.connection_test.status === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                    {authStatus.connection_test.status === 'success' ? 'Passed' : 'Failed'}
+                  </span>
+                </div>
+              )}
+
+              {authStatus?.connection_test?.accounts_found !== undefined && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Accounts Found:</span>
+                  <span className="font-medium text-blue-600">
+                    {authStatus.connection_test.accounts_found}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Authentication Action */}
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
+          {!authStatus?.authentication?.authenticated ? (
+            <div className="text-center">
+              <button
+                onClick={initiateLogin}
+                disabled={loading || !authStatus?.api_configuration?.credentials_configured}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+              >
+                <Settings className="w-5 h-5" />
+                {loading ? 'Authenticating...' : 'Connect to TradeStation'}
+              </button>
+              <p className="text-sm text-gray-500 mt-2">
+                This will open TradeStation's OAuth login in a new window
+              </p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                Successfully connected to TradeStation
+              </div>
+              <p className="text-sm text-gray-500 mt-2">
+                You can now access portfolio data and place trades
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Instructions Card */}
+      <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-blue-50 border-blue-200'} border rounded-xl p-6`}>
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Info className="w-5 h-5 text-blue-600" />
+          Authentication Instructions
+        </h3>
+        <div className="space-y-3 text-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</div>
+            <p>Click "Connect to TradeStation" to initiate OAuth authentication</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</div>
+            <p>Log in with your TradeStation credentials in the popup window</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</div>
+            <p>Authorize FlowMind Analytics to access your account</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">4</div>
+            <p>Connection status will update automatically once authenticated</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// TradeStation Live Portfolio Component
+const TradeStationPortfolio = () => {
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [portfolioData, setPortfolioData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API}/tradestation/accounts`);
+      setAccounts(response.data.accounts || []);
+      if (response.data.accounts?.length > 0) {
+        setSelectedAccount(response.data.accounts[0].Key);
+      }
+      setError(null);
+    } catch (err) {
+      setError('Failed to load accounts. Please ensure you are authenticated.');
+      console.error('Accounts error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadPortfolioData = async (accountId) => {
+    if (!accountId) return;
+    
+    try {
+      setLoading(true);
+      const response = await axios.get(`${API}/tradestation/accounts/${accountId}/summary`);
+      setPortfolioData(response.data.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load portfolio data');
+      console.error('Portfolio error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedAccount) {
+      loadPortfolioData(selectedAccount);
+    }
+  }, [selectedAccount]);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value || 0);
+  };
+
+  const formatPercent = (value) => {
+    return `${value >= 0 ? '+' : ''}${(value || 0).toFixed(2)}%`;
+  };
+
+  return (
+    <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
+            📊
+          </div>
+          Live Portfolio
+        </h2>
+        <div className="flex items-center gap-3">
+          {accounts.length > 0 && (
+            <select
+              value={selectedAccount || ''}
+              onChange={(e) => setSelectedAccount(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              {accounts.map((account) => (
+                <option key={account.Key} value={account.Key}>
+                  {account.Name} ({account.Key})
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            onClick={() => loadPortfolioData(selectedAccount)}
+            disabled={loading || !selectedAccount}
+            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            {error}
+          </div>
+        </div>
+      )}
+
+      {loading && !portfolioData && (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <RefreshCw className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-4" />
+            <p>Loading portfolio data...</p>
+          </div>
+        </div>
+      )}
+
+      {portfolioData && (
+        <>
+          {/* Portfolio Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Total Value</p>
+                  <p className="text-2xl font-bold text-emerald-600">
+                    {formatCurrency(portfolioData.portfolio_metrics?.total_market_value)}
+                  </p>
+                </div>
+                <DollarSign className="w-8 h-8 text-emerald-600" />
+              </div>
+            </div>
+
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Total P&L</p>
+                  <p className={`text-2xl font-bold ${(portfolioData.portfolio_metrics?.total_unrealized_pnl || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatCurrency(portfolioData.portfolio_metrics?.total_unrealized_pnl)}
+                  </p>
+                </div>
+                <TrendingUp className={`w-8 h-8 ${(portfolioData.portfolio_metrics?.total_unrealized_pnl || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+              </div>
+            </div>
+
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Total Return</p>
+                  <p className={`text-2xl font-bold ${(portfolioData.portfolio_metrics?.total_return_percent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatPercent(portfolioData.portfolio_metrics?.total_return_percent)}
+                  </p>
+                </div>
+                <BarChart3 className={`w-8 h-8 ${(portfolioData.portfolio_metrics?.total_return_percent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+              </div>
+            </div>
+
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Positions</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {portfolioData.portfolio_metrics?.position_count || 0}
+                  </p>
+                </div>
+                <Briefcase className="w-8 h-8 text-blue-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Positions Table */}
+          {portfolioData.positions && portfolioData.positions.length > 0 && (
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl overflow-hidden`}>
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+                <h3 className="text-lg font-semibold">Current Positions</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className={`${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Market Value</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P&L</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P&L %</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                    {portfolioData.positions.map((position, index) => (
+                      <tr key={index} className={`${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="font-medium text-blue-600">{position.symbol}</div>
+                            <div className="text-xs text-gray-500 ml-2">{position.asset_type}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`${position.quantity >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {position.quantity >= 0 ? '+' : ''}{position.quantity}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">{formatCurrency(position.average_price)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{formatCurrency(position.current_price)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap font-medium">{formatCurrency(position.market_value)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`font-medium ${position.unrealized_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency(position.unrealized_pnl)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`font-medium ${position.unrealized_pnl_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatPercent(position.unrealized_pnl_percent)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Risk Analysis */}
+          {portfolioData.risk_analysis && (
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Target className="w-5 h-5 text-orange-500" />
+                Risk Analysis
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className={`text-2xl font-bold ${
+                    portfolioData.risk_analysis.risk_level === 'LOW' ? 'text-green-600' :
+                    portfolioData.risk_analysis.risk_level === 'MEDIUM' ? 'text-yellow-600' : 'text-red-600'
+                  }`}>
+                    {portfolioData.risk_analysis.risk_level}
+                  </div>
+                  <div className="text-sm text-gray-500">Risk Level</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {portfolioData.risk_analysis.risk_score || 0}/100
+                  </div>
+                  <div className="text-sm text-gray-500">Risk Score</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {portfolioData.risk_analysis.concentration_analysis?.max_position_weight?.toFixed(1) || 0}%
+                  </div>
+                  <div className="text-sm text-gray-500">Max Position</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {!loading && !error && accounts.length === 0 && (
+        <div className="text-center py-12">
+          <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-500 mb-2">No Accounts Found</h3>
+          <p className="text-gray-400">Please authenticate with TradeStation first</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// TradeStation Live Trading Component
+const TradeStationTrading = () => {
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [orderForm, setOrderForm] = useState({
+    symbol: '',
+    quantity: '',
+    side: 'Buy',
+    order_type: 'Market',
+    price: '',
+    time_in_force: 'DAY'
+  });
+  const [orderValidation, setOrderValidation] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = async () => {
+    try {
+      const response = await axios.get(`${API}/tradestation/accounts`);
+      setAccounts(response.data.accounts || []);
+      if (response.data.accounts?.length > 0) {
+        setSelectedAccount(response.data.accounts[0].Key);
+      }
+    } catch (err) {
+      setError('Failed to load accounts. Please ensure you are authenticated.');
+      console.error('Accounts error:', err);
+    }
+  };
+
+  const validateOrder = async () => {
+    if (!selectedAccount || !orderForm.symbol || !orderForm.quantity) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API}/tradestation/accounts/${selectedAccount}/orders/validate`, orderForm);
+      setOrderValidation(response.data.validation);
+      setError(null);
+    } catch (err) {
+      setError('Order validation failed');
+      console.error('Validation error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const placeOrder = async (force = false) => {
+    if (!orderValidation?.valid && !force) {
+      await validateOrder();
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${API}/tradestation/accounts/${selectedAccount}/orders?force=${force}`,
+        orderForm
+      );
+      
+      if (response.data.status === 'success') {
+        setSuccess('Order placed successfully!');
+        setOrderForm({
+          symbol: '',
+          quantity: '',
+          side: 'Buy',
+          order_type: 'Market',
+          price: '',
+          time_in_force: 'DAY'
+        });
+        setOrderValidation(null);
+      } else {
+        setError(response.data.message || 'Failed to place order');
+      }
+    } catch (err) {
+      setError('Failed to place order');
+      console.error('Order error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setOrderForm(prev => ({ ...prev, [field]: value }));
+    setOrderValidation(null);
+    setError(null);
+    setSuccess(null);
+  };
+
+  return (
+    <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+            ⚡
+          </div>
+          Live Trading
+        </h2>
+        {accounts.length > 0 && (
+          <select
+            value={selectedAccount || ''}
+            onChange={(e) => setSelectedAccount(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+          >
+            {accounts.map((account) => (
+              <option key={account.Key} value={account.Key}>
+                {account.Name} ({account.Key})
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            {error}
+          </div>
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-100 border border-green-300 text-green-700 px-4 py-3 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            {success}
+          </div>
+        </div>
+      )}
+
+      {/* Order Form */}
+      <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+        <h3 className="text-xl font-semibold mb-6">Place Order</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">Symbol</label>
+            <input
+              type="text"
+              value={orderForm.symbol}
+              onChange={(e) => handleInputChange('symbol', e.target.value.toUpperCase())}
+              placeholder="e.g., AAPL"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Quantity</label>
+            <input
+              type="number"
+              value={orderForm.quantity}
+              onChange={(e) => handleInputChange('quantity', e.target.value)}
+              placeholder="Number of shares"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Side</label>
+            <select
+              value={orderForm.side}
+              onChange={(e) => handleInputChange('side', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            >
+              <option value="Buy">Buy</option>
+              <option value="Sell">Sell</option>
+              <option value="SellShort">Sell Short</option>
+              <option value="BuyToCover">Buy to Cover</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Order Type</label>
+            <select
+              value={orderForm.order_type}
+              onChange={(e) => handleInputChange('order_type', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            >
+              <option value="Market">Market</option>
+              <option value="Limit">Limit</option>
+              <option value="StopMarket">Stop Market</option>
+              <option value="StopLimit">Stop Limit</option>
+            </select>
+          </div>
+
+          {(orderForm.order_type === 'Limit' || orderForm.order_type === 'StopLimit') && (
+            <div>
+              <label className="block text-sm font-medium mb-2">Price</label>
+              <input
+                type="number"
+                step="0.01"
+                value={orderForm.price}
+                onChange={(e) => handleInputChange('price', e.target.value)}
+                placeholder="0.00"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Time in Force</label>
+            <select
+              value={orderForm.time_in_force}
+              onChange={(e) => handleInputChange('time_in_force', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            >
+              <option value="DAY">Day</option>
+              <option value="GTC">Good Till Canceled</option>
+              <option value="IOC">Immediate or Cancel</option>
+              <option value="FOK">Fill or Kill</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={validateOrder}
+            disabled={loading || !selectedAccount || !orderForm.symbol || !orderForm.quantity}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+          >
+            <Target className="w-4 h-4" />
+            Validate Order
+          </button>
+          
+          <button
+            onClick={() => placeOrder(false)}
+            disabled={loading || !orderValidation?.valid}
+            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+          >
+            <Zap className="w-4 h-4" />
+            {loading ? 'Placing...' : 'Place Order'}
+          </button>
+        </div>
+      </div>
+
+      {/* Order Validation Results */}
+      {orderValidation && (
+        <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+          <h3 className="text-lg font-semibold mb-4">Order Validation</h3>
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Status:</span>
+              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                orderValidation.valid ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {orderValidation.valid ? 'VALID' : 'INVALID'}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Risk Assessment:</span>
+              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                orderValidation.risk_assessment === 'LOW' ? 'bg-green-100 text-green-800' :
+                orderValidation.risk_assessment === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {orderValidation.risk_assessment}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">Estimated Cost:</span>
+              <span className="font-medium">
+                ${orderValidation.estimated_cost?.toFixed(2) || '0.00'}
+              </span>
+            </div>
+
+            {orderValidation.warnings?.length > 0 && (
+              <div>
+                <span className="text-sm font-medium text-amber-600">Warnings:</span>
+                <ul className="mt-2 space-y-1">
+                  {orderValidation.warnings.map((warning, index) => (
+                    <li key={index} className="text-sm text-amber-600 flex items-start gap-2">
+                      <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      {warning}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {orderValidation.errors?.length > 0 && (
+              <div>
+                <span className="text-sm font-medium text-red-600">Errors:</span>
+                <ul className="mt-2 space-y-1">
+                  {orderValidation.errors.map((error, index) => (
+                    <li key={index} className="text-sm text-red-600 flex items-start gap-2">
+                      <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      {error}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {orderValidation.warnings?.length > 0 && orderValidation.valid && (
+              <button
+                onClick={() => placeOrder(true)}
+                disabled={loading}
+                className="mt-4 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                Force Place Order
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!selectedAccount && accounts.length === 0 && (
+        <div className="text-center py-12">
+          <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-500 mb-2">No Trading Accounts</h3>
+          <p className="text-gray-400">Please authenticate with TradeStation first</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// TradeStation Order Management Component
+const TradeStationOrders = () => {
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    status: '',
+    symbol: '',
+    days_back: 7
+  });
+  const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  useEffect(() => {
+    if (selectedAccount) {
+      loadOrders();
+    }
+  }, [selectedAccount, filters]);
+
+  const loadAccounts = async () => {
+    try {
+      const response = await axios.get(`${API}/tradestation/accounts`);
+      setAccounts(response.data.accounts || []);
+      if (response.data.accounts?.length > 0) {
+        setSelectedAccount(response.data.accounts[0].Key);
+      }
+    } catch (err) {
+      setError('Failed to load accounts. Please ensure you are authenticated.');
+      console.error('Accounts error:', err);
+    }
+  };
+
+  const loadOrders = async () => {
+    if (!selectedAccount) return;
+    
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (filters.status) params.append('status', filters.status);
+      if (filters.symbol) params.append('symbol', filters.symbol);
+      params.append('days_back', filters.days_back);
+
+      const response = await axios.get(`${API}/tradestation/accounts/${selectedAccount}/orders?${params}`);
+      setOrders(response.data.orders || []);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load orders');
+      console.error('Orders error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelOrder = async (orderId) => {
+    try {
+      setLoading(true);
+      await axios.delete(`${API}/tradestation/accounts/${selectedAccount}/orders/${orderId}`);
+      await loadOrders(); // Refresh orders list
+      setError(null);
+    } catch (err) {
+      setError('Failed to cancel order');
+      console.error('Cancel error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'FLL': return 'bg-green-100 text-green-800';
+      case 'PND': return 'bg-yellow-100 text-yellow-800';
+      case 'PFL': return 'bg-blue-100 text-blue-800';
+      case 'CAN': return 'bg-gray-100 text-gray-800';
+      case 'REJ': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'FLL': return 'Filled';
+      case 'PND': return 'Pending';
+      case 'PFL': return 'Partially Filled';
+      case 'CAN': return 'Cancelled';
+      case 'REJ': return 'Rejected';
+      default: return status;
+    }
+  };
+
+  return (
+    <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-3xl font-bold flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-violet-600 rounded-lg flex items-center justify-center">
+            📋
+          </div>
+          Order Management
+        </h2>
+        <div className="flex items-center gap-3">
+          {accounts.length > 0 && (
+            <select
+              value={selectedAccount || ''}
+              onChange={(e) => setSelectedAccount(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            >
+              {accounts.map((account) => (
+                <option key={account.Key} value={account.Key}>
+                  {account.Name} ({account.Key})
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            onClick={loadOrders}
+            disabled={loading || !selectedAccount}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            {error}
+          </div>
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+        <h3 className="text-lg font-semibold mb-4">Filters</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Status</label>
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            >
+              <option value="">All Statuses</option>
+              <option value="PND">Pending</option>
+              <option value="FLL">Filled</option>
+              <option value="PFL">Partially Filled</option>
+              <option value="CAN">Cancelled</option>
+              <option value="REJ">Rejected</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Symbol</label>
+            <input
+              type="text"
+              value={filters.symbol}
+              onChange={(e) => setFilters(prev => ({ ...prev, symbol: e.target.value.toUpperCase() }))}
+              placeholder="e.g., AAPL"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Days Back</label>
+            <select
+              value={filters.days_back}
+              onChange={(e) => setFilters(prev => ({ ...prev, days_back: parseInt(e.target.value) }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            >
+              <option value={1}>1 Day</option>
+              <option value={7}>7 Days</option>
+              <option value={14}>14 Days</option>
+              <option value={30}>30 Days</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Orders Table */}
+      {orders.length > 0 ? (
+        <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl overflow-hidden`}>
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+            <h3 className="text-lg font-semibold">Orders ({orders.length})</h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className={`${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filled</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                {orders.map((order) => (
+                  <tr key={order.order_id} className={`${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-mono text-gray-500">
+                        {order.order_id.substring(0, 8)}...
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-blue-600">{order.symbol}</div>
+                      <div className="text-xs text-gray-500">{order.asset_type}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`${order.quantity >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {order.quantity >= 0 ? '+' : ''}{order.quantity}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{order.order_type}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {order.price ? `$${order.price.toFixed(2)}` : 'Market'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(order.status)}`}>
+                        {getStatusLabel(order.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {order.filled_quantity}/{Math.abs(order.quantity)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(order.timestamp).toLocaleDateString()} {new Date(order.timestamp).toLocaleTimeString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {(order.status === 'PND' || order.status === 'PFL') && (
+                        <button
+                          onClick={() => cancelOrder(order.order_id)}
+                          disabled={loading}
+                          className="text-red-600 hover:text-red-800 disabled:opacity-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          {loading ? (
+            <>
+              <RefreshCw className="w-16 h-16 text-gray-400 mx-auto mb-4 animate-spin" />
+              <h3 className="text-lg font-medium text-gray-500 mb-2">Loading Orders...</h3>
+            </>
+          ) : (
+            <>
+              <History className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-500 mb-2">No Orders Found</h3>
+              <p className="text-gray-400">No orders match the current filters</p>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Main App Component
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
