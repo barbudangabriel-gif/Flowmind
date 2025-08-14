@@ -3184,7 +3184,7 @@ const AutoOptionsTrading = () => {
     maxDailyLoss: 500,
     maxPositionSize: 1000,
     riskPerTrade: 2,
-    strategies: ['long_call', 'long_put', 'bull_call_spread'],
+    strategies: ['wheel', 'iron_condor', 'volatility_play'],
     symbols: ['SPY', 'QQQ', 'AAPL', 'MSFT']
   });
 
@@ -3197,11 +3197,16 @@ const AutoOptionsTrading = () => {
     todayTrades: 0
   });
 
+  const [expertRecommendations, setExpertRecommendations] = useState([]);
+  const [learningInsights, setLearningInsights] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [selectedSymbol, setSelectedSymbol] = useState('SPY');
+
   const [activeTrades, setActiveTrades] = useState([
     {
       id: 1,
       symbol: 'SPY',
-      strategy: 'Long Call',
+      strategy: 'Wheel Strategy',
       entry_price: 2.50,
       current_price: 3.20,
       quantity: 5,
@@ -3209,12 +3214,13 @@ const AutoOptionsTrading = () => {
       pnl_percent: 28.0,
       entry_time: '2024-08-14 09:30:00',
       expiration: '2024-08-21',
-      strike: 645
+      strike: 645,
+      confidence_score: 0.85
     },
     {
       id: 2,
       symbol: 'QQQ',
-      strategy: 'Bull Call Spread',
+      strategy: 'Iron Condor',
       entry_price: 1.80,
       current_price: 1.65,
       quantity: 3,
@@ -3222,9 +3228,50 @@ const AutoOptionsTrading = () => {
       pnl_percent: -8.3,
       entry_time: '2024-08-14 10:15:00',
       expiration: '2024-08-16',
-      strike: '580/585'
+      strike: '580/585',
+      confidence_score: 0.72
     }
   ]);
+
+  // Fetch expert recommendations
+  const fetchExpertRecommendations = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API}/expert-options/strategies/${selectedSymbol}`);
+      setExpertRecommendations(response.data.recommendations || []);
+    } catch (error) {
+      console.error('Error fetching expert recommendations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch learning insights
+  const fetchLearningInsights = async () => {
+    try {
+      const response = await axios.get(`${API}/expert-options/learning/insights`);
+      setLearningInsights(response.data.learning_insights || {});
+    } catch (error) {
+      console.error('Error fetching learning insights:', error);
+    }
+  };
+
+  // Optimize strategy parameters
+  const optimizeStrategy = async (strategyType) => {
+    try {
+      const response = await axios.post(`${API}/expert-options/optimize/${strategyType}`);
+      console.log('Optimization completed:', response.data);
+      // Refresh insights after optimization
+      await fetchLearningInsights();
+    } catch (error) {
+      console.error('Error optimizing strategy:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchExpertRecommendations();
+    fetchLearningInsights();
+  }, [selectedSymbol]);
 
   const handleConfigChange = (field, value) => {
     setConfig(prev => ({
@@ -3240,26 +3287,156 @@ const AutoOptionsTrading = () => {
     }));
   };
 
+  const getStrategyColor = (strategyType) => {
+    switch (strategyType?.toLowerCase()) {
+      case 'wheel': return 'bg-blue-100 text-blue-700 border-blue-300';
+      case 'iron_condor': return 'bg-purple-100 text-purple-700 border-purple-300';
+      case 'volatility_play': return 'bg-green-100 text-green-700 border-green-300';
+      default: return 'bg-gray-100 text-gray-700 border-gray-300';
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800">🤖 Auto Options Trading</h2>
-          <p className="text-gray-600">Automated options trading with risk management</p>
+          <h2 className="text-3xl font-bold text-gray-800">🤖 Expert Auto Options Trading</h2>
+          <p className="text-gray-600">AI-powered options trading with machine learning optimization</p>
         </div>
         <div className="text-right">
-          <div className="text-sm text-gray-500">Trading Status</div>
+          <div className="text-sm text-gray-500">AI Trading Status</div>
           <div className={`text-lg font-semibold ${config.enabled ? 'text-green-600' : 'text-gray-500'}`}>
-            {config.enabled ? '🟢 ACTIVE' : '🔴 INACTIVE'}
+            {config.enabled ? '🟢 LEARNING & ACTIVE' : '🔴 INACTIVE'}
           </div>
         </div>
       </div>
 
+      {/* Expert Strategy Recommendations */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold flex items-center">
+            <Target className="mr-2" size={20} />
+            AI Expert Recommendations
+          </h3>
+          <div className="flex items-center space-x-4">
+            <select
+              value={selectedSymbol}
+              onChange={(e) => setSelectedSymbol(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="SPY">SPY</option>
+              <option value="QQQ">QQQ</option>
+              <option value="AAPL">AAPL</option>
+              <option value="MSFT">MSFT</option>
+            </select>
+            <button
+              onClick={fetchExpertRecommendations}
+              disabled={loading}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center disabled:opacity-50"
+            >
+              <RefreshCw className={`mr-2 ${loading ? 'animate-spin' : ''}`} size={16} />
+              {loading ? 'Analyzing...' : 'Get AI Recommendations'}
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">AI analyzing market conditions...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {expertRecommendations.map((recommendation, index) => (
+              <div key={index} className={`border-2 rounded-lg p-4 ${getStrategyColor(recommendation.strategy_type)}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold">{recommendation.strategy_name || recommendation.strategy_type}</h4>
+                  <div className="flex items-center">
+                    <div className="text-xs bg-white px-2 py-1 rounded-full">
+                      Confidence: {(recommendation.confidence_score * 100).toFixed(0)}%
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Max Profit:</span>
+                    <span className="font-medium text-green-600">
+                      {recommendation.max_profit === "Unlimited" ? "Unlimited" : `$${recommendation.max_profit}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Max Risk:</span>
+                    <span className="font-medium text-red-600">
+                      ${recommendation.max_loss || recommendation.total_cost || 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Strategy Type:</span>
+                    <span className="font-medium capitalize">{recommendation.strategy_type?.replace('_', ' ')}</span>
+                  </div>
+                  {recommendation.roi_potential && (
+                    <div className="flex justify-between">
+                      <span>ROI Potential:</span>
+                      <span className="font-medium text-blue-600">{recommendation.roi_potential}%</span>
+                    </div>
+                  )}
+                </div>
+                <button className="w-full mt-3 bg-white/50 hover:bg-white/70 text-gray-800 py-2 px-3 rounded text-sm font-medium transition-colors">
+                  Execute Strategy
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Learning Insights */}
+      {learningInsights && (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-xl font-semibold mb-4 flex items-center">
+            <BarChart3 className="mr-2" size={20} />
+            AI Learning Insights
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <h4 className="font-medium mb-2">System Performance</h4>
+              <div className="space-y-1 text-sm">
+                <div>Total Trades: <span className="font-semibold">{learningInsights.total_trades || 0}</span></div>
+                <div>Active Trades: <span className="font-semibold">{learningInsights.active_trades || 0}</span></div>
+                <div>Learning Status: <span className="font-semibold text-green-600">Active</span></div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">Strategy Optimization</h4>
+              <div className="space-y-2">
+                {['wheel', 'iron_condor', 'volatility_play'].map(strategy => (
+                  <button
+                    key={strategy}
+                    onClick={() => optimizeStrategy(strategy)}
+                    className="w-full text-left bg-gray-50 hover:bg-gray-100 p-2 rounded text-sm"
+                  >
+                    Optimize {strategy.replace('_', ' ')} ⚡
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium mb-2">Market Insights</h4>
+              <div className="space-y-1 text-sm">
+                <div>Preferred Strategy: <span className="font-semibold capitalize">{learningInsights.market_insights?.preferred_strategy || 'Learning'}</span></div>
+                <div>Market Condition: <span className="font-semibold">{learningInsights.market_insights?.current_conditions || 'Neutral'}</span></div>
+                <div>IV Environment: <span className="font-semibold">{learningInsights.market_insights?.iv_environment || 'Moderate'}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Control Panel */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold">Trading Control</h3>
+          <h3 className="text-xl font-semibold">AI Trading Control</h3>
           <button
             onClick={toggleAutoTrading}
             className={`px-6 py-3 rounded-lg font-semibold text-white transition-colors ${
@@ -3268,7 +3445,7 @@ const AutoOptionsTrading = () => {
                 : 'bg-green-500 hover:bg-green-600'
             }`}
           >
-            {config.enabled ? 'Stop Auto Trading' : 'Start Auto Trading'}
+            {config.enabled ? 'Stop AI Trading' : 'Start AI Trading'}
           </button>
         </div>
 
@@ -3293,7 +3470,7 @@ const AutoOptionsTrading = () => {
           {/* Max Daily Loss */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Max Daily Loss
+              AI Max Daily Loss
             </label>
             <div className="relative">
               <span className="absolute left-3 top-3 text-gray-500">$</span>
@@ -3310,7 +3487,7 @@ const AutoOptionsTrading = () => {
           {/* Risk Per Trade */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Risk Per Trade (%)
+              AI Risk Per Trade (%)
             </label>
             <div className="relative">
               <input
@@ -3346,7 +3523,7 @@ const AutoOptionsTrading = () => {
         </div>
       </div>
 
-      {/* Portfolio Stats */}
+      {/* Portfolio Stats - Same as before */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <div className="bg-white rounded-lg shadow-md p-4">
           <div className="text-sm text-gray-500">Total Value</div>
@@ -3378,12 +3555,12 @@ const AutoOptionsTrading = () => {
         </div>
       </div>
 
-      {/* Active Trades */}
+      {/* Active Trades with AI Confidence Scores */}
       <div className="bg-white rounded-lg shadow-md">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold flex items-center">
             <Activity className="mr-2" size={20} />
-            Active Trades ({activeTrades.length})
+            AI-Managed Active Trades ({activeTrades.length})
           </h3>
         </div>
         <div className="overflow-x-auto">
@@ -3391,11 +3568,12 @@ const AutoOptionsTrading = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Strategy</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">AI Strategy</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Strike/Exp</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">AI Confidence</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
@@ -3403,7 +3581,10 @@ const AutoOptionsTrading = () => {
               {activeTrades.map((trade) => (
                 <tr key={trade.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 font-semibold text-blue-600">{trade.symbol}</td>
-                  <td className="px-6 py-4 text-sm">{trade.strategy}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <div className="font-medium">{trade.strategy}</div>
+                    <div className="text-xs text-gray-500">AI Selected</div>
+                  </td>
                   <td className="px-6 py-4 text-sm">
                     <div>${trade.strike}</div>
                     <div className="text-gray-500">{trade.expiration}</div>
@@ -3422,6 +3603,20 @@ const AutoOptionsTrading = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <div className={`text-sm font-medium ${
+                        trade.confidence_score >= 0.8 ? 'text-green-600' :
+                        trade.confidence_score >= 0.6 ? 'text-yellow-600' : 'text-red-600'
+                      }`}>
+                        {(trade.confidence_score * 100).toFixed(0)}%
+                      </div>
+                      <div className={`ml-1 w-2 h-2 rounded-full ${
+                        trade.confidence_score >= 0.8 ? 'bg-green-500' :
+                        trade.confidence_score >= 0.6 ? 'bg-yellow-500' : 'bg-red-500'
+                      }`}></div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
                     <button className="text-red-600 hover:text-red-800 font-medium text-sm">
                       Close Position
                     </button>
@@ -3433,21 +3628,21 @@ const AutoOptionsTrading = () => {
         </div>
       </div>
 
-      {/* Strategy Configuration */}
+      {/* Expert Strategy Configuration */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Enabled Strategies</h3>
+        <h3 className="text-lg font-semibold mb-4">AI Expert Strategies</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[
-            { id: 'long_call', name: 'Long Call', description: 'Buy call options for bullish signals' },
-            { id: 'long_put', name: 'Long Put', description: 'Buy put options for bearish signals' },
-            { id: 'bull_call_spread', name: 'Bull Call Spread', description: 'Limited risk bullish strategy' },
-            { id: 'bear_put_spread', name: 'Bear Put Spread', description: 'Limited risk bearish strategy' },
-            { id: 'iron_condor', name: 'Iron Condor', description: 'Neutral income strategy' },
-            { id: 'straddle', name: 'Long Straddle', description: 'High volatility play' }
+            { id: 'wheel', name: 'Wheel Strategy', description: 'AI-optimized cash-secured puts → covered calls', icon: '♻️' },
+            { id: 'iron_condor', name: 'Iron Condor', description: 'AI delta-neutral income strategy', icon: '🦅' },
+            { id: 'volatility_play', name: 'Volatility Play', description: 'AI volatility expansion/contraction plays', icon: '⚡' }
           ].map((strategy) => (
             <div key={strategy.id} className="border rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <div className="font-medium">{strategy.name}</div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg">{strategy.icon}</span>
+                  <div className="font-medium">{strategy.name}</div>
+                </div>
                 <input
                   type="checkbox"
                   checked={config.strategies.includes(strategy.id)}
@@ -3463,6 +3658,7 @@ const AutoOptionsTrading = () => {
                 />
               </div>
               <div className="text-sm text-gray-600">{strategy.description}</div>
+              <div className="mt-2 text-xs text-blue-600">AI-Powered with Machine Learning</div>
             </div>
           ))}
         </div>
