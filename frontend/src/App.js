@@ -5468,6 +5468,112 @@ const TradeStationOrders = () => {
   );
 };
 
+// TradeStation Callback Handler Component
+const TradeStationCallback = () => {
+  const [status, setStatus] = useState('processing');
+  const [message, setMessage] = useState('Processing authentication...');
+
+  useEffect(() => {
+    const handleCallback = async () => {
+      try {
+        // Get the authorization code from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        const error = urlParams.get('error');
+
+        if (error) {
+          setStatus('error');
+          setMessage(`Authentication failed: ${error}`);
+          return;
+        }
+
+        if (!code) {
+          setStatus('error');
+          setMessage('No authorization code received');
+          return;
+        }
+
+        // Exchange code for tokens
+        const response = await axios.get(`${API}/auth/tradestation/callback?code=${code}&state=${state}`);
+        
+        if (response.data.status === 'success') {
+          setStatus('success');
+          setMessage('Authentication successful! You can close this window.');
+          
+          // Try to communicate back to parent window
+          if (window.opener) {
+            window.opener.postMessage({ 
+              type: 'TRADESTATION_AUTH_SUCCESS', 
+              data: response.data 
+            }, '*');
+            setTimeout(() => window.close(), 2000);
+          }
+        } else {
+          setStatus('error');
+          setMessage('Authentication failed');
+        }
+      } catch (err) {
+        setStatus('error');
+        setMessage(`Authentication error: ${err.message}`);
+      }
+    };
+
+    handleCallback();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full text-center">
+        <div className="mb-6">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+            🏛️
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800">TradeStation Authentication</h2>
+        </div>
+        
+        <div className="mb-6">
+          {status === 'processing' && (
+            <div className="flex items-center justify-center gap-3">
+              <RefreshCw className="w-6 h-6 animate-spin text-blue-600" />
+              <span className="text-gray-600">Processing...</span>
+            </div>
+          )}
+          
+          {status === 'success' && (
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <p className="text-green-700 font-medium">Success!</p>
+            </div>
+          )}
+          
+          {status === 'error' && (
+            <div className="text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <XCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <p className="text-red-700 font-medium">Error</p>
+            </div>
+          )}
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-4">{message}</p>
+        
+        {status !== 'processing' && (
+          <button
+            onClick={() => window.close()}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+          >
+            Close Window
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Main App Component
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
