@@ -2380,42 +2380,50 @@ const OptionsFlow = () => {
               </tr>
             </thead>
             <tbody>
-              {optionsData.slice(0, 20).map((alert, index) => (
-                <tr key={index} className={`border-b ${isDarkMode ? 'border-slate-600' : 'border-gray-100'} hover:${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
-                  <td className="px-4 py-3 font-semibold">{alert.symbol}</td>
-                  <td className="px-4 py-3">{alert.strike_type}</td>
-                  <td className="px-4 py-3">{alert.dte}</td>
-                  <td className="px-4 py-3 font-medium">
-                    {alert.premium && alert.premium > 0 ? 
-                      `$${(alert.premium / 1000).toFixed(0)}K` : 
-                      <span className="text-gray-400">N/A</span>
-                    }
-                  </td>
-                  <td className="px-4 py-3">{alert.volume?.toLocaleString()}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                      alert.action === 'BUY' 
-                        ? (alert.is_opener ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800')
-                        : (alert.is_opener ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800')
-                    }`}>
-                      {alert.action && alert.is_opener !== undefined ? 
-                        `${alert.action} TO ${alert.is_opener ? 'OPEN' : 'CLOSE'}` : 
-                        'N/A'
+              {optionsData.slice(0, 20).map((alert, index) => {
+                const timeStamp = new Date(alert.timestamp || Date.now());
+                const timeStr = timeStamp.toLocaleTimeString('en-US', { 
+                  hour: 'numeric', 
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: true 
+                });
+                
+                const strategyText = `${alert.action} ${alert.volume} ${alert.option_type === 'call' ? 'Call' : 'Put'}${alert.is_opener ? ' To Open' : ' To Close'}`;
+                const expirationText = new Date(alert.expiration).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric' 
+                });
+                
+                return (
+                  <tr key={index} className={`border-b ${isDarkMode ? 'border-slate-600' : 'border-gray-100'} hover:${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
+                    <td className="px-4 py-3 text-sm text-gray-500">{timeStr}</td>
+                    <td className="px-4 py-3 font-semibold text-blue-600">{alert.symbol}</td>
+                    <td className="px-4 py-3">
+                      <span className={`${alert.action === 'BUY' ? 'text-green-600' : 'text-red-600'} font-medium`}>
+                        {strategyText}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{expirationText}</td>
+                    <td className="px-4 py-3 font-bold">
+                      {alert.premium && alert.premium > 0 ? 
+                        `$${(alert.premium / 1000).toFixed(0)}k` : 
+                        <span className="text-gray-400">N/A</span>
                       }
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSentimentColor(alert.sentiment)}`}>
-                      {alert.sentiment}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTradeSize(alert.trade_size)}`}>
-                      {alert.trade_size}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        alert.has_sweep ? 'bg-red-100 text-red-800' : 
+                        alert.trade_size === 'whale' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {alert.has_sweep ? 'SWEEP' : 
+                         alert.trade_size === 'whale' ? 'BLOCK' : 'SPLIT'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
