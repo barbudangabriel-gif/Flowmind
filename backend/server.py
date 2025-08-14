@@ -1696,7 +1696,7 @@ async def get_trading_strategies_from_unusual_whales():
                     })
                 elif avg_dte > 30:  # Longer term, consider Iron Condor for income
                     strategy_name = "Iron Condor"
-                    center_strike = int(avg_price)
+                    center_strike = int(avg_price) if avg_price else 100
                     
                     strategies.append({
                         "strategy_name": strategy_name,
