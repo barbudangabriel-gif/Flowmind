@@ -1199,7 +1199,7 @@ async def get_unusual_whales_options_flow(
 async def get_unusual_whales_dark_pool(
     limit: Optional[int] = Query(100, description="Maximum number of trades to return"),
     minimum_volume: Optional[int] = Query(100000, description="Minimum dark volume"),
-    minimum_dark_percentage: Optional[float] = Query(5.0, description="Minimum dark pool percentage"),
+    minimum_dark_percentage: Optional[float] = Query(0.01, description="Minimum dark pool percentage"),
     include_analysis: Optional[bool] = Query(True, description="Include pattern analysis")
 ):
     """Get recent dark pool activity from Unusual Whales"""
