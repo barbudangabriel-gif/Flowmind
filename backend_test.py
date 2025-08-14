@@ -2843,60 +2843,71 @@ class StockMarketAPITester:
         # Test invalid investment score
         self.run_test("Invalid Investment Score", "GET", "investments/score/INVALID123", 500)
 
+    def run_unusual_whales_focused_tests(self):
+        """Run focused tests on Unusual Whales API endpoints as requested"""
+        print("🐋 UNUSUAL WHALES API ENDPOINT TESTING")
+        print("=" * 80)
+        print("🎯 FOCUS: Test all Unusual Whales API endpoints with provided API key")
+        print("🔑 API Key: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50")
+        print("📋 Endpoints to test:")
+        print("   1. 🎯 Options Flow (/api/unusual-whales/options/flow-alerts) - MAIN PRIORITY")
+        print("   2. 🌊 Dark Pool (/api/unusual-whales/dark-pool/recent)")
+        print("   3. 🏛️  Congressional Trades (/api/unusual-whales/congressional/trades)")
+        print("   4. 🎯 Trading Strategies (/api/unusual-whales/trading-strategies)")
+        print("=" * 80)
+        
+        # Test API root first to verify connectivity
+        print("\n🔍 PRELIMINARY: API Connectivity Test")
+        root_success = self.test_root_endpoint()
+        
+        if not root_success:
+            print("❌ API root endpoint failed - cannot proceed with testing")
+            return False
+        
+        # Run comprehensive Unusual Whales tests
+        endpoint_results = self.test_all_unusual_whales_endpoints()
+        
+        # Summary
+        print(f"\n📊 FINAL SUMMARY")
+        print("=" * 80)
+        
+        working_count = sum(1 for success in endpoint_results.values() if success)
+        total_count = len(endpoint_results)
+        
+        print(f"🎯 Tests Run: {self.tests_run}")
+        print(f"✅ Tests Passed: {self.tests_passed}")
+        print(f"📊 Success Rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        print(f"🐋 Unusual Whales Endpoints Working: {working_count}/{total_count}")
+        
+        # Specific focus on main priority
+        options_flow_working = endpoint_results.get('options_flow', False)
+        print(f"\n🎯 MAIN PRIORITY STATUS:")
+        if options_flow_working:
+            print(f"   ✅ Options Flow API: WORKING - Real data instead of mock data")
+            print(f"   🎉 PRIMARY OBJECTIVE ACHIEVED")
+        else:
+            print(f"   ❌ Options Flow API: FAILED - Still showing mock data or 404 errors")
+            print(f"   ⚠️  PRIMARY OBJECTIVE NOT ACHIEVED")
+        
+        return endpoint_results
+
 def main():
-    print("🚀 Testing Unusual Whales API Futures Data Support")
-    print("=" * 80)
+    print("🚀 Starting Unusual Whales API Testing...")
+    print("🔑 Using API Key: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50")
+    print("🌐 Backend URL: https://market-insight-hub-1.preview.emergentagent.com")
     
     tester = StockMarketAPITester()
+    results = tester.run_unusual_whales_focused_tests()
     
-    # PRIORITY: Test Futures Data Support in Unusual Whales API
-    print("\n🔮 PRIORITY: Testing Futures Data Support (SPX, NQ, YM, RTY)")
-    print("=" * 80)
-    futures_results = tester.test_unusual_whales_futures_support()
+    print(f"\n🏁 Testing Complete!")
+    print(f"📊 Results: {results}")
     
-    # Test basic API functionality to ensure system is working
-    print("\n📊 Testing Basic API Health")
-    print("-" * 40)
-    tester.test_root_endpoint()
-    
-    # Test a few Unusual Whales endpoints to verify API key is working
-    print("\n🐋 Testing Unusual Whales API Connectivity")
-    print("-" * 40)
-    tester.test_unusual_whales_options_flow()
-    tester.test_unusual_whales_dark_pool()
-    tester.test_unusual_whales_congressional_trades()
-    
-    # Print final results
-    print("\n" + "=" * 80)
-    print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
-    
-    # Provide specific futures testing summary
-    if futures_results:
-        total_futures_matches = (futures_results.get('options_flow_found', 0) + 
-                               futures_results.get('dark_pool_found', 0) + 
-                               futures_results.get('congressional_found', 0) + 
-                               futures_results.get('stock_data_found', 0))
-        
-        working_alternatives = sum(len(alts) for alts in futures_results.get('alternative_formats_working', {}).values())
-        
-        print(f"\n🎯 FUTURES TESTING SUMMARY:")
-        print(f"   📊 Direct Futures Support: {total_futures_matches}/4 symbols found")
-        print(f"   🔄 Alternative Formats: {working_alternatives} working alternatives")
-        print(f"   🌐 API Endpoints Tested: {futures_results.get('api_endpoints_tested', 0)}")
-        
-        if total_futures_matches > 0:
-            print(f"   ✅ RESULT: Partial futures support detected")
-        elif working_alternatives > 0:
-            print(f"   🔄 RESULT: Use alternative symbols (SPY, QQQ, DIA, IWM)")
-        else:
-            print(f"   ❌ RESULT: No futures support - recommend TradeStation API")
-    
-    if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
+    # Exit with appropriate code
+    if results and results.get('options_flow', False):
+        print("✅ Main objective achieved - Options Flow working")
         return 0
     else:
-        failed_tests = tester.tests_run - tester.tests_passed
-        print(f"⚠️  {failed_tests} tests failed")
+        print("❌ Main objective not achieved - Options Flow needs attention")
         return 1
 
 if __name__ == "__main__":
