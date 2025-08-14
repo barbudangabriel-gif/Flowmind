@@ -2371,14 +2371,12 @@ const OptionsFlow = () => {
           <table className="w-full">
             <thead className={`${isDarkMode ? 'bg-slate-700' : 'bg-gray-50'}`}>
               <tr>
-                <th className="px-4 py-3 text-left">Symbol</th>
-                <th className="px-4 py-3 text-left">Strike/Type</th>
-                <th className="px-4 py-3 text-left">DTE</th>
-                <th className="px-4 py-3 text-left">Premium</th>
-                <th className="px-4 py-3 text-left">Volume</th>
-                <th className="px-4 py-3 text-left">Action Type</th>
-                <th className="px-4 py-3 text-left">Sentiment</th>
-                <th className="px-4 py-3 text-left">Size</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Strategy</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiration</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Premium</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
               </tr>
             </thead>
             <tbody>
