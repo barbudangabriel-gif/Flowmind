@@ -4139,7 +4139,7 @@ const MarketNews = () => {
 
 // Main App Component
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('auto-trading');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isDarkMode } = useTheme();
 
