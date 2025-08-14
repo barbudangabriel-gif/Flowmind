@@ -788,57 +788,106 @@ async def delete_watchlist_item(item_id: str):
 # Market Overview Routes (unchanged)
 @api_router.get("/market/overview")
 async def get_market_overview():
-    """Get market overview with major indices - with fallback for API failures"""
+    """Get market overview with futures-equivalent indices - UPDATED FOR FUTURES DISPLAY"""
     try:
-        # Try to get real data first
-        indices_symbols = ['^GSPC', '^DJI', '^IXIC', '^RUT']
+        # Use futures-equivalent symbols for TradeStation-style display
+        # Using alternatives since Unusual Whales doesn't support direct futures
+        futures_equivalent_symbols = [
+            '^GSPC',  # SPX equivalent (S&P 500 Index)
+            '^IXIC',  # NQ equivalent (NASDAQ-100) 
+            '^DJI',   # YM equivalent (Dow Jones)
+            '^RUT'    # RTY equivalent (Russell 2000)
+        ]
+        
+        # Display names for futures-style headers
+        futures_display_names = [
+            'SPX (S&P 500)',      # Will show as SPX
+            'NQ (NASDAQ-100)',    # Will show as NQ  
+            'YM (Dow Jones)',     # Will show as YM
+            'RTY (Russell 2000)'  # Will show as RTY
+        ]
+        
         indices_data = []
         
-        for symbol in indices_symbols:
+        for i, symbol in enumerate(futures_equivalent_symbols):
             try:
-                ticker = yf.Ticker(symbol)
-                info = ticker.info
-                hist = ticker.history(period="1d")
-                
-                if not hist.empty and 'regularMarketPrice' in info:
-                    current_price = info.get('regularMarketPrice', hist['Close'].iloc[-1])
-                    previous_close = info.get('regularMarketPreviousClose', hist['Close'].iloc[0])
+                # Try Unusual Whales API first (if available for indices)
+                try:
+                    uw_service = UnusualWhalesService()
+                    # For index symbols, we'll use yfinance as Unusual Whales focuses on stocks/options
+                    raise Exception("Using yfinance for index data")
+                except:
+                    # Use yfinance for reliable index data
+                    ticker = yf.Ticker(symbol)
+                    info = ticker.info
+                    hist = ticker.history(period="1d")
                     
-                    change = current_price - previous_close
-                    change_percent = (change / previous_close) * 100
-                    
-                    indices_data.append({
-                        "symbol": symbol,
-                        "name": info.get('shortName', symbol),
-                        "price": round(current_price, 2),
-                        "change": round(change, 2),
-                        "change_percent": round(change_percent, 2)
-                    })
-                else:
-                    # Use fallback data if yfinance fails for this symbol
-                    raise Exception(f"No data for {symbol}")
+                    if not hist.empty and 'regularMarketPrice' in info:
+                        current_price = info.get('regularMarketPrice', hist['Close'].iloc[-1])
+                        previous_close = info.get('regularMarketPreviousClose', hist['Close'].iloc[0])
+                        
+                        change = current_price - previous_close
+                        change_percent = (change / previous_close) * 100
+                        
+                        # Map to futures-style display
+                        futures_symbol = ['SPX', 'NQ', 'YM', 'RTY'][i]
+                        
+                        indices_data.append({
+                            "symbol": futures_symbol,  # Display as futures symbol
+                            "name": futures_display_names[i],
+                            "price": round(current_price, 2),
+                            "change": round(change, 2),
+                            "change_percent": round(change_percent, 2),
+                            "underlying_symbol": symbol,  # Track the actual symbol used
+                            "data_source": "Yahoo Finance (Index Equivalent)"
+                        })
+                    else:
+                        # Use fallback data if yfinance fails for this symbol
+                        raise Exception(f"No data for {symbol}")
                     
             except Exception as e:
-                logging.warning(f"yfinance failed for {symbol}: {e}. Using fallback data.")
-                # Fallback to simulated but realistic market data
+                logger.warning(f"Failed to fetch data for {symbol}: {str(e)}")
+                # Use fallback data with futures styling
+                futures_symbol = ['SPX', 'NQ', 'YM', 'RTY'][i]
                 fallback_data = get_fallback_market_data(symbol)
-                if fallback_data:
-                    indices_data.append(fallback_data)
+                fallback_data['symbol'] = futures_symbol  # Override to show futures symbol
+                fallback_data['name'] = futures_display_names[i]
+                fallback_data['data_source'] = "Mock Data (Futures Style)"
+                fallback_data['underlying_symbol'] = symbol
+                indices_data.append(fallback_data)
         
-        # If we have no data at all, use complete fallback dataset
-        if not indices_data:
-            logging.warning("All market data sources failed. Using fallback dataset.")
-            indices_data = get_complete_fallback_dataset()
-        
-        return {"indices": indices_data, "last_updated": datetime.now().isoformat()}
-        
-    except Exception as e:
-        logging.error(f"Market overview error: {e}")
-        # Always return fallback data if everything fails
         return {
-            "indices": get_complete_fallback_dataset(),
-            "last_updated": datetime.now().isoformat(),
-            "note": "Using simulated data due to market data provider issues"
+            "indices": indices_data,
+            "data_source": "Mixed (Index Equivalents for Futures)",
+            "note": "Displaying index equivalents as futures symbols (SPX, NQ, YM, RTY) until TradeStation API integration",
+            "last_updated": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error fetching market overview: {str(e)}")
+        # Return complete fallback with futures styling
+        fallback_indices = []
+        futures_symbols = ['SPX', 'NQ', 'YM', 'RTY']
+        underlying_symbols = ['^GSPC', '^IXIC', '^DJI', '^RUT']
+        display_names = [
+            'SPX (S&P 500)',
+            'NQ (NASDAQ-100)', 
+            'YM (Dow Jones)',
+            'RTY (Russell 2000)'
+        ]
+        
+        for i, (futures_sym, underlying_sym, display_name) in enumerate(zip(futures_symbols, underlying_symbols, display_names)):
+            fallback_data = get_fallback_market_data(underlying_sym)
+            fallback_data['symbol'] = futures_sym
+            fallback_data['name'] = display_name
+            fallback_data['underlying_symbol'] = underlying_sym
+            fallback_data['data_source'] = "Mock Data (Futures Style)"
+            fallback_indices.append(fallback_data)
+        
+        return {
+            "indices": fallback_indices,
+            "data_source": "Fallback Data (Futures Style)",
+            "note": "Using mock data for futures display - TradeStation API needed for real futures",
+            "last_updated": datetime.utcnow().isoformat()
         }
 
 def get_fallback_market_data(symbol):
