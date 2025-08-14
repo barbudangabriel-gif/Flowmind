@@ -121,7 +121,6 @@ def test_portfolio_processing():
     print(f"\nTotal positions created: {len(positions)}")
     
     # Test metrics calculation 
-    from backend.portfolio_service import PortfolioMetrics
     metrics = PortfolioMetrics.calculate_total_return(positions)
     print(f"Portfolio metrics: {json.dumps(metrics, indent=2)}")
     
