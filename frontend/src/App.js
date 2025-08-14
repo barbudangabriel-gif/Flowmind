@@ -355,9 +355,14 @@ const Dashboard = React.memo(() => {
   const [marketData, setMarketData] = useState(null);
   const [topMovers, setTopMovers] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Memoized fetch function
+  // Memoized fetch function with duplicate request prevention
   const fetchMarketData = useCallback(async () => {
+    // Prevent duplicate requests
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
     try {
       const [overviewRes, moversRes] = await Promise.all([
         axios.get(`${API}/market/overview`),
@@ -370,8 +375,9 @@ const Dashboard = React.memo(() => {
       console.error('Error fetching market data:', error);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
-  }, []);
+  }, [isRefreshing]);
 
   useEffect(() => {
     fetchMarketData();
