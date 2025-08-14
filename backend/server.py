@@ -48,6 +48,11 @@ ti = TechIndicators(key=ALPHA_VANTAGE_API_KEY, output_format='pandas') if ALPHA_
 # Initialize Unusual Whales Service
 uw_service = UnusualWhalesService()
 
+# Initialize TradeStation Services
+ts_client = TradeStationClient(ts_auth)
+portfolio_service = PortfolioService(ts_client)
+trading_service = TradingService(ts_client)
+
 # Create the main app without a prefix
 app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
 
