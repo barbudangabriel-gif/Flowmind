@@ -100,7 +100,119 @@ class UnusualWhalesService:
             logger.info("Using mock options flow data due to API error")
             return await self._get_mock_options_flow()
     
-    def _process_flow_alert(self, alert: Dict[str, Any]) -> Dict[str, Any]:
+    def _process_real_flow_alert(self, alert: Dict[str, Any]) -> Dict[str, Any]:
+        """Process real Unusual Whales options flow alert data"""
+        try:
+            # Calculate DTE (Days to Expiration)
+            expiry_str = alert.get('expiry', '')
+            dte = 0
+            if expiry_str:
+                try:
+                    expiry_date = datetime.strptime(expiry_str, '%Y-%m-%d').date()
+                    today = datetime.now().date()
+                    dte = (expiry_date - today).days
+                except:
+                    dte = 0
+            
+            # Convert premium from string to int (cents)
+            total_premium = alert.get('total_premium', '0')
+            try:
+                premium = int(float(total_premium)) if total_premium else 0
+            except:
+                premium = 0
+            
+            # Process underlying price
+            underlying_price = alert.get('underlying_price', '0')
+            try:
+                underlying = float(underlying_price) if underlying_price else 0
+            except:
+                underlying = 0
+            
+            # Process volume OI ratio
+            volume_oi_ratio = alert.get('volume_oi_ratio', '0')
+            try:
+                vol_oi = float(volume_oi_ratio) if volume_oi_ratio else 0
+            except:
+                vol_oi = 0
+            
+            # Determine action based on bid/ask side premium
+            ask_side_prem = alert.get('total_ask_side_prem', '0')
+            bid_side_prem = alert.get('total_bid_side_prem', '0')
+            try:
+                ask_prem = float(ask_side_prem) if ask_side_prem else 0
+                bid_prem = float(bid_side_prem) if bid_side_prem else 0
+                # If most premium is on ask side, it's likely a buy (buyers paying ask)
+                is_opener = ask_prem > bid_prem
+                action = "BUY" if is_opener else "SELL"
+            except:
+                is_opener = True
+                action = "BUY"
+            
+            # Determine sentiment based on option type and moneyness
+            option_type = alert.get('type', 'call').lower()
+            strike = float(alert.get('strike', '0')) if alert.get('strike') else 0
+            
+            if option_type == 'call':
+                sentiment = "bullish"
+            else:
+                sentiment = "bearish"
+            
+            # Trade size classification
+            if premium >= 1000000:  # $10K+
+                trade_size = "whale"
+            elif premium >= 500000:  # $5K+
+                trade_size = "large"  
+            elif premium >= 100000:  # $1K+
+                trade_size = "medium"
+            else:
+                trade_size = "small"
+            
+            # Moneyness classification
+            if strike and underlying:
+                if option_type == 'call':
+                    if strike <= underlying * 0.95:
+                        moneyness = "ITM"
+                    elif strike <= underlying * 1.05:
+                        moneyness = "ATM"
+                    else:
+                        moneyness = "OTM"
+                else:  # put
+                    if strike >= underlying * 1.05:
+                        moneyness = "ITM"
+                    elif strike >= underlying * 0.95:
+                        moneyness = "ATM"
+                    else:
+                        moneyness = "OTM"
+            else:
+                moneyness = "ATM"
+            
+            return {
+                "symbol": alert.get('ticker', ''),
+                "strike_type": f"{int(strike)}{option_type[0].upper()}" if strike else "N/A",
+                "expiration": expiry_str,
+                "dte": dte,
+                "volume": alert.get('volume', 0),
+                "open_interest": alert.get('open_interest', 0),
+                "volume_oi_ratio": round(vol_oi, 2),
+                "premium": premium,
+                "underlying_price": underlying,
+                "is_opener": is_opener,
+                "timestamp": alert.get('created_at', datetime.now().isoformat()),
+                "trade_size": trade_size,
+                "sentiment": sentiment,
+                "unusual_activity": premium > 200000 or vol_oi > 3.0 or alert.get('volume', 0) > 1000,
+                "action": action,
+                "option_type": option_type,
+                "strike": strike,
+                "moneyness": moneyness,
+                "alert_rule": alert.get('alert_rule', ''),
+                "sector": alert.get('sector', ''),
+                "has_sweep": alert.get('has_sweep', False)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error processing real flow alert: {str(e)}")
+            return {}
         """Process and enhance individual flow alert data"""
         try:
             # Calculate days to expiration
