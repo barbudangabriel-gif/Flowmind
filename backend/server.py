@@ -2629,6 +2629,30 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Initialize token manager
+token_manager = get_token_manager(ts_auth)
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup"""
+    logger.info("🚀 Starting Enhanced Stock Market Analysis API")
+    
+    # Start token monitoring if authenticated
+    if ts_auth.is_authenticated():
+        await token_manager.start_monitoring()
+        logger.info("✅ TradeStation token monitoring started")
+    else:
+        logger.info("⚠️ TradeStation not authenticated - token monitoring will start after login")
+
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_event():
+    """Clean up services on shutdown"""
+    logger.info("🛑 Shutting down Enhanced Stock Market Analysis API")
+    
+    # Stop token monitoring
+    if token_manager:
+        await token_manager.stop_monitoring()
+    
+    # Close database connection
     client.close()
+    logger.info("✅ Shutdown complete")
