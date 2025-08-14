@@ -3471,6 +3471,384 @@ const AutoOptionsTrading = () => {
   );
 };
 
+const TradingHistory = () => {
+  const { isDarkMode } = useTheme();
+  const [trades, setTrades] = useState([
+    {
+      id: 1,
+      date: '2024-08-14',
+      symbol: 'SPY',
+      strategy: 'Long Call',
+      entry_price: 2.50,
+      exit_price: 3.20,
+      quantity: 5,
+      pnl: 350,
+      pnl_percent: 28.0,
+      status: 'Closed',
+      entry_time: '09:30:00',
+      exit_time: '15:45:00',
+      expiration: '2024-08-21',
+      strike: 645
+    },
+    {
+      id: 2,
+      date: '2024-08-13',
+      symbol: 'QQQ',
+      strategy: 'Bull Call Spread',
+      entry_price: 1.80,
+      exit_price: 1.65,
+      quantity: 3,
+      pnl: -45,
+      pnl_percent: -8.3,
+      status: 'Closed',
+      entry_time: '10:15:00',
+      exit_time: '14:30:00',
+      expiration: '2024-08-16',
+      strike: '580/585'
+    },
+    {
+      id: 3,
+      date: '2024-08-12',
+      symbol: 'AAPL',
+      strategy: 'Long Put',
+      entry_price: 3.10,
+      exit_price: 4.25,
+      quantity: 2,
+      pnl: 230,
+      pnl_percent: 37.1,
+      status: 'Closed',
+      entry_time: '11:00:00',
+      exit_time: '13:20:00',
+      expiration: '2024-08-19',
+      strike: 220
+    }
+  ]);
+
+  const [filter, setFilter] = useState('all');
+  const [dateRange, setDateRange] = useState('7d');
+
+  const filteredTrades = trades.filter(trade => {
+    if (filter === 'all') return true;
+    if (filter === 'profitable') return trade.pnl > 0;
+    if (filter === 'losses') return trade.pnl < 0;
+    return true;
+  });
+
+  const totalPnL = trades.reduce((sum, trade) => sum + trade.pnl, 0);
+  const winRate = (trades.filter(trade => trade.pnl > 0).length / trades.length) * 100;
+  const avgWin = trades.filter(trade => trade.pnl > 0).reduce((sum, trade) => sum + trade.pnl, 0) / trades.filter(trade => trade.pnl > 0).length;
+  const avgLoss = Math.abs(trades.filter(trade => trade.pnl < 0).reduce((sum, trade) => sum + trade.pnl, 0) / trades.filter(trade => trade.pnl < 0).length);
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800">📊 Trading History</h2>
+          <p className="text-gray-600">Complete record of automated trading activity</p>
+        </div>
+        <div className="flex items-center space-x-4">
+          <select 
+            value={dateRange} 
+            onChange={(e) => setDateRange(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+            <option value="90d">Last 90 Days</option>
+            <option value="1y">Last Year</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Total P&L</div>
+          <div className={`text-2xl font-bold ${totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            ${totalPnL >= 0 ? '+' : ''}{totalPnL.toFixed(0)}
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Win Rate</div>
+          <div className="text-2xl font-bold text-blue-600">{winRate.toFixed(1)}%</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Avg Win</div>
+          <div className="text-2xl font-bold text-green-600">${avgWin.toFixed(0)}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Avg Loss</div>
+          <div className="text-2xl font-bold text-red-600">${avgLoss.toFixed(0)}</div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="flex items-center space-x-4">
+          <span className="text-sm font-medium text-gray-700">Filter:</span>
+          <div className="flex space-x-2">
+            {[
+              { id: 'all', label: 'All Trades' },
+              { id: 'profitable', label: 'Profitable' },
+              { id: 'losses', label: 'Losses' }
+            ].map((filterOption) => (
+              <button
+                key={filterOption.id}
+                onClick={() => setFilter(filterOption.id)}
+                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  filter === filterOption.id
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {filterOption.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Trading History Table */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold">Trade History ({filteredTrades.length} trades)</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Strategy</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entry/Exit</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredTrades.map((trade) => (
+                <tr key={trade.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm text-gray-900">{trade.date}</td>
+                  <td className="px-6 py-4 font-semibold text-blue-600">{trade.symbol}</td>
+                  <td className="px-6 py-4 text-sm">{trade.strategy}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <div>${trade.entry_price} → ${trade.exit_price}</div>
+                    <div className="text-gray-500">${trade.strike} {trade.expiration}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm">{trade.quantity}</td>
+                  <td className="px-6 py-4">
+                    <div className={`font-semibold ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ${trade.pnl >= 0 ? '+' : ''}{trade.pnl}
+                    </div>
+                    <div className={`text-sm ${trade.pnl_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ({trade.pnl_percent >= 0 ? '+' : ''}{trade.pnl_percent}%)
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    <div>{trade.entry_time} - {trade.exit_time}</div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PerformanceAnalytics = () => {
+  const { isDarkMode } = useTheme();
+  const [timeframe, setTimeframe] = useState('30d');
+  
+  // Mock performance data
+  const performanceData = [
+    { date: '2024-08-01', portfolio_value: 10000, pnl: 0 },
+    { date: '2024-08-02', portfolio_value: 10150, pnl: 150 },
+    { date: '2024-08-03', portfolio_value: 10080, pnl: -70 },
+    { date: '2024-08-04', portfolio_value: 10320, pnl: 240 },
+    { date: '2024-08-05', portfolio_value: 10280, pnl: -40 },
+    { date: '2024-08-06', portfolio_value: 10450, pnl: 170 },
+    { date: '2024-08-07', portfolio_value: 10380, pnl: -70 },
+    { date: '2024-08-08', portfolio_value: 10520, pnl: 140 },
+    { date: '2024-08-09', portfolio_value: 10480, pnl: -40 },
+    { date: '2024-08-10', portfolio_value: 10650, pnl: 170 },
+    { date: '2024-08-11', portfolio_value: 10590, pnl: -60 },
+    { date: '2024-08-12', portfolio_value: 10720, pnl: 130 },
+    { date: '2024-08-13', portfolio_value: 10680, pnl: -40 },
+    { date: '2024-08-14', portfolio_value: 10850, pnl: 170 }
+  ];
+
+  const metrics = {
+    totalReturn: 8.5,
+    sharpeRatio: 1.42,
+    maxDrawdown: -2.1,
+    winRate: 64.3,
+    profitFactor: 1.85,
+    avgWin: 156,
+    avgLoss: -58,
+    totalTrades: 28,
+    bestTrade: 350,
+    worstTrade: -120
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800">📈 Performance Analytics</h2>
+          <p className="text-gray-600">Detailed analysis of trading performance and risk metrics</p>
+        </div>
+        <div className="flex items-center space-x-4">
+          <select 
+            value={timeframe} 
+            onChange={(e) => setTimeframe(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+            <option value="90d">Last 90 Days</option>
+            <option value="1y">Last Year</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Total Return</div>
+          <div className="text-2xl font-bold text-green-600">+{metrics.totalReturn}%</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Sharpe Ratio</div>
+          <div className="text-2xl font-bold text-blue-600">{metrics.sharpeRatio}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Max Drawdown</div>
+          <div className="text-2xl font-bold text-red-600">{metrics.maxDrawdown}%</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Win Rate</div>
+          <div className="text-2xl font-bold text-purple-600">{metrics.winRate}%</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Profit Factor</div>
+          <div className="text-2xl font-bold text-orange-600">{metrics.profitFactor}</div>
+        </div>
+      </div>
+
+      {/* Performance Chart */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold mb-4">Portfolio Value Over Time</h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <LineChart data={performanceData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip 
+              formatter={(value, name) => [`$${value.toLocaleString()}`, 'Portfolio Value']}
+              labelFormatter={(date) => `Date: ${date}`}
+            />
+            <Legend />
+            <Line 
+              type="monotone" 
+              dataKey="portfolio_value" 
+              stroke="#2563eb" 
+              strokeWidth={2} 
+              dot={false}
+              name="Portfolio Value"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Detailed Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Trade Statistics */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold mb-4">Trade Statistics</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Total Trades</span>
+              <span className="font-bold">{metrics.totalTrades}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Average Win</span>
+              <span className="font-bold text-green-600">${metrics.avgWin}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Average Loss</span>
+              <span className="font-bold text-red-600">${metrics.avgLoss}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Best Trade</span>
+              <span className="font-bold text-green-600">${metrics.bestTrade}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Worst Trade</span>
+              <span className="font-bold text-red-600">${metrics.worstTrade}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Risk Metrics */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold mb-4">Risk Analysis</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Volatility (30d)</span>
+              <span className="font-bold">12.4%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Beta</span>
+              <span className="font-bold">0.85</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">VaR (95%)</span>
+              <span className="font-bold text-red-600">-$245</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Calmar Ratio</span>
+              <span className="font-bold">4.05</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Sortino Ratio</span>
+              <span className="font-bold">2.18</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Monthly Performance */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold mb-4">Monthly Performance</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[
+            { month: 'Jan', return: 2.1 },
+            { month: 'Feb', return: -0.8 },
+            { month: 'Mar', return: 3.4 },
+            { month: 'Apr', return: 1.9 },
+            { month: 'May', return: -1.2 },
+            { month: 'Jun', return: 2.8 },
+            { month: 'Jul', return: 1.5 },
+            { month: 'Aug', return: 0.8 }
+          ].map((month) => (
+            <div key={month.month} className="text-center p-3 border rounded-lg">
+              <div className="text-sm text-gray-600">{month.month}</div>
+              <div className={`font-bold ${month.return >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {month.return >= 0 ? '+' : ''}{month.return}%
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Market News Component  
 const MarketNews = () => {
   return (
