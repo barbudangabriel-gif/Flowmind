@@ -677,13 +677,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "TradeStation OAuth Authentication System"
-    - "TradeStation API Client Implementation"
-    - "Portfolio Management Service"
-    - "Trading Service with Risk Management" 
-    - "Market Data Integration"
-    - "Risk Management System"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
