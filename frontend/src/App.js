@@ -2160,7 +2160,7 @@ const OptionsFlow = () => {
   const toggleAutoRefresh = () => {
     setAutoRefresh(!autoRefresh);
     if (!autoRefresh) {
-      setRefreshCountdown(30);
+      setRefreshCountdown(5);
     }
   };
 
