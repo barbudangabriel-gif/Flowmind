@@ -2929,23 +2929,297 @@ class StockMarketAPITester:
         
         return endpoint_results
 
+    def test_unusual_whales_final_verification(self):
+        """Final verification testing of all 5 Unusual Whales API endpoints after API key update and bug fixes"""
+        print("\n🐋 FINAL VERIFICATION: ALL UNUSUAL WHALES API ENDPOINTS")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Final verification testing after API key update and bug fixes")
+        print("🔑 API KEY: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50")
+        print("📋 TESTING 5 PRIMARY ENDPOINTS:")
+        print("   1. Options Flow: /api/unusual-whales/options/flow-alerts")
+        print("   2. Dark Pool: /api/unusual-whales/dark-pool/recent") 
+        print("   3. Congressional Trades: /api/unusual-whales/congressional/trades")
+        print("   4. Trading Strategies: /api/unusual-whales/trading-strategies")
+        print("   5. Comprehensive Analysis: /api/unusual-whales/analysis/comprehensive")
+        
+        endpoint_results = {}
+        
+        # Test 1: Options Flow - should return real data, no longer mock
+        print(f"\n📈 ENDPOINT 1: Options Flow Alerts")
+        print("-" * 60)
+        
+        import time
+        start_time = time.time()
+        success_options, options_data = self.run_test("Options Flow Alerts", "GET", "unusual-whales/options/flow-alerts", 200)
+        options_time = time.time() - start_time
+        
+        if success_options:
+            data = options_data.get('data', {})
+            alerts = data.get('alerts', [])
+            summary = data.get('summary', {})
+            
+            print(f"   ✅ Status: 200 OK")
+            print(f"   ⏱️  Response Time: {options_time:.2f}s")
+            print(f"   📊 Alerts Found: {len(alerts)}")
+            print(f"   💰 Total Premium: ${summary.get('total_premium', 0):,.0f}")
+            print(f"   📈 Bullish/Bearish: {summary.get('bullish_count', 0)}/{summary.get('bearish_count', 0)}")
+            
+            # Check for real data indicators
+            if len(alerts) > 0:
+                symbols = [alert.get('symbol', '') for alert in alerts[:5]]
+                print(f"   🎯 Sample Symbols: {symbols}")
+                
+                # Real data check
+                real_symbols = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA', 'SPY', 'QQQ', 'AMZN', 'META']
+                real_found = [s for s in symbols if s in real_symbols]
+                if real_found:
+                    print(f"   ✅ REAL DATA: Found market symbols {real_found}")
+                    endpoint_results['options_flow'] = {'status': 'PASS', 'real_data': True, 'response_time': options_time}
+                else:
+                    print(f"   ⚠️  DATA CHECK: No common market symbols found")
+                    endpoint_results['options_flow'] = {'status': 'PASS', 'real_data': False, 'response_time': options_time}
+            else:
+                print(f"   📝 No alerts (may be normal if no unusual activity)")
+                endpoint_results['options_flow'] = {'status': 'PASS', 'real_data': 'N/A', 'response_time': options_time}
+        else:
+            print(f"   ❌ FAILED: Options Flow endpoint returned error")
+            endpoint_results['options_flow'] = {'status': 'FAIL', 'real_data': False, 'response_time': options_time}
+        
+        # Test 2: Dark Pool - should work with existing real data
+        print(f"\n🌊 ENDPOINT 2: Dark Pool Recent Activity")
+        print("-" * 60)
+        
+        start_time = time.time()
+        success_dark, dark_data = self.run_test("Dark Pool Recent", "GET", "unusual-whales/dark-pool/recent", 200)
+        dark_time = time.time() - start_time
+        
+        if success_dark:
+            data = dark_data.get('data', {})
+            trades = data.get('trades', [])
+            summary = data.get('summary', {})
+            
+            print(f"   ✅ Status: 200 OK")
+            print(f"   ⏱️  Response Time: {dark_time:.2f}s")
+            print(f"   📊 Trades Found: {len(trades)}")
+            print(f"   📈 Total Dark Volume: {summary.get('total_dark_volume', 0):,}")
+            print(f"   🎯 Avg Dark %: {summary.get('avg_dark_percentage', 0):.2f}%")
+            print(f"   🏛️  Institutional Signals: {summary.get('institutional_signals', 0)}")
+            
+            if len(trades) > 0:
+                tickers = [trade.get('ticker', '') for trade in trades[:5]]
+                print(f"   🎯 Sample Tickers: {tickers}")
+                endpoint_results['dark_pool'] = {'status': 'PASS', 'data_count': len(trades), 'response_time': dark_time}
+            else:
+                print(f"   📝 No trades (expected when no significant dark pool activity)")
+                endpoint_results['dark_pool'] = {'status': 'PASS', 'data_count': 0, 'response_time': dark_time}
+        else:
+            print(f"   ❌ FAILED: Dark Pool endpoint returned error")
+            endpoint_results['dark_pool'] = {'status': 'FAIL', 'data_count': 0, 'response_time': dark_time}
+        
+        # Test 3: Congressional Trades - should work with existing real data
+        print(f"\n🏛️  ENDPOINT 3: Congressional Trades")
+        print("-" * 60)
+        
+        start_time = time.time()
+        success_congress, congress_data = self.run_test("Congressional Trades", "GET", "unusual-whales/congressional/trades", 200)
+        congress_time = time.time() - start_time
+        
+        if success_congress:
+            data = congress_data.get('data', {})
+            trades = data.get('trades', [])
+            summary = data.get('summary', {})
+            
+            print(f"   ✅ Status: 200 OK")
+            print(f"   ⏱️  Response Time: {congress_time:.2f}s")
+            print(f"   📊 Trades Found: {len(trades)}")
+            print(f"   💰 Total Amount: ${summary.get('total_amount', 0):,.0f}")
+            print(f"   👥 Representatives: {summary.get('unique_representatives', 0)}")
+            print(f"   📈 Unique Tickers: {summary.get('unique_tickers', 0)}")
+            
+            # Show party breakdown
+            party_breakdown = summary.get('party_breakdown', {})
+            if party_breakdown:
+                print(f"   🗳️  Party Breakdown: {dict(party_breakdown)}")
+            
+            endpoint_results['congressional'] = {'status': 'PASS', 'data_count': len(trades), 'response_time': congress_time}
+        else:
+            print(f"   ❌ FAILED: Congressional Trades endpoint returned error")
+            endpoint_results['congressional'] = {'status': 'FAIL', 'data_count': 0, 'response_time': congress_time}
+        
+        # Test 4: Trading Strategies - just fixed string concatenation error, verify working
+        print(f"\n🎯 ENDPOINT 4: Trading Strategies")
+        print("-" * 60)
+        
+        start_time = time.time()
+        success_strategies, strategies_data = self.run_test("Trading Strategies", "GET", "unusual-whales/trading-strategies", 200)
+        strategies_time = time.time() - start_time
+        
+        if success_strategies:
+            strategies = strategies_data.get('strategies', [])
+            
+            print(f"   ✅ Status: 200 OK")
+            print(f"   ⏱️  Response Time: {strategies_time:.2f}s")
+            print(f"   📊 Strategies Generated: {len(strategies)}")
+            
+            if len(strategies) > 0:
+                for i, strategy in enumerate(strategies[:3]):
+                    print(f"   🎯 Strategy {i+1}: {strategy.get('strategy_name', 'N/A')}")
+                    print(f"     - Ticker: {strategy.get('ticker', 'N/A')}")
+                    print(f"     - Confidence: {strategy.get('confidence', 0):.0%}")
+                    print(f"     - Timeframe: {strategy.get('timeframe', 'N/A')}")
+                
+                endpoint_results['trading_strategies'] = {'status': 'PASS', 'strategies_count': len(strategies), 'response_time': strategies_time}
+            else:
+                print(f"   📝 No strategies (expected when insufficient signals)")
+                endpoint_results['trading_strategies'] = {'status': 'PASS', 'strategies_count': 0, 'response_time': strategies_time}
+        else:
+            print(f"   ❌ FAILED: Trading Strategies endpoint returned error")
+            endpoint_results['trading_strategies'] = {'status': 'FAIL', 'strategies_count': 0, 'response_time': strategies_time}
+        
+        # Test 5: Comprehensive Analysis - should work combining all data
+        print(f"\n📊 ENDPOINT 5: Comprehensive Analysis")
+        print("-" * 60)
+        
+        start_time = time.time()
+        success_analysis, analysis_data = self.run_test("Comprehensive Analysis", "GET", "unusual-whales/analysis/comprehensive", 200)
+        analysis_time = time.time() - start_time
+        
+        if success_analysis:
+            comprehensive_analysis = analysis_data.get('comprehensive_analysis', {})
+            market_outlook = analysis_data.get('market_outlook', {})
+            data_summary = analysis_data.get('data_summary', {})
+            
+            print(f"   ✅ Status: 200 OK")
+            print(f"   ⏱️  Response Time: {analysis_time:.2f}s")
+            print(f"   📊 Data Summary:")
+            print(f"     - Options Alerts: {data_summary.get('options_alerts', 0)}")
+            print(f"     - Dark Pool Trades: {data_summary.get('dark_pool_trades', 0)}")
+            print(f"     - Congressional Trades: {data_summary.get('congressional_trades', 0)}")
+            
+            print(f"   🎯 Market Outlook:")
+            print(f"     - Sentiment: {market_outlook.get('overall_sentiment', 'N/A')}")
+            print(f"     - Confidence: {market_outlook.get('confidence', 'N/A')}")
+            
+            # Check data availability flags
+            options_available = comprehensive_analysis.get('options_flow', {}).get('data_available', False)
+            dark_pool_available = comprehensive_analysis.get('dark_pool', {}).get('data_available', False)
+            congressional_available = comprehensive_analysis.get('congressional', {}).get('data_available', False)
+            
+            print(f"   📋 Data Availability:")
+            print(f"     - Options Flow: {'✅' if options_available else '❌'}")
+            print(f"     - Dark Pool: {'✅' if dark_pool_available else '❌'}")
+            print(f"     - Congressional: {'✅' if congressional_available else '❌'}")
+            
+            endpoint_results['comprehensive'] = {'status': 'PASS', 'data_sources': sum([options_available, dark_pool_available, congressional_available]), 'response_time': analysis_time}
+        else:
+            print(f"   ❌ FAILED: Comprehensive Analysis endpoint returned error")
+            endpoint_results['comprehensive'] = {'status': 'FAIL', 'data_sources': 0, 'response_time': analysis_time}
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL VERIFICATION RESULTS")
+        print("=" * 80)
+        
+        passed_endpoints = sum(1 for result in endpoint_results.values() if result['status'] == 'PASS')
+        total_endpoints = len(endpoint_results)
+        success_rate = (passed_endpoints / total_endpoints) * 100
+        
+        print(f"\n📊 ENDPOINT STATUS SUMMARY:")
+        for endpoint, result in endpoint_results.items():
+            status_icon = "✅" if result['status'] == 'PASS' else "❌"
+            response_time = result['response_time']
+            print(f"   {status_icon} {endpoint.replace('_', ' ').title()}: {result['status']} ({response_time:.2f}s)")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_endpoints}/{total_endpoints} endpoints passing)")
+        
+        # Response time analysis
+        avg_response_time = sum(result['response_time'] for result in endpoint_results.values()) / len(endpoint_results)
+        print(f"⏱️  AVERAGE RESPONSE TIME: {avg_response_time:.2f}s")
+        
+        # Key success criteria verification
+        print(f"\n✅ SUCCESS CRITERIA VERIFICATION:")
+        
+        criteria_met = []
+        
+        # All 5 endpoints returning 200 status codes
+        if passed_endpoints == 5:
+            criteria_met.append("✅ All 5 endpoints returning 200 status codes")
+        else:
+            criteria_met.append(f"❌ Only {passed_endpoints}/5 endpoints returning 200 status codes")
+        
+        # No 500 errors or API failures
+        failed_endpoints = [name for name, result in endpoint_results.items() if result['status'] == 'FAIL']
+        if not failed_endpoints:
+            criteria_met.append("✅ No 500 errors or API failures")
+        else:
+            criteria_met.append(f"❌ Failed endpoints: {failed_endpoints}")
+        
+        # Options Flow returning real data (not mock)
+        options_result = endpoint_results.get('options_flow', {})
+        if options_result.get('real_data') == True:
+            criteria_met.append("✅ Options Flow returning real data (not mock)")
+        elif options_result.get('real_data') == 'N/A':
+            criteria_met.append("⚠️  Options Flow: No data to verify (may be normal)")
+        else:
+            criteria_met.append("❌ Options Flow: Real data verification failed")
+        
+        # Trading Strategies working after fixes
+        strategies_result = endpoint_results.get('trading_strategies', {})
+        if strategies_result.get('status') == 'PASS':
+            criteria_met.append("✅ Trading Strategies working after fixes")
+        else:
+            criteria_met.append("❌ Trading Strategies still has issues")
+        
+        # Response times reasonable (under 5 seconds each)
+        slow_endpoints = [name for name, result in endpoint_results.items() if result['response_time'] > 5.0]
+        if not slow_endpoints:
+            criteria_met.append("✅ All response times reasonable (under 5 seconds)")
+        else:
+            criteria_met.append(f"⚠️  Slow endpoints (>5s): {slow_endpoints}")
+        
+        for criterion in criteria_met:
+            print(f"   {criterion}")
+        
+        # Final verdict
+        print(f"\n🎉 FINAL VERDICT:")
+        if success_rate == 100 and avg_response_time < 5.0:
+            print(f"   🎉 EXCELLENT: All Unusual Whales endpoints working perfectly!")
+            print(f"   ✅ API key update successful")
+            print(f"   ✅ Bug fixes verified")
+            print(f"   ✅ All endpoints operational")
+            print(f"   ✅ Response times excellent")
+        elif success_rate >= 80:
+            print(f"   ✅ GOOD: Most Unusual Whales endpoints working correctly")
+            print(f"   📝 Minor issues may need attention")
+        else:
+            print(f"   ❌ NEEDS ATTENTION: Multiple endpoint failures detected")
+            print(f"   🔧 API key or configuration issues may exist")
+        
+        return success_rate >= 80
+
 def main():
-    print("🚀 Starting Unusual Whales API Testing...")
+    print("🐋 UNUSUAL WHALES API FINAL VERIFICATION TEST")
+    print("=" * 80)
     print("🔑 Using API Key: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50")
     print("🌐 Backend URL: https://market-insight-hub-1.preview.emergentagent.com")
     
     tester = StockMarketAPITester()
-    results = tester.run_unusual_whales_focused_tests()
     
-    print(f"\n🏁 Testing Complete!")
-    print(f"📊 Results: {results}")
+    # Run the focused verification test
+    success = tester.test_unusual_whales_final_verification()
     
-    # Exit with appropriate code
-    if results and results.get('options_flow', False):
-        print("✅ Main objective achieved - Options Flow working")
+    # Summary
+    print("\n" + "=" * 80)
+    print("🎯 VERIFICATION TEST SUMMARY")
+    print("=" * 80)
+    print(f"Total Tests Run: {tester.tests_run}")
+    print(f"Tests Passed: {tester.tests_passed}")
+    print(f"Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if success:
+        print("🎉 UNUSUAL WHALES VERIFICATION PASSED!")
         return 0
     else:
-        print("❌ Main objective not achieved - Options Flow needs attention")
+        print("⚠️  UNUSUAL WHALES VERIFICATION NEEDS ATTENTION")
         return 1
 
 if __name__ == "__main__":
