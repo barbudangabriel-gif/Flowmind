@@ -4368,6 +4368,14 @@ function App() {
         return <CongressionalTrades />;
       case 'trading-strategies':
         return <TradingStrategies />;
+      case 'ts-auth':
+        return <TradeStationAuth />;
+      case 'ts-portfolio':
+        return <TradeStationPortfolio />;
+      case 'ts-trading':
+        return <TradeStationTrading />;
+      case 'ts-orders':
+        return <TradeStationOrders />;
       case 'auto-trading':
         return <AutoOptionsTrading />;
       case 'trading-history':
