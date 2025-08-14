@@ -1194,6 +1194,51 @@ async def get_unusual_whales_options_flow(
     except Exception as e:
         logger.error(f"Error in options flow endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching options flow: {str(e)}")
+@api_router.get("/unusual-whales/options/flow-alerts/debug")
+async def debug_options_flow():
+    """Debug endpoint for options flow data"""
+    try:
+        # Test direct API call
+        import httpx
+        api_token = os.getenv("UW_API_TOKEN")
+        headers = {
+            "Authorization": f"Bearer {api_token}",
+            "Content-Type": "application/json"
+        }
+        
+        # Try different possible endpoints
+        endpoints_to_test = [
+            "https://api.unusualwhales.com/api/options/flow-alerts",
+            "https://api.unusualwhales.com/api/options/flow",
+            "https://api.unusualwhales.com/api/flow",
+            "https://api.unusualwhales.com/api/options"
+        ]
+        
+        results = {}
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            for endpoint in endpoints_to_test:
+                try:
+                    response = await client.get(f"{endpoint}?limit=2", headers=headers)
+                    results[endpoint] = {
+                        "status_code": response.status_code,
+                        "response": response.text[:200] if response.text else "No response"
+                    }
+                except Exception as e:
+                    results[endpoint] = {"error": str(e)}
+        
+        # Also test our mock data generation
+        mock_data = await uw_service._get_mock_options_flow()
+        
+        return {
+            "api_test_results": results,
+            "mock_data_sample": mock_data[:2] if mock_data else [],
+            "using_mock_data": True,
+            "note": "Options flow endpoints not available - using mock data"
+        }
+            
+    except Exception as e:
+        return {"error": str(e)}
 
 @api_router.get("/unusual-whales/dark-pool/recent")
 async def get_unusual_whales_dark_pool(
