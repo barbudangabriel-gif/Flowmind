@@ -1644,8 +1644,15 @@ async def get_trading_strategies_from_unusual_whales():
                 has_calls = any(a.get('sentiment') == 'bullish' for a in ticker_alerts)
                 has_puts = any(a.get('sentiment') == 'bearish' for a in ticker_alerts)
                 
-                avg_dte = sum(a.get('dte', 0) for a in ticker_alerts) / len(ticker_alerts)
-                avg_price = float(sum(a.get('underlying_price', 0) for a in ticker_alerts)) / len(ticker_alerts)
+                # Calculate safe average price handling string/numeric values
+                def safe_float(value, default=0):
+                    try:
+                        return float(value) if value else default
+                    except (ValueError, TypeError):
+                        return default
+                
+                avg_dte = sum(safe_float(a.get('dte', 0)) for a in ticker_alerts) / len(ticker_alerts)
+                avg_price = sum(safe_float(a.get('underlying_price', 0)) for a in ticker_alerts) / len(ticker_alerts)
                 
                 if has_calls and has_puts and avg_dte > 7:
                     # High volatility expected - Straddle or Strangle
