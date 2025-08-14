@@ -4677,7 +4677,7 @@ const TradeStationPortfolio = () => {
       const response = await axios.get(`${API}/tradestation/accounts`);
       setAccounts(response.data.accounts || []);
       if (response.data.accounts?.length > 0) {
-        setSelectedAccount(response.data.accounts[0].Key);
+        setSelectedAccount(response.data.accounts[0].AccountID);
       }
       setError(null);
     } catch (err) {
