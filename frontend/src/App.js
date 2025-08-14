@@ -5366,8 +5366,8 @@ const TradeStationOrders = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             >
               {accounts.map((account) => (
-                <option key={account.Key} value={account.Key}>
-                  {account.Name} ({account.Key})
+                <option key={account.AccountID} value={account.AccountID}>
+                  {account.AccountType} Account ({account.AccountID})
                 </option>
               ))}
             </select>
