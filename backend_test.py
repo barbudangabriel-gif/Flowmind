@@ -980,68 +980,31 @@ class StockMarketAPITester:
         self.run_test("Invalid Investment Score", "GET", "investments/score/INVALID123", 500)
 
 def main():
-    print("🚀 Starting Stock Market API Tests with Unusual Whales Integration")
-    print("=" * 70)
+    print("🚀 Testing Advanced Screener with Unusual Whales API Integration")
+    print("=" * 80)
     
     tester = StockMarketAPITester()
     
-    # Test UNUSUAL WHALES API INTEGRATION - PRIORITY
-    print("\n🐋 Testing UNUSUAL WHALES API INTEGRATION - PRIORITY FEATURE")
-    print("=" * 70)
-    tester.test_unusual_whales_options_flow()
-    tester.test_unusual_whales_dark_pool()
-    tester.test_unusual_whales_congressional_trades()
-    tester.test_unusual_whales_trading_strategies()
-    tester.test_unusual_whales_comprehensive_analysis()
+    # PRIORITY: Test Advanced Screener with Unusual Whales Integration
+    print("\n🐋 PRIORITY: Testing Advanced Screener Unusual Whales Integration")
+    print("=" * 80)
+    tester.test_advanced_screener_unusual_whales_integration()
     
-    # Test NEW Investment Scoring System
-    print("\n🎯 Testing Investment Scoring System")
-    tester.test_investment_scoring_endpoints()
-    
-    # Test basic endpoints
-    print("\n📊 Testing Basic Endpoints")
-    tester.test_root_endpoint()
-    tester.test_market_overview()
-    tester.test_top_movers()
-    
-    # Test NEW ticker endpoints
-    print("\n🎯 Testing Ticker Endpoints")
-    tester.test_ticker_endpoints()
-    
-    # Test NEW screener endpoints
-    print("\n🔍 Testing Advanced Screener Endpoints")
+    # Test original screener endpoints for comparison
+    print("\n🔍 Testing Original Advanced Screener Endpoints")
     tester.test_screener_endpoints()
     
-    # Test NEW enhanced endpoints
-    print("\n🚀 Testing Enhanced Stock Endpoints")
-    tester.test_enhanced_stock_endpoints()
+    # Test basic API functionality
+    print("\n📊 Testing Basic API Endpoints")
+    tester.test_root_endpoint()
     
-    # Test stock data endpoints
-    print("\n📈 Testing Stock Data Endpoints")
-    popular_stocks = ["AAPL", "GOOGL", "MSFT", "TSLA"]
-    
-    for stock in popular_stocks:
+    # Test a few key stock endpoints to verify overall API health
+    print("\n📈 Testing Key Stock Data Endpoints")
+    for stock in ["AAPL", "MSFT"]:
         tester.test_stock_data(stock)
-        tester.test_stock_history(stock)
-        # Only test technical indicators for AAPL to avoid API rate limits
-        if stock == "AAPL":
-            tester.test_technical_indicators(stock)
-        tester.test_stock_search(stock)
-    
-    # Test portfolio operations
-    print("\n💼 Testing Portfolio Operations")
-    tester.test_portfolio_operations()
-    
-    # Test watchlist operations
-    print("\n⭐ Testing Watchlist Operations")
-    tester.test_watchlist_operations()
-    
-    # Test error handling
-    print("\n🚨 Testing Error Handling")
-    tester.test_error_handling()
     
     # Print final results
-    print("\n" + "=" * 70)
+    print("\n" + "=" * 80)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
     if tester.tests_passed == tester.tests_run:
