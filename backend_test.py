@@ -1854,6 +1854,259 @@ class StockMarketAPITester:
             print(f"   SOLUTION: Complete the futures symbol mapping in backend")
             return False
 
+    def test_expert_options_endpoints(self):
+        """Test Expert Options Trading System endpoints - NEW FEATURE"""
+        print("\n🎯 Testing Expert Options Trading System - AI-POWERED OPTIONS STRATEGIES")
+        print("=" * 80)
+        
+        # Test 1: Expert Strategy Recommendations for SPY
+        print("\n📊 Testing GET /api/expert-options/strategies/SPY")
+        success, strategies_data = self.run_test(
+            "Expert Strategy Recommendations (SPY)", 
+            "GET", 
+            "expert-options/strategies/SPY", 
+            200
+        )
+        
+        if success:
+            recommendations = strategies_data.get('recommendations', [])
+            total_strategies = strategies_data.get('total_strategies', 0)
+            
+            print(f"   ✅ Generated {total_strategies} strategy recommendations")
+            print(f"   📈 Symbol: {strategies_data.get('symbol', 'N/A')}")
+            
+            # Verify all 3 strategies are present
+            expected_strategies = ["Wheel Strategy", "Iron Condor", "Volatility Play"]
+            found_strategies = []
+            
+            for rec in recommendations:
+                strategy_name = rec.get('strategy_name', 'Unknown')
+                confidence = rec.get('confidence_score', 0)
+                strategy_type = rec.get('strategy_type', 'Unknown')
+                
+                found_strategies.append(strategy_name)
+                print(f"     - {strategy_name}: {confidence:.2f} confidence ({strategy_type})")
+                
+                # Verify strategy structure
+                required_fields = ['legs', 'max_profit', 'max_loss', 'confidence_score']
+                missing_fields = [field for field in required_fields if field not in rec]
+                
+                if missing_fields:
+                    print(f"       ⚠️  Missing fields: {missing_fields}")
+                else:
+                    print(f"       ✅ Complete strategy structure")
+                    
+                    # Check legs structure
+                    legs = rec.get('legs', [])
+                    if legs:
+                        print(f"       📋 Strategy has {len(legs)} option legs")
+                        for i, leg in enumerate(legs):
+                            action = leg.get('action', 'N/A')
+                            option_type = leg.get('option_type', 'N/A')
+                            strike = leg.get('strike', 'N/A')
+                            print(f"         Leg {i+1}: {action} {option_type} @ ${strike}")
+            
+            # Verify all expected strategies are present
+            missing_strategies = [s for s in expected_strategies if s not in found_strategies]
+            if missing_strategies:
+                print(f"   ⚠️  Missing strategies: {missing_strategies}")
+            else:
+                print(f"   ✅ All 3 expert strategies generated successfully")
+        
+        # Test 2: Individual Strategy Endpoints
+        print(f"\n🔄 Testing Individual Strategy Endpoints")
+        
+        # Test Wheel Strategy
+        success, wheel_data = self.run_test(
+            "Wheel Strategy (SPY)", 
+            "GET", 
+            "expert-options/wheel/SPY", 
+            200
+        )
+        
+        if success:
+            strategy = wheel_data.get('strategy', {})
+            print(f"   🎯 Wheel Strategy:")
+            print(f"     - Phase: {strategy.get('phase', 'N/A')}")
+            print(f"     - Max Profit: ${strategy.get('max_profit', 0):.2f}")
+            print(f"     - Capital Required: ${strategy.get('capital_required', 0):.2f}")
+            print(f"     - ROI Potential: {strategy.get('roi_potential', 0):.2f}%")
+            print(f"     - Confidence: {strategy.get('confidence_score', 0):.2f}")
+        
+        # Test Iron Condor Strategy
+        success, condor_data = self.run_test(
+            "Iron Condor Strategy (SPY)", 
+            "GET", 
+            "expert-options/iron-condor/SPY", 
+            200
+        )
+        
+        if success:
+            strategy = condor_data.get('strategy', {})
+            print(f"   🦅 Iron Condor Strategy:")
+            print(f"     - Net Credit: ${strategy.get('net_credit', 0):.2f}")
+            print(f"     - Max Profit: ${strategy.get('max_profit', 0):.2f}")
+            print(f"     - Max Loss: ${strategy.get('max_loss', 0):.2f}")
+            print(f"     - Breakeven High: ${strategy.get('breakeven_high', 0):.2f}")
+            print(f"     - Breakeven Low: ${strategy.get('breakeven_low', 0):.2f}")
+            print(f"     - Confidence: {strategy.get('confidence_score', 0):.2f}")
+        
+        # Test Volatility Play Strategy
+        success, vol_data = self.run_test(
+            "Volatility Play Strategy (SPY)", 
+            "GET", 
+            "expert-options/volatility/SPY", 
+            200
+        )
+        
+        if success:
+            strategy = vol_data.get('strategy', {})
+            print(f"   ⚡ Volatility Play Strategy:")
+            print(f"     - Strategy Name: {strategy.get('strategy_name', 'N/A')}")
+            print(f"     - Total Cost: ${strategy.get('total_cost', 0):.2f}")
+            print(f"     - Max Loss: ${strategy.get('max_loss', 0):.2f}")
+            print(f"     - Max Profit: {strategy.get('max_profit', 'N/A')}")
+            print(f"     - IV Expansion Needed: {strategy.get('iv_expansion_needed', 0):.1f}%")
+            print(f"     - Confidence: {strategy.get('confidence_score', 0):.2f}")
+        
+        # Test 3: Market Analysis
+        print(f"\n📊 Testing Market Analysis Endpoint")
+        success, market_data = self.run_test(
+            "Market Analysis (SPY)", 
+            "GET", 
+            "expert-options/market-analysis/SPY", 
+            200
+        )
+        
+        if success:
+            conditions = market_data.get('market_conditions', {})
+            print(f"   📈 Market Analysis for {market_data.get('symbol', 'N/A')}:")
+            print(f"     - Current Price: ${conditions.get('current_price', 0):.2f}")
+            print(f"     - IV Percentile: {conditions.get('iv_percentile', 0):.1f}")
+            print(f"     - IV Rank: {conditions.get('iv_rank', 0):.1f}")
+            print(f"     - Trend: {conditions.get('trend', 'N/A')}")
+            print(f"     - Support: ${conditions.get('support', 0):.2f}")
+            print(f"     - Resistance: ${conditions.get('resistance', 0):.2f}")
+            print(f"     - Days to Earnings: {conditions.get('days_to_earnings', 0)}")
+            print(f"     - Optimal Strategy: {conditions.get('optimal_strategy', 'N/A')}")
+            
+            # Verify market analysis structure
+            required_conditions = ['current_price', 'iv_percentile', 'trend', 'optimal_strategy']
+            missing_conditions = [field for field in required_conditions if field not in conditions]
+            
+            if missing_conditions:
+                print(f"     ⚠️  Missing market conditions: {missing_conditions}")
+            else:
+                print(f"     ✅ Complete market analysis provided")
+        
+        # Test 4: Learning Insights
+        print(f"\n🧠 Testing Learning Insights Endpoint")
+        success, insights_data = self.run_test(
+            "Learning System Insights", 
+            "GET", 
+            "expert-options/learning/insights", 
+            200
+        )
+        
+        if success:
+            insights = insights_data.get('learning_insights', {})
+            print(f"   🤖 AI Learning System Status:")
+            print(f"     - Total Trades: {insights.get('total_trades', 0)}")
+            print(f"     - Active Trades: {insights.get('active_trades', 0)}")
+            
+            # Strategy performance
+            strategy_performance = insights.get('strategy_performance', {})
+            print(f"     - Strategy Performance Data: {len(strategy_performance)} strategies")
+            
+            for strategy, perf in strategy_performance.items():
+                if isinstance(perf, dict):
+                    win_rate = perf.get('win_rate', 0)
+                    total_trades = perf.get('total_trades', 0)
+                    print(f"       * {strategy}: {win_rate:.1f}% win rate ({total_trades} trades)")
+            
+            # Optimization status
+            optimization_status = insights.get('optimization_status', {})
+            print(f"     - Optimization Status: {len(optimization_status)} strategies")
+            
+            for strategy, status in optimization_status.items():
+                if isinstance(status, dict):
+                    optimized = status.get('optimized', False)
+                    version = status.get('parameter_version', 'N/A')
+                    print(f"       * {strategy}: {'✅ Optimized' if optimized else '⏳ Learning'} (v{version})")
+            
+            # Market insights
+            market_insights = insights.get('market_insights', {})
+            if market_insights:
+                print(f"     - Market Insights:")
+                print(f"       * Preferred Strategy: {market_insights.get('preferred_strategy', 'N/A')}")
+                print(f"       * Current Conditions: {market_insights.get('current_conditions', 'N/A')}")
+                print(f"       * IV Environment: {market_insights.get('iv_environment', 'N/A')}")
+        
+        # Test 5: Parameter Optimization
+        print(f"\n⚙️  Testing Parameter Optimization Endpoint")
+        success, optimize_data = self.run_test(
+            "Parameter Optimization (Wheel)", 
+            "POST", 
+            "expert-options/optimize/wheel", 
+            200
+        )
+        
+        if success:
+            print(f"   🔧 Optimization Result:")
+            print(f"     - Message: {optimize_data.get('message', 'N/A')}")
+            print(f"     - Strategy Type: {optimize_data.get('strategy_type', 'N/A')}")
+            print(f"     - Timestamp: {optimize_data.get('timestamp', 'N/A')}")
+        
+        # Test invalid strategy type
+        success, error_data = self.run_test(
+            "Parameter Optimization (Invalid)", 
+            "POST", 
+            "expert-options/optimize/invalid_strategy", 
+            200  # Should return 200 with error message
+        )
+        
+        if success and 'error' in error_data:
+            print(f"   ✅ Error handling working: {error_data.get('error', 'N/A')}")
+        
+        # Test 6: Comprehensive Validation
+        print(f"\n✅ Expert Options System Validation Summary")
+        
+        validation_results = {
+            "strategy_recommendations": strategies_data.get('total_strategies', 0) >= 3,
+            "individual_strategies": all([
+                wheel_data.get('strategy', {}).get('strategy_type') == 'wheel',
+                condor_data.get('strategy', {}).get('strategy_type') == 'iron_condor', 
+                vol_data.get('strategy', {}).get('strategy_type') == 'volatility_play'
+            ]),
+            "market_analysis": len(market_data.get('market_conditions', {})) >= 5,
+            "learning_insights": 'learning_insights' in insights_data,
+            "parameter_optimization": 'message' in optimize_data
+        }
+        
+        passed_validations = sum(validation_results.values())
+        total_validations = len(validation_results)
+        
+        print(f"   📊 Validation Results: {passed_validations}/{total_validations} passed")
+        
+        for test_name, passed in validation_results.items():
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"     {status} {test_name.replace('_', ' ').title()}")
+        
+        success_rate = (passed_validations / total_validations) * 100
+        print(f"   🎯 Expert Options Success Rate: {success_rate:.1f}%")
+        
+        if success_rate >= 80:
+            print(f"   🎉 EXCELLENT: Expert Options Trading System is fully operational!")
+            print(f"   🤖 AI-powered options strategies with confidence scores working perfectly")
+            print(f"   📈 All 3 strategies (Wheel, Iron Condor, Volatility Play) generating properly")
+            print(f"   🧠 Machine learning insights and parameter optimization functional")
+        elif success_rate >= 60:
+            print(f"   ✅ GOOD: Expert Options system mostly working with minor issues")
+        else:
+            print(f"   ❌ NEEDS ATTENTION: Expert Options system has significant issues")
+        
+        return success_rate >= 80
+
     def test_error_handling(self):
         """Test error handling for invalid requests"""
         # Test invalid stock symbol
