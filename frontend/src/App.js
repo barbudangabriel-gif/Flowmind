@@ -2099,7 +2099,7 @@ const OptionsFlow = () => {
   // Auto-refresh state
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [refreshCountdown, setRefreshCountdown] = useState(30);
+  const [refreshCountdown, setRefreshCountdown] = useState(5); // Reduced to 5 seconds
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchOptionsFlow = async (showLoading = true) => {
