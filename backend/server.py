@@ -359,64 +359,45 @@ async def get_all_tickers():
 @api_router.get("/screener/data")
 async def get_screener_data(
     limit: int = Query(50, description="Maximum number of stocks to return"),
-    exchange: str = Query("sp500", description="Exchange filter: sp500, nasdaq, or all")
+    exchange: str = Query("all", description="Exchange filter: sp500, nasdaq, or all")
 ):
-    """Get enhanced screener data with real-time prices - OPTIMIZED VERSION"""
+    """Get screener data using Unusual Whales API - ENHANCED VERSION"""
     try:
-        # Use optimized ticker selection for better performance
-        if exchange == "sp500":
-            # Top S&P 500 stocks for reliable data
-            tickers = ["AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", "BRK.B", "UNH",
-                      "JNJ", "JPM", "V", "PG", "XOM", "HD", "CVX", "MA", "ABBV", "PFE", "KO", "WMT",
-                      "BAC", "DIS", "ADBE", "CRM", "NFLX", "PYPL", "INTC", "CMCSA", "VZ", "T", "MRK",
-                      "ABT", "TMO", "COST", "DHR", "NKE", "LLY", "MDT", "ORCL", "ACN", "TXN", "HON",
-                      "QCOM", "UPS", "PM", "NEE", "BMY", "IBM", "AVGO"][:limit]
-        elif exchange == "nasdaq": 
-            # Top NASDAQ stocks
-            tickers = ["AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", "NFLX", "ADBE",
-                      "CRM", "PYPL", "INTC", "CMCSA", "CSCO", "AVGO", "TXN", "QCOM", "COST", "AMD",
-                      "SBUX", "GILD", "MDLZ", "ISRG", "BKNG", "REGN", "ADP", "FISV", "MRNA", "MU",
-                      "CSX", "ADI", "LRCX", "ATVI", "AMAT", "MELI", "KLAC", "EXC", "BIIB", "MAR",
-                      "ORLY", "CTAS", "CTSH", "SNPS", "CDNS", "ASML", "WDAY", "DXCM", "IDXX", "FAST"][:limit]
-        else:
-            # Mixed high-quality stocks from both exchanges
-            tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK.B", "UNH", "JNJ",
-                      "JPM", "V", "PG", "HD", "MA", "NFLX", "ADBE", "CRM", "PYPL", "WMT", "BAC", "DIS",
-                      "KO", "XOM", "CVX", "ABBV", "PFE", "TMO", "COST", "DHR", "NKE", "LLY", "ORCL",
-                      "ACN", "TXN", "HON", "QCOM", "UPS", "PM", "NEE", "BMY", "IBM", "AVGO", "SBUX",
-                      "GILD", "MDLZ", "ISRG", "BKNG", "REGN", "ADP", "AMD"][:limit]
+        # Use Unusual Whales service for stock screener data
+        uw_service = UnusualWhalesService()
+        stock_data = await uw_service.get_stock_screener_data(limit=limit, exchange=exchange)
         
-        # Use enhanced real-time data collection with curated list
-        stock_data = await enhanced_ticker_manager.get_bulk_real_time_data(tickers)
-        
-        # Filter out any stocks with missing data
-        valid_stock_data = [stock for stock in stock_data if stock.get('price', 0) > 0]
-        
+        # Add market state and timestamp
         return {
-            "stocks": valid_stock_data,
-            "total_count": len(valid_stock_data),
+            "stocks": stock_data,
+            "total_count": len(stock_data),
             "exchange": exchange,
-            "market_state": enhanced_ticker_manager._get_market_state(),
+            "data_source": "Unusual Whales API" if uw_service.api_token else "Mock Data",
             "last_updated": datetime.utcnow().isoformat(),
-            "note": "Optimized with curated high-quality stocks for reliable data"
+            "note": "Real-time data from Unusual Whales with options flow signals"
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching enhanced screener data: {str(e)}")
+        logger.error(f"Error fetching Unusual Whales screener data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error fetching screener data: {str(e)}")
 
 @api_router.post("/screener/filter")
 async def screen_stocks_enhanced(criteria: ScreenerCriteria, exchange: str = Query("all", description="Exchange to screen")):
-    """Enhanced stock screening with real-time data and extended hours"""
+    """Enhanced stock screening using Unusual Whales API with advanced filtering"""
     try:
         criteria_dict = criteria.dict(exclude_none=True)
-        filtered_stocks = await enhanced_ticker_manager.screen_stocks_enhanced(criteria_dict, exchange)
+        
+        # Use Unusual Whales service for filtering
+        uw_service = UnusualWhalesService()
+        filtered_stocks = await uw_service.filter_stocks_by_criteria(criteria_dict, exchange)
         
         return {
             "stocks": filtered_stocks,
             "total_count": len(filtered_stocks),
             "criteria": criteria_dict,
             "exchange": exchange,
-            "market_state": enhanced_ticker_manager._get_market_state(),
-            "last_updated": datetime.utcnow().isoformat()
+            "data_source": "Unusual Whales API" if uw_service.api_token else "Mock Data",
+            "last_updated": datetime.utcnow().isoformat(),
+            "note": "Filtered results with unusual activity indicators"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error screening stocks with enhanced data: {str(e)}")
