@@ -55,6 +55,50 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 axios.defaults.timeout = 30000; // 30 seconds timeout
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
+// Error Boundary Component to prevent browser extension crashes
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Browser extension or runtime error caught:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-lg shadow-xl max-w-md text-center">
+            <h2 className="text-xl font-bold text-red-600 mb-4">Application Error</h2>
+            <p className="text-gray-600 mb-4">
+              An error occurred, possibly due to a browser extension. Please try:
+            </p>
+            <ul className="text-left text-sm text-gray-600 mb-4">
+              <li>• Disabling crypto/trading browser extensions</li>
+              <li>• Refreshing the page</li>
+              <li>• Using incognito mode</li>
+            </ul>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Reload Application
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 // Colors for portfolio charts
 const COLORS = [
   '#2563eb', '#7c3aed', '#dc2626', '#ea580c', '#ca8a04', 
