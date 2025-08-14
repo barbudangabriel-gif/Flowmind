@@ -2322,11 +2322,12 @@ const OptionsFlow = () => {
           </div>
           <div>
             <h4 className={`font-semibold ${isDarkMode ? 'text-blue-300' : 'text-blue-800'}`}>
-              Date despre Options Flow
+              Despre datele Options Flow
             </h4>
             <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-300' : 'text-blue-700'}`}>
-              Afișez date live de la Unusual Whales API. Informațiile despre premii pot varia în funcție de nivelul abonamentului. 
-              Tranzacțiile afișate includ atât cumpărări cât și vânzări de opțiuni pe diverse simboluri US.
+              <strong>Situația actuală:</strong> Unusual Whales nu oferă un API oficial public pentru Options Flow (August 2025). 
+              Datele afișate sunt simulate realist pe baza activității actuale de piață și includ premii, DTE, și tipuri de tranzacții (BUY/SELL) 
+              pentru simboluri cu activitate mare de opțiuni. Dark Pool și Congressional Trades folosesc date live de la Unusual Whales.
             </p>
           </div>
         </div>
