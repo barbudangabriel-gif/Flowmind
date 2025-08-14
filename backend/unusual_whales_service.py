@@ -173,9 +173,27 @@ class UnusualWhalesService:
     def _process_dark_pool_trade(self, trade: Dict[str, Any]) -> Dict[str, Any]:
         """Process individual dark pool trade data"""
         try:
-            dark_volume = trade.get('dark_volume', 0)
-            lit_volume = trade.get('lit_volume', 0)
-            total_volume = dark_volume + lit_volume
+            # For Unusual Whales API format:
+            # 'size' = dark pool trade size  
+            # 'volume' = total market volume
+            # 'price' = execution price
+            
+            trade_size = trade.get('size', 0)
+            total_market_volume = trade.get('volume', 0)
+            price = float(trade.get('price', 0))
+            
+            # Use trade size as dark volume (since it's a dark pool trade)
+            dark_volume = trade_size
+            
+            # Estimate lit volume - assume this dark trade represents a portion of total volume
+            # For estimation: if dark volume > 10% of total volume, it's significant
+            if total_market_volume > 0:
+                lit_volume = max(0, total_market_volume - dark_volume)
+                total_volume = total_market_volume
+            else:
+                # If no total volume data, use just the dark trade
+                lit_volume = dark_volume * 2  # Rough estimate
+                total_volume = dark_volume + lit_volume
             
             if total_volume == 0:
                 return {}
@@ -183,17 +201,20 @@ class UnusualWhalesService:
             dark_percentage = (dark_volume / total_volume) * 100
             significance = self._determine_dark_pool_significance(dark_volume, dark_percentage)
             
+            # Parse timestamp
+            timestamp = trade.get('executed_at') or trade.get('timestamp', datetime.now().isoformat())
+            
             return {
                 "ticker": trade.get('ticker', 'UNKNOWN'),
-                "timestamp": trade.get('timestamp', datetime.now().isoformat()),
-                "price": trade.get('price', 0),
+                "timestamp": timestamp,
+                "price": price,
                 "dark_volume": dark_volume,
                 "lit_volume": lit_volume,
                 "total_volume": total_volume,
                 "dark_percentage": round(dark_percentage, 2),
-                "dollar_volume": dark_volume * trade.get('price', 0),
+                "dollar_volume": dark_volume * price,
                 "significance": significance,
-                "institutional_signal": dark_percentage > 40 and dark_volume > 100000
+                "institutional_signal": dark_percentage > 15 and dark_volume > 50000  # Adjusted thresholds
             }
         except Exception as e:
             logger.error(f"Error processing dark pool trade: {str(e)}")
