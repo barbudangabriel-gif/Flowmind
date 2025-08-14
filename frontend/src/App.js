@@ -40,7 +40,10 @@ import {
   Award,
   RefreshCw,
   Moon,
-  Sun
+  Sun,
+  Bot,
+  History,
+  Users
 } from "lucide-react";
 
 // Lazy loading for heavy components
