@@ -1567,22 +1567,22 @@ async def get_trading_strategies_from_unusual_whales():
             if sentiment == 'bullish' and dte > 14:
                 strategy_name = "Bull Call Spread"
                 strategy_type = "vertical_spread"
-                lower_strike = int(underlying_price * 0.98)
-                upper_strike = int(underlying_price * 1.05)
+                lower_strike = int(underlying_price * 0.98) if underlying_price else 100
+                upper_strike = int(underlying_price * 1.05) if underlying_price else 105
             elif sentiment == 'bearish' and dte > 14:
                 strategy_name = "Bear Put Spread"
                 strategy_type = "vertical_spread"
-                lower_strike = int(underlying_price * 0.95)
-                upper_strike = int(underlying_price * 1.02)
+                lower_strike = int(underlying_price * 0.95) if underlying_price else 95
+                upper_strike = int(underlying_price * 1.02) if underlying_price else 102
             elif sentiment == 'bullish' and dte <= 14:
                 strategy_name = "Long Call"
                 strategy_type = "directional"
-                lower_strike = int(underlying_price * 1.02)
+                lower_strike = int(underlying_price * 1.02) if underlying_price else 102
                 upper_strike = None
             else:
                 strategy_name = "Long Put"
                 strategy_type = "directional"
-                lower_strike = int(underlying_price * 0.98)
+                lower_strike = int(underlying_price * 0.98) if underlying_price else 98
                 upper_strike = None
                 
             strategies.append({
