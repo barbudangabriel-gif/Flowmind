@@ -249,7 +249,10 @@ class TradeStationAuth:
                 
                 # Calculate token expiration
                 expires_in = token_data.get("expires_in", 3600)
-                self.token_expires = datetime.now() + timedelta(seconds=expires_in)
+                self.token_expires = datetime.utcnow() + timedelta(seconds=expires_in)
+                
+                # Save tokens to persistent storage
+                self._save_tokens()
                 
                 logger.info(f"Successfully exchanged authorization code for tokens. Expires in {expires_in}s")
                 
