@@ -2225,7 +2225,10 @@ const OptionsFlow = () => {
           <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
             <h3 className="text-lg font-semibold">Total Premium</h3>
             <p className="text-2xl font-bold text-green-600">
-              ${(analysis.summary.total_premium / 1000000).toFixed(1)}M
+              {analysis.summary.total_premium > 0 ? 
+                `$${(analysis.summary.total_premium / 1000000).toFixed(1)}M` : 
+                'N/A'
+              }
             </p>
           </div>
           <div className={`${isDarkMode ? 'bg-slate-800' : 'bg-white'} p-4 rounded-lg shadow-md`}>
