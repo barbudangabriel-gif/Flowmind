@@ -3174,6 +3174,303 @@ const AdvancedOptionsModal = ({ strategy, isOpen, onClose, isDarkMode }) => {
   );
 };
 
+// ==================== AUTO TRADING COMPONENTS ====================
+
+const AutoOptionsTrading = () => {
+  const { isDarkMode } = useTheme();
+  const [config, setConfig] = useState({
+    enabled: false,
+    budget: 10000,
+    maxDailyLoss: 500,
+    maxPositionSize: 1000,
+    riskPerTrade: 2,
+    strategies: ['long_call', 'long_put', 'bull_call_spread'],
+    symbols: ['SPY', 'QQQ', 'AAPL', 'MSFT']
+  });
+
+  const [stats, setStats] = useState({
+    totalValue: 10000,
+    availableCash: 10000,
+    totalPnL: 0,
+    todayPnL: 0,
+    activePositions: 0,
+    todayTrades: 0
+  });
+
+  const [activeTrades, setActiveTrades] = useState([
+    {
+      id: 1,
+      symbol: 'SPY',
+      strategy: 'Long Call',
+      entry_price: 2.50,
+      current_price: 3.20,
+      quantity: 5,
+      pnl: 350,
+      pnl_percent: 28.0,
+      entry_time: '2024-08-14 09:30:00',
+      expiration: '2024-08-21',
+      strike: 645
+    },
+    {
+      id: 2,
+      symbol: 'QQQ',
+      strategy: 'Bull Call Spread',
+      entry_price: 1.80,
+      current_price: 1.65,
+      quantity: 3,
+      pnl: -45,
+      pnl_percent: -8.3,
+      entry_time: '2024-08-14 10:15:00',
+      expiration: '2024-08-16',
+      strike: '580/585'
+    }
+  ]);
+
+  const handleConfigChange = (field, value) => {
+    setConfig(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const toggleAutoTrading = () => {
+    setConfig(prev => ({
+      ...prev,
+      enabled: !prev.enabled
+    }));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800">🤖 Auto Options Trading</h2>
+          <p className="text-gray-600">Automated options trading with risk management</p>
+        </div>
+        <div className="text-right">
+          <div className="text-sm text-gray-500">Trading Status</div>
+          <div className={`text-lg font-semibold ${config.enabled ? 'text-green-600' : 'text-gray-500'}`}>
+            {config.enabled ? '🟢 ACTIVE' : '🔴 INACTIVE'}
+          </div>
+        </div>
+      </div>
+
+      {/* Control Panel */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-semibold">Trading Control</h3>
+          <button
+            onClick={toggleAutoTrading}
+            className={`px-6 py-3 rounded-lg font-semibold text-white transition-colors ${
+              config.enabled 
+                ? 'bg-red-500 hover:bg-red-600' 
+                : 'bg-green-500 hover:bg-green-600'
+            }`}
+          >
+            {config.enabled ? 'Stop Auto Trading' : 'Start Auto Trading'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Budget */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Total Budget
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-3 text-gray-500">$</span>
+              <input
+                type="number"
+                value={config.budget}
+                onChange={(e) => handleConfigChange('budget', Number(e.target.value))}
+                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={config.enabled}
+              />
+            </div>
+          </div>
+
+          {/* Max Daily Loss */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Max Daily Loss
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-3 text-gray-500">$</span>
+              <input
+                type="number"
+                value={config.maxDailyLoss}
+                onChange={(e) => handleConfigChange('maxDailyLoss', Number(e.target.value))}
+                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={config.enabled}
+              />
+            </div>
+          </div>
+
+          {/* Risk Per Trade */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Risk Per Trade (%)
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={config.riskPerTrade}
+                onChange={(e) => handleConfigChange('riskPerTrade', Number(e.target.value))}
+                className="w-full pr-8 pl-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={config.enabled}
+                step="0.1"
+                min="0.1"
+                max="10"
+              />
+              <span className="absolute right-3 top-3 text-gray-500">%</span>
+            </div>
+          </div>
+
+          {/* Max Position Size */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Max Position Size
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-3 text-gray-500">$</span>
+              <input
+                type="number"
+                value={config.maxPositionSize}
+                onChange={(e) => handleConfigChange('maxPositionSize', Number(e.target.value))}
+                className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={config.enabled}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Portfolio Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Total Value</div>
+          <div className="text-2xl font-bold text-gray-800">${stats.totalValue.toLocaleString()}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Available Cash</div>
+          <div className="text-2xl font-bold text-blue-600">${stats.availableCash.toLocaleString()}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Total P&L</div>
+          <div className={`text-2xl font-bold ${stats.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            ${stats.totalPnL >= 0 ? '+' : ''}{stats.totalPnL.toLocaleString()}
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Today's P&L</div>
+          <div className={`text-2xl font-bold ${stats.todayPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            ${stats.todayPnL >= 0 ? '+' : ''}{stats.todayPnL.toLocaleString()}
+          </div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Active Positions</div>
+          <div className="text-2xl font-bold text-purple-600">{stats.activePositions}</div>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="text-sm text-gray-500">Today's Trades</div>
+          <div className="text-2xl font-bold text-orange-600">{stats.todayTrades}</div>
+        </div>
+      </div>
+
+      {/* Active Trades */}
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold flex items-center">
+            <Activity className="mr-2" size={20} />
+            Active Trades ({activeTrades.length})
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Strategy</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Strike/Exp</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">P&L</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {activeTrades.map((trade) => (
+                <tr key={trade.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 font-semibold text-blue-600">{trade.symbol}</td>
+                  <td className="px-6 py-4 text-sm">{trade.strategy}</td>
+                  <td className="px-6 py-4 text-sm">
+                    <div>${trade.strike}</div>
+                    <div className="text-gray-500">{trade.expiration}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    <div>${trade.entry_price}</div>
+                    <div className="text-gray-500">x{trade.quantity}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium">${trade.current_price}</td>
+                  <td className="px-6 py-4">
+                    <div className={`font-semibold ${trade.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ${trade.pnl >= 0 ? '+' : ''}{trade.pnl}
+                    </div>
+                    <div className={`text-sm ${trade.pnl_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      ({trade.pnl_percent >= 0 ? '+' : ''}{trade.pnl_percent}%)
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <button className="text-red-600 hover:text-red-800 font-medium text-sm">
+                      Close Position
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Strategy Configuration */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold mb-4">Enabled Strategies</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { id: 'long_call', name: 'Long Call', description: 'Buy call options for bullish signals' },
+            { id: 'long_put', name: 'Long Put', description: 'Buy put options for bearish signals' },
+            { id: 'bull_call_spread', name: 'Bull Call Spread', description: 'Limited risk bullish strategy' },
+            { id: 'bear_put_spread', name: 'Bear Put Spread', description: 'Limited risk bearish strategy' },
+            { id: 'iron_condor', name: 'Iron Condor', description: 'Neutral income strategy' },
+            { id: 'straddle', name: 'Long Straddle', description: 'High volatility play' }
+          ].map((strategy) => (
+            <div key={strategy.id} className="border rounded-lg p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="font-medium">{strategy.name}</div>
+                <input
+                  type="checkbox"
+                  checked={config.strategies.includes(strategy.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      handleConfigChange('strategies', [...config.strategies, strategy.id]);
+                    } else {
+                      handleConfigChange('strategies', config.strategies.filter(s => s !== strategy.id));
+                    }
+                  }}
+                  disabled={config.enabled}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+              </div>
+              <div className="text-sm text-gray-600">{strategy.description}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Market News Component  
 const MarketNews = () => {
   return (
