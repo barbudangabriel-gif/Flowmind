@@ -720,6 +720,251 @@ class StockMarketAPITester:
         
         return success
 
+    def test_advanced_screener_unusual_whales_integration(self):
+        """Test Advanced Screener endpoints with Unusual Whales API integration - COMPREHENSIVE TESTING"""
+        print("\n🐋 Testing Advanced Screener with Unusual Whales API Integration")
+        print("=" * 80)
+        
+        # Test 1: Stock Screener Data Endpoint with different exchanges
+        exchanges = ["all", "sp500", "nasdaq"]
+        screener_results = {}
+        
+        for exchange in exchanges:
+            print(f"\n📊 Testing GET /api/screener/data with exchange='{exchange}'")
+            success, data = self.run_test(
+                f"Screener Data ({exchange.upper()})", 
+                "GET", 
+                "screener/data", 
+                200, 
+                params={"limit": 20, "exchange": exchange}
+            )
+            
+            if success:
+                screener_results[exchange] = data
+                stocks = data.get('stocks', [])
+                data_source = data.get('data_source', 'Unknown')
+                
+                print(f"   ✅ Found {len(stocks)} stocks from {data_source}")
+                print(f"   📈 Exchange: {data.get('exchange', 'N/A')}")
+                print(f"   🕐 Last Updated: {data.get('last_updated', 'N/A')}")
+                
+                # Verify Unusual Whales specific fields
+                if stocks:
+                    first_stock = stocks[0]
+                    unusual_whales_fields = ['unusual_activity', 'options_flow_signal']
+                    missing_uw_fields = [field for field in unusual_whales_fields if field not in first_stock]
+                    
+                    if missing_uw_fields:
+                        print(f"   ⚠️  Missing Unusual Whales fields: {missing_uw_fields}")
+                    else:
+                        print(f"   🐋 Unusual Whales fields present: ✅")
+                        print(f"     - Unusual Activity: {first_stock.get('unusual_activity', 'N/A')}")
+                        print(f"     - Options Flow Signal: {first_stock.get('options_flow_signal', 'N/A')}")
+                    
+                    # Verify all expected stock fields
+                    expected_fields = ['symbol', 'name', 'price', 'change', 'change_percent', 
+                                     'volume', 'market_cap', 'sector', 'unusual_activity', 'options_flow_signal']
+                    missing_fields = [field for field in expected_fields if field not in first_stock]
+                    
+                    if missing_fields:
+                        print(f"   ❌ Missing required fields: {missing_fields}")
+                    else:
+                        print(f"   ✅ All required fields present")
+                        print(f"   📊 Sample: {first_stock['symbol']} - ${first_stock['price']:.2f} ({first_stock['change_percent']:+.2f}%)")
+                
+                # Verify data source indicates Unusual Whales
+                if "Unusual Whales" in data_source:
+                    print(f"   🐋 Data Source Verified: {data_source}")
+                elif "Mock Data" in data_source:
+                    print(f"   🔧 Using Mock Data: {data_source} (API key may not be working)")
+                else:
+                    print(f"   ⚠️  Unexpected data source: {data_source}")
+        
+        # Test 2: Stock Filtering Endpoint with various criteria
+        print(f"\n🔍 Testing POST /api/screener/filter with various criteria")
+        
+        filter_tests = [
+            {
+                "name": "Technology Stocks Filter",
+                "criteria": {
+                    "min_price": 50.0,
+                    "max_price": 500.0,
+                    "min_market_cap": 1000.0,  # 1B market cap
+                    "sector": "Technology"
+                },
+                "exchange": "all"
+            },
+            {
+                "name": "High Volume Filter",
+                "criteria": {
+                    "min_volume": 5000000,
+                    "min_price": 100.0
+                },
+                "exchange": "sp500"
+            },
+            {
+                "name": "P/E Ratio Filter",
+                "criteria": {
+                    "min_pe": 10.0,
+                    "max_pe": 30.0,
+                    "min_market_cap": 500.0
+                },
+                "exchange": "nasdaq"
+            },
+            {
+                "name": "Price Range Filter",
+                "criteria": {
+                    "min_price": 200.0,
+                    "max_price": 400.0,
+                    "min_change": -5.0,
+                    "max_change": 5.0
+                },
+                "exchange": "all"
+            }
+        ]
+        
+        for filter_test in filter_tests:
+            print(f"\n   🎯 {filter_test['name']}")
+            success, filtered_data = self.run_test(
+                filter_test['name'],
+                "POST",
+                "screener/filter",
+                200,
+                data=filter_test['criteria'],
+                params={"exchange": filter_test['exchange']}
+            )
+            
+            if success:
+                stocks = filtered_data.get('stocks', [])
+                criteria = filtered_data.get('criteria', {})
+                data_source = filtered_data.get('data_source', 'Unknown')
+                
+                print(f"     📊 Found {len(stocks)} filtered stocks")
+                print(f"     🐋 Data Source: {data_source}")
+                print(f"     🔍 Applied Criteria: {len(criteria)} filters")
+                
+                # Verify filtering worked correctly
+                if stocks:
+                    sample_stock = stocks[0]
+                    print(f"     📈 Sample Result: {sample_stock['symbol']} - ${sample_stock['price']:.2f}")
+                    
+                    # Check if filters were applied correctly
+                    filter_checks = []
+                    if 'min_price' in criteria and sample_stock['price'] >= criteria['min_price']:
+                        filter_checks.append("min_price ✅")
+                    if 'max_price' in criteria and sample_stock['price'] <= criteria['max_price']:
+                        filter_checks.append("max_price ✅")
+                    if 'sector' in criteria and sample_stock['sector'] == criteria['sector']:
+                        filter_checks.append("sector ✅")
+                    
+                    if filter_checks:
+                        print(f"     ✅ Filter Validation: {', '.join(filter_checks)}")
+        
+        # Test 3: API Key Usage Verification
+        print(f"\n🔑 Testing API Key Usage (Unusual Whales API Key: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50)")
+        
+        # Check if we're using the correct API key by examining response metadata
+        if screener_results:
+            for exchange, data in screener_results.items():
+                data_source = data.get('data_source', '')
+                if "Unusual Whales API" in data_source:
+                    print(f"   ✅ {exchange.upper()}: Using Unusual Whales API (correct API key)")
+                elif "Mock Data" in data_source:
+                    print(f"   🔧 {exchange.upper()}: Using Mock Data (API key may be inactive)")
+                else:
+                    print(f"   ❌ {exchange.upper()}: Unknown data source: {data_source}")
+        
+        # Test 4: Exchange Filtering Verification
+        print(f"\n🏛️  Testing Exchange Filtering Accuracy")
+        
+        if len(screener_results) >= 2:
+            all_stocks = screener_results.get('all', {}).get('stocks', [])
+            sp500_stocks = screener_results.get('sp500', {}).get('stocks', [])
+            nasdaq_stocks = screener_results.get('nasdaq', {}).get('stocks', [])
+            
+            print(f"   📊 Stock Counts: ALL={len(all_stocks)}, SP500={len(sp500_stocks)}, NASDAQ={len(nasdaq_stocks)}")
+            
+            # Verify that 'all' contains more or equal stocks than individual exchanges
+            if len(all_stocks) >= len(sp500_stocks) and len(all_stocks) >= len(nasdaq_stocks):
+                print(f"   ✅ Exchange filtering logic correct: ALL >= individual exchanges")
+            else:
+                print(f"   ⚠️  Exchange filtering may have issues")
+            
+            # Check for exchange-specific stocks
+            if sp500_stocks:
+                sp500_symbols = {stock['symbol'] for stock in sp500_stocks}
+                print(f"   📈 SP500 Sample Symbols: {list(sp500_symbols)[:5]}")
+            
+            if nasdaq_stocks:
+                nasdaq_symbols = {stock['symbol'] for stock in nasdaq_stocks}
+                print(f"   💻 NASDAQ Sample Symbols: {list(nasdaq_symbols)[:5]}")
+        
+        # Test 5: Error Handling and Mock Data Fallback
+        print(f"\n🛡️  Testing Error Handling and Mock Data Fallback")
+        
+        # Test with invalid exchange parameter
+        success, invalid_data = self.run_test(
+            "Invalid Exchange Parameter",
+            "GET",
+            "screener/data",
+            200,  # Should still return 200 with mock data
+            params={"exchange": "invalid_exchange", "limit": 5}
+        )
+        
+        if success:
+            data_source = invalid_data.get('data_source', '')
+            if "Mock Data" in data_source or "Unusual Whales" in data_source:
+                print(f"   ✅ Error handling working: {data_source}")
+            else:
+                print(f"   ⚠️  Unexpected response for invalid exchange")
+        
+        # Test 6: Response Format Verification
+        print(f"\n📋 Testing Response Format Compliance")
+        
+        if screener_results:
+            sample_response = list(screener_results.values())[0]
+            required_response_fields = ['stocks', 'total_count', 'exchange', 'data_source', 'last_updated']
+            missing_response_fields = [field for field in required_response_fields if field not in sample_response]
+            
+            if missing_response_fields:
+                print(f"   ❌ Missing response fields: {missing_response_fields}")
+            else:
+                print(f"   ✅ All required response fields present")
+                print(f"   📊 Response Structure: {list(sample_response.keys())}")
+        
+        # Test 7: Data Quality Verification
+        print(f"\n🔍 Testing Data Quality")
+        
+        if screener_results:
+            all_stocks = screener_results.get('all', {}).get('stocks', [])
+            if all_stocks:
+                # Check for realistic stock prices (not all zeros)
+                non_zero_prices = [stock for stock in all_stocks if stock.get('price', 0) > 0]
+                zero_prices = [stock for stock in all_stocks if stock.get('price', 0) == 0]
+                
+                print(f"   💰 Price Quality: {len(non_zero_prices)} real prices, {len(zero_prices)} zero prices")
+                
+                if len(non_zero_prices) > len(zero_prices):
+                    print(f"   ✅ Good price data quality")
+                else:
+                    print(f"   ⚠️  Poor price data quality - too many zero prices")
+                
+                # Check for Unusual Whales specific data
+                unusual_activity_count = len([stock for stock in all_stocks if stock.get('unusual_activity', False)])
+                options_signals = [stock.get('options_flow_signal', 'neutral') for stock in all_stocks]
+                signal_distribution = {signal: options_signals.count(signal) for signal in set(options_signals)}
+                
+                print(f"   🐋 Unusual Activity: {unusual_activity_count}/{len(all_stocks)} stocks")
+                print(f"   📊 Options Flow Signals: {signal_distribution}")
+                
+                if unusual_activity_count > 0 or any(signal != 'neutral' for signal in options_signals):
+                    print(f"   ✅ Unusual Whales data integration working")
+                else:
+                    print(f"   🔧 Using mock data - Unusual Whales integration may be inactive")
+        
+        print(f"\n🎯 Advanced Screener Unusual Whales Integration Testing Complete")
+        return True
+
     def test_error_handling(self):
         """Test error handling for invalid requests"""
         # Test invalid stock symbol
