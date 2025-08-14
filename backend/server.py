@@ -1344,6 +1344,489 @@ async def debug_dark_pool():
     except Exception as e:
         return {"error": str(e)}
 
+# ==================== TRADESTATION API ENDPOINTS ====================
+
+@api_router.get("/auth/tradestation/status")
+async def get_tradestation_auth_status():
+    """Get current TradeStation authentication status"""
+    try:
+        auth_status = ts_auth.get_auth_status()
+        connection_test = None
+        
+        if auth_status["authenticated"]:
+            # Test connection
+            async with ts_client:
+                connection_test = await ts_client.test_connection()
+        
+        return {
+            "status": "success",
+            "authentication": auth_status,
+            "connection_test": connection_test,
+            "api_configuration": {
+                "environment": ts_auth.environment,
+                "base_url": ts_auth.api_base,
+                "credentials_configured": bool(ts_auth.client_id and ts_auth.client_secret)
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error checking TradeStation auth status: {str(e)}")
+        return {
+            "status": "error",
+            "message": f"Error checking authentication status: {str(e)}",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+@api_router.get("/auth/tradestation/login")
+async def initiate_tradestation_login():
+    """Initiate TradeStation OAuth login process"""
+    try:
+        auth_url = ts_auth.generate_auth_url()
+        
+        return {
+            "status": "success",
+            "message": "OAuth URL generated. Redirect user to complete authentication.",
+            "auth_url": auth_url,
+            "instructions": [
+                "1. User must visit the auth_url to log into TradeStation",
+                "2. After authorization, TradeStation will redirect to callback URL",
+                "3. Callback will exchange code for access tokens"
+            ],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error initiating TradeStation login: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to initiate login: {str(e)}")
+
+@api_router.get("/auth/tradestation/callback")
+async def handle_tradestation_callback(code: str = Query(...), state: str = Query(...)):
+    """Handle TradeStation OAuth callback"""
+    try:
+        if not code:
+            raise HTTPException(status_code=400, detail="Authorization code not provided")
+        
+        # Exchange code for tokens
+        token_data = await ts_auth.exchange_code_for_tokens(code)
+        
+        # Test the connection
+        async with ts_client:
+            connection_test = await ts_client.test_connection()
+        
+        return {
+            "status": "success",
+            "message": "TradeStation authentication successful",
+            "token_info": {
+                "token_type": token_data.get("token_type"),
+                "expires_in": token_data.get("expires_in"),
+                "scope": token_data.get("scope")
+            },
+            "connection_test": connection_test,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"OAuth callback error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Authentication callback failed: {str(e)}")
+
+# ==================== PORTFOLIO ENDPOINTS ====================
+
+@api_router.get("/tradestation/accounts")
+async def get_tradestation_accounts():
+    """Get all TradeStation accounts accessible to the user"""
+    try:
+        async with ts_client:
+            accounts = await ts_client.get_accounts()
+        
+        return {
+            "status": "success",
+            "accounts": accounts,
+            "count": len(accounts),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching TradeStation accounts: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch accounts: {str(e)}")
+
+@api_router.get("/tradestation/accounts/{account_id}/summary")
+async def get_tradestation_account_summary(account_id: str):
+    """Get comprehensive account summary including positions, balances, and performance metrics"""
+    try:
+        # Get comprehensive portfolio analysis
+        analysis = await portfolio_service.get_comprehensive_portfolio_analysis(account_id)
+        
+        return {
+            "status": "success",
+            "data": analysis,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching account summary: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch account summary: {str(e)}")
+
+@api_router.get("/tradestation/accounts/{account_id}/positions")
+async def get_tradestation_positions(
+    account_id: str,
+    asset_type: Optional[str] = Query(None, description="Filter by asset type (EQ, OP, FU)"),
+    min_value: Optional[float] = Query(None, description="Minimum position value filter")
+):
+    """Get detailed position information with filtering options"""
+    try:
+        async with ts_client:
+            positions = await ts_client.get_positions(account_id)
+        
+        # Apply filters
+        filtered_positions = positions
+        if asset_type:
+            filtered_positions = [pos for pos in filtered_positions if pos.asset_type == asset_type]
+        
+        if min_value is not None:
+            filtered_positions = [pos for pos in filtered_positions if abs(pos.market_value) >= min_value]
+        
+        # Convert to dict format and sort by market value
+        positions_data = []
+        for pos in filtered_positions:
+            pos_dict = {
+                "account_id": pos.account_id,
+                "symbol": pos.symbol,
+                "asset_type": pos.asset_type,
+                "quantity": pos.quantity,
+                "average_price": pos.average_price,
+                "current_price": pos.current_price,
+                "market_value": pos.market_value,
+                "unrealized_pnl": pos.unrealized_pnl,
+                "unrealized_pnl_percent": pos.unrealized_pnl_percent,
+                "position_type": "Long" if pos.quantity > 0 else "Short"
+            }
+            positions_data.append(pos_dict)
+        
+        # Sort by market value descending
+        positions_data.sort(key=lambda x: abs(x["market_value"]), reverse=True)
+        
+        return {
+            "status": "success",
+            "account_id": account_id,
+            "positions": positions_data,
+            "total_positions": len(positions_data),
+            "filters_applied": {
+                "asset_type": asset_type,
+                "min_value": min_value
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching positions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch positions: {str(e)}")
+
+@api_router.get("/tradestation/accounts/{account_id}/balances")
+async def get_tradestation_balances(account_id: str):
+    """Get account balance information"""
+    try:
+        async with ts_client:
+            balances = await ts_client.get_account_balances(account_id)
+        
+        return {
+            "status": "success",
+            "account_id": account_id,
+            "balances": balances,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching account balances: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch balances: {str(e)}")
+
+# ==================== TRADING ENDPOINTS ====================
+
+@api_router.post("/tradestation/accounts/{account_id}/orders/validate")
+async def validate_tradestation_order(account_id: str, order: OrderRequest):
+    """Validate order without placing it"""
+    try:
+        validation_result = await trading_service.validate_order(account_id, order)
+        
+        return {
+            "status": "success",
+            "account_id": account_id,
+            "order": order.dict(),
+            "validation": validation_result,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Order validation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Order validation failed: {str(e)}")
+
+@api_router.post("/tradestation/accounts/{account_id}/orders")
+async def place_tradestation_order(
+    account_id: str, 
+    order: OrderRequest,
+    force: bool = Query(False, description="Force order placement despite warnings")
+):
+    """Place a new trading order"""
+    try:
+        result = await trading_service.place_order(account_id, order, force)
+        
+        if result["success"]:
+            return {
+                "status": "success",
+                "message": result["message"],
+                "data": result,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        else:
+            return {
+                "status": "validation_failed" if result.get("requires_confirmation") else "error",
+                "message": result["message"],
+                "data": result,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        
+    except Exception as e:
+        logger.error(f"Failed to place order: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to place order: {str(e)}")
+
+@api_router.get("/tradestation/accounts/{account_id}/orders")
+async def get_tradestation_orders(
+    account_id: str,
+    status: Optional[str] = Query(None, description="Filter by order status"),
+    symbol: Optional[str] = Query(None, description="Filter by symbol"),
+    days_back: int = Query(7, ge=1, le=30, description="Days of order history")
+):
+    """Get order history with filtering options"""
+    try:
+        since_date = datetime.utcnow() - timedelta(days=days_back)
+        
+        async with ts_client:
+            orders = await ts_client.get_orders(account_id, since_date)
+        
+        # Apply filters
+        filtered_orders = orders
+        if status:
+            filtered_orders = [order for order in filtered_orders if order.status == status]
+        
+        if symbol:
+            filtered_orders = [order for order in filtered_orders if order.symbol.upper() == symbol.upper()]
+        
+        # Sort by timestamp descending
+        filtered_orders.sort(key=lambda x: x.timestamp, reverse=True)
+        
+        # Convert to dict format
+        orders_data = []
+        for order in filtered_orders:
+            order_dict = {
+                "order_id": order.order_id,
+                "account_id": order.account_id,
+                "symbol": order.symbol,
+                "asset_type": order.asset_type,
+                "quantity": order.quantity,
+                "order_type": order.order_type,
+                "price": order.price,
+                "status": order.status,
+                "filled_quantity": order.filled_quantity,
+                "remaining_quantity": order.remaining_quantity,
+                "timestamp": order.timestamp.isoformat()
+            }
+            orders_data.append(order_dict)
+        
+        return {
+            "status": "success",
+            "account_id": account_id,
+            "orders": orders_data,
+            "total_orders": len(orders_data),
+            "filters": {
+                "status": status,
+                "symbol": symbol,
+                "days_back": days_back
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to retrieve orders: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve orders: {str(e)}")
+
+@api_router.delete("/tradestation/accounts/{account_id}/orders/{order_id}")
+async def cancel_tradestation_order(account_id: str, order_id: str):
+    """Cancel an existing order"""
+    try:
+        result = await trading_service.cancel_order(account_id, order_id)
+        
+        if result["success"]:
+            return {
+                "status": "success",
+                "message": result["message"],
+                "data": result,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        else:
+            return {
+                "status": "error",
+                "message": result["message"],
+                "data": result,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        
+    except Exception as e:
+        logger.error(f"Failed to cancel order: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to cancel order: {str(e)}")
+
+@api_router.get("/tradestation/accounts/{account_id}/orders/{order_id}/status")
+async def get_tradestation_order_status(account_id: str, order_id: str):
+    """Get detailed status of a specific order"""
+    try:
+        result = await trading_service.get_order_status(account_id, order_id)
+        
+        if result["success"]:
+            return {
+                "status": "success",
+                "data": result,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        else:
+            return {
+                "status": "error",
+                "message": result["message"],
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        
+    except Exception as e:
+        logger.error(f"Failed to get order status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get order status: {str(e)}")
+
+@api_router.get("/tradestation/accounts/{account_id}/trading-summary")
+async def get_tradestation_trading_summary(
+    account_id: str,
+    days_back: int = Query(7, ge=1, le=30, description="Days of trading history to analyze")
+):
+    """Get comprehensive trading activity summary"""
+    try:
+        summary = await trading_service.get_trading_summary(account_id, days_back)
+        
+        return {
+            "status": "success",
+            "data": summary,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get trading summary: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get trading summary: {str(e)}")
+
+# ==================== MARKET DATA ENDPOINTS ====================
+
+@api_router.get("/tradestation/quotes/{symbols}")
+async def get_tradestation_quotes(symbols: str):
+    """Get current quotes for symbols (comma-separated)"""
+    try:
+        symbol_list = [s.strip().upper() for s in symbols.split(',')]
+        
+        async with ts_client:
+            quotes = await ts_client.get_quote(symbol_list)
+        
+        # Convert to dict format
+        quotes_data = []
+        for quote in quotes:
+            quote_dict = {
+                "symbol": quote.symbol,
+                "bid": quote.bid,
+                "ask": quote.ask,
+                "last": quote.last,
+                "volume": quote.volume,
+                "change": quote.change,
+                "change_percent": quote.change_percent,
+                "timestamp": quote.timestamp.isoformat()
+            }
+            quotes_data.append(quote_dict)
+        
+        return {
+            "status": "success",
+            "quotes": quotes_data,
+            "symbols_requested": symbol_list,
+            "quotes_found": len(quotes_data),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get quotes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get quotes: {str(e)}")
+
+@api_router.get("/tradestation/historical/{symbol}")
+async def get_tradestation_historical_data(
+    symbol: str,
+    interval: int = Query(1, description="Bar interval"),
+    unit: str = Query("Daily", description="Time unit (Daily, Weekly, Monthly)"),
+    bars_back: int = Query(30, description="Number of bars to retrieve")
+):
+    """Get historical bar data for a symbol"""
+    try:
+        async with ts_client:
+            bars = await ts_client.get_historical_bars(
+                symbol=symbol.upper(),
+                interval=interval,
+                unit=unit,
+                bars_back=bars_back
+            )
+        
+        return {
+            "status": "success",
+            "symbol": symbol.upper(),
+            "bars": bars,
+            "parameters": {
+                "interval": interval,
+                "unit": unit,
+                "bars_back": bars_back
+            },
+            "bars_count": len(bars),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get historical data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get historical data: {str(e)}")
+
+# ==================== RISK MANAGEMENT ENDPOINTS ====================
+
+@api_router.get("/tradestation/risk-limits")
+async def get_risk_limits():
+    """Get current risk management limits"""
+    try:
+        current_limits = trading_service.risk_manager.limits
+        
+        return {
+            "status": "success",
+            "risk_limits": current_limits.dict(),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get risk limits: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get risk limits: {str(e)}")
+
+@api_router.put("/tradestation/risk-limits")
+async def update_risk_limits(new_limits: RiskLimits):
+    """Update risk management limits"""
+    try:
+        trading_service.update_risk_limits(new_limits)
+        
+        return {
+            "status": "success",
+            "message": "Risk limits updated successfully",
+            "new_limits": new_limits.dict(),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to update risk limits: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to update risk limits: {str(e)}")
+
+# Add new imports to the root response
+
 @api_router.get("/unusual-whales/congressional/trades")
 async def get_unusual_whales_congressional_trades(
     days_back: Optional[int] = Query(30, description="Days to look back for trades"),
