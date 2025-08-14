@@ -1340,24 +1340,33 @@ const TechnicalAnalysis = () => {
     }
   };
 
-  const OrderBlockCard = ({ orderBlock }) => (
-    <div className={`p-3 rounded-lg border-l-4 ${
-      orderBlock.type === 'bullish' 
-        ? 'border-green-500 bg-green-50' 
-        : 'border-red-500 bg-red-50'
-    }`}>
-      <div className="flex justify-between items-center mb-2">
-        <span className={`font-semibold ${
-          orderBlock.type === 'bullish' ? 'text-green-700' : 'text-red-700'
-        }`}>
-          {orderBlock.type.toUpperCase()} Order Block
-        </span>
-        <span className={`text-xs px-2 py-1 rounded ${
-          orderBlock.strength === 'strong' 
-            ? 'bg-purple-100 text-purple-700'
-            : orderBlock.strength === 'medium'
-            ? 'bg-blue-100 text-blue-700'
-            : 'bg-gray-100 text-gray-700'
+  const OrderBlockCard = ({ orderBlock }) => {
+    // Defensive programming against browser extension interference
+    if (!orderBlock || typeof orderBlock !== 'object') {
+      return <div className="p-3 text-gray-500">Invalid order block data</div>;
+    }
+    
+    const blockType = orderBlock.type || 'unknown';
+    const strength = orderBlock.strength || 'weak';
+    
+    return (
+      <div className={`p-3 rounded-lg border-l-4 ${
+        blockType === 'bullish' 
+          ? 'border-green-500 bg-green-50' 
+          : 'border-red-500 bg-red-50'
+      }`}>
+        <div className="flex justify-between items-center mb-2">
+          <span className={`font-semibold ${
+            blockType === 'bullish' ? 'text-green-700' : 'text-red-700'
+          }`}>
+            {blockType.toUpperCase()} Order Block
+          </span>
+          <span className={`text-xs px-2 py-1 rounded ${
+            strength === 'strong' 
+              ? 'bg-purple-100 text-purple-700'
+              : strength === 'medium'
+              ? 'bg-blue-100 text-blue-700'
+              : 'bg-gray-100 text-gray-700'
         }`}>
           {orderBlock.strength}
         </span>
