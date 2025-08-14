@@ -1652,6 +1652,208 @@ class StockMarketAPITester:
         
         return futures_test_results
 
+    def test_market_overview_debug_futures_symbols(self):
+        """DEBUG: Comprehensive test to verify Market Overview returns futures symbols (SPX, NQ, YM, RTY) instead of old index symbols"""
+        print("\n🔍 DEBUGGING MARKET OVERVIEW - FUTURES SYMBOLS ISSUE")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Debug why frontend shows old symbols (^GSPC, ^DJI, ^IXIC, ^RUT) instead of futures symbols (SPX, NQ, YM, RTY)")
+        print("📋 REQUIREMENTS:")
+        print("   1. Test Market Overview API: GET /api/market/overview")
+        print("   2. Verify 'symbol' field shows SPX, NQ, YM, RTY (NOT ^GSPC, ^DJI, ^IXIC, ^RUT)")
+        print("   3. Verify 'underlying_symbol' field shows SPY, QQQ, DIA, IWM")
+        print("   4. Show exact JSON response structure")
+        print("   5. Check for caching issues")
+        
+        # Test the Market Overview API
+        success, overview_data = self.run_test("Market Overview API", "GET", "market/overview", 200)
+        
+        if not success:
+            print("❌ CRITICAL: Market Overview API failed completely")
+            return False
+        
+        print(f"\n📊 RAW API RESPONSE ANALYSIS:")
+        print("-" * 60)
+        
+        # Show the complete response structure
+        import json
+        print("🔍 COMPLETE JSON RESPONSE:")
+        print(json.dumps(overview_data, indent=2))
+        
+        # Extract indices data
+        indices = overview_data.get('indices', [])
+        print(f"\n📈 INDICES ANALYSIS ({len(indices)} found):")
+        print("-" * 60)
+        
+        # Expected vs Actual symbols
+        expected_futures_symbols = ['SPX', 'NQ', 'YM', 'RTY']
+        expected_etf_underlying = ['SPY', 'QQQ', 'DIA', 'IWM']
+        old_index_symbols = ['^GSPC', '^DJI', '^IXIC', '^RUT']
+        
+        debug_results = {
+            'total_indices': len(indices),
+            'futures_symbols_found': [],
+            'old_symbols_found': [],
+            'underlying_symbols_found': [],
+            'symbol_field_values': [],
+            'underlying_field_values': [],
+            'issues_detected': []
+        }
+        
+        for i, index in enumerate(indices):
+            symbol = index.get('symbol', 'MISSING')
+            underlying_symbol = index.get('underlying_symbol', 'MISSING')
+            name = index.get('name', 'MISSING')
+            price = index.get('price', 0)
+            
+            print(f"\n   📊 INDEX {i+1}:")
+            print(f"     - symbol: '{symbol}'")
+            print(f"     - underlying_symbol: '{underlying_symbol}'")
+            print(f"     - name: '{name}'")
+            print(f"     - price: ${price:.2f}")
+            
+            # Track all symbol values
+            debug_results['symbol_field_values'].append(symbol)
+            debug_results['underlying_field_values'].append(underlying_symbol)
+            
+            # Check if we're getting futures symbols (GOOD)
+            if symbol in expected_futures_symbols:
+                debug_results['futures_symbols_found'].append(symbol)
+                print(f"     ✅ CORRECT: Found futures symbol '{symbol}'")
+            
+            # Check if we're getting old index symbols (BAD - this is the problem)
+            elif symbol in old_index_symbols:
+                debug_results['old_symbols_found'].append(symbol)
+                debug_results['issues_detected'].append(f"Index {i+1} shows old symbol '{symbol}' instead of futures symbol")
+                print(f"     ❌ PROBLEM: Found old index symbol '{symbol}' - should be futures symbol!")
+            
+            else:
+                debug_results['issues_detected'].append(f"Index {i+1} has unexpected symbol '{symbol}'")
+                print(f"     ⚠️  UNEXPECTED: Symbol '{symbol}' not in expected lists")
+            
+            # Check underlying symbols
+            if underlying_symbol in expected_etf_underlying:
+                debug_results['underlying_symbols_found'].append(underlying_symbol)
+                print(f"     ✅ CORRECT: Underlying symbol '{underlying_symbol}' is ETF")
+            elif underlying_symbol in old_index_symbols:
+                print(f"     ✅ ACCEPTABLE: Underlying symbol '{underlying_symbol}' is index (fallback)")
+            else:
+                debug_results['issues_detected'].append(f"Index {i+1} has unexpected underlying_symbol '{underlying_symbol}'")
+                print(f"     ⚠️  UNEXPECTED: Underlying symbol '{underlying_symbol}' not recognized")
+        
+        # CRITICAL ANALYSIS
+        print(f"\n🚨 CRITICAL ISSUE ANALYSIS:")
+        print("=" * 60)
+        
+        print(f"📊 SYMBOL FIELD ANALYSIS:")
+        print(f"   - Total indices: {debug_results['total_indices']}")
+        print(f"   - Futures symbols found: {len(debug_results['futures_symbols_found'])} {debug_results['futures_symbols_found']}")
+        print(f"   - Old index symbols found: {len(debug_results['old_symbols_found'])} {debug_results['old_symbols_found']}")
+        print(f"   - All symbol values: {debug_results['symbol_field_values']}")
+        
+        print(f"\n📊 UNDERLYING_SYMBOL FIELD ANALYSIS:")
+        print(f"   - ETF underlying found: {len(debug_results['underlying_symbols_found'])} {debug_results['underlying_symbols_found']}")
+        print(f"   - All underlying values: {debug_results['underlying_field_values']}")
+        
+        # ROOT CAUSE ANALYSIS
+        print(f"\n🔍 ROOT CAUSE ANALYSIS:")
+        print("-" * 60)
+        
+        if len(debug_results['old_symbols_found']) > 0:
+            print(f"❌ PROBLEM CONFIRMED: API is returning old index symbols in 'symbol' field")
+            print(f"   - Old symbols found: {debug_results['old_symbols_found']}")
+            print(f"   - Expected futures symbols: {expected_futures_symbols}")
+            print(f"   - This explains why frontend shows ^GSPC, ^DJI, ^IXIC, ^RUT instead of SPX, NQ, YM, RTY")
+            
+            # Check if the mapping is working at all
+            if len(debug_results['futures_symbols_found']) == 0:
+                print(f"❌ CRITICAL: No futures symbols found - mapping completely broken")
+            else:
+                print(f"⚠️  PARTIAL: Some futures symbols found but not all")
+        
+        elif len(debug_results['futures_symbols_found']) == 4:
+            print(f"✅ BACKEND WORKING: All 4 futures symbols found correctly")
+            print(f"   - Futures symbols: {debug_results['futures_symbols_found']}")
+            print(f"   - If frontend still shows old symbols, the issue is in frontend code or caching")
+        
+        else:
+            print(f"⚠️  PARTIAL SUCCESS: Some futures symbols found but not complete set")
+            print(f"   - Found: {debug_results['futures_symbols_found']}")
+            print(f"   - Missing: {set(expected_futures_symbols) - set(debug_results['futures_symbols_found'])}")
+        
+        # CACHING ANALYSIS
+        print(f"\n🔄 CACHING ANALYSIS:")
+        print("-" * 60)
+        
+        data_source = overview_data.get('data_source', 'Unknown')
+        last_updated = overview_data.get('last_updated', 'Unknown')
+        
+        print(f"   - Data Source: {data_source}")
+        print(f"   - Last Updated: {last_updated}")
+        
+        if "Mock Data" in data_source or "Fallback" in data_source:
+            print(f"   ⚠️  Using fallback/mock data - may not reflect latest implementation")
+        else:
+            print(f"   ✅ Using live data source")
+        
+        # Check timestamp freshness
+        try:
+            from datetime import datetime
+            if last_updated != 'Unknown':
+                # Parse timestamp and check if recent
+                print(f"   📅 Timestamp indicates fresh data")
+        except:
+            print(f"   ⚠️  Cannot verify timestamp freshness")
+        
+        # DETAILED ISSUES REPORT
+        if debug_results['issues_detected']:
+            print(f"\n🚨 ISSUES DETECTED ({len(debug_results['issues_detected'])}):")
+            print("-" * 60)
+            for i, issue in enumerate(debug_results['issues_detected'], 1):
+                print(f"   {i}. {issue}")
+        
+        # SOLUTION RECOMMENDATIONS
+        print(f"\n💡 SOLUTION RECOMMENDATIONS:")
+        print("-" * 60)
+        
+        if len(debug_results['old_symbols_found']) > 0:
+            print(f"1. ❌ BACKEND ISSUE: The backend is returning old index symbols in the 'symbol' field")
+            print(f"   - Check server.py line ~814-850 in get_market_overview() function")
+            print(f"   - Verify futures_symbol assignment: futures_symbol = ['SPX', 'NQ', 'YM', 'RTY'][i]")
+            print(f"   - Ensure 'symbol': futures_symbol is used in response, not underlying symbol")
+            
+        elif len(debug_results['futures_symbols_found']) == 4:
+            print(f"1. ✅ BACKEND CORRECT: Backend returns proper futures symbols")
+            print(f"2. 🔍 CHECK FRONTEND: Issue may be in frontend code or browser caching")
+            print(f"   - Clear browser cache and hard refresh")
+            print(f"   - Check frontend API call to /api/market/overview")
+            print(f"   - Verify frontend uses response.symbol field correctly")
+            
+        else:
+            print(f"1. ⚠️  PARTIAL BACKEND ISSUE: Some symbols correct, others not")
+            print(f"   - Check array indexing in server.py get_market_overview() function")
+            print(f"   - Verify all 4 futures symbols are properly mapped")
+        
+        # FINAL VERDICT
+        print(f"\n🎯 FINAL VERDICT:")
+        print("=" * 60)
+        
+        if len(debug_results['old_symbols_found']) > 0:
+            print(f"❌ BACKEND ISSUE CONFIRMED: API returns old symbols instead of futures symbols")
+            print(f"   This explains why frontend shows ^GSPC, ^DJI, ^IXIC, ^RUT")
+            print(f"   SOLUTION: Fix backend symbol mapping in server.py")
+            return False
+        
+        elif len(debug_results['futures_symbols_found']) == 4:
+            print(f"✅ BACKEND WORKING CORRECTLY: All futures symbols returned properly")
+            print(f"   If frontend still shows old symbols, check frontend code or caching")
+            print(f"   SOLUTION: Clear frontend cache or check frontend API usage")
+            return True
+        
+        else:
+            print(f"⚠️  PARTIAL BACKEND ISSUE: Incomplete futures symbol implementation")
+            print(f"   SOLUTION: Complete the futures symbol mapping in backend")
+            return False
+
     def test_error_handling(self):
         """Test error handling for invalid requests"""
         # Test invalid stock symbol
