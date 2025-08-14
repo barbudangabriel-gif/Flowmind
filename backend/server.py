@@ -1427,6 +1427,11 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
         # Exchange code for tokens
         token_data = await ts_auth.exchange_code_for_tokens(code)
         
+        # Start token monitoring after successful authentication
+        if token_manager and not token_manager.running:
+            await token_manager.start_monitoring()
+            logger.info("🔄 Started token monitoring after successful authentication")
+        
         # Test the connection
         async with ts_client:
             connection_test = await ts_client.test_connection()
