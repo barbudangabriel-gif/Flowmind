@@ -1383,33 +1383,42 @@ const TechnicalAnalysis = () => {
   };
 
   const FairValueGapCard = ({ fvg }) => {
-    <div className={`p-3 rounded-lg border-l-4 ${
-      fvg.type === 'bullish' 
-        ? 'border-blue-500 bg-blue-50' 
-        : 'border-orange-500 bg-orange-50'
-    }`}>
-      <div className="flex justify-between items-center mb-2">
-        <span className={`font-semibold ${
-          fvg.type === 'bullish' ? 'text-blue-700' : 'text-orange-700'
-        }`}>
-          {fvg.type.toUpperCase()} FVG
-        </span>
-        <span className={`text-xs px-2 py-1 rounded ${
-          fvg.filled ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700'
-        }`}>
-          {fvg.filled ? 'Filled' : 'Open'}
-        </span>
+    // Defensive programming against browser extension interference
+    if (!fvg || typeof fvg !== 'object') {
+      return <div className="p-3 text-gray-500">Invalid FVG data</div>;
+    }
+    
+    const fvgType = fvg.type || 'unknown';
+    
+    return (
+      <div className={`p-3 rounded-lg border-l-4 ${
+        fvgType === 'bullish' 
+          ? 'border-blue-500 bg-blue-50' 
+          : 'border-orange-500 bg-orange-50'
+      }`}>
+        <div className="flex justify-between items-center mb-2">
+          <span className={`font-semibold ${
+            fvgType === 'bullish' ? 'text-blue-700' : 'text-orange-700'
+          }`}>
+            {fvgType.toUpperCase()} FVG
+          </span>
+          <span className={`text-xs px-2 py-1 rounded ${
+            fvg.filled ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700'
+          }`}>
+            {fvg.filled ? 'Filled' : 'Open'}
+          </span>
+        </div>
+        <div className="text-sm space-y-1">
+          <div>Gap High: <span className="font-medium">${fvg.gap_high?.toFixed(2) || 'N/A'}</span></div>
+          <div>Gap Low: <span className="font-medium">${fvg.gap_low?.toFixed(2) || 'N/A'}</span></div>
+          <div>Size: <span className="font-medium">${fvg.gap_size?.toFixed(2) || 'N/A'}</span></div>
+          {!fvg.filled && fvg.fill_percentage > 0 && (
+            <div>Filled: <span className="font-medium">{fvg.fill_percentage?.toFixed(1) || '0'}%</span></div>
+          )}
+        </div>
       </div>
-      <div className="text-sm space-y-1">
-        <div>Gap High: <span className="font-medium">${fvg.gap_high?.toFixed(2)}</span></div>
-        <div>Gap Low: <span className="font-medium">${fvg.gap_low?.toFixed(2)}</span></div>
-        <div>Size: <span className="font-medium">${fvg.gap_size?.toFixed(2)}</span></div>
-        {!fvg.filled && fvg.fill_percentage > 0 && (
-          <div>Filled: <span className="font-medium">{fvg.fill_percentage?.toFixed(1)}%</span></div>
-        )}
-      </div>
-    </div>
-  );
+    );
+  };
 
   const LiquiditySweepCard = ({ sweep }) => (
     <div className={`p-3 rounded-lg border-l-4 ${
