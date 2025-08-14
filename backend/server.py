@@ -1252,6 +1252,42 @@ async def get_unusual_whales_dark_pool(
         logger.error(f"Error in dark pool endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching dark pool data: {str(e)}")
 
+@api_router.get("/unusual-whales/dark-pool/debug")
+async def debug_dark_pool():
+    """Debug endpoint for dark pool data"""
+    try:
+        # Test direct API call
+        import httpx
+        api_token = os.getenv("UW_API_TOKEN")
+        headers = {
+            "Authorization": f"Bearer {api_token}",
+            "Content-Type": "application/json"
+        }
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                "https://api.unusualwhales.com/api/darkpool/recent?limit=3", 
+                headers=headers
+            )
+            
+            raw_data = response.json()
+            
+            # Test processing
+            processed_trades = []
+            if raw_data.get('data'):
+                for trade in raw_data['data'][:2]:  # Just test first 2
+                    processed = uw_service._process_dark_pool_trade(trade)
+                    processed_trades.append(processed)
+            
+            return {
+                "raw_api_response": raw_data,
+                "processed_trades": processed_trades,
+                "api_status": response.status_code
+            }
+            
+    except Exception as e:
+        return {"error": str(e)}
+
 @api_router.get("/unusual-whales/congressional/trades")
 async def get_unusual_whales_congressional_trades(
     days_back: Optional[int] = Query(30, description="Days to look back for trades"),
