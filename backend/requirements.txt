@@ -36,3 +36,9 @@ matplotlib>=3.7.0
 plotly>=5.17.0
 scikit-learn
 scipy
+praw==7.7.1
+textblob==0.17.1
+vaderSentiment==3.3.2
+spacy==3.7.2
+redis==5.0.1
+asyncio-throttle==1.0.2
