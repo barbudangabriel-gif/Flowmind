@@ -2376,6 +2376,7 @@ const OptionsFlow = () => {
                 <th className="px-4 py-3 text-left">DTE</th>
                 <th className="px-4 py-3 text-left">Premium</th>
                 <th className="px-4 py-3 text-left">Volume</th>
+                <th className="px-4 py-3 text-left">Action</th>
                 <th className="px-4 py-3 text-left">Sentiment</th>
                 <th className="px-4 py-3 text-left">Size</th>
                 <th className="px-4 py-3 text-left">Opening</th>
