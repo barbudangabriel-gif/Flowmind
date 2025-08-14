@@ -167,15 +167,18 @@ backend:
 
   - task: "Market Data Integration"
     implemented: true
-    working: "unknown"
+    working: false
     file: "tradestation_client.py,server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "unknown"
         - agent: "main"
         - comment: "Implemented market data endpoints for real-time quotes and historical data. Added endpoints: /tradestation/quotes/{symbols}, /tradestation/historical/{symbol}. Supports multiple symbols, various time intervals, and historical bar data retrieval. Need to test market data accuracy and performance."
+        - working: false
+        - agent: "testing"
+        - comment: "❌ NOT WORKING: Market Data Integration failing due to authentication and parameter validation issues. Quote endpoints (single/multiple symbols) return 500 errors with 'No access token available. Please authenticate first.' Historical data endpoint has parameter validation error (422) - 'interval' expects integer, not string ('Daily'). Market data endpoints are properly implemented but require OAuth authentication and correct parameter formatting to function."
 
   - task: "Risk Management System"
     implemented: true
