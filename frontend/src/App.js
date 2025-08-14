@@ -3225,8 +3225,10 @@ function App() {
 
 export default function AppWithTheme() {
   return (
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
