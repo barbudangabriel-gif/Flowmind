@@ -4334,6 +4334,7 @@ const TradeStationAuth = () => {
   const [authStatus, setAuthStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [manualCode, setManualCode] = useState('');
   const { isDarkMode } = useTheme();
 
   // Check authentication status on component mount
