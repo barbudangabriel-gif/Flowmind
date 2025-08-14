@@ -137,6 +137,9 @@ backend:
         - working: false
         - agent: "testing"
         - comment: "❌ NOT WORKING: TradeStation API client endpoints failing due to authentication requirement. Accounts endpoint (500 error): 'No access token available. Please authenticate first.' All data-dependent endpoints (accounts, positions, balances, orders, quotes) return 401 authentication errors. The API client is properly implemented but requires OAuth authentication to function. This is expected behavior for a secure trading API."
+        - working: false
+        - agent: "testing"
+        - comment: "❌ COMPREHENSIVE TESTING CONFIRMS AUTHENTICATION REQUIRED: TradeStation API client endpoints failing as expected without authentication. Accounts endpoint (500 error): 'No access token available. Please authenticate first.' All data-dependent endpoints (accounts, positions, balances, orders, quotes, historical data) return 401 authentication errors. The API client is properly implemented with correct error handling but requires OAuth authentication to function. This is expected and secure behavior for a live trading API. Field mapping issue investigation: Cannot test account field mapping (Key vs AccountID) without authentication."
 
   - task: "Portfolio Management Service"
     implemented: true
