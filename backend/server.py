@@ -1590,7 +1590,7 @@ async def get_trading_strategies_from_unusual_whales():
                 "ticker": top_ticker['symbol'],
                 "strategy_type": strategy_type,
                 "confidence": 0.8,
-                "timeframe": f"{dte} days to expiration",
+                "timeframe": f"{int(dte)} days to expiration",
                 "entry_logic": {
                     "condition": f"Large premium flow detected in {top_ticker['symbol']} ({sentiment})",
                     "premium_threshold": top_ticker.get('premium', 0),
