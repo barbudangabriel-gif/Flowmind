@@ -1420,24 +1420,33 @@ const TechnicalAnalysis = () => {
     );
   };
 
-  const LiquiditySweepCard = ({ sweep }) => (
-    <div className={`p-3 rounded-lg border-l-4 ${
-      sweep.type === 'high_sweep' 
-        ? 'border-purple-500 bg-purple-50' 
-        : 'border-indigo-500 bg-indigo-50'
-    }`}>
-      <div className="flex justify-between items-center mb-2">
-        <span className={`font-semibold ${
-          sweep.type === 'high_sweep' ? 'text-purple-700' : 'text-indigo-700'
-        }`}>
-          {sweep.type === 'high_sweep' ? 'High Sweep' : 'Low Sweep'}
-        </span>
-        <span className={`text-xs px-2 py-1 rounded ${
-          sweep.significance === 'major' 
-            ? 'bg-red-100 text-red-700'
-            : 'bg-yellow-100 text-yellow-700'
-        }`}>
-          {sweep.significance}
+  const LiquiditySweepCard = ({ sweep }) => {
+    // Defensive programming against browser extension interference
+    if (!sweep || typeof sweep !== 'object') {
+      return <div className="p-3 text-gray-500">Invalid sweep data</div>;
+    }
+    
+    const sweepType = sweep.type || 'unknown';
+    const significance = sweep.significance || 'minor';
+    
+    return (
+      <div className={`p-3 rounded-lg border-l-4 ${
+        sweepType === 'high_sweep' 
+          ? 'border-purple-500 bg-purple-50' 
+          : 'border-indigo-500 bg-indigo-50'
+      }`}>
+        <div className="flex justify-between items-center mb-2">
+          <span className={`font-semibold ${
+            sweepType === 'high_sweep' ? 'text-purple-700' : 'text-indigo-700'
+          }`}>
+            {sweepType === 'high_sweep' ? 'High Sweep' : 'Low Sweep'}
+          </span>
+          <span className={`text-xs px-2 py-1 rounded ${
+            significance === 'major' 
+              ? 'bg-red-100 text-red-700'
+              : 'bg-yellow-100 text-yellow-700'
+          }`}>
+            {significance}
         </span>
       </div>
       <div className="text-sm space-y-1">
