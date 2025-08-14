@@ -3232,6 +3232,12 @@ function App() {
         return <CongressionalTrades />;
       case 'trading-strategies':
         return <TradingStrategies />;
+      case 'auto-trading':
+        return <AutoOptionsTrading />;
+      case 'trading-history':
+        return <TradingHistory />;
+      case 'performance':
+        return <PerformanceAnalytics />;
       case 'news':
         return <MarketNews />;
       default:
