@@ -1447,15 +1447,16 @@ const TechnicalAnalysis = () => {
               : 'bg-yellow-100 text-yellow-700'
           }`}>
             {significance}
-        </span>
+          </span>
+        </div>
+        <div className="text-sm space-y-1">
+          <div>Price: <span className="font-medium">${sweep.price?.toFixed(2) || 'N/A'}</span></div>
+          <div>Volume: <span className="font-medium">{sweep.volume?.toLocaleString() || 'N/A'}</span></div>
+          <div>Time: <span className="font-medium">{sweep.time ? new Date(sweep.time).toLocaleDateString() : 'N/A'}</span></div>
+        </div>
       </div>
-      <div className="text-sm space-y-1">
-        <div>Price: <span className="font-medium">${sweep.price?.toFixed(2)}</span></div>
-        <div>Volume: <span className="font-medium">{sweep.volume?.toLocaleString()}</span></div>
-        <div>Time: <span className="font-medium">{new Date(sweep.time).toLocaleDateString()}</span></div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
