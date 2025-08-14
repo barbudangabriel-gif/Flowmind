@@ -2325,9 +2325,9 @@ const OptionsFlow = () => {
               Despre datele Options Flow
             </h4>
             <p className={`text-sm mt-1 ${isDarkMode ? 'text-slate-300' : 'text-blue-700'}`}>
-              <strong>Situația actuală:</strong> Unusual Whales nu oferă un API oficial public pentru Options Flow (August 2025). 
-              Datele afișate sunt simulate realist pe baza activității actuale de piață și includ premii, DTE, și tipuri de tranzacții (BUY/SELL) 
-              pentru simboluri cu activitate mare de opțiuni. Dark Pool și Congressional Trades folosesc date live de la Unusual Whales.
+              <strong>✅ REZOLVAT:</strong> Endpoint-ul corect pentru Options Flow este `/api/option-trades/flow-alerts`. 
+              Datele afișate sunt 100% reale de la Unusual Whales API cu planul dvs. Basic ($150/lună). 
+              Includ premii reale, DTE, tipuri de tranzacții (BUY/SELL), și detalii complete despre alert rules și sectors.
             </p>
           </div>
         </div>
