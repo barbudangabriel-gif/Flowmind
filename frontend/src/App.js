@@ -4437,6 +4437,33 @@ const TradeStationAuth = () => {
     }
   };
 
+  const exchangeCodeManually = async (code) => {
+    if (!code.trim()) {
+      setError('Please enter an authorization code');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Exchange the authorization code for tokens
+      const response = await axios.get(`${API}/auth/tradestation/callback?code=${code}&state=manual`);
+      
+      if (response.data) {
+        // Refresh auth status
+        await checkAuthStatus();
+        setManualCode('');
+        setError(null);
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to exchange authorization code');
+      console.error('Code exchange error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     if (status?.authentication?.authenticated) return 'text-green-600';
     return 'text-red-600';
