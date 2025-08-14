@@ -3278,6 +3278,20 @@ const AutoOptionsTrading = () => {
     fetchLearningInsights();
   }, [selectedSymbol]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showOptionsDropdown && !event.target.closest('.relative')) {
+        setShowOptionsDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showOptionsDropdown]);
+
   const handleConfigChange = (field, value) => {
     setConfig(prev => ({
       ...prev,
