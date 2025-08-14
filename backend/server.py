@@ -1616,9 +1616,9 @@ async def get_trading_strategies_from_unusual_whales():
                         "quantity": 1
                     }] if upper_strike else []),
                     "expiration": top_ticker.get('expiration', ''),
-                    "max_risk": f"${abs(upper_strike - lower_strike) * 100}" if upper_strike else "Premium paid",
-                    "max_profit": "Premium paid" if not upper_strike else f"${(upper_strike - lower_strike) * 100 - 200}",
-                    "breakeven": f"${lower_strike + 2}" if not upper_strike else f"${lower_strike + 2}"
+                    "max_risk": f"${abs((upper_strike or 0) - (lower_strike or 0)) * 100}" if upper_strike else "Premium paid",
+                    "max_profit": "Premium paid" if not upper_strike else f"${((upper_strike or 0) - (lower_strike or 0)) * 100 - 200}",
+                    "breakeven": f"${(lower_strike or 0) + 2}" if not upper_strike else f"${(lower_strike or 0) + 2}"
                 },
                 "risk_management": {
                     "max_position_size": "2% of portfolio",
