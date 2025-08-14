@@ -1650,7 +1650,7 @@ async def get_trading_strategies_from_unusual_whales():
                 if has_calls and has_puts and avg_dte > 7:
                     # High volatility expected - Straddle or Strangle
                     strategy_name = "Long Straddle" if len(ticker_alerts) >= 4 else "Long Strangle"
-                    atm_strike = int(avg_price)
+                    atm_strike = int(avg_price) if avg_price else 100
                     
                     strategies.append({
                         "strategy_name": strategy_name,
