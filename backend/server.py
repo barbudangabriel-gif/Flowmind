@@ -1798,6 +1798,115 @@ async def get_trading_strategies_from_unusual_whales():
 
 # ==================== END UNUSUAL WHALES API ENDPOINTS ====================
 
+# ==================== EXPERT OPTIONS TRADING ENDPOINTS ====================
+
+@api_router.get("/expert-options/strategies/{symbol}")
+async def get_expert_strategy_recommendations(symbol: str):
+    """Get AI-powered expert options strategy recommendations"""
+    try:
+        recommendations = await expert_system.get_strategy_recommendations(symbol.upper())
+        return {
+            "symbol": symbol.upper(),
+            "recommendations": recommendations,
+            "timestamp": datetime.utcnow().isoformat(),
+            "total_strategies": len(recommendations)
+        }
+    except Exception as e:
+        logger.error(f"Error getting expert recommendations: {str(e)}")
+        return {"error": "Failed to get expert recommendations", "details": str(e)}
+
+@api_router.get("/expert-options/wheel/{symbol}")
+async def get_wheel_strategy(symbol: str):
+    """Get optimized Wheel strategy for symbol"""
+    try:
+        conditions = await expert_system.analyze_market_conditions(symbol.upper())
+        wheel_strategy = await expert_system.generate_wheel_strategy(symbol.upper(), conditions)
+        return {
+            "strategy": wheel_strategy,
+            "symbol": symbol.upper(),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error generating wheel strategy: {str(e)}")
+        return {"error": "Failed to generate wheel strategy", "details": str(e)}
+
+@api_router.get("/expert-options/iron-condor/{symbol}")
+async def get_iron_condor_strategy(symbol: str):
+    """Get optimized Iron Condor strategy for symbol"""
+    try:
+        conditions = await expert_system.analyze_market_conditions(symbol.upper())
+        condor_strategy = await expert_system.generate_iron_condor_strategy(symbol.upper(), conditions)
+        return {
+            "strategy": condor_strategy,
+            "symbol": symbol.upper(),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error generating iron condor strategy: {str(e)}")
+        return {"error": "Failed to generate iron condor strategy", "details": str(e)}
+
+@api_router.get("/expert-options/volatility/{symbol}")
+async def get_volatility_strategy(symbol: str):
+    """Get optimized Volatility Play strategy for symbol"""
+    try:
+        conditions = await expert_system.analyze_market_conditions(symbol.upper())
+        volatility_strategy = await expert_system.generate_volatility_play_strategy(symbol.upper(), conditions)
+        return {
+            "strategy": volatility_strategy,
+            "symbol": symbol.upper(),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error generating volatility strategy: {str(e)}")
+        return {"error": "Failed to generate volatility strategy", "details": str(e)}
+
+@api_router.get("/expert-options/learning/insights")
+async def get_learning_insights():
+    """Get insights from the machine learning system"""
+    try:
+        insights = await expert_system.get_learning_insights()
+        return {
+            "learning_insights": insights,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting learning insights: {str(e)}")
+        return {"error": "Failed to get learning insights", "details": str(e)}
+
+@api_router.post("/expert-options/optimize/{strategy_type}")
+async def optimize_strategy_parameters(strategy_type: str):
+    """Trigger parameter optimization for a strategy"""
+    try:
+        # Validate strategy type
+        strategy_enum = StrategyType(strategy_type.lower())
+        
+        await expert_system.optimize_parameters(strategy_enum)
+        
+        return {
+            "message": f"Optimization completed for {strategy_type}",
+            "strategy_type": strategy_type,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except ValueError:
+        return {"error": f"Invalid strategy type: {strategy_type}"}
+    except Exception as e:
+        logger.error(f"Error optimizing strategy: {str(e)}")
+        return {"error": "Failed to optimize strategy", "details": str(e)}
+
+@api_router.get("/expert-options/market-analysis/{symbol}")
+async def get_market_analysis(symbol: str):
+    """Get detailed market analysis for options trading"""
+    try:
+        conditions = await expert_system.analyze_market_conditions(symbol.upper())
+        return {
+            "symbol": symbol.upper(),
+            "market_conditions": conditions,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error analyzing market conditions: {str(e)}")
+        return {"error": "Failed to analyze market conditions", "details": str(e)}
+
 # Include the router in the main app
 app.include_router(api_router)
 
