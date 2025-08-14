@@ -2396,6 +2396,15 @@ const OptionsFlow = () => {
                   </td>
                   <td className="px-4 py-3">{alert.volume?.toLocaleString()}</td>
                   <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                      alert.action === 'BUY' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {alert.action || 'N/A'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSentimentColor(alert.sentiment)}`}>
                       {alert.sentiment}
                     </span>
