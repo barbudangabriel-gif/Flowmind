@@ -45,7 +45,6 @@ import {
   History,
   Users,
   ChevronDown,
-  Settings,
   Info,
   Zap,
   MoreVertical
