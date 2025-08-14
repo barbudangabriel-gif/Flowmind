@@ -4150,7 +4150,7 @@ const MarketNews = () => {
 
 // Main App Component
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('dark-pool');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isDarkMode } = useTheme();
 
