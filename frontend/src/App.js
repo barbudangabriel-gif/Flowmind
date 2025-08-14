@@ -2130,14 +2130,14 @@ const OptionsFlow = () => {
     }
   };
 
-  // Auto-refresh effect
+  // Auto-refresh effect - runs every second, refreshes every 5 seconds
   useEffect(() => {
     if (autoRefresh && !loading) {
       const interval = setInterval(() => {
         setRefreshCountdown(prev => {
           if (prev <= 1) {
             fetchOptionsFlow(false); // Silent refresh
-            return 30;
+            return 5; // Reset to 5 seconds
           }
           return prev - 1;
         });
