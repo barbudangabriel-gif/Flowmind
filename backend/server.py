@@ -1560,7 +1560,7 @@ async def get_trading_strategies_from_unusual_whales():
         if large_premium_alerts:
             top_ticker = max(large_premium_alerts, key=lambda x: x.get('premium', 0))
             sentiment = top_ticker.get('sentiment', 'neutral')
-            dte = top_ticker.get('dte', 0)
+            dte = int(top_ticker.get('dte', 0)) if top_ticker.get('dte') else 0
             underlying_price = top_ticker.get('underlying_price', 0)
             
             # Generate specific options strategy based on sentiment and DTE
