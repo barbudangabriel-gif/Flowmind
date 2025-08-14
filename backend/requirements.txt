@@ -42,3 +42,5 @@ vaderSentiment==3.3.2
 spacy==3.7.2
 redis==5.0.1
 asyncio-throttle==1.0.2
+httpx==0.28.0
+asyncio==3.4.3
