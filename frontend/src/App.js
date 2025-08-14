@@ -42,7 +42,8 @@ import {
   Moon,
   Sun,
   Bot,
-  History
+  History,
+  Users
 } from "lucide-react";
 
 // Lazy loading for heavy components
