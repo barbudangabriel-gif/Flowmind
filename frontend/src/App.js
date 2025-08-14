@@ -289,62 +289,113 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                   </h3>
                 )}
                 <div className="space-y-1">
-                  {group.items.map((item) => {
+                  {group.items.map((item, itemIndex) => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.id;
+                    const isLastGroup = groupIndex === menuGroups.length - 1;
+                    const isLastItem = itemIndex === group.items.length - 1;
+                    const isNewsItem = item.id === 'news';
+                    
                     return (
-                      <div key={item.id} className="relative group">
-                        <button
-                          onClick={() => {
-                            setActiveTab(item.id);
-                            if (isMobile) setIsCollapsed(true);
-                          }}
-                          className={`w-full group flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-3'} py-3 rounded-xl transition-all duration-200 relative ${
-                            isActive
-                              ? 'bg-gradient-to-r ' + item.color + ' text-white shadow-lg transform scale-105'
-                              : 'text-slate-300 hover:text-white hover:bg-slate-700/50 hover:transform hover:scale-102'
-                          }`}
-                        >
-                          {/* Active indicator */}
-                          {isActive && !isCollapsed && (
-                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full opacity-80"></div>
-                          )}
-                          
-                          {/* Icon with background */}
-                          <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
-                            isActive 
-                              ? 'bg-white/20' 
-                              : 'bg-slate-600/30 group-hover:bg-slate-600/50'
-                          }`}>
-                            <Icon size={18} className={isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'} />
-                          </div>
-                          
-                          {/* Label */}
-                          {!isCollapsed && (
-                            <div className="flex-1 text-left">
-                              <div className="flex items-center justify-between">
-                                <span className="font-medium text-sm">{item.label}</span>
-                                {item.badge && (
-                                  <span className="text-xs opacity-70">{item.badge}</span>
-                                )}
+                      <React.Fragment key={item.id}>
+                        <div className="relative group">
+                          <button
+                            onClick={() => {
+                              setActiveTab(item.id);
+                              if (isMobile) setIsCollapsed(true);
+                            }}
+                            className={`w-full group flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-3'} py-3 rounded-xl transition-all duration-200 relative ${
+                              isActive
+                                ? 'bg-gradient-to-r ' + item.color + ' text-white shadow-lg transform scale-105'
+                                : 'text-slate-300 hover:text-white hover:bg-slate-700/50 hover:transform hover:scale-102'
+                            }`}
+                          >
+                            {/* Active indicator */}
+                            {isActive && !isCollapsed && (
+                              <div className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full opacity-80"></div>
+                            )}
+                            
+                            {/* Icon with background */}
+                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
+                              isActive 
+                                ? 'bg-white/20' 
+                                : 'bg-slate-600/30 group-hover:bg-slate-600/50'
+                            }`}>
+                              <Icon size={18} className={isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'} />
+                            </div>
+                            
+                            {/* Label */}
+                            {!isCollapsed && (
+                              <div className="flex-1 text-left">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium text-sm">{item.label}</span>
+                                  {item.badge && (
+                                    <span className="text-xs opacity-70">{item.badge}</span>
+                                  )}
+                                </div>
                               </div>
+                            )}
+                            
+                            {/* Hover effect */}
+                            {!isActive && !isCollapsed && (
+                              <div className="w-0 h-0 opacity-0 group-hover:w-1 group-hover:h-8 group-hover:opacity-50 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full transition-all duration-300"></div>
+                            )}
+                          </button>
+
+                          {/* Tooltip for collapsed state */}
+                          {isCollapsed && (
+                            <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-slate-800 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-lg">
+                              {item.label}
+                              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-800 rotate-45"></div>
                             </div>
                           )}
-                          
-                          {/* Hover effect */}
-                          {!isActive && !isCollapsed && (
-                            <div className="w-0 h-0 opacity-0 group-hover:w-1 group-hover:h-8 group-hover:opacity-50 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full transition-all duration-300"></div>
-                          )}
-                        </button>
-
-                        {/* Tooltip for collapsed state */}
-                        {isCollapsed && (
-                          <div className="absolute left-16 top-1/2 transform -translate-y-1/2 bg-slate-800 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 shadow-lg">
-                            {item.label}
-                            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-slate-800 rotate-45"></div>
+                        </div>
+                        
+                        {/* Dark Mode Toggle - Show after Market News */}
+                        {isNewsItem && !isCollapsed && (
+                          <div className="mt-3">
+                            <button
+                              onClick={toggleDarkMode}
+                              className="w-full flex items-center justify-between bg-slate-800/50 hover:bg-slate-700/50 rounded-xl p-3 border border-slate-600/30 transition-all duration-200 group"
+                            >
+                              <div className="flex items-center space-x-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                                  isDarkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400'
+                                }`}>
+                                  {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
+                                </div>
+                                <span className="text-sm text-slate-300 group-hover:text-white">
+                                  {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+                                </span>
+                              </div>
+                              <div className={`w-12 h-6 rounded-full p-1 transition-all duration-200 ${
+                                isDarkMode ? 'bg-indigo-600' : 'bg-slate-600'
+                              }`}>
+                                <div className={`w-4 h-4 rounded-full bg-white transition-all duration-200 transform ${
+                                  isDarkMode ? 'translate-x-6' : 'translate-x-0'
+                                }`}></div>
+                              </div>
+                            </button>
                           </div>
                         )}
-                      </div>
+                        
+                        {/* Dark Mode Toggle for collapsed state - Show after Market News */}
+                        {isNewsItem && isCollapsed && (
+                          <div className="mt-2 flex justify-center">
+                            <button
+                              onClick={toggleDarkMode}
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-200 ${
+                                isDarkMode 
+                                  ? 'bg-indigo-500/20 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/30' 
+                                  : 'bg-amber-500/20 border-amber-500/30 text-amber-400 hover:bg-amber-500/30'
+                              }`}
+                              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                            >
+                              {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
+                            </button>
+                          </div>
+                        )}
+                      </React.Fragment>
                     );
                   })}
                 </div>
