@@ -2561,6 +2561,27 @@ const TradingStrategies = () => {
   const [loading, setLoading] = useState(true);
   const [showAdvancedModal, setShowAdvancedModal] = useState(false);
   const [selectedStrategy, setSelectedStrategy] = useState(null);
+
+  // Auto Trading States
+  const [autoTradingConfig, setAutoTradingConfig] = useState({
+    enabled: false,
+    budget: 10000,
+    maxDailyLoss: 500,
+    maxPositionSize: 1000,
+    riskPerTrade: 2, // percentage
+    strategies: ['long_call', 'long_put', 'bull_call_spread']
+  });
+  
+  const [tradingHistory, setTradingHistory] = useState([]);
+  const [activeTrades, setActiveTrades] = useState([]);
+  const [portfolioStats, setPortfolioStats] = useState({
+    totalValue: 10000,
+    totalPnL: 0,
+    todayPnL: 0,
+    winRate: 0,
+    totalTrades: 0,
+    activePositions: 0
+  });
   const { isDarkMode } = useTheme();
 
   // Load Plotly dynamically
