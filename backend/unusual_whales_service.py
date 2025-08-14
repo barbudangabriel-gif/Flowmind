@@ -70,50 +70,24 @@ class UnusualWhalesService:
         minimum_volume_oi_ratio: Optional[float] = 1.0,
         limit: Optional[int] = 100
     ) -> List[Dict[str, Any]]:
-        """Fetch options flow alerts with filtering"""
+        """Fetch options flow alerts with filtering - uses realistic mock data since official API unavailable"""
         try:
-            params = {
-                "limit": limit,
-                "premium_gte": minimum_premium,
-                "volume_oi_ratio_gte": minimum_volume_oi_ratio
-            }
-            
-            # Remove None values
-            params = {k: v for k, v in params.items() if v is not None}
-            
-            response = await self._make_request("/api/option-trades/flow-alerts", params)
-            
-            if not response.get('data'):
-                logger.warning("No options flow data from API, using mock data")
-                # Return mock data directly without additional processing
-                mock_data = await self._get_mock_options_flow()
-                # Apply filtering to mock data
-                filtered_data = []
-                for alert in mock_data:
-                    if (alert.get('premium', 0) >= minimum_premium and 
-                        alert.get('volume_oi_ratio', 0) >= minimum_volume_oi_ratio):
-                        filtered_data.append(alert)
-                return filtered_data[:limit]
-            
-            processed_alerts = []
-            for alert in response['data']:
-                processed_alert = self._process_flow_alert(alert)
-                processed_alerts.append(processed_alert)
-            
-            return processed_alerts
-            
-        except Exception as e:
-            logger.error(f"Error fetching options flow alerts: {str(e)}")
-            # Return mock data if API fails for development/testing  
-            logger.info("Using mock options flow data due to API unavailability")
+            # Since Unusual Whales doesn't offer official Options Flow API, use mock data directly
+            logger.info("Using realistic mock options flow data - official API not available")
             mock_data = await self._get_mock_options_flow()
+            
             # Apply filtering to mock data
             filtered_data = []
             for alert in mock_data:
                 if (alert.get('premium', 0) >= minimum_premium and 
                     alert.get('volume_oi_ratio', 0) >= minimum_volume_oi_ratio):
                     filtered_data.append(alert)
+            
             return filtered_data[:limit]
+            
+        except Exception as e:
+            logger.error(f"Error generating mock options flow data: {str(e)}")
+            return []
     
     def _process_flow_alert(self, alert: Dict[str, Any]) -> Dict[str, Any]:
         """Process and enhance individual flow alert data"""
