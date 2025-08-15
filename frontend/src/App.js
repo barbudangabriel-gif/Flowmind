@@ -6496,7 +6496,7 @@ function App() {
       case 'dashboard':
         return <Dashboard />;
       case 'portfolio':
-        return <Portfolio />;
+        return <EnhancedPortfolio />;
       case 'investments':
         return (
           <Suspense fallback={<LoadingFallback componentName="Investment Scoring" />}>
