@@ -4699,17 +4699,23 @@ const TradeStationPortfolio = () => {
     
     try {
       setLoading(true);
+      console.log('🔍 DEBUG: Starting portfolio data load for account:', accountId);
       const response = await axios.get(`${API}/tradestation/accounts/${accountId}/summary`);
-      console.log('🔍 DEBUG: Full response:', response);
+      console.log('🔍 DEBUG: API response received, status:', response.status);
       console.log('🔍 DEBUG: response.data:', response.data);
-      console.log('🔍 DEBUG: response.data.data:', response.data.data);
-      console.log('🔍 DEBUG: Portfolio metrics exists?', response.data.data?.portfolio_metrics ? 'YES' : 'NO');
+      console.log('🔍 DEBUG: response.data.data exists?', response.data.data ? 'YES' : 'NO');
+      if (response.data.data?.portfolio_metrics) {
+        console.log('🔍 DEBUG: Portfolio metrics found:', response.data.data.portfolio_metrics);
+      }
       setPortfolioData(response.data.data);
+      console.log('🔍 DEBUG: Portfolio data set successfully');
       setError(null);
     } catch (err) {
+      console.error('🔍 DEBUG: Error in loadPortfolioData:', err);
       setError('Failed to load portfolio data');
       console.error('Portfolio error:', err);
     } finally {
+      console.log('🔍 DEBUG: Setting loading to false');
       setLoading(false);
     }
   };
