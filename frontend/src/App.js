@@ -189,6 +189,17 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Function to toggle section expansion
+  const toggleSection = (sectionTitle) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionTitle)) {
+      newExpanded.delete(sectionTitle);
+    } else {
+      newExpanded.add(sectionTitle);
+    }
+    setExpandedSections(newExpanded);
+  };
+
   const menuGroups = [
     {
       title: "Overview",
