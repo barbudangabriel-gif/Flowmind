@@ -4751,7 +4751,15 @@ const TradeStationPortfolio = () => {
       const apiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
       console.log('🔍 DEBUG: Portfolio API URL:', apiUrl);
       
-      const response = await axios.get(apiUrl);
+      console.log('🔍 DEBUG: About to make axios request...');
+      const response = await axios.get(apiUrl, {
+        timeout: 15000, // 15 second timeout
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('🔍 DEBUG: Portfolio response received!');
       console.log('🔍 DEBUG: Portfolio response status:', response.status);
       console.log('🔍 DEBUG: Portfolio response data:', response.data);
       
