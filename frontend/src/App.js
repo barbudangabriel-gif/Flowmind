@@ -5111,7 +5111,7 @@ const TradeStationPortfolio = () => {
           {portfolioData.positions && portfolioData.positions.length > 0 && (
             <div className={`bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 border rounded-lg overflow-hidden shadow-lg`}>
               {/* Header */}
-              <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'} px-4 py-3 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-4 py-3 border-b border-gray-600">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <Briefcase className="w-5 h-5 text-emerald-600" />
                   Positions ({portfolioData.positions.length})
