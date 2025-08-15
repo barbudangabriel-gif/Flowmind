@@ -450,11 +450,11 @@ frontend:
 
   - task: "TradeStation Live Portfolio Component"
     implemented: true
-    working: true
+    working: false
     file: "App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
         - agent: "main"
@@ -462,6 +462,9 @@ frontend:
         - working: true
         - agent: "testing"
         - comment: "✅ FULLY WORKING: TradeStation Live Portfolio component is completely functional. Successfully navigated to component showing 'Live Portfolio' header with 📊 icon. Proper authentication error handling: 'Failed to load accounts. Please ensure you are authenticated.' Refresh button present and functional. Component architecture ready for portfolio data display including summary cards (Total Value, P&L, Return, Positions), positions table, and risk analysis section. Expected behavior for unauthenticated state."
+        - working: false
+        - agent: "main"
+        - comment: "🚨 CRITICAL ISSUE IDENTIFIED: Frontend shows permanent 'Loading portfolio data...' spinner despite backend API working correctly. Backend testing confirms API /api/tradestation/accounts/11775499/summary returns full data (63 positions, $854,448 portfolio value, -$61,262 P&L). User reports 'nu afiseaza sumele' (doesn't show sums) and 'nu se vede nimic' (nothing visible). Root cause appears to be frontend JavaScript data processing issue preventing API response from updating UI state. Authentication works (account dropdown shows account), but portfolio data never loads despite successful API calls."
 
   - task: "TradeStation Live Trading Component"
     implemented: true
