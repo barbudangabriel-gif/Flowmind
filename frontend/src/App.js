@@ -5336,10 +5336,10 @@ const TradeStationPortfolio = () => {
                                 {formatNumber(Math.abs(position.quantity))}
                               </td>
                             </tr>
-                            
-                          </tr>
-                        );
-                      });
+                                </React.Fragment>
+                              );
+                            });
+                          }
                         } else {
                           // SINGLE POSITION - Show directly without dropdown
                           const position = positions[0]; // Single position
