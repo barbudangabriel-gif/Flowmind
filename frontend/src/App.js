@@ -5107,6 +5107,13 @@ const TradeStationPortfolio = () => {
             </div>
           </div>
 
+          {/* Debug info for scroll container */}
+          {portfolioData.positions && portfolioData.positions.length > 0 && (
+            <div className="text-sm text-gray-400 mb-2">
+              Positions: {portfolioData.positions.length} | Scroll Container: Active
+            </div>
+          )}
+
           {/* TradeStation Style Positions Table */}
           {portfolioData.positions && portfolioData.positions.length > 0 && (
             <div className={`bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 border rounded-lg overflow-hidden shadow-lg`}>
