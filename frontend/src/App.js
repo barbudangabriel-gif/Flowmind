@@ -4896,8 +4896,19 @@ const TradeStationPortfolio = () => {
 
   // Function to get base symbol (remove option suffixes)
   const getBaseSymbol = (symbol) => {
-    // Remove option suffixes like " 250117C00450000" to get base symbol like "TSLA"
-    return symbol.split(' ')[0];
+    // Remove option suffixes like " 250117C00450000" to get base symbol like "NVO"
+    return symbol.split(' ')[0].split('.')[0]; // Also handle dots like NVO.TO -> NVO
+  };
+
+  // Function to detect if position is an option
+  const isOptionPosition = (position) => {
+    return (
+      position.asset_type === 'STOCKOPTION' || 
+      position.asset_type === 'OPT' || 
+      position.symbol.includes(' ') ||
+      position.symbol.includes('C') && position.symbol.match(/\d{6}[CP]\d+/) ||
+      position.symbol.includes('P') && position.symbol.match(/\d{6}[CP]\d+/)
+    );
   };
 
   // Function to group positions by base symbol
@@ -4915,10 +4926,13 @@ const TradeStationPortfolio = () => {
       }
       
       // Separate main stock positions from options
-      if (position.asset_type === 'STOCK' || position.asset_type === 'EQ' || !position.symbol.includes(' ')) {
-        grouped[baseSymbol].mainPosition = position;
-      } else {
+      if (isOptionPosition(position)) {
         grouped[baseSymbol].options.push(position);
+      } else {
+        // This is a stock position
+        if (!grouped[baseSymbol].mainPosition) {
+          grouped[baseSymbol].mainPosition = position;
+        }
       }
     });
     
