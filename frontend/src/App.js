@@ -4823,6 +4823,61 @@ const TradeStationPortfolio = () => {
           Live Portfolio
         </h2>
         <div className="flex items-center gap-3">
+          {/* Group Controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowGroupControls(!showGroupControls)}
+              className={`px-3 py-2 text-sm border rounded-lg transition-colors ${
+                showGroupControls 
+                  ? 'bg-blue-600 text-white border-blue-600' 
+                  : 'border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Group
+            </button>
+            
+            {showGroupControls && (
+              <div className="flex items-center gap-2">
+                <select
+                  value={groupBy}
+                  onChange={(e) => {
+                    setGroupBy(e.target.value);
+                    // Auto-expand all groups when changing grouping
+                    if (e.target.value !== 'none') {
+                      setTimeout(() => toggleAllGroups(true), 100);
+                    }
+                  }}
+                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="none">No Grouping</option>
+                  <option value="symbol">By Symbol</option>
+                  <option value="asset_type">By Asset Type</option>
+                  <option value="position_type">By Position Type</option>
+                  <option value="sector">By Sector</option>
+                </select>
+                
+                {groupBy !== 'none' && (
+                  <>
+                    <button
+                      onClick={() => toggleAllGroups(true)}
+                      className="px-2 py-2 text-xs border border-gray-300 rounded hover:bg-gray-50"
+                      title="Expand All"
+                    >
+                      ⊞
+                    </button>
+                    <button
+                      onClick={() => toggleAllGroups(false)}
+                      className="px-2 py-2 text-xs border border-gray-300 rounded hover:bg-gray-50"
+                      title="Collapse All"
+                    >
+                      ⊟
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
           {accounts.length > 0 && (
             <select
               value={selectedAccount || ''}
