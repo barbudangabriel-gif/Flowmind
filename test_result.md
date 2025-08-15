@@ -454,7 +454,7 @@ frontend:
     file: "App.js"
     stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
         - agent: "main"
@@ -465,6 +465,9 @@ frontend:
         - working: false
         - agent: "main"
         - comment: "🚨 CRITICAL ISSUE IDENTIFIED: Frontend shows permanent 'Loading portfolio data...' spinner despite backend API working correctly. Backend testing confirms API /api/tradestation/accounts/11775499/summary returns full data (63 positions, $854,448 portfolio value, -$61,262 P&L). User reports 'nu afiseaza sumele' (doesn't show sums) and 'nu se vede nimic' (nothing visible). Root cause appears to be frontend JavaScript data processing issue preventing API response from updating UI state. Authentication works (account dropdown shows account), but portfolio data never loads despite successful API calls."
+        - working: false
+        - agent: "testing"
+        - comment: "🔍 ROOT CAUSE IDENTIFIED: Comprehensive backend testing reveals the issue is a DATA STRUCTURE MISMATCH between backend API response and frontend expectations. ✅ BACKEND API WORKING CORRECTLY: All TradeStation endpoints responding (100% success rate, 0.28s avg response time, authenticated). API returns complete portfolio data: 63 positions, $854,144 value, -$61,566 P&L. ❌ FRONTEND STRUCTURE ISSUE: Backend returns data nested under 'data' field, but frontend expects 'portfolio_metrics', 'positions', 'risk_analysis' at root level. Current response structure: {status, data: {portfolio_metrics, positions, risk_analysis}}. Frontend expects: {portfolio_metrics, positions, risk_analysis}. SOLUTION: Frontend needs to access response.data.portfolio_metrics instead of response.portfolio_metrics, or backend needs to flatten response structure."
 
   - task: "TradeStation Live Trading Component"
     implemented: true
