@@ -5606,27 +5606,27 @@ const TradeStationAccountBalance = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <div className="text-sm text-gray-600 mb-1">Account Type</div>
+                <div className="text-sm text-gray-300 font-medium mb-1">Account Type</div>
                 <div className="font-semibold">{balanceData.AccountType}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Day Trades</div>
+                <div className="text-sm text-gray-300 font-medium mb-1">Day Trades</div>
                 <div className="font-semibold">{balanceData.BalanceDetail?.DayTrades || 0}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Maintenance Rate</div>
+                <div className="text-sm text-gray-300 font-medium mb-1">Maintenance Rate</div>
                 <div className="font-semibold">{balanceData.BalanceDetail?.MaintenanceRate}%</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Required Margin</div>
+                <div className="text-sm text-gray-300 font-medium mb-1">Required Margin</div>
                 <div className="font-semibold">{formatCurrency(balanceData.BalanceDetail?.RequiredMargin)}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Cost of Positions</div>
+                <div className="text-sm text-gray-300 font-medium mb-1">Cost of Positions</div>
                 <div className="font-semibold">{formatCurrency(balanceData.BalanceDetail?.CostOfPositions)}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600 mb-1">Unrealized P&L</div>
+                <div className="text-sm text-gray-300 font-medium mb-1">Unrealized P&L</div>
                 <div className={`font-semibold ${balanceData.BalanceDetail?.UnrealizedProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {formatCurrency(balanceData.BalanceDetail?.UnrealizedProfitLoss)}
                 </div>
