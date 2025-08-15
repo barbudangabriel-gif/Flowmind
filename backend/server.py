@@ -1622,6 +1622,15 @@ async def get_tradestation_account_summary(account_id: str):
         logger.error(f"Error fetching account summary: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch account summary: {str(e)}")
 
+@api_router.get("/tradestation/test")
+async def test_tradestation():
+    """Simple test endpoint to verify connectivity"""
+    return {
+        "status": "success",
+        "message": "TradeStation API is working",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
 @api_router.get("/tradestation/accounts/{account_id}/positions-simple")
 async def get_tradestation_positions_simple(account_id: str):
     """Get basic position information quickly for UI display"""
