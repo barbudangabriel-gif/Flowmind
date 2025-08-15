@@ -49,7 +49,8 @@ import {
   Zap,
   MoreVertical,
   CheckCircle,
-  XCircle
+  XCircle,
+  CreditCard
 } from "lucide-react";
 
 // Lazy loading for heavy components
