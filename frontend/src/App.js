@@ -4749,12 +4749,7 @@ const TradeStationPortfolio = () => {
     
     try {
       setLoading(true);
-      console.log('🔍 DEBUG: Starting portfolio data load for account:', accountId);
-      const apiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
-      console.log('🔍 DEBUG: Making request to:', apiUrl);
-      
-      // Try using fetch instead of axios
-      const response = await fetch(apiUrl, {
+      const response = await fetch(`${API}/tradestation/accounts/${accountId}/summary`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -4764,30 +4759,23 @@ const TradeStationPortfolio = () => {
         credentials: 'include'
       });
       
-      console.log('🔍 DEBUG: Fetch response received, status:', response.status);
-      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('🔍 DEBUG: JSON data parsed:', data);
-      console.log('🔍 DEBUG: data.data exists?', data.data ? 'YES' : 'NO');
       
-      if (data.data?.portfolio_metrics) {
-        console.log('🔍 DEBUG: Portfolio metrics found:', data.data.portfolio_metrics);
+      // Backend returns {status: "success", data: {portfolio_metrics, positions, risk_analysis}}
+      if (data.data) {
+        setPortfolioData(data.data);
+        setError(null);
+      } else {
+        throw new Error('Invalid data structure received');
       }
-      
-      setPortfolioData(data.data);
-      console.log('🔍 DEBUG: Portfolio data set successfully');
-      setError(null);
     } catch (err) {
-      console.error('🔍 DEBUG: Error in loadPortfolioData:', err);
-      console.error('🔍 DEBUG: Error name:', err.name);
-      console.error('🔍 DEBUG: Error message:', err.message);
       setError(`Failed to load portfolio data: ${err.message}`);
+      console.error('Portfolio error:', err);
     } finally {
-      console.log('🔍 DEBUG: Setting loading to false');
       setLoading(false);
     }
   };
