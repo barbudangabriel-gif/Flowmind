@@ -5138,145 +5138,178 @@ const TradeStationPortfolio = () => {
                   </thead>
                   <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                     {(() => {
-                      const groupedPositions = groupPositions(portfolioData.positions);
-                      const groupKeys = Object.keys(groupedPositions);
+                      const filteredPositions = filterPositionsByAsset(portfolioData.positions);
+                      const symbolGroups = groupPositionsBySymbol(filteredPositions);
                       
-                      return groupKeys.map((groupName) => {
-                        const positions = groupedPositions[groupName];
-                        const groupTotals = calculateGroupTotals(positions);
-                        const isExpanded = expandedGroups.has(groupName) || groupBy === 'none';
-                        const isGrouped = groupBy !== 'none';
+                      return Object.keys(symbolGroups).map((baseSymbol) => {
+                        const group = symbolGroups[baseSymbol];
+                        const isExpanded = expandedSymbols.has(baseSymbol);
+                        const hasOptions = group.options.length > 0;
                         
                         return (
-                          <React.Fragment key={groupName}>
-                            {/* Group Header */}
-                            {isGrouped && (
-                              <tr 
-                                className={`${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-blue-50 hover:bg-blue-100'} 
-                                           cursor-pointer transition-colors border-t-2 ${isDarkMode ? 'border-gray-600' : 'border-blue-200'}`}
-                                onClick={() => toggleGroupExpansion(groupName)}
-                              >
-                                <td className="px-4 py-3 font-bold text-lg" colSpan="11">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xl">
-                                        {isExpanded ? '▼' : '▶'}
-                                      </span>
-                                      <span className="text-blue-700 font-semibold">{groupName}</span>
-                                      <span className="text-sm text-gray-600 bg-white px-2 py-1 rounded">
-                                        {groupTotals.positionCount} positions
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-4 text-sm">
-                                      <span className="font-semibold">
-                                        Total Cost: {formatCurrency(groupTotals.totalCost)}
-                                      </span>
-                                      <span className="font-semibold">
-                                        Market Value: {formatCurrency(groupTotals.marketValue)}
-                                      </span>
-                                      <span className={`font-semibold ${getPnlColor(groupTotals.unrealizedPnl)}`}>
-                                        P&L: {groupTotals.unrealizedPnl > 0 ? '+' : ''}{formatCurrency(groupTotals.unrealizedPnl)}
-                                      </span>
+                          <React.Fragment key={baseSymbol}>
+                            {/* Main Stock Position */}
+                            {group.mainPosition && (
+                              <tr className={`${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'} transition-colors duration-200 border-b border-white/10`}>
+                                {/* Symbol Column with Expand/Collapse */}
+                                <td className="px-4 py-3 border-r border-white/10">
+                                  <div className="flex items-center gap-2">
+                                    {/* Expand/Collapse icon */}
+                                    <button 
+                                      className="text-gray-500 hover:text-gray-700 transition-colors"
+                                      onClick={() => toggleSymbolExpansion(baseSymbol)}
+                                      disabled={!hasOptions}
+                                    >
+                                      {hasOptions ? (
+                                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                                      ) : (
+                                        <div className="w-4 h-4"></div>
+                                      )}
+                                    </button>
+                                    
+                                    <div className="flex flex-col">
+                                      <span className="font-semibold text-blue-600 text-base">{group.mainPosition.symbol}</span>
+                                      <span className="text-xs text-gray-500 uppercase">{group.mainPosition.asset_type || 'EQ'}</span>
                                     </div>
                                   </div>
+                                </td>
+                                
+                                {/* Description Column */}
+                                <td className="px-4 py-3 text-left border-r border-white/10">
+                                  <div className="text-sm text-gray-600">
+                                    {group.mainPosition.description || 'Stock Position'}
+                                  </div>
+                                </td>
+                                
+                                {/* Position Column (Long/Short + Quantity) */}
+                                <td className="px-4 py-3 text-center border-r border-white/10">
+                                  <div className="flex flex-col items-center">
+                                    <span className={`text-xs font-medium px-2 py-1 rounded ${group.mainPosition.quantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                      {group.mainPosition.quantity > 0 ? 'LONG' : 'SHORT'}
+                                    </span>
+                                    <span className="text-sm font-medium mt-1">{Math.abs(group.mainPosition.quantity)}</span>
+                                  </div>
+                                </td>
+                                
+                                {/* Open P&L */}
+                                <td className={`px-4 py-3 text-right font-semibold border-r border-white/10 ${getPnlColor(group.mainPosition.unrealized_pnl)}`}>
+                                  {group.mainPosition.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(group.mainPosition.unrealized_pnl)}
+                                </td>
+                                
+                                {/* Average Price */}
+                                <td className="px-4 py-3 text-right font-medium border-r border-white/10">
+                                  {formatCurrency(group.mainPosition.average_price)}
+                                </td>
+                                
+                                {/* Today's Open P/L */}
+                                <td className={`px-4 py-3 text-right font-semibold border-r border-white/10 ${getPnlColor(group.mainPosition.daily_pnl || 0)}`}>
+                                  {(group.mainPosition.daily_pnl || 0) > 0 ? '+' : ''}{formatCurrency(group.mainPosition.daily_pnl || 0)}
+                                </td>
+                                
+                                {/* Open P/L Qty */}
+                                <td className="px-4 py-3 text-right font-medium border-r border-white/10">
+                                  {formatNumber(Math.abs(group.mainPosition.quantity))}
+                                </td>
+                                
+                                {/* Open P&L % */}
+                                <td className={`px-4 py-3 text-right font-semibold border-r border-white/10 ${getPnlColor(group.mainPosition.unrealized_pnl_percent)}`}>
+                                  {group.mainPosition.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(group.mainPosition.unrealized_pnl_percent)}
+                                </td>
+                                
+                                {/* Total Cost */}
+                                <td className="px-4 py-3 text-right font-medium border-r border-white/10">
+                                  {formatCurrency(calculateTotalCost(group.mainPosition))}
+                                </td>
+                                
+                                {/* Market Value */}
+                                <td className="px-4 py-3 text-right font-semibold border-r border-white/10">
+                                  {formatCurrency(group.mainPosition.market_value)}
+                                </td>
+                                
+                                {/* Quantity */}
+                                <td className="px-4 py-3 text-center font-medium">
+                                  {formatNumber(Math.abs(group.mainPosition.quantity))}
                                 </td>
                               </tr>
                             )}
                             
-                            {/* Positions in Group */}
-                            {isExpanded && positions.map((position, index) => {
-                              const hasOptions = position.asset_type === 'STOCKOPTION' || position.symbol.includes(' ');
-                              const isOption = position.asset_type === 'STOCKOPTION' || position.symbol.includes(' ');
-                              
-                              return (
-                                <tr 
-                                  key={`${groupName}-${index}`} 
-                                  className={`${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'} transition-colors duration-200
-                                             ${isGrouped ? (isDarkMode ? 'bg-gray-850' : 'bg-gray-25') : ''}`}
-                                >
-                                  {/* Symbol Column with Expand/Collapse */}
-                                  <td className={`px-4 py-3 ${isGrouped ? 'pl-8' : ''}`}>
-                                    <div className="flex items-center gap-2">
-                                      {/* Expand/Collapse icon */}
-                                      <button 
-                                        className="text-gray-500 hover:text-gray-700"
-                                        onClick={() => {/* Handle expand/collapse */}}
-                                      >
-                                        {isOption ? 
-                                          <div className="w-4 h-4 flex items-center justify-center">
-                                            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                                          </div>
-                                          : 
-                                          <ChevronDown className="w-4 h-4" />
-                                        }
-                                      </button>
-                                      
-                                      <div className="flex flex-col">
-                                        <span className="font-semibold text-blue-600 text-base">{position.symbol}</span>
-                                        <span className="text-xs text-gray-500 uppercase">{position.asset_type || 'EQ'}</span>
-                                      </div>
+                            {/* Option Positions (shown when expanded) */}
+                            {hasOptions && isExpanded && group.options.map((option, optIndex) => (
+                              <tr 
+                                key={`${baseSymbol}-option-${optIndex}`}
+                                className={`${isDarkMode ? 'hover:bg-gray-800 bg-gray-800/50' : 'hover:bg-gray-50 bg-gray-50/50'} transition-colors duration-200 border-b border-white/10`}
+                              >
+                                {/* Symbol Column with Indent */}
+                                <td className="px-4 py-3 border-r border-white/10">
+                                  <div className="flex items-center gap-2 pl-6">
+                                    {/* Option bullet point */}
+                                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                    
+                                    <div className="flex flex-col">
+                                      <span className="font-semibold text-blue-600 text-sm">{option.symbol}</span>
+                                      <span className="text-xs text-gray-500 uppercase">{option.asset_type || 'OPT'}</span>
                                     </div>
-                                  </td>
-                                  
-                                  {/* Description Column */}
-                                  <td className="px-4 py-3 text-left">
-                                    <div className="text-sm text-gray-600">
-                                      {position.description || 'Stock Position'}
-                                    </div>
-                                  </td>
-                                  
-                                  {/* Position Column (Long/Short + Quantity) */}
-                                  <td className="px-4 py-3 text-center">
-                                    <div className="flex flex-col items-center">
-                                      <span className={`text-xs font-medium px-2 py-1 rounded ${position.quantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {position.quantity > 0 ? 'LONG' : 'SHORT'}
-                                      </span>
-                                      <span className="text-sm font-medium mt-1">{Math.abs(position.quantity)}</span>
-                                    </div>
-                                  </td>
-                                  
-                                  {/* Open P&L */}
-                                  <td className={`px-4 py-3 text-right font-semibold ${getPnlColor(position.unrealized_pnl)}`}>
-                                    {position.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(position.unrealized_pnl)}
-                                  </td>
-                                  
-                                  {/* Average Price */}
-                                  <td className="px-4 py-3 text-right font-medium">
-                                    {formatCurrency(position.average_price)}
-                                  </td>
-                                  
-                                  {/* Today's Open P/L */}
-                                  <td className={`px-4 py-3 text-right font-semibold ${getPnlColor(position.daily_pnl || 0)}`}>
-                                    {(position.daily_pnl || 0) > 0 ? '+' : ''}{formatCurrency(position.daily_pnl || 0)}
-                                  </td>
-                                  
-                                  {/* Open P/L Qty */}
-                                  <td className="px-4 py-3 text-right font-medium">
-                                    {formatNumber(Math.abs(position.quantity))}
-                                  </td>
-                                  
-                                  {/* Open P&L % */}
-                                  <td className={`px-4 py-3 text-right font-semibold ${getPnlColor(position.unrealized_pnl_percent)}`}>
-                                    {position.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(position.unrealized_pnl_percent)}
-                                  </td>
-                                  
-                                  {/* Total Cost */}
-                                  <td className="px-4 py-3 text-right font-medium">
-                                    {formatCurrency(calculateTotalCost(position))}
-                                  </td>
-                                  
-                                  {/* Market Value */}
-                                  <td className="px-4 py-3 text-right font-semibold">
-                                    {formatCurrency(position.market_value)}
-                                  </td>
-                                  
-                                  {/* Quantity */}
-                                  <td className="px-4 py-3 text-center font-medium">
-                                    {formatNumber(Math.abs(position.quantity))}
-                                  </td>
-                                </tr>
-                              );
-                            })}
+                                  </div>
+                                </td>
+                                
+                                {/* Description Column */}
+                                <td className="px-4 py-3 text-left border-r border-white/10">
+                                  <div className="text-sm text-gray-600">
+                                    {option.description || 'Option Position'}
+                                  </div>
+                                </td>
+                                
+                                {/* Position Column */}
+                                <td className="px-4 py-3 text-center border-r border-white/10">
+                                  <div className="flex flex-col items-center">
+                                    <span className={`text-xs font-medium px-2 py-1 rounded ${option.quantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                      {option.quantity > 0 ? 'LONG' : 'SHORT'}
+                                    </span>
+                                    <span className="text-sm font-medium mt-1">{Math.abs(option.quantity)}</span>
+                                  </div>
+                                </td>
+                                
+                                {/* Open P&L */}
+                                <td className={`px-4 py-3 text-right font-semibold border-r border-white/10 ${getPnlColor(option.unrealized_pnl)}`}>
+                                  {option.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(option.unrealized_pnl)}
+                                </td>
+                                
+                                {/* Average Price */}
+                                <td className="px-4 py-3 text-right font-medium border-r border-white/10">
+                                  {formatCurrency(option.average_price)}
+                                </td>
+                                
+                                {/* Today's Open P/L */}
+                                <td className={`px-4 py-3 text-right font-semibold border-r border-white/10 ${getPnlColor(option.daily_pnl || 0)}`}>
+                                  {(option.daily_pnl || 0) > 0 ? '+' : ''}{formatCurrency(option.daily_pnl || 0)}
+                                </td>
+                                
+                                {/* Open P/L Qty */}
+                                <td className="px-4 py-3 text-right font-medium border-r border-white/10">
+                                  {formatNumber(Math.abs(option.quantity))}
+                                </td>
+                                
+                                {/* Open P&L % */}
+                                <td className={`px-4 py-3 text-right font-semibold border-r border-white/10 ${getPnlColor(option.unrealized_pnl_percent)}`}>
+                                  {option.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(option.unrealized_pnl_percent)}
+                                </td>
+                                
+                                {/* Total Cost */}
+                                <td className="px-4 py-3 text-right font-medium border-r border-white/10">
+                                  {formatCurrency(calculateTotalCost(option))}
+                                </td>
+                                
+                                {/* Market Value */}
+                                <td className="px-4 py-3 text-right font-semibold border-r border-white/10">
+                                  {formatCurrency(option.market_value)}
+                                </td>
+                                
+                                {/* Quantity */}
+                                <td className="px-4 py-3 text-center font-medium">
+                                  {formatNumber(Math.abs(option.quantity))}
+                                </td>
+                              </tr>
+                            ))}
                           </React.Fragment>
                         );
                       });
