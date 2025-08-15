@@ -5033,6 +5033,7 @@ const TradeStationPortfolio = () => {
                       <th className="px-4 py-3 text-center font-medium">Position</th>
                       <th className="px-4 py-3 text-right font-medium">Avg Price</th>
                       <th className="px-4 py-3 text-right font-medium">Current Price</th>
+                      <th className="px-4 py-3 text-right font-medium">Total Cost</th>
                       <th className="px-4 py-3 text-right font-medium">Market Value</th>
                       <th className="px-4 py-3 text-right font-medium">Open P&L</th>
                       <th className="px-4 py-3 text-right font-medium">Open P&L %</th>
