@@ -5192,23 +5192,39 @@ const TradeStationPortfolio = () => {
               {/* Account Summary Bar like TradeStation */}
               <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-blue-50 border-blue-200'} border-t px-4 py-3`}>
                 <div className="flex justify-between items-center text-sm">
-                  <div className="flex gap-8">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">Total Portfolio Value:</span>
-                      <span className="font-bold text-lg text-blue-600">
-                        {formatCurrency(portfolioData.portfolio_metrics?.total_market_value || 0)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">Today's P&L:</span>
-                      <span className={`font-bold text-lg ${getPnlColor(portfolioData.portfolio_metrics?.total_unrealized_pnl)}`}>
-                        {portfolioData.portfolio_metrics?.total_unrealized_pnl > 0 ? '+' : ''}{formatCurrency(portfolioData.portfolio_metrics?.total_unrealized_pnl || 0)}
-                        <span className="text-sm ml-1">
-                          ({portfolioData.portfolio_metrics?.total_return_percent > 0 ? '+' : ''}{formatPercent(portfolioData.portfolio_metrics?.total_return_percent || 0)})
-                        </span>
-                      </span>
-                    </div>
-                  </div>
+                  {(() => {
+                    const filteredPositions = filterPositionsByAsset(portfolioData.positions);
+                    const totals = calculateGroupTotals(filteredPositions);
+                    const returnPercent = totals.totalCost > 0 ? ((totals.marketValue - totals.totalCost) / totals.totalCost) * 100 : 0;
+                    
+                    return (
+                      <div className="flex gap-8">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">
+                            {assetFilter === 'stocks' ? 'Stocks' : assetFilter === 'options' ? 'Options' : 'Total'} Portfolio Value:
+                          </span>
+                          <span className="font-bold text-lg text-blue-600">
+                            {formatCurrency(totals.marketValue)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">P&L:</span>
+                          <span className={`font-bold text-lg ${getPnlColor(totals.unrealizedPnl)}`}>
+                            {totals.unrealizedPnl > 0 ? '+' : ''}{formatCurrency(totals.unrealizedPnl)}
+                            <span className="text-sm ml-1">
+                              ({returnPercent > 0 ? '+' : ''}{formatPercent(returnPercent)})
+                            </span>
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Positions:</span>
+                          <span className="font-bold text-lg text-emerald-600">
+                            {totals.positionCount}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                   <div className="text-xs text-gray-500">
                     Last updated: {new Date().toLocaleTimeString()}
                   </div>
