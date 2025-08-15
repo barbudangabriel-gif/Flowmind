@@ -4739,7 +4739,8 @@ const TradeStationPortfolio = () => {
     if (!accountId) return;
     
     try {
-      console.log('🔍 DEBUG: Loading REAL TradeStation data for account:', accountId);
+      console.log('🔥 DEBUG: STARTING loadPortfolioData for account:', accountId);
+      console.log('🔥 DEBUG: API base URL:', API);
       setLoading(true);
       
       // Small delay to avoid race conditions
