@@ -218,6 +218,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       items: [
         { id: 'ts-auth', label: 'Authentication', icon: Settings, color: 'from-blue-500 to-indigo-600', badge: '🔐', shortLabel: 'Auth' },
         { id: 'ts-portfolio', label: 'Live Portfolio', icon: Briefcase, color: 'from-emerald-500 to-green-600', badge: '📊', shortLabel: 'Live' },
+        { id: 'ts-balance', label: 'Account Balance', icon: DollarSign, color: 'from-green-500 to-emerald-600', badge: '💰', shortLabel: 'Balance' },
         { id: 'ts-trading', label: 'Live Trading', icon: Zap, color: 'from-red-500 to-pink-600', badge: '⚡', shortLabel: 'Trade' },
         { id: 'ts-orders', label: 'Order Management', icon: History, color: 'from-purple-500 to-violet-600', badge: '📋', shortLabel: 'Orders' }
       ]
