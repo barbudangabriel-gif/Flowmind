@@ -5333,7 +5333,13 @@ const TradeStationPortfolio = () => {
                             </tr>
                             
                             {/* Option Positions - show when expanded OR when no main position exists */}
-                            {hasOptions && (isExpanded || !group.mainPosition) && group.options.map((option, optIndex) => (
+                            {hasOptions && (isExpanded || !group.mainPosition) && (
+                              <>
+                                {/* DEBUG: Add visible indicator */}
+                                <tr key={`${baseSymbol}-debug`} style={{background: 'red', color: 'white'}}>
+                                  <td colSpan="11">DEBUG: {baseSymbol} - {group.options.length} options - isExpanded: {isExpanded.toString()}</td>
+                                </tr>
+                                {group.options.map((option, optIndex) => (
                               <tr 
                                 key={`${baseSymbol}-option-${optIndex}`}
                                 className="bg-gradient-to-r from-gray-850 to-gray-900 hover:from-gray-800 hover:to-gray-850 transition-all duration-200 border-b border-gray-600"
