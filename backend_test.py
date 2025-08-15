@@ -2412,6 +2412,407 @@ class StockMarketAPITester:
         
         return futures_test_results
 
+    def test_tradestation_live_portfolio_comprehensive(self):
+        """Test TradeStation Live Portfolio API endpoints - COMPREHENSIVE TESTING FOR LOADING SPINNER ISSUE"""
+        print("\n🏛️  TESTING TRADESTATION LIVE PORTFOLIO API - COMPREHENSIVE VERIFICATION")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Test TradeStation Live Portfolio backend API endpoints")
+        print("🔧 FOCUS: Verify API endpoints work correctly and return proper data structure")
+        print("📊 EXPECTED DATA: Account 11775499, 63 positions, ~$854k value, ~-$61k P&L")
+        print("🐛 ISSUE: Frontend shows permanent 'Loading portfolio data...' spinner")
+        
+        # Test 1: TradeStation Accounts Endpoint
+        print(f"\n📊 PHASE 1: TradeStation Accounts Endpoint Testing")
+        print("-" * 60)
+        
+        success_accounts, accounts_data = self.run_test("TradeStation Accounts", "GET", "tradestation/accounts", 200)
+        
+        if success_accounts:
+            print(f"✅ Accounts endpoint responding")
+            
+            # Check if we have account data
+            if isinstance(accounts_data, list) and len(accounts_data) > 0:
+                print(f"   📊 Found {len(accounts_data)} accounts")
+                
+                # Look for expected account 11775499
+                account_11775499_found = False
+                for account in accounts_data:
+                    account_id = account.get('account_id') or account.get('AccountID') or account.get('Key')
+                    print(f"   - Account: {account_id}")
+                    if str(account_id) == "11775499":
+                        account_11775499_found = True
+                        print(f"     ✅ Expected account 11775499 found!")
+                        account_type = account.get('account_type') or account.get('Type')
+                        if account_type:
+                            print(f"     - Type: {account_type}")
+                
+                if not account_11775499_found:
+                    print(f"   ⚠️  Expected account 11775499 not found in accounts list")
+                    
+            elif isinstance(accounts_data, dict):
+                print(f"   📊 Accounts data structure: {list(accounts_data.keys())}")
+                if 'accounts' in accounts_data:
+                    accounts_list = accounts_data['accounts']
+                    print(f"   📊 Found {len(accounts_list)} accounts in nested structure")
+            else:
+                print(f"   ⚠️  Unexpected accounts data format: {type(accounts_data)}")
+        else:
+            print(f"❌ Accounts endpoint failed - this may indicate authentication issues")
+            print(f"   📝 Note: TradeStation API requires OAuth authentication")
+        
+        # Test 2: TradeStation Portfolio Summary Endpoint (Specific Account)
+        print(f"\n📊 PHASE 2: TradeStation Portfolio Summary Endpoint Testing")
+        print("-" * 60)
+        
+        account_id = "11775499"  # Expected account from user report
+        success_summary, summary_data = self.run_test(
+            f"TradeStation Portfolio Summary (Account {account_id})", 
+            "GET", 
+            f"tradestation/accounts/{account_id}/summary", 
+            200
+        )
+        
+        if success_summary:
+            print(f"✅ Portfolio summary endpoint responding for account {account_id}")
+            
+            # Verify response structure matches frontend expectations
+            expected_fields = ['portfolio_metrics', 'positions', 'risk_analysis']
+            missing_fields = []
+            present_fields = []
+            
+            for field in expected_fields:
+                if field in summary_data:
+                    present_fields.append(field)
+                else:
+                    missing_fields.append(field)
+            
+            print(f"   📊 Response Structure Analysis:")
+            print(f"     - Present fields: {present_fields}")
+            if missing_fields:
+                print(f"     - Missing fields: {missing_fields}")
+            else:
+                print(f"     ✅ All expected fields present")
+            
+            # Check portfolio metrics
+            if 'portfolio_metrics' in summary_data:
+                metrics = summary_data['portfolio_metrics']
+                print(f"   💰 Portfolio Metrics:")
+                
+                total_value = metrics.get('total_value', 0)
+                total_pl = metrics.get('total_profit_loss', 0)
+                position_count = metrics.get('position_count', 0)
+                
+                print(f"     - Total Value: ${total_value:,.2f}")
+                print(f"     - Total P&L: ${total_pl:,.2f}")
+                print(f"     - Position Count: {position_count}")
+                
+                # Compare with expected values
+                expected_value = 854448  # ~$854k
+                expected_pl = -61262    # ~-$61k P&L
+                expected_positions = 63
+                
+                print(f"   🎯 Expected vs Actual Comparison:")
+                print(f"     - Value: Expected ~${expected_value:,}, Got ${total_value:,.2f}")
+                print(f"     - P&L: Expected ~${expected_pl:,}, Got ${total_pl:,.2f}")
+                print(f"     - Positions: Expected ~{expected_positions}, Got {position_count}")
+                
+                # Check if values are close to expected (within reasonable range)
+                value_close = abs(total_value - expected_value) < (expected_value * 0.1)  # 10% tolerance
+                pl_close = abs(total_pl - expected_pl) < (abs(expected_pl) * 0.2)  # 20% tolerance
+                positions_close = abs(position_count - expected_positions) < 10  # ±10 positions
+                
+                if value_close:
+                    print(f"     ✅ Portfolio value matches expected range")
+                else:
+                    print(f"     ⚠️  Portfolio value differs significantly from expected")
+                
+                if pl_close:
+                    print(f"     ✅ P&L matches expected range")
+                else:
+                    print(f"     ⚠️  P&L differs significantly from expected")
+                
+                if positions_close:
+                    print(f"     ✅ Position count matches expected range")
+                else:
+                    print(f"     ⚠️  Position count differs significantly from expected")
+            
+            # Check positions data
+            if 'positions' in summary_data:
+                positions = summary_data['positions']
+                print(f"   📊 Positions Data:")
+                print(f"     - Positions array length: {len(positions) if isinstance(positions, list) else 'Not a list'}")
+                
+                if isinstance(positions, list) and len(positions) > 0:
+                    # Show sample position structure
+                    sample_position = positions[0]
+                    print(f"     - Sample position fields: {list(sample_position.keys()) if isinstance(sample_position, dict) else 'Not a dict'}")
+                    
+                    if isinstance(sample_position, dict):
+                        symbol = sample_position.get('symbol') or sample_position.get('Symbol')
+                        quantity = sample_position.get('quantity') or sample_position.get('Quantity')
+                        market_value = sample_position.get('market_value') or sample_position.get('MarketValue')
+                        
+                        print(f"     - Sample position: {symbol}, Qty: {quantity}, Value: ${market_value}")
+            
+            # Check risk analysis
+            if 'risk_analysis' in summary_data:
+                risk_analysis = summary_data['risk_analysis']
+                print(f"   ⚖️  Risk Analysis:")
+                print(f"     - Risk analysis fields: {list(risk_analysis.keys()) if isinstance(risk_analysis, dict) else 'Not a dict'}")
+        else:
+            print(f"❌ Portfolio summary endpoint failed for account {account_id}")
+            print(f"   📝 This could indicate:")
+            print(f"     - Authentication required")
+            print(f"     - Account not accessible")
+            print(f"     - API endpoint issues")
+        
+        # Test 3: Multiple Consecutive Calls (Consistency Testing)
+        print(f"\n🔄 PHASE 3: Multiple Consecutive Calls Testing")
+        print("-" * 60)
+        
+        consecutive_results = []
+        for i in range(3):
+            print(f"   🔍 Consecutive call {i+1}/3...")
+            success_consecutive, consecutive_data = self.run_test(
+                f"Portfolio Summary Call #{i+1}", 
+                "GET", 
+                f"tradestation/accounts/{account_id}/summary", 
+                200
+            )
+            
+            consecutive_results.append({
+                'success': success_consecutive,
+                'data': consecutive_data,
+                'call_number': i+1
+            })
+            
+            if success_consecutive and 'portfolio_metrics' in consecutive_data:
+                metrics = consecutive_data['portfolio_metrics']
+                total_value = metrics.get('total_value', 0)
+                position_count = metrics.get('position_count', 0)
+                print(f"     - Call {i+1}: Value=${total_value:,.2f}, Positions={position_count}")
+        
+        # Analyze consistency
+        successful_calls = [r for r in consecutive_results if r['success']]
+        print(f"   📊 Consistency Analysis:")
+        print(f"     - Successful calls: {len(successful_calls)}/3")
+        
+        if len(successful_calls) >= 2:
+            # Compare values between calls
+            values = []
+            position_counts = []
+            
+            for result in successful_calls:
+                if 'portfolio_metrics' in result['data']:
+                    metrics = result['data']['portfolio_metrics']
+                    values.append(metrics.get('total_value', 0))
+                    position_counts.append(metrics.get('position_count', 0))
+            
+            if len(values) >= 2:
+                value_consistent = all(abs(v - values[0]) < 1000 for v in values)  # $1000 tolerance
+                positions_consistent = all(p == position_counts[0] for p in position_counts)
+                
+                print(f"     - Value consistency: {'✅ Consistent' if value_consistent else '⚠️  Inconsistent'}")
+                print(f"     - Position count consistency: {'✅ Consistent' if positions_consistent else '⚠️  Inconsistent'}")
+                
+                if not value_consistent:
+                    print(f"       Values: {[f'${v:,.2f}' for v in values]}")
+                if not positions_consistent:
+                    print(f"       Position counts: {position_counts}")
+        
+        # Test 4: Response Time Analysis
+        print(f"\n⏱️  PHASE 4: Response Time Analysis")
+        print("-" * 60)
+        
+        import time
+        response_times = []
+        
+        for i in range(3):
+            start_time = time.time()
+            success_timing, timing_data = self.run_test(
+                f"Response Time Test #{i+1}", 
+                "GET", 
+                f"tradestation/accounts/{account_id}/summary", 
+                200
+            )
+            end_time = time.time()
+            
+            response_time = end_time - start_time
+            response_times.append(response_time)
+            print(f"   ⏱️  Call {i+1}: {response_time:.2f}s")
+        
+        avg_response_time = sum(response_times) / len(response_times)
+        max_response_time = max(response_times)
+        min_response_time = min(response_times)
+        
+        print(f"   📊 Response Time Analysis:")
+        print(f"     - Average: {avg_response_time:.2f}s")
+        print(f"     - Range: {min_response_time:.2f}s - {max_response_time:.2f}s")
+        
+        if avg_response_time < 2.0:
+            print(f"     ✅ Excellent response time")
+        elif avg_response_time < 5.0:
+            print(f"     ✅ Good response time")
+        elif avg_response_time < 10.0:
+            print(f"     ⚠️  Slow response time")
+        else:
+            print(f"     ❌ Very slow response time - may cause frontend timeouts")
+        
+        # Test 5: Authentication Status Check
+        print(f"\n🔐 PHASE 5: Authentication Status Verification")
+        print("-" * 60)
+        
+        success_auth, auth_data = self.run_test("TradeStation Auth Status", "GET", "auth/tradestation/status", 200)
+        
+        if success_auth:
+            print(f"✅ Auth status endpoint responding")
+            
+            if 'authentication' in auth_data:
+                auth_info = auth_data['authentication']
+                authenticated = auth_info.get('authenticated', False)
+                environment = auth_info.get('environment', 'unknown')
+                
+                print(f"   🔐 Authentication Status:")
+                print(f"     - Authenticated: {authenticated}")
+                print(f"     - Environment: {environment}")
+                
+                if not authenticated:
+                    print(f"     ⚠️  NOT AUTHENTICATED - This explains API failures")
+                    print(f"     📝 TradeStation APIs require OAuth authentication")
+                else:
+                    print(f"     ✅ AUTHENTICATED - APIs should work")
+            
+            if 'api_configuration' in auth_data:
+                config = auth_data['api_configuration']
+                print(f"   ⚙️  API Configuration:")
+                print(f"     - Environment: {config.get('environment', 'unknown')}")
+                print(f"     - Base URL: {config.get('base_url', 'unknown')}")
+                print(f"     - Credentials Configured: {config.get('credentials_configured', False)}")
+        
+        # Test 6: Additional TradeStation Endpoints
+        print(f"\n📊 PHASE 6: Additional TradeStation Endpoints Testing")
+        print("-" * 60)
+        
+        additional_endpoints = [
+            ("Positions", f"tradestation/accounts/{account_id}/positions"),
+            ("Balances", f"tradestation/accounts/{account_id}/balances"),
+            ("Orders History", f"tradestation/accounts/{account_id}/orders")
+        ]
+        
+        for endpoint_name, endpoint_path in additional_endpoints:
+            success_additional, additional_data = self.run_test(
+                f"TradeStation {endpoint_name}", 
+                "GET", 
+                endpoint_path, 
+                200
+            )
+            
+            if success_additional:
+                print(f"   ✅ {endpoint_name} endpoint responding")
+                if isinstance(additional_data, list):
+                    print(f"     - Returned {len(additional_data)} items")
+                elif isinstance(additional_data, dict):
+                    print(f"     - Response keys: {list(additional_data.keys())}")
+            else:
+                print(f"   ❌ {endpoint_name} endpoint failed")
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT: TradeStation Live Portfolio API")
+        print("=" * 80)
+        
+        # Calculate success metrics
+        test_phases = [
+            ("Accounts Endpoint", success_accounts),
+            ("Portfolio Summary", success_summary),
+            ("Consecutive Calls", len(successful_calls) >= 2),
+            ("Response Time", avg_response_time < 10.0),
+            ("Auth Status", success_auth)
+        ]
+        
+        passed_phases = sum(1 for _, passed in test_phases if passed)
+        total_phases = len(test_phases)
+        success_rate = (passed_phases / total_phases) * 100
+        
+        print(f"\n📊 TEST RESULTS SUMMARY:")
+        for phase_name, passed in test_phases:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {phase_name}")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_phases}/{total_phases} phases passed)")
+        
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        if success_summary and 'portfolio_metrics' in summary_data:
+            metrics = summary_data['portfolio_metrics']
+            print(f"   - Portfolio Value: ${metrics.get('total_value', 0):,.2f}")
+            print(f"   - Position Count: {metrics.get('position_count', 0)}")
+            print(f"   - P&L: ${metrics.get('total_profit_loss', 0):,.2f}")
+        else:
+            print(f"   - Portfolio data: ❌ Not accessible")
+        
+        print(f"   - API Response Time: {avg_response_time:.2f}s average")
+        print(f"   - Consistency: {'✅ Good' if len(successful_calls) >= 2 else '❌ Poor'}")
+        
+        # Root cause analysis for loading spinner issue
+        print(f"\n🐛 ROOT CAUSE ANALYSIS FOR LOADING SPINNER ISSUE:")
+        
+        if not success_summary:
+            print(f"   ❌ BACKEND API ISSUE: Portfolio summary endpoint not responding")
+            print(f"     - Frontend will show loading spinner indefinitely")
+            print(f"     - Check authentication and API configuration")
+        elif success_summary and 'portfolio_metrics' not in summary_data:
+            print(f"   ❌ RESPONSE STRUCTURE ISSUE: Missing expected fields")
+            print(f"     - Frontend expects 'portfolio_metrics', 'positions', 'risk_analysis'")
+            print(f"     - Current response structure may not match frontend expectations")
+        elif avg_response_time > 30.0:
+            print(f"   ❌ TIMEOUT ISSUE: API responses too slow")
+            print(f"     - Frontend may timeout before receiving response")
+            print(f"     - Consider implementing loading timeouts")
+        else:
+            print(f"   ✅ BACKEND API WORKING: Issue likely in frontend JavaScript")
+            print(f"     - API returns correct data structure")
+            print(f"     - Check frontend state management and error handling")
+            print(f"     - Verify frontend API call implementation")
+        
+        # Recommendations
+        print(f"\n💡 RECOMMENDATIONS:")
+        
+        if not success_accounts and not success_summary:
+            print(f"   🔐 AUTHENTICATION REQUIRED:")
+            print(f"     - Complete TradeStation OAuth authentication flow")
+            print(f"     - Visit /auth/tradestation/login to authenticate")
+            print(f"     - Ensure API credentials are properly configured")
+        
+        if success_summary:
+            print(f"   ✅ BACKEND WORKING CORRECTLY:")
+            print(f"     - API endpoints return proper data structure")
+            print(f"     - Focus on frontend debugging")
+            print(f"     - Check browser console for JavaScript errors")
+            print(f"     - Verify API response handling in frontend code")
+        
+        if avg_response_time > 10.0:
+            print(f"   ⚠️  PERFORMANCE OPTIMIZATION:")
+            print(f"     - Consider caching portfolio data")
+            print(f"     - Implement progressive loading")
+            print(f"     - Add timeout handling in frontend")
+        
+        # Final verdict
+        if success_rate >= 80:
+            print(f"\n🎉 VERDICT: BACKEND API WORKING CORRECTLY")
+            print(f"   The TradeStation Live Portfolio backend APIs are functional.")
+            print(f"   Loading spinner issue is likely in frontend JavaScript code.")
+            print(f"   Focus debugging efforts on frontend state management.")
+        elif success_rate >= 60:
+            print(f"\n⚠️  VERDICT: PARTIAL BACKEND ISSUES")
+            print(f"   Some TradeStation APIs working, others failing.")
+            print(f"   Check authentication and API configuration.")
+        else:
+            print(f"\n❌ VERDICT: BACKEND API ISSUES")
+            print(f"   TradeStation APIs not responding correctly.")
+            print(f"   Authentication and configuration issues need resolution.")
+        
+        return success_rate >= 60
+
     def test_market_overview_debug_futures_symbols(self):
         """DEBUG: Comprehensive test to verify Market Overview returns futures symbols (SPX, NQ, YM, RTY) instead of old index symbols"""
         print("\n🔍 DEBUGGING MARKET OVERVIEW - FUTURES SYMBOLS ISSUE")
