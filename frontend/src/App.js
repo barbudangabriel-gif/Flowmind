@@ -5990,7 +5990,7 @@ const TradeStationCallback = () => {
 
 // Main App Component
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('ts-portfolio'); // Temporary: Start with TradeStation Portfolio
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isDarkMode } = useTheme();
 
