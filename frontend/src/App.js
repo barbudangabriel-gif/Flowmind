@@ -5191,222 +5191,99 @@ const TradeStationPortfolio = () => {
                   <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`} style={{ minHeight: '600px' }}>
                     {(() => {
                       const filteredPositions = filterPositionsByAsset(portfolioData.positions);
-                      const symbolGroups = groupPositionsBySymbol(filteredPositions);
                       
-                      return Object.keys(symbolGroups).map((baseSymbol) => {
-                        const group = symbolGroups[baseSymbol];
-                        const isExpanded = expandedSymbols.has(baseSymbol);
-                        const hasOptions = group.options.length > 0;
+                      // SIMPLIFIED: Show each position as individual row with potential dropdown
+                      return filteredPositions.map((position, index) => {
+                        const baseSymbol = getBaseSymbol(position.symbol);
+                        const isOption = isOptionPosition(position);
+                        const isExpanded = expandedSymbols.has(`pos-${index}`); // Use position index for unique keys
                         
                         return (
-                          <React.Fragment key={baseSymbol}>
-                            {/* Main Stock Position OR Header for options-only symbols */}
-                            <tr className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600">
-                              {/* Symbol Column with Expand/Collapse */}
-                              <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
-                                <div className="flex items-center gap-1">
-                                  {/* Expand/Collapse icon */}
-                                  <button 
-                                    className="text-gray-400 hover:text-gray-200 transition-colors flex-shrink-0"
-                                    onClick={() => toggleSymbolExpansion(baseSymbol)}
-                                    disabled={!hasOptions}
-                                  >
-                                    {hasOptions ? (
-                                      <div className={`ts-double-arrow ${isExpanded ? 'expanded' : ''}`}></div>
-                                    ) : (
-                                      <div className="w-4 h-4"></div>
-                                    )}
-                                  </button>
-                                  
-                                  <div className="flex flex-col min-w-0 flex-1">
-                                    <span className="font-semibold text-blue-300 text-sm truncate">
-                                      {group.mainPosition ? group.mainPosition.symbol : baseSymbol}
-                                    </span>
-                                    <span className="text-xs text-gray-400 uppercase truncate">
-                                      {group.mainPosition ? (group.mainPosition.asset_type || 'EQ') : 'STOCK'}
-                                      {hasOptions ? ` (${group.options.length} options)` : ''}
-                                    </span>
-                                  </div>
+                          <tr 
+                            key={`position-${index}`}
+                            className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600"
+                          >
+                            {/* Symbol Column with Expand/Collapse */}
+                            <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
+                              <div className="flex items-center gap-1">
+                                {/* Always show dropdown arrow for testing */}
+                                <button 
+                                  className="text-gray-400 hover:text-gray-200 transition-colors flex-shrink-0"
+                                  onClick={() => {
+                                    console.log(`Clicking dropdown for position ${index}: ${position.symbol}`);
+                                    toggleSymbolExpansion(`pos-${index}`);
+                                  }}
+                                >
+                                  <div className={`ts-double-arrow ${isExpanded ? 'expanded' : ''}`}></div>
+                                </button>
+                                
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <span className="font-semibold text-blue-300 text-sm truncate">{position.symbol}</span>
+                                  <span className="text-xs text-gray-400 uppercase truncate">
+                                    {position.asset_type || (isOption ? 'OPT' : 'EQ')}
+                                    {isExpanded ? ' (EXPANDED)' : ' (COLLAPSED)'}
+                                  </span>
                                 </div>
-                              </td>
-                              
-                              {/* Description Column */}
-                              <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
-                                <div className="text-sm text-gray-300 truncate">
-                                  {group.mainPosition ? 
-                                    (group.mainPosition.description || 'Stock Position') : 
-                                    `${baseSymbol} Options Group`
-                                  }
-                                </div>
-                              </td>
-                              
-                              {/* Show main position data if exists, otherwise show aggregated options data */}
-                              {group.mainPosition ? (
-                                <>
-                                  {/* Position Column (Long/Short + Quantity) */}
-                                  <td className="px-3 py-2 text-center border-r border-gray-600 w-24 min-w-24">
-                                    <div className="flex flex-col items-center">
-                                      <span className={`text-xs font-medium px-1 py-0.5 rounded ${group.mainPosition.quantity > 0 ? 'bg-green-700 text-green-200' : 'bg-red-700 text-red-200'}`}>
-                                        {group.mainPosition.quantity > 0 ? 'LONG' : 'SHORT'}
-                                      </span>
-                                      <span className="text-sm font-medium text-gray-200">{Math.abs(group.mainPosition.quantity)}</span>
-                                    </div>
-                                  </td>
-                                  
-                                  {/* Open P&L */}
-                                  <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-28 min-w-28 ${getPnlColor(group.mainPosition.unrealized_pnl)} truncate`}>
-                                    {group.mainPosition.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(group.mainPosition.unrealized_pnl)}
-                                  </td>
-                                  
-                                  {/* Average Price */}
-                                  <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
-                                    {formatCurrency(group.mainPosition.average_price)}
-                                  </td>
-                                  
-                                  {/* Today's Open P/L */}
-                                  <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 ${getPnlColor(group.mainPosition.daily_pnl || 0)} truncate`}>
-                                    {(group.mainPosition.daily_pnl || 0) > 0 ? '+' : ''}{formatCurrency(group.mainPosition.daily_pnl || 0)}
-                                  </td>
-                                  
-                                  {/* Open P/L Qty */}
-                                  <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
-                                    {formatNumber(Math.abs(group.mainPosition.quantity))}
-                                  </td>
-                                  
-                                  {/* Open P&L % */}
-                                  <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-24 min-w-24 ${getPnlColor(group.mainPosition.unrealized_pnl_percent)} truncate`}>
-                                    {group.mainPosition.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(group.mainPosition.unrealized_pnl_percent)}
-                                  </td>
-                                  
-                                  {/* Total Cost */}
-                                  <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-28 min-w-28 text-gray-200 truncate">
-                                    {formatCurrency(calculateTotalCost(group.mainPosition))}
-                                  </td>
-                                  
-                                  {/* Market Value */}
-                                  <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 text-gray-200 truncate">
-                                    {formatCurrency(group.mainPosition.market_value)}
-                                  </td>
-                                  
-                                  {/* Quantity */}
-                                  <td className="px-3 py-2 text-center font-medium w-20 min-w-20 text-gray-200 truncate">
-                                    {formatNumber(Math.abs(group.mainPosition.quantity))}
-                                  </td>
-                                </>
-                              ) : (
-                                /* Show summary for options-only group */
-                                <>
-                                  <td className="px-3 py-2 text-center border-r border-gray-600 w-24 min-w-24">
-                                    <div className="text-xs text-gray-400">OPTIONS</div>
-                                    <div className="text-sm font-medium text-gray-200">{group.options.length}</div>
-                                  </td>
-                                  <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-28 min-w-28 ${getPnlColor(group.options.reduce((sum, opt) => sum + (opt.unrealized_pnl || 0), 0))} truncate`}>
-                                    {formatCurrency(group.options.reduce((sum, opt) => sum + (opt.unrealized_pnl || 0), 0))}
-                                  </td>
-                                  <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-400 truncate">-</td>
-                                  <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 text-gray-400 truncate">-</td>
-                                  <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-400 truncate">-</td>
-                                  <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-24 min-w-24 text-gray-400 truncate">-</td>
-                                  <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-28 min-w-28 text-gray-200 truncate">
-                                    {formatCurrency(group.options.reduce((sum, opt) => sum + calculateTotalCost(opt), 0))}
-                                  </td>
-                                  <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 text-gray-200 truncate">
-                                    {formatCurrency(group.options.reduce((sum, opt) => sum + (opt.market_value || 0), 0))}
-                                  </td>
-                                  <td className="px-3 py-2 text-center font-medium w-20 min-w-20 text-gray-200 truncate">
-                                    {group.options.reduce((sum, opt) => sum + Math.abs(opt.quantity || 0), 0)}
-                                  </td>
-                                </>
-                              )}
-                            </tr>
+                              </div>
+                            </td>
                             
-                            {/* Option Positions - show when expanded OR when no main position exists */}
-                            {hasOptions && (isExpanded || !group.mainPosition) && group.options.map((option, optIndex) => (
-                              <tr 
-                                key={`${baseSymbol}-option-${optIndex}`}
-                                className="bg-gradient-to-r from-gray-850 to-gray-900 hover:from-gray-800 hover:to-gray-850 transition-all duration-200 border-b border-gray-600"
-                              >
-                                {/* Symbol Column with Indent (or no indent if no main position) */}
-                                <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
-                                  <div className={`flex items-center gap-1 ${group.mainPosition ? 'pl-4' : ''}`}>
-                                    {/* Option bullet point or main expand icon */}
-                                    {group.mainPosition ? (
-                                      <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
-                                    ) : (
-                                      <button 
-                                        className="text-gray-400 hover:text-gray-200 transition-colors flex-shrink-0"
-                                        onClick={() => toggleSymbolExpansion(baseSymbol)}
-                                      >
-                                        <div className="ts-double-arrow"></div>
-                                      </button>
-                                    )}
-                                    
-                                    <div className="flex flex-col min-w-0 flex-1">
-                                      <span className="font-semibold text-blue-300 text-xs truncate">{option.symbol}</span>
-                                      <span className="text-xs text-gray-400 uppercase truncate">{option.asset_type || 'OPT'}</span>
-                                    </div>
-                                  </div>
-                                </td>
-                                
-                                {/* Description Column */}
-                                <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
-                                  <div className="text-sm text-gray-300 truncate">
-                                    {option.description || 'Option Position'}
-                                  </div>
-                                </td>
-                                
-                                {/* Position Column */}
-                                <td className="px-3 py-2 text-center border-r border-gray-600 w-24 min-w-24">
-                                  <div className="flex flex-col items-center">
-                                    <span className={`text-xs font-medium px-1 py-0.5 rounded ${option.quantity > 0 ? 'bg-green-700 text-green-200' : 'bg-red-700 text-red-200'}`}>
-                                      {option.quantity > 0 ? 'LONG' : 'SHORT'}
-                                    </span>
-                                    <span className="text-sm font-medium text-gray-200">{Math.abs(option.quantity)}</span>
-                                  </div>
-                                </td>
-                                
-                                {/* Open P&L */}
-                                <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-28 min-w-28 ${getPnlColor(option.unrealized_pnl)} truncate`}>
-                                  {option.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(option.unrealized_pnl)}
-                                </td>
-                                
-                                {/* Average Price */}
-                                <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
-                                  {formatCurrency(option.average_price)}
-                                </td>
-                                
-                                {/* Today's Open P/L */}
-                                <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 ${getPnlColor(option.daily_pnl || 0)} truncate`}>
-                                  {(option.daily_pnl || 0) > 0 ? '+' : ''}{formatCurrency(option.daily_pnl || 0)}
-                                </td>
-                                
-                                {/* Open P/L Qty */}
-                                <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
-                                  {formatNumber(Math.abs(option.quantity))}
-                                </td>
-                                
-                                {/* Open P&L % */}
-                                <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-24 min-w-24 ${getPnlColor(option.unrealized_pnl_percent)} truncate`}>
-                                  {option.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(option.unrealized_pnl_percent)}
-                                </td>
-                                
-                                {/* Total Cost */}
-                                <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-28 min-w-28 text-gray-200 truncate">
-                                  {formatCurrency(calculateTotalCost(option))}
-                                </td>
-                                
-                                {/* Market Value */}
-                                <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 text-gray-200 truncate">
-                                  {formatCurrency(option.market_value)}
-                                </td>
-                                
-                                {/* Quantity */}
-                                <td className="px-3 py-2 text-center font-medium w-20 min-w-20 text-gray-200 truncate">
-                                  {formatNumber(Math.abs(option.quantity))}
-                                </td>
-                              </tr>
-                            ))}
-                          </React.Fragment>
+                            {/* Description Column */}
+                            <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
+                              <div className="text-sm text-gray-300 truncate">
+                                {position.description || `${baseSymbol} Position #${index + 1}`}
+                              </div>
+                            </td>
+                            
+                            {/* Position Column */}
+                            <td className="px-3 py-2 text-center border-r border-gray-600 w-24 min-w-24">
+                              <div className="flex flex-col items-center">
+                                <span className={`text-xs font-medium px-1 py-0.5 rounded ${position.quantity > 0 ? 'bg-green-700 text-green-200' : 'bg-red-700 text-red-200'}`}>
+                                  {position.quantity > 0 ? 'LONG' : 'SHORT'}
+                                </span>
+                                <span className="text-sm font-medium text-gray-200">{Math.abs(position.quantity)}</span>
+                              </div>
+                            </td>
+                            
+                            {/* Open P&L */}
+                            <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-28 min-w-28 ${getPnlColor(position.unrealized_pnl)} truncate`}>
+                              {position.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(position.unrealized_pnl)}
+                            </td>
+                            
+                            {/* Average Price */}
+                            <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
+                              {formatCurrency(position.average_price)}
+                            </td>
+                            
+                            {/* Today's Open P/L */}
+                            <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 ${getPnlColor(position.daily_pnl || 0)} truncate`}>
+                              {(position.daily_pnl || 0) > 0 ? '+' : ''}{formatCurrency(position.daily_pnl || 0)}
+                            </td>
+                            
+                            {/* Open P/L Qty */}
+                            <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
+                              {formatNumber(Math.abs(position.quantity))}
+                            </td>
+                            
+                            {/* Open P&L % */}
+                            <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-24 min-w-24 ${getPnlColor(position.unrealized_pnl_percent)} truncate`}>
+                              {position.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(position.unrealized_pnl_percent)}
+                            </td>
+                            
+                            {/* Total Cost */}
+                            <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-28 min-w-28 text-gray-200 truncate">
+                              {formatCurrency(calculateTotalCost(position))}
+                            </td>
+                            
+                            {/* Market Value */}
+                            <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 text-gray-200 truncate">
+                              {formatCurrency(position.market_value)}
+                            </td>
+                            
+                            {/* Quantity */}
+                            <td className="px-3 py-2 text-center font-medium w-20 min-w-20 text-gray-200 truncate">
+                              {formatNumber(Math.abs(position.quantity))}
+                            </td>
+                          </tr>
                         );
                       });
                     })()}
