@@ -4803,9 +4803,12 @@ const TradeStationPortfolio = () => {
           ]
         };
         
-        setPortfolioData(mockData);
-        setError("🔥 TESTING MODE: Using mock data for dropdown functionality test");
-        console.log('🔍 DEBUG: Mock data loaded for dropdown testing');
+        // Force load mock data immediately
+        setTimeout(() => {
+          setPortfolioData(mockData);
+          setError("🔥 TESTING MODE: Using mock data for dropdown functionality test");
+          console.log('🔍 DEBUG: Mock data loaded for dropdown testing');
+        }, 2000); // 2 second delay
       }
     } catch (err) {
       console.error('🔍 DEBUG: Portfolio loading error:', err);
