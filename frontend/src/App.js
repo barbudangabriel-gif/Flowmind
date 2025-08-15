@@ -4700,34 +4700,42 @@ const TradeStationPortfolio = () => {
     try {
       setLoading(true);
       console.log('🔍 DEBUG: Starting portfolio data load for account:', accountId);
-      console.log('🔍 DEBUG: Making request to:', `${API}/tradestation/accounts/${accountId}/summary`);
-      const response = await axios.get(`${API}/tradestation/accounts/${accountId}/summary`, {
-        timeout: 15000, // 15 second timeout
+      const apiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
+      console.log('🔍 DEBUG: Making request to:', apiUrl);
+      
+      // Try using fetch instead of axios
+      const response = await fetch(apiUrl, {
+        method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        }
+        },
+        mode: 'cors',
+        credentials: 'include'
       });
-      console.log('🔍 DEBUG: API response received, status:', response.status);
-      console.log('🔍 DEBUG: response.data:', response.data);
-      console.log('🔍 DEBUG: response.data.data exists?', response.data.data ? 'YES' : 'NO');
-      if (response.data.data?.portfolio_metrics) {
-        console.log('🔍 DEBUG: Portfolio metrics found:', response.data.data.portfolio_metrics);
+      
+      console.log('🔍 DEBUG: Fetch response received, status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      setPortfolioData(response.data.data);
+      
+      const data = await response.json();
+      console.log('🔍 DEBUG: JSON data parsed:', data);
+      console.log('🔍 DEBUG: data.data exists?', data.data ? 'YES' : 'NO');
+      
+      if (data.data?.portfolio_metrics) {
+        console.log('🔍 DEBUG: Portfolio metrics found:', data.data.portfolio_metrics);
+      }
+      
+      setPortfolioData(data.data);
       console.log('🔍 DEBUG: Portfolio data set successfully');
       setError(null);
     } catch (err) {
       console.error('🔍 DEBUG: Error in loadPortfolioData:', err);
       console.error('🔍 DEBUG: Error name:', err.name);
       console.error('🔍 DEBUG: Error message:', err.message);
-      console.error('🔍 DEBUG: Error code:', err.code);
-      if (err.response) {
-        console.error('🔍 DEBUG: Error response status:', err.response.status);
-        console.error('🔍 DEBUG: Error response data:', err.response.data);
-      }
-      setError('Failed to load portfolio data');
-      console.error('Portfolio error:', err);
+      setError(`Failed to load portfolio data: ${err.message}`);
     } finally {
       console.log('🔍 DEBUG: Setting loading to false');
       setLoading(false);
