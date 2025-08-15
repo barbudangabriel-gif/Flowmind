@@ -4740,6 +4740,79 @@ const TradeStationPortfolio = () => {
     return value > 0 ? 'bg-green-50' : 'bg-red-50';
   };
 
+  // Grouping functions
+  const getGroupKey = (position, groupType) => {
+    switch (groupType) {
+      case 'symbol':
+        return position.symbol.charAt(0).toUpperCase();
+      case 'sector':
+        return position.sector || 'Other';
+      case 'asset_type':
+        return position.asset_type || 'EQ';
+      case 'position_type':
+        return position.quantity > 0 ? 'Long Positions' : 'Short Positions';
+      default:
+        return 'All Positions';
+    }
+  };
+
+  const groupPositions = (positions) => {
+    if (groupBy === 'none') {
+      return { 'All Positions': positions };
+    }
+
+    const grouped = {};
+    positions.forEach(position => {
+      const key = getGroupKey(position, groupBy);
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push(position);
+    });
+
+    // Sort groups alphabetically
+    const sortedGroups = {};
+    Object.keys(grouped).sort().forEach(key => {
+      sortedGroups[key] = grouped[key];
+    });
+
+    return sortedGroups;
+  };
+
+  const calculateGroupTotals = (positions) => {
+    return positions.reduce((totals, position) => {
+      return {
+        quantity: totals.quantity + Math.abs(position.quantity || 0),
+        marketValue: totals.marketValue + (position.market_value || 0),
+        unrealizedPnl: totals.unrealizedPnl + (position.unrealized_pnl || 0),
+        positionCount: totals.positionCount + 1
+      };
+    }, { quantity: 0, marketValue: 0, unrealizedPnl: 0, positionCount: 0 });
+  };
+
+  const toggleGroupExpansion = (groupName) => {
+    const newExpanded = new Set(expandedGroups);
+    if (newExpanded.has(groupName)) {
+      newExpanded.delete(groupName);
+    } else {
+      newExpanded.add(groupName);
+    }
+    setExpandedGroups(newExpanded);
+  };
+
+  const toggleAllGroups = (expand) => {
+    if (!portfolioData?.positions) return;
+    
+    const grouped = groupPositions(portfolioData.positions);
+    const allGroups = Object.keys(grouped);
+    
+    if (expand) {
+      setExpandedGroups(new Set(allGroups));
+    } else {
+      setExpandedGroups(new Set());
+    }
+  };
+
   return (
     <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
       <div className="flex items-center justify-between">
