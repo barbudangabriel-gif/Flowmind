@@ -4757,7 +4757,7 @@ const TradeStationPortfolio = () => {
       const portfolioApiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
       console.log('🔍 DEBUG: Portfolio API URL:', portfolioApiUrl);
       
-      const response = await fetch(apiUrl, {
+      const response = await fetch(portfolioApiUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
