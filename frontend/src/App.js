@@ -203,8 +203,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     {
       title: "Overview",
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: Home, color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' },
-
+        { id: 'dashboard', label: 'Dashboard', icon: Home, color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' }
       ]
     },
     {
