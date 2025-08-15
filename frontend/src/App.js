@@ -5511,21 +5511,9 @@ const TradeStationAccountBalance = () => {
   const loadAccounts = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API}/tradestation/accounts`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        mode: 'cors',
-        credentials: 'include'
-      });
+      const response = await axios.get(`${API}/tradestation/accounts`);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
+      const data = response.data;
       setAccounts(data.accounts || []);
       if (data.accounts?.length > 0) {
         setSelectedAccount(data.accounts[0].AccountID);
