@@ -4861,6 +4861,48 @@ const TradeStationPortfolio = () => {
     return (position.average_price || 0) * Math.abs(position.quantity || 0);
   };
 
+  // Function to get base symbol (remove option suffixes)
+  const getBaseSymbol = (symbol) => {
+    // Remove option suffixes like " 250117C00450000" to get base symbol like "TSLA"
+    return symbol.split(' ')[0];
+  };
+
+  // Function to group positions by base symbol
+  const groupPositionsBySymbol = (positions) => {
+    const grouped = {};
+    
+    positions.forEach(position => {
+      const baseSymbol = getBaseSymbol(position.symbol);
+      
+      if (!grouped[baseSymbol]) {
+        grouped[baseSymbol] = {
+          mainPosition: null,
+          options: []
+        };
+      }
+      
+      // Separate main stock positions from options
+      if (position.asset_type === 'STOCK' || position.asset_type === 'EQ' || !position.symbol.includes(' ')) {
+        grouped[baseSymbol].mainPosition = position;
+      } else {
+        grouped[baseSymbol].options.push(position);
+      }
+    });
+    
+    return grouped;
+  };
+
+  // Toggle symbol expansion
+  const toggleSymbolExpansion = (symbol) => {
+    const newExpanded = new Set(expandedSymbols);
+    if (newExpanded.has(symbol)) {
+      newExpanded.delete(symbol);
+    } else {
+      newExpanded.add(symbol);
+    }
+    setExpandedSymbols(newExpanded);
+  };
+
   const toggleGroupExpansion = (groupName) => {
     const newExpanded = new Set(expandedGroups);
     if (newExpanded.has(groupName)) {
