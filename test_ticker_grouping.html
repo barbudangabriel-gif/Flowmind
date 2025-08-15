@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Test Ticker Grouping Logic</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; margin: 20px; }
+        .ticker-group { background: #2563eb; margin: 10px 0; padding: 15px; border-radius: 8px; }
+        .ticker-header { font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .dropdown-arrow { font-size: 16px; transition: transform 0.2s; }
+        .dropdown-arrow.expanded { transform: rotate(90deg); }
+        .positions { background: #374151; margin-top: 10px; padding: 10px; border-radius: 5px; border-left: 4px solid #06b6d4; }
+        .position { background: #4b5563; margin: 5px 0; padding: 8px; border-radius: 4px; }
+        .single-position { background: #374151; margin: 10px 0; padding: 15px; border-radius: 8px; }
+        .success { color: #10b981; }
+        .warning { color: #f59e0b; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>🎯 TICKER GROUPING LOGIC TEST</h1>
+    <p>Testing logic pentru gruparea pozițiilor pe ticker/symbol:</p>
+    
+    <div id="test-results"></div>
+    
+    <div id="ticker-display"></div>
+    
+    <script>
+        // Mock data similar to TradeStation response
+        const mockPositions = [
+            // AAPL group (4 positions)
+            { symbol: "AAPL", asset_type: "STOCK", quantity: 300, market_value: 69238.26, unrealized_pnl: 5864.49 },
+            { symbol: "AAPL 260618C190", asset_type: "STOCKOPTION", quantity: 2, market_value: 10580.0, unrealized_pnl: 2880.0 },
+            { symbol: "AAPL 271217C195", asset_type: "STOCKOPTION", quantity: 2, market_value: 13070.0, unrealized_pnl: 3120.0 },
+            { symbol: "AAPL 271217C205", asset_type: "STOCKOPTION", quantity: 2, market_value: 11706.0, unrealized_pnl: 2836.0 },
+            
+            // TSLA group (6 positions) 
+            { symbol: "TSLA", asset_type: "STOCK", quantity: 500, market_value: 165094.95, unrealized_pnl: 10164.8 },
+            { symbol: "TSLA 271217C260", asset_type: "STOCKOPTION", quantity: 1, market_value: 14670.0, unrealized_pnl: 1582.5 },
+            { symbol: "TSLA 271217C290", asset_type: "STOCKOPTION", quantity: 2, market_value: 26580.0, unrealized_pnl: 1350.0 },
+            { symbol: "TSLA 271217C300", asset_type: "STOCKOPTION", quantity: 3, market_value: 38685.0, unrealized_pnl: 3820.0 },
+            { symbol: "TSLA 271217C350", asset_type: "STOCKOPTION", quantity: 3, market_value: 33300.0, unrealized_pnl: -870.0 },
+            { symbol: "TSLA 271217P200", asset_type: "STOCKOPTION", quantity: -3, market_value: -8775.0, unrealized_pnl: 780.0 },
+            
+            // CRM group (9 positions)
+            { symbol: "CRM", asset_type: "STOCK", quantity: 1200, market_value: 291660.0, unrealized_pnl: -19110.01 },
+            { symbol: "CRM 250919P260", asset_type: "STOCKOPTION", quantity: -3, market_value: -6870.0, unrealized_pnl: -3330.0 },
+            { symbol: "CRM 260116C210", asset_type: "STOCKOPTION", quantity: 1, market_value: 4488.0, unrealized_pnl: 258.0 },
+            { symbol: "CRM 260618C290", asset_type: "STOCKOPTION", quantity: 2, market_value: 3300.0, unrealized_pnl: -2730.0 },
+            { symbol: "CRM 260618P270", asset_type: "STOCKOPTION", quantity: -1, market_value: -4390.0, unrealized_pnl: -1215.0 },
+            { symbol: "CRM 271217C200", asset_type: "STOCKOPTION", quantity: 1, market_value: 7925.0, unrealized_pnl: -900.0 },
+            { symbol: "CRM 271217C210", asset_type: "STOCKOPTION", quantity: 1, market_value: 7470.0, unrealized_pnl: 210.0 },
+            { symbol: "CRM 271217C230", asset_type: "STOCKOPTION", quantity: 2, market_value: 12778.0, unrealized_pnl: -2762.0 },
+            { symbol: "CRM 271217P200", asset_type: "STOCKOPTION", quantity: -7, market_value: -16345.0, unrealized_pnl: -1645.0 },
+            
+            // Single positions (no grouping)
+            { symbol: "ETOR", asset_type: "STOCK", quantity: 500, market_value: 23860.0, unrealized_pnl: -1181.06 },
+            { symbol: "FTNT", asset_type: "STOCK", quantity: 700, market_value: 55475.0, unrealized_pnl: -2341.26 }
+        ];
+        
+        // Extract base symbol from option symbol
+        function getBaseSymbol(symbol) {
+            // For options like "AAPL 260618C190", extract "AAPL"
+            const match = symbol.match(/^([A-Z]+)/);
+            return match ? match[1] : symbol;
+        }
+        
+        // Group positions by ticker
+        function groupPositionsByTicker(positions) {
+            const groups = {};
+            
+            positions.forEach(position => {
+                const baseSymbol = getBaseSymbol(position.symbol);
+                
+                if (!groups[baseSymbol]) {
+                    groups[baseSymbol] = {
+                        baseSymbol: baseSymbol,
+                        positions: [],
+                        hasMultiplePositions: false
+                    };
+                }
+                
+                groups[baseSymbol].positions.push(position);
+            });
+            
+            // Mark groups with multiple positions
+            Object.keys(groups).forEach(symbol => {
+                groups[symbol].hasMultiplePositions = groups[symbol].positions.length > 1;
+            });
+            
+            return groups;
+        }
+        
+        // Format currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+        }
+        
+        // State for expanded tickers
+        let expandedTickers = new Set();
+        
+        function toggleTicker(ticker) {
+            if (expandedTickers.has(ticker)) {
+                expandedTickers.delete(ticker);
+            } else {
+                expandedTickers.add(ticker);
+            }
+            renderDisplay();
+        }
+        
+        function renderDisplay() {
+            const grouped = groupPositionsByTicker(mockPositions);
+            const displayDiv = document.getElementById('ticker-display');
+            
+            let html = '<h2>📊 GROUPED TICKERS:</h2>';
+            
+            Object.entries(grouped).forEach(([ticker, group]) => {
+                const isExpanded = expandedTickers.has(ticker);
+                const { positions, hasMultiplePositions } = group;
+                
+                if (hasMultiplePositions) {
+                    // Multiple positions - show with dropdown
+                    const totalValue = positions.reduce((sum, pos) => sum + pos.market_value, 0);
+                    const totalPnL = positions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
+                    
+                    html += `
+                        <div class="ticker-group">
+                            <div class="ticker-header" onclick="toggleTicker('${ticker}')">
+                                <span class="dropdown-arrow ${isExpanded ? 'expanded' : ''}">▶</span>
+                                <span><strong>${ticker}</strong> (${positions.length} positions)</span>
+                                <span class="success">Total: ${formatCurrency(totalValue)}</span>
+                                <span class="${totalPnL >= 0 ? 'success' : 'error'}">P&L: ${formatCurrency(totalPnL)}</span>
+                            </div>
+                            
+                            ${isExpanded ? `
+                                <div class="positions">
+                                    <h4>Positions for ${ticker}:</h4>
+                                    ${positions.map(pos => `
+                                        <div class="position">
+                                            <strong>${pos.symbol}</strong> (${pos.asset_type}) - 
+                                            Qty: ${pos.quantity}, Value: ${formatCurrency(pos.market_value)}, 
+                                            P&L: <span class="${pos.unrealized_pnl >= 0 ? 'success' : 'error'}">${formatCurrency(pos.unrealized_pnl)}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    // Single position - show directly
+                    const position = positions[0];
+                    html += `
+                        <div class="single-position">
+                            <strong>${ticker}</strong> (Single Position) - 
+                            ${position.asset_type}, Qty: ${position.quantity}, 
+                            Value: ${formatCurrency(position.market_value)}, 
+                            P&L: <span class="${position.unrealized_pnl >= 0 ? 'success' : 'error'}">${formatCurrency(position.unrealized_pnl)}</span>
+                        </div>
+                    `;
+                }
+            });
+            
+            displayDiv.innerHTML = html;
+        }
+        
+        // Test and display results
+        function runTests() {
+            const grouped = groupPositionsByTicker(mockPositions);
+            const resultsDiv = document.getElementById('test-results');
+            
+            let results = '<h2>🧪 TEST RESULTS:</h2>';
+            
+            // Test grouping logic
+            const tickerCount = Object.keys(grouped).length;
+            const multiplePositionTickers = Object.values(grouped).filter(g => g.hasMultiplePositions).length;
+            const singlePositionTickers = Object.values(grouped).filter(g => !g.hasMultiplePositions).length;
+            
+            results += `
+                <div class="success">✅ Total positions: ${mockPositions.length}</div>
+                <div class="success">✅ Grouped into ${tickerCount} tickers</div>
+                <div class="warning">⚠️ Tickers with dropdowns: ${multiplePositionTickers}</div>
+                <div class="warning">⚠️ Single position tickers: ${singlePositionTickers}</div>
+            `;
+            
+            // Test each group
+            Object.entries(grouped).forEach(([ticker, group]) => {
+                const { positions, hasMultiplePositions } = group;
+                const status = hasMultiplePositions ? 'success' : 'warning';
+                const icon = hasMultiplePositions ? '🔽' : '📄';
+                
+                results += `
+                    <div class="${status}">
+                        ${icon} ${ticker}: ${positions.length} positions 
+                        ${hasMultiplePositions ? '(DROPDOWN)' : '(SINGLE)'}
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = results;
+        }
+        
+        // Initialize
+        runTests();
+        renderDisplay();
+        
+        console.log('🎯 Ticker Grouping Logic Test loaded!');
+        console.log('✅ Click on tickers with multiple positions to expand/collapse');
+    </script>
+</body>
+</html>
