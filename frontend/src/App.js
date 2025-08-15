@@ -5359,7 +5359,6 @@ const TradeStationPortfolio = () => {
                           </React.Fragment>
                         );
                       });
-                          const position = group.mainPosition;
                           rows.push(
                             <tr 
                               key={`main-${baseSymbol}`}
