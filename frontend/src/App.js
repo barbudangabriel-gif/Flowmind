@@ -5004,58 +5004,110 @@ const TradeStationPortfolio = () => {
                       <th className="px-4 py-3 text-center font-medium">Qty</th>
                     </tr>
                   </thead>
-                  <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'} divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-                    {portfolioData.positions.map((position, index) => (
-                      <tr key={index} className={`${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'} transition-colors duration-200`}>
-                        {/* Symbol Column */}
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-blue-600 text-base">{position.symbol}</span>
-                            <span className="text-xs text-gray-500 uppercase">{position.asset_type || 'EQ'}</span>
-                          </div>
-                        </td>
+                  <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                    {(() => {
+                      const groupedPositions = groupPositions(portfolioData.positions);
+                      const groupKeys = Object.keys(groupedPositions);
+                      
+                      return groupKeys.map((groupName) => {
+                        const positions = groupedPositions[groupName];
+                        const groupTotals = calculateGroupTotals(positions);
+                        const isExpanded = expandedGroups.has(groupName) || groupBy === 'none';
+                        const isGrouped = groupBy !== 'none';
                         
-                        {/* Position Column (Long/Short + Quantity) */}
-                        <td className="px-4 py-3 text-center">
-                          <div className="flex flex-col items-center">
-                            <span className={`text-xs font-medium px-2 py-1 rounded ${position.quantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                              {position.quantity > 0 ? 'LONG' : 'SHORT'}
-                            </span>
-                            <span className="text-sm font-medium mt-1">{Math.abs(position.quantity)}</span>
-                          </div>
-                        </td>
-                        
-                        {/* Average Price */}
-                        <td className="px-4 py-3 text-right font-medium">
-                          {formatCurrency(position.average_price)}
-                        </td>
-                        
-                        {/* Current Price */}
-                        <td className="px-4 py-3 text-right font-medium">
-                          {formatCurrency(position.current_price)}
-                        </td>
-                        
-                        {/* Market Value */}
-                        <td className="px-4 py-3 text-right font-semibold">
-                          {formatCurrency(position.market_value)}
-                        </td>
-                        
-                        {/* Open P&L */}
-                        <td className={`px-4 py-3 text-right font-semibold ${getPnlColor(position.unrealized_pnl)}`}>
-                          {position.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(position.unrealized_pnl)}
-                        </td>
-                        
-                        {/* Open P&L % */}
-                        <td className={`px-4 py-3 text-right font-semibold ${getPnlColor(position.unrealized_pnl_percent)}`}>
-                          {position.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(position.unrealized_pnl_percent)}
-                        </td>
-                        
-                        {/* Quantity */}
-                        <td className="px-4 py-3 text-center font-medium">
-                          {formatNumber(Math.abs(position.quantity))}
-                        </td>
-                      </tr>
-                    ))}
+                        return (
+                          <React.Fragment key={groupName}>
+                            {/* Group Header */}
+                            {isGrouped && (
+                              <tr 
+                                className={`${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-blue-50 hover:bg-blue-100'} 
+                                           cursor-pointer transition-colors border-t-2 ${isDarkMode ? 'border-gray-600' : 'border-blue-200'}`}
+                                onClick={() => toggleGroupExpansion(groupName)}
+                              >
+                                <td className="px-4 py-3 font-bold text-lg" colSpan="8">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xl">
+                                        {isExpanded ? '▼' : '▶'}
+                                      </span>
+                                      <span className="text-blue-700 font-semibold">{groupName}</span>
+                                      <span className="text-sm text-gray-600 bg-white px-2 py-1 rounded">
+                                        {groupTotals.positionCount} positions
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-sm">
+                                      <span className="font-semibold">
+                                        Market Value: {formatCurrency(groupTotals.marketValue)}
+                                      </span>
+                                      <span className={`font-semibold ${getPnlColor(groupTotals.unrealizedPnl)}`}>
+                                        P&L: {groupTotals.unrealizedPnl > 0 ? '+' : ''}{formatCurrency(groupTotals.unrealizedPnl)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                            
+                            {/* Positions in Group */}
+                            {isExpanded && positions.map((position, index) => (
+                              <tr 
+                                key={`${groupName}-${index}`} 
+                                className={`${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'} transition-colors duration-200
+                                           ${isGrouped ? (isDarkMode ? 'bg-gray-850' : 'bg-gray-25') : ''}`}
+                              >
+                                {/* Symbol Column */}
+                                <td className={`px-4 py-3 ${isGrouped ? 'pl-8' : ''}`}>
+                                  <div className="flex flex-col">
+                                    <span className="font-semibold text-blue-600 text-base">{position.symbol}</span>
+                                    <span className="text-xs text-gray-500 uppercase">{position.asset_type || 'EQ'}</span>
+                                  </div>
+                                </td>
+                                
+                                {/* Position Column (Long/Short + Quantity) */}
+                                <td className="px-4 py-3 text-center">
+                                  <div className="flex flex-col items-center">
+                                    <span className={`text-xs font-medium px-2 py-1 rounded ${position.quantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                      {position.quantity > 0 ? 'LONG' : 'SHORT'}
+                                    </span>
+                                    <span className="text-sm font-medium mt-1">{Math.abs(position.quantity)}</span>
+                                  </div>
+                                </td>
+                                
+                                {/* Average Price */}
+                                <td className="px-4 py-3 text-right font-medium">
+                                  {formatCurrency(position.average_price)}
+                                </td>
+                                
+                                {/* Current Price */}
+                                <td className="px-4 py-3 text-right font-medium">
+                                  {formatCurrency(position.current_price)}
+                                </td>
+                                
+                                {/* Market Value */}
+                                <td className="px-4 py-3 text-right font-semibold">
+                                  {formatCurrency(position.market_value)}
+                                </td>
+                                
+                                {/* Open P&L */}
+                                <td className={`px-4 py-3 text-right font-semibold ${getPnlColor(position.unrealized_pnl)}`}>
+                                  {position.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(position.unrealized_pnl)}
+                                </td>
+                                
+                                {/* Open P&L % */}
+                                <td className={`px-4 py-3 text-right font-semibold ${getPnlColor(position.unrealized_pnl_percent)}`}>
+                                  {position.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(position.unrealized_pnl_percent)}
+                                </td>
+                                
+                                {/* Quantity */}
+                                <td className="px-4 py-3 text-center font-medium">
+                                  {formatNumber(Math.abs(position.quantity))}
+                                </td>
+                              </tr>
+                            ))}
+                          </React.Fragment>
+                        );
+                      });
+                    })()}
                   </tbody>
                   
                   {/* Totals Row */}
