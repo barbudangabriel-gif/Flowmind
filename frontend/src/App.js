@@ -50,7 +50,9 @@ import {
   MoreVertical,
   CheckCircle,
   XCircle,
-  CreditCard
+  CreditCard,
+  Shield,
+  AlertTriangle
 } from "lucide-react";
 
 // Lazy loading for heavy components
