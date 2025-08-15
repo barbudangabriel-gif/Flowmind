@@ -5394,7 +5394,13 @@ const TradeStationAccountBalance = () => {
       }
       
       const data = await response.json();
-      setBalanceData(data.data);
+      console.log('🔍 DEBUG: Balance response:', data);
+      // The API returns {balances: {Balances: [...]}} structure
+      if (data.balances && data.balances.Balances && data.balances.Balances.length > 0) {
+        setBalanceData(data.balances.Balances[0]); // Get first (and likely only) balance record
+      } else {
+        throw new Error('No balance data found in response');
+      }
       setError(null);
     } catch (err) {
       setError('Failed to load balance data');
