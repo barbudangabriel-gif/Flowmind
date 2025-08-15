@@ -5161,7 +5161,7 @@ const TradeStationPortfolio = () => {
                                       disabled={!hasOptions}
                                     >
                                       {hasOptions ? (
-                                        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                                        <div className={`ts-double-arrow ${isExpanded ? 'expanded' : ''}`}></div>
                                       ) : (
                                         <div className="w-3 h-3"></div>
                                       )}
