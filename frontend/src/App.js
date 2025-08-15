@@ -4786,77 +4786,30 @@ const TradeStationPortfolio = () => {
         setError(null);
         console.log('🔍 DEBUG: Portfolio data set successfully');
       } else {
-        console.log('🔍 DEBUG: API call failing - using mock data for testing dropdown functionality');
-        // Use mock data to test dropdown functionality
+        console.log('🔍 DEBUG: API call timeout - loading mock data for dropdown testing');
+        // Use mock data immediately for dropdown testing
         const mockData = {
           portfolio_metrics: {
             total_market_value: 1000000,
             total_unrealized_pnl: -50000,
             total_daily_pnl: 2500,
-            position_count: 10
+            position_count: 8
           },
           positions: [
-            {
-              symbol: "AAPL",
-              asset_type: "STOCK",
-              quantity: 100,
-              average_price: 150.00,
-              market_value: 15000,
-              unrealized_pnl: 500,
-              unrealized_pnl_percent: 3.45,
-              daily_pnl: 75,
-              description: "Apple Inc."
-            },
-            {
-              symbol: "TSLA",
-              asset_type: "STOCK", 
-              quantity: 50,
-              average_price: 800.00,
-              market_value: 40000,
-              unrealized_pnl: -2000,
-              unrealized_pnl_percent: -4.76,
-              daily_pnl: -150,
-              description: "Tesla Inc."
-            },
-            {
-              symbol: "GOOGL",
-              asset_type: "STOCK",
-              quantity: 25,
-              average_price: 2800.00,
-              market_value: 70000,
-              unrealized_pnl: 5000,
-              unrealized_pnl_percent: 7.69,
-              daily_pnl: 300,
-              description: "Alphabet Inc."
-            },
-            {
-              symbol: "MSFT",
-              asset_type: "STOCK",
-              quantity: 75,
-              average_price: 350.00,
-              market_value: 26250,
-              unrealized_pnl: 1250,
-              unrealized_pnl_percent: 5.00,
-              daily_pnl: 125,
-              description: "Microsoft Corp."
-            },
-            {
-              symbol: "NVDA",
-              asset_type: "STOCK",
-              quantity: 30,
-              average_price: 900.00,
-              market_value: 27000,
-              unrealized_pnl: -3000,
-              unrealized_pnl_percent: -10.00,
-              daily_pnl: -200,
-              description: "NVIDIA Corp."
-            }
+            { symbol: "AAPL", asset_type: "STOCK", quantity: 100, average_price: 150.00, market_value: 15000, unrealized_pnl: 500, unrealized_pnl_percent: 3.45, daily_pnl: 75, description: "Apple Inc." },
+            { symbol: "TSLA", asset_type: "STOCK", quantity: 50, average_price: 800.00, market_value: 40000, unrealized_pnl: -2000, unrealized_pnl_percent: -4.76, daily_pnl: -150, description: "Tesla Inc." },
+            { symbol: "GOOGL", asset_type: "STOCK", quantity: 25, average_price: 2800.00, market_value: 70000, unrealized_pnl: 5000, unrealized_pnl_percent: 7.69, daily_pnl: 300, description: "Alphabet Inc." },
+            { symbol: "MSFT", asset_type: "STOCK", quantity: 75, average_price: 350.00, market_value: 26250, unrealized_pnl: 1250, unrealized_pnl_percent: 5.00, daily_pnl: 125, description: "Microsoft Corp." },
+            { symbol: "NVDA", asset_type: "STOCK", quantity: 30, average_price: 900.00, market_value: 27000, unrealized_pnl: -3000, unrealized_pnl_percent: -10.00, daily_pnl: -200, description: "NVIDIA Corp." },
+            { symbol: "META", asset_type: "STOCK", quantity: 40, average_price: 300.00, market_value: 12000, unrealized_pnl: 800, unrealized_pnl_percent: 7.14, daily_pnl: 60, description: "Meta Platforms" },
+            { symbol: "AMZN", asset_type: "STOCK", quantity: 20, average_price: 1600.00, market_value: 32000, unrealized_pnl: 2000, unrealized_pnl_percent: 6.67, daily_pnl: 180, description: "Amazon.com Inc." },
+            { symbol: "NFLX", asset_type: "STOCK", quantity: 15, average_price: 500.00, market_value: 7500, unrealized_pnl: -500, unrealized_pnl_percent: -6.25, daily_pnl: -25, description: "Netflix Inc." }
           ]
         };
         
         setPortfolioData(mockData);
-        setError("Using mock data - API connection issue detected");
-        console.log('🔍 DEBUG: Mock data set for testing');
+        setError("🔥 TESTING MODE: Using mock data for dropdown functionality test");
+        console.log('🔍 DEBUG: Mock data loaded for dropdown testing');
       }
     } catch (err) {
       console.error('🔍 DEBUG: Portfolio loading error:', err);
