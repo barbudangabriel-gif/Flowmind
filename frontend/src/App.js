@@ -5116,7 +5116,7 @@ const TradeStationPortfolio = () => {
 
           {/* TradeStation Style Positions Table */}
           {portfolioData.positions && portfolioData.positions.length > 0 && (
-            <div className={`bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 border rounded-lg overflow-hidden shadow-lg`}>
+            <div className={`bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 border rounded-lg overflow-hidden shadow-lg w-full`}>
               {/* Header */}
               <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-4 py-3 border-b border-gray-600">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
