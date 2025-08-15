@@ -4842,6 +4842,24 @@ const TradeStationPortfolio = () => {
           Live Portfolio
         </h2>
         <div className="flex items-center gap-3">
+          {/* TradeStation Asset Filter Dropdown */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Show:</label>
+            <select
+              value={assetFilter}
+              onChange={(e) => {
+                setAssetFilter(e.target.value);
+                // Reset expanded groups when filtering
+                setExpandedGroups(new Set());
+              }}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All Positions</option>
+              <option value="stocks">Stocks Only</option>
+              <option value="options">Options Only</option>
+            </select>
+          </div>
+
           {/* Group Controls */}
           <div className="flex items-center gap-2">
             <button
@@ -4870,9 +4888,7 @@ const TradeStationPortfolio = () => {
                 >
                   <option value="none">No Grouping</option>
                   <option value="symbol">By Symbol</option>
-                  <option value="asset_type">By Asset Type</option>
                   <option value="position_type">By Position Type</option>
-                  <option value="sector">By Sector</option>
                 </select>
                 
                 {groupBy !== 'none' && (
