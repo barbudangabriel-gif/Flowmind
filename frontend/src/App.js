@@ -5114,8 +5114,8 @@ const TradeStationPortfolio = () => {
             </div>
           )}
 
-          {/* TEMPORARY MOCK DATA FOR SCROLL TESTING */}
-          {(!portfolioData.positions || portfolioData.positions.length === 0) && (
+          {/* TEMPORARY MOCK DATA FOR SCROLL TESTING - Always show when no real data */}
+          {(!portfolioData.positions || portfolioData.positions.length === 0) && !loading && (
             <div className="bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 border rounded-lg overflow-hidden shadow-lg">
               <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-4 py-3 border-b border-gray-600">
                 <h3 className="text-lg font-semibold flex items-center gap-2 text-gray-200">
