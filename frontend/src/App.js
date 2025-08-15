@@ -5221,14 +5221,10 @@ const TradeStationPortfolio = () => {
                   <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`} style={{ minHeight: '600px' }}>
                     {(() => {
                       const filteredPositions = filterPositionsByAsset(portfolioData.positions);
-                      const groupedPositions = groupPositionsBySymbol(filteredPositions);
                       
-                      const rows = [];
-                      
-                      // Iterate through grouped positions
-                      Object.entries(groupedPositions).forEach(([baseSymbol, group]) => {
-                        const hasOptions = group.options.length > 0;
-                        const isExpanded = expandedSymbols.has(baseSymbol);
+                      return filteredPositions.map((position, index) => {
+                        const positionKey = `pos-${index}`;
+                        const isExpanded = expandedSymbols.has(positionKey);
                         
                         // Show main position (stock) first if it exists
                         if (group.mainPosition) {
