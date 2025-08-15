@@ -4741,15 +4741,24 @@ const TradeStationPortfolio = () => {
     return value > 0 ? 'bg-green-50' : 'bg-red-50';
   };
 
-  // Grouping functions
+  // TradeStation filtering functions
+  const filterPositionsByAsset = (positions) => {
+    if (!positions) return [];
+    
+    switch (assetFilter) {
+      case 'stocks':
+        return positions.filter(pos => pos.asset_type === 'EQ' || !pos.asset_type);
+      case 'options':
+        return positions.filter(pos => pos.asset_type === 'OPT');
+      default:
+        return positions;
+    }
+  };
+
   const getGroupKey = (position, groupType) => {
     switch (groupType) {
       case 'symbol':
         return position.symbol.charAt(0).toUpperCase();
-      case 'sector':
-        return position.sector || 'Other';
-      case 'asset_type':
-        return position.asset_type || 'EQ';
       case 'position_type':
         return position.quantity > 0 ? 'Long Positions' : 'Short Positions';
       default:
@@ -4758,12 +4767,15 @@ const TradeStationPortfolio = () => {
   };
 
   const groupPositions = (positions) => {
+    // First filter by asset type
+    const filteredPositions = filterPositionsByAsset(positions);
+    
     if (groupBy === 'none') {
-      return { 'All Positions': positions };
+      return { 'All Positions': filteredPositions };
     }
 
     const grouped = {};
-    positions.forEach(position => {
+    filteredPositions.forEach(position => {
       const key = getGroupKey(position, groupBy);
       if (!grouped[key]) {
         grouped[key] = [];
@@ -4782,13 +4794,19 @@ const TradeStationPortfolio = () => {
 
   const calculateGroupTotals = (positions) => {
     return positions.reduce((totals, position) => {
+      const totalCost = (position.average_price || 0) * Math.abs(position.quantity || 0);
       return {
         quantity: totals.quantity + Math.abs(position.quantity || 0),
         marketValue: totals.marketValue + (position.market_value || 0),
+        totalCost: totals.totalCost + totalCost,
         unrealizedPnl: totals.unrealizedPnl + (position.unrealized_pnl || 0),
         positionCount: totals.positionCount + 1
       };
-    }, { quantity: 0, marketValue: 0, unrealizedPnl: 0, positionCount: 0 });
+    }, { quantity: 0, marketValue: 0, totalCost: 0, unrealizedPnl: 0, positionCount: 0 });
+  };
+
+  const calculateTotalCost = (position) => {
+    return (position.average_price || 0) * Math.abs(position.quantity || 0);
   };
 
   const toggleGroupExpansion = (groupName) => {
