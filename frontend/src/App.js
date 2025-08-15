@@ -5129,10 +5129,12 @@ const TradeStationPortfolio = () => {
               <div 
                 className="overflow-y-scroll border border-gray-600 rounded-lg bg-gray-900" 
                 style={{ 
-                  height: '400px', 
-                  maxHeight: '400px',
+                  height: '70vh', 
+                  minHeight: '500px',
+                  maxHeight: '70vh',
                   scrollbarWidth: 'thin',
-                  scrollbarColor: '#9ca3af #374151'
+                  scrollbarColor: '#9ca3af #374151',
+                  overflowY: 'scroll'
                 }}
               >
                 <table className="w-full text-sm table-fixed">
