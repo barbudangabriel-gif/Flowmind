@@ -5624,8 +5624,15 @@ const TradeStationAccountBalance = () => {
       {!loading && !error && accounts.length === 0 && (
         <div className="text-center py-12">
           <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-500 mb-2">No Accounts Found</h3>
-          <p className="text-gray-400">Please authenticate with TradeStation first</p>
+          <h3 className="text-lg font-medium text-gray-500 mb-2">Authentication Required</h3>
+          <p className="text-gray-400 mb-4">Please authenticate with TradeStation to view account balance</p>
+          <button
+            onClick={() => window.location.href = '#ts-auth'}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 mx-auto"
+          >
+            <Settings className="w-4 h-4" />
+            Go to Authentication
+          </button>
         </div>
       )}
     </div>
