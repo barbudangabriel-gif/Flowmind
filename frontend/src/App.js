@@ -4754,8 +4754,8 @@ const TradeStationPortfolio = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Use original summary endpoint - it works from curl
-      const apiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
-      console.log('🔍 DEBUG: Portfolio API URL:', apiUrl);
+      const portfolioApiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
+      console.log('🔍 DEBUG: Portfolio API URL:', portfolioApiUrl);
       
       const response = await fetch(apiUrl, {
         method: 'GET',
