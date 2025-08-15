@@ -5337,53 +5337,7 @@ const TradeStationPortfolio = () => {
                               </td>
                             </tr>
                             
-                            {/* Expanded Details Row */}
-                            {isExpanded && (
-                              <tr className="bg-gradient-to-r from-gray-700 to-gray-800 border-b border-gray-600">
-                                <td colSpan="11" className="px-6 py-4">
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                    <div className="bg-gray-600 p-3 rounded">
-                                      <div className="text-gray-300 mb-1">📊 Position Details</div>
-                                      <div className="text-white font-semibold">#{index + 1} of {filteredPositions.length}</div>
-                                      <div className="text-gray-400 text-xs">Index: {index}</div>
-                                    </div>
-                                    
-                                    <div className="bg-gray-600 p-3 rounded">
-                                      <div className="text-gray-300 mb-1">💰 Financial Data</div>
-                                      <div className="text-white font-semibold">{formatCurrency(position.market_value)}</div>
-                                      <div className={`text-xs ${getPnlColor(position.unrealized_pnl)}`}>
-                                        P&L: {position.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(position.unrealized_pnl)}
-                                      </div>
-                                    </div>
-                                    
-                                    <div className="bg-gray-600 p-3 rounded">
-                                      <div className="text-gray-300 mb-1">📈 Performance</div>
-                                      <div className={`text-white font-semibold ${getPnlColor(position.unrealized_pnl_percent)}`}>
-                                        {position.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(position.unrealized_pnl_percent)}
-                                      </div>
-                                      <div className="text-gray-400 text-xs">Return %</div>
-                                    </div>
-                                    
-                                    <div className="bg-gray-600 p-3 rounded">
-                                      <div className="text-gray-300 mb-1">🔢 Quantity Info</div>
-                                      <div className="text-white font-semibold">{Math.abs(position.quantity)} shares</div>
-                                      <div className="text-gray-400 text-xs">
-                                        {position.quantity > 0 ? 'Long Position' : 'Short Position'}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="mt-3 pt-3 border-t border-gray-500">
-                                    <div className="text-xs text-gray-400">
-                                      Asset Type: {position.asset_type || 'N/A'} | 
-                                      Avg Price: {formatCurrency(position.average_price)} | 
-                                      Symbol: {position.symbol}
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
+                          </tr>
                         );
                       });
                         } else {
