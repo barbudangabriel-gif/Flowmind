@@ -4737,25 +4737,40 @@ const TradeStationPortfolio = () => {
   };
 
   const loadPortfolioData = async (accountId) => {
-    if (!accountId) return;
+    if (!accountId) {
+      console.log('🔍 DEBUG: No accountId provided to loadPortfolioData');
+      return;
+    }
     
     try {
+      console.log('🔍 DEBUG: Starting loadPortfolioData for account:', accountId);
       setLoading(true);
-      const response = await axios.get(`${API}/tradestation/accounts/${accountId}/summary`);
+      
+      const apiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
+      console.log('🔍 DEBUG: Portfolio API URL:', apiUrl);
+      
+      const response = await axios.get(apiUrl);
+      console.log('🔍 DEBUG: Portfolio response status:', response.status);
+      console.log('🔍 DEBUG: Portfolio response data:', response.data);
       
       const data = response.data;
       
       // Backend returns {status: "success", data: {portfolio_metrics, positions, risk_analysis}}
       if (data.data) {
+        console.log('🔍 DEBUG: Setting portfolio data:', data.data);
         setPortfolioData(data.data);
         setError(null);
+        console.log('🔍 DEBUG: Portfolio data set successfully');
       } else {
+        console.log('🔍 DEBUG: Invalid data structure, expected data.data but got:', data);
         throw new Error('Invalid data structure received');
       }
     } catch (err) {
+      console.error('🔍 DEBUG: Portfolio loading error:', err);
       setError(`Failed to load portfolio data: ${err.message}`);
       console.error('Portfolio error:', err);
     } finally {
+      console.log('🔍 DEBUG: Setting loading to false');
       setLoading(false);
     }
   };
