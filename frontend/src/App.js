@@ -4840,14 +4840,33 @@ const TradeStationPortfolio = () => {
             </div>
           </div>
 
-          {/* Positions Table */}
+          {/* TradeStation Style Positions Table */}
           {portfolioData.positions && portfolioData.positions.length > 0 && (
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl overflow-hidden`}>
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
-                <h3 className="text-lg font-semibold">Current Positions</h3>
+            <div className={`${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} border rounded-lg overflow-hidden shadow-lg`}>
+              {/* Header */}
+              <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'} px-4 py-3 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-emerald-600" />
+                  Positions ({portfolioData.positions.length})
+                </h3>
               </div>
+              
+              {/* Table */}
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className={`${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-600'} text-xs uppercase tracking-wider`}>
+                      <th className="px-4 py-3 text-left font-medium">Symbol</th>
+                      <th className="px-4 py-3 text-center font-medium">Position</th>
+                      <th className="px-4 py-3 text-right font-medium">Avg Price</th>
+                      <th className="px-4 py-3 text-right font-medium">Current Price</th>
+                      <th className="px-4 py-3 text-right font-medium">Market Value</th>
+                      <th className="px-4 py-3 text-right font-medium">Open P&L</th>
+                      <th className="px-4 py-3 text-right font-medium">Open P&L %</th>
+                      <th className="px-4 py-3 text-center font-medium">Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody className={isDarkMode ? 'text-gray-200' : 'text-gray-800'}>
                   <thead className={`${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
