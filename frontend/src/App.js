@@ -4947,32 +4947,30 @@ const TradeStationPortfolio = () => {
     );
   };
 
-  // Function to group positions by base symbol
-  const groupPositionsBySymbol = (positions) => {
-    const grouped = {};
+  // Helper function to group positions by base symbol/ticker
+  const groupPositionsByTicker = (positions) => {
+    const groups = {};
     
     positions.forEach(position => {
       const baseSymbol = getBaseSymbol(position.symbol);
       
-      if (!grouped[baseSymbol]) {
-        grouped[baseSymbol] = {
-          mainPosition: null,
-          options: []
+      if (!groups[baseSymbol]) {
+        groups[baseSymbol] = {
+          baseSymbol: baseSymbol,
+          positions: [],
+          hasMultiplePositions: false
         };
       }
       
-      // Separate main stock positions from options
-      if (isOptionPosition(position)) {
-        grouped[baseSymbol].options.push(position);
-      } else {
-        // This is a stock position
-        if (!grouped[baseSymbol].mainPosition) {
-          grouped[baseSymbol].mainPosition = position;
-        }
-      }
+      groups[baseSymbol].positions.push(position);
     });
     
-    return grouped;
+    // Mark groups with multiple positions
+    Object.keys(groups).forEach(symbol => {
+      groups[symbol].hasMultiplePositions = groups[symbol].positions.length > 1;
+    });
+    
+    return groups;
   };
 
   // Toggle symbol expansion
