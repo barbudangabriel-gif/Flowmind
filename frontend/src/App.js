@@ -4665,6 +4665,11 @@ const TradeStationPortfolio = () => {
   const [portfolioData, setPortfolioData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Grouping functionality
+  const [groupBy, setGroupBy] = useState('none'); // 'none', 'symbol', 'sector', 'asset_type', 'position_type'
+  const [expandedGroups, setExpandedGroups] = useState(new Set());
+  const [showGroupControls, setShowGroupControls] = useState(false);
   const { isDarkMode } = useTheme();
 
   useEffect(() => {
