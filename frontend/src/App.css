@@ -48,6 +48,77 @@ select {
 }
 
 /* Custom scrollbar styles for portfolio table */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* TradeStation-style double arrow for expandable rows */
+.ts-double-arrow {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid currentColor;
+    transition: transform 0.2s ease;
+    transform-origin: center;
+}
+
+.ts-double-arrow.expanded {
+    transform: rotate(180deg);
+}
+
+/* Portfolio table enhancements */
+.portfolio-table {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+/* Animation delays for loading states */
+.animation-delay-150 {
+    animation-delay: 150ms;
+}
+
+.animation-delay-300 {
+    animation-delay: 300ms;
+}
+
+/* Card hover effects */
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Pulse animation for live data indicators */
+.animate-pulse-soft {
+    animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-soft {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
 .portfolio-scroll {
     scrollbar-width: thin;
     scrollbar-color: #6b7280 #f3f4f6;
