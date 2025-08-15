@@ -4748,10 +4748,13 @@ const TradeStationPortfolio = () => {
       const apiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
       console.log('🔍 DEBUG: Portfolio API URL:', apiUrl);
       
-      console.log('🔍 DEBUG: About to make fetch request...');
+      console.log('🔍 DEBUG: About to make fetch request to simple endpoint...');
       
-      // Use fetch instead of axios since axios seems to be timing out
-      const response = await fetch(apiUrl, {
+      // Use the new simpler endpoint for faster loading
+      const simpleApiUrl = `${API}/tradestation/accounts/${accountId}/positions-simple`;
+      console.log('🔍 DEBUG: Simple API URL:', simpleApiUrl);
+      
+      const response = await fetch(simpleApiUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
