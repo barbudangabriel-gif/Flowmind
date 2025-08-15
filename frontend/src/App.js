@@ -4717,17 +4717,9 @@ const TradeStationPortfolio = () => {
     try {
       setLoading(true);
       console.log('🔍 DEBUG: Loading accounts...');
-      const response = await fetch(`${API}/tradestation/accounts`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        mode: 'cors',
-        credentials: 'include'
-      });
+      const response = await axios.get(`${API}/tradestation/accounts`);
       console.log('🔍 DEBUG: Accounts response status:', response.status);
-      const data = await response.json();
+      const data = response.data;
       console.log('🔍 DEBUG: Accounts data:', data);
       setAccounts(data.accounts || []);
       if (data.accounts?.length > 0) {
