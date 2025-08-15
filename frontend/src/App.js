@@ -4745,7 +4745,7 @@ const TradeStationPortfolio = () => {
       // Small delay to avoid race conditions
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const response = await fetch(`${API}/tradestation/accounts/${accountId}/summary`, {
+      const response = await fetch(`${API}/tradestation/accounts/${accountId}/positions-simple`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
