@@ -4748,16 +4748,26 @@ const TradeStationPortfolio = () => {
       const apiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
       console.log('🔍 DEBUG: Portfolio API URL:', apiUrl);
       
-      console.log('🔍 DEBUG: About to make axios request...');
+      console.log('🔍 DEBUG: About to make fetch request...');
       
-      // Use a simple axios call without custom config to avoid issues
-      const response = await axios.get(apiUrl);
+      // Use fetch instead of axios since axios seems to be timing out
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
       
-      console.log('🔍 DEBUG: Portfolio response received!');
-      console.log('🔍 DEBUG: Portfolio response status:', response.status);
-      console.log('🔍 DEBUG: Portfolio response data:', response.data);
+      console.log('🔍 DEBUG: Fetch response received!');
+      console.log('🔍 DEBUG: Fetch response status:', response.status);
       
-      const data = response.data;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('🔍 DEBUG: Portfolio response data:', data);
       
       // Backend returns {status: "success", data: {portfolio_metrics, positions, risk_analysis}}
       if (data.data) {
