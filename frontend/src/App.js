@@ -5234,12 +5234,13 @@ const TradeStationPortfolio = () => {
                                     </span>
                                   </div>
                                 </div>
-                              </td>
+                              </div>
+                            </td>
                             
                             {/* Description Column */}
                             <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
                               <div className="text-sm text-gray-300 truncate">
-                                {position.description || `${baseSymbol} Position #${index + 1}`}
+                                {position.description || `${baseSymbol} Stock`}
                               </div>
                             </td>
                             
@@ -5293,8 +5294,92 @@ const TradeStationPortfolio = () => {
                               {formatNumber(Math.abs(position.quantity))}
                             </td>
                           </tr>
-                        );
+                          );
+                        }
+                        
+                        // Show options if expanded or if this symbol has no main position (orphaned options)
+                        if (hasOptions && (isExpanded || !group.mainPosition)) {
+                          group.options.forEach((option, optionIndex) => {
+                            rows.push(
+                              <tr 
+                                key={`option-${baseSymbol}-${optionIndex}`}
+                                className="bg-gradient-to-r from-gray-750 to-gray-800 hover:from-gray-700 hover:to-gray-750 transition-all duration-200 border-b border-gray-600 border-l-4 border-l-blue-500"
+                              >
+                                {/* Symbol Column - Indented for options */}
+                                <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
+                                  <div className="flex items-center gap-1 pl-6">
+                                    <div className="flex flex-col min-w-0 flex-1">
+                                      <span className="font-semibold text-cyan-300 text-sm truncate">{option.symbol}</span>
+                                      <span className="text-xs text-gray-500 uppercase truncate">
+                                        {option.asset_type || 'OPTION'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                                
+                                {/* Description Column */}
+                                <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
+                                  <div className="text-sm text-gray-400 truncate">
+                                    {option.description || `${baseSymbol} Option`}
+                                  </div>
+                                </td>
+                                
+                                {/* Position Column */}
+                                <td className="px-3 py-2 text-center border-r border-gray-600 w-24 min-w-24">
+                                  <div className="flex flex-col items-center">
+                                    <span className={`text-xs font-medium px-1 py-0.5 rounded ${option.quantity > 0 ? 'bg-green-700 text-green-200' : 'bg-red-700 text-red-200'}`}>
+                                      {option.quantity > 0 ? 'LONG' : 'SHORT'}
+                                    </span>
+                                    <span className="text-sm font-medium text-gray-200">{Math.abs(option.quantity)}</span>
+                                  </div>
+                                </td>
+                                
+                                {/* Open P&L */}
+                                <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-28 min-w-28 ${getPnlColor(option.unrealized_pnl)} truncate`}>
+                                  {option.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(option.unrealized_pnl)}
+                                </td>
+                                
+                                {/* Average Price */}
+                                <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
+                                  {formatCurrency(option.average_price)}
+                                </td>
+                                
+                                {/* Today's Open P/L */}
+                                <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 ${getPnlColor(option.daily_pnl || 0)} truncate`}>
+                                  {(option.daily_pnl || 0) > 0 ? '+' : ''}{formatCurrency(option.daily_pnl || 0)}
+                                </td>
+                                
+                                {/* Open P/L Qty */}
+                                <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
+                                  {formatNumber(Math.abs(option.quantity))}
+                                </td>
+                                
+                                {/* Open P&L % */}
+                                <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-24 min-w-24 ${getPnlColor(option.unrealized_pnl_percent)} truncate`}>
+                                  {option.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(option.unrealized_pnl_percent)}
+                                </td>
+                                
+                                {/* Total Cost */}
+                                <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-28 min-w-28 text-gray-200 truncate">
+                                  {formatCurrency(calculateTotalCost(option))}
+                                </td>
+                                
+                                {/* Market Value */}
+                                <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 text-gray-200 truncate">
+                                  {formatCurrency(option.market_value)}
+                                </td>
+                                
+                                {/* Quantity */}
+                                <td className="px-3 py-2 text-center font-medium w-20 min-w-20 text-gray-200 truncate">
+                                  {formatNumber(Math.abs(option.quantity))}
+                                </td>
+                              </tr>
+                            );
+                          });
+                        }
                       });
+                      
+                      return rows;
                     })()}
                   </tbody>
                   
