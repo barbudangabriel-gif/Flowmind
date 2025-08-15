@@ -5234,7 +5234,6 @@ const TradeStationPortfolio = () => {
                                     </span>
                                   </div>
                                 </div>
-                              </div>
                             </td>
                             
                             {/* Description Column */}
