@@ -5122,18 +5122,18 @@ const TradeStationPortfolio = () => {
               <div className="overflow-x-auto overflow-y-auto portfolio-scroll" style={{ maxHeight: '600px' }}>
                 <table className="w-full text-sm border border-white/20">
                   <thead>
-                    <tr className={`${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-600'} text-xs uppercase tracking-wider border-b border-white/20`}>
-                      <th className="px-4 py-3 text-left font-medium border-r border-white/10">Symbol</th>
-                      <th className="px-4 py-3 text-left font-medium border-r border-white/10">Description</th>
-                      <th className="px-4 py-3 text-center font-medium border-r border-white/10">Position</th>
-                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Open P/L</th>
-                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Avg Price</th>
-                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Today's Open P/L</th>
-                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Open P/L Qty</th>
-                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Open P/L %</th>
-                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Total Cost</th>
-                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Market Value</th>
-                      <th className="px-4 py-3 text-center font-medium">Qty</th>
+                    <tr className="bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 text-xs uppercase tracking-wider border-b border-gray-600">
+                      <th className="px-3 py-3 text-left font-medium border-r border-gray-600 w-32 min-w-32">Symbol</th>
+                      <th className="px-3 py-3 text-left font-medium border-r border-gray-600 w-48 min-w-48 truncate">Description</th>
+                      <th className="px-3 py-3 text-center font-medium border-r border-gray-600 w-24 min-w-24">Position</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-28 min-w-28">Open P/L</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-24 min-w-24">Avg Price</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-32 min-w-32">Today's P/L</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-24 min-w-24">P/L Qty</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-24 min-w-24">P/L %</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-28 min-w-28">Total Cost</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-32 min-w-32">Market Value</th>
+                      <th className="px-3 py-3 text-center font-medium w-20 min-w-20">Qty</th>
                     </tr>
                   </thead>
                   <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
