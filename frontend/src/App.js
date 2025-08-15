@@ -5359,15 +5359,9 @@ const TradeStationPortfolio = () => {
                           </React.Fragment>
                         );
                     })()}
-                  </tbody> 
-                              key={`main-${baseSymbol}`}
-                              className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600"
-                            >
-                              {/* Symbol Column with Expand/Collapse */}
-                              <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
-                                <div className="flex items-center gap-1">
-                                  {/* Only show dropdown arrow if there are options */}
-                                  {hasOptions ? (
+                  </tbody>
+                  
+                  {/* Totals Row */}
                                     <button 
                                       className="text-gray-400 hover:text-gray-200 transition-colors flex-shrink-0"
                                       onClick={() => {
