@@ -5060,7 +5060,7 @@ const TradeStationPortfolio = () => {
                                            cursor-pointer transition-colors border-t-2 ${isDarkMode ? 'border-gray-600' : 'border-blue-200'}`}
                                 onClick={() => toggleGroupExpansion(groupName)}
                               >
-                                <td className="px-4 py-3 font-bold text-lg" colSpan="8">
+                                <td className="px-4 py-3 font-bold text-lg" colSpan="9">
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <span className="text-xl">
