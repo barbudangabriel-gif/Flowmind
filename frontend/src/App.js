@@ -4700,6 +4700,10 @@ const TradeStationPortfolio = () => {
     try {
       setLoading(true);
       const response = await axios.get(`${API}/tradestation/accounts/${accountId}/summary`);
+      console.log('🔍 DEBUG: Full response:', response);
+      console.log('🔍 DEBUG: response.data:', response.data);
+      console.log('🔍 DEBUG: response.data.data:', response.data.data);
+      console.log('🔍 DEBUG: Portfolio metrics exists?', response.data.data?.portfolio_metrics ? 'YES' : 'NO');
       setPortfolioData(response.data.data);
       setError(null);
     } catch (err) {
