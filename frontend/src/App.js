@@ -6356,7 +6356,7 @@ const TradeStationCallback = () => {
 
 // Main App Component
 function App() {
-  const [activeTab, setActiveTab] = useState('ts-portfolio'); // Default back to Live Portfolio
+  const [activeTab, setActiveTab] = useState('ts-balance'); // Test Account Balance fix
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isDarkMode } = useTheme();
 
