@@ -88,6 +88,31 @@ select {
     background: #d1d5db;
 }
 
+/* Custom gray shades for TradeStation theme */
+.from-gray-850 {
+    --tw-gradient-from: #1a1a1a;
+    --tw-gradient-to: rgb(26 26 26 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-gray-850 {
+    --tw-gradient-to: #1a1a1a;
+}
+
+.bg-gray-850 {
+    background-color: #1a1a1a;
+}
+
+.hover\:from-gray-750:hover {
+    --tw-gradient-from: #262626;
+    --tw-gradient-to: rgb(38 38 38 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.hover\:to-gray-850:hover {
+    --tw-gradient-to: #1a1a1a;
+}
+
 /* Chart container */
 .chart-container {
     @apply bg-white p-6 rounded-lg shadow-md;
