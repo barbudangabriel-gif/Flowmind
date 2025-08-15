@@ -5119,7 +5119,10 @@ const TradeStationPortfolio = () => {
               </div>
               
               {/* Table */}
-              <div className="overflow-y-auto portfolio-scroll" style={{ maxHeight: '600px' }}>
+              <div 
+                className="overflow-y-scroll portfolio-scroll border border-gray-600 rounded" 
+                style={{ height: '500px', maxHeight: '500px' }}
+              >
                 <table className="w-full text-sm border border-white/20 table-fixed">
                   <thead>
                     <tr className="bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 text-xs uppercase tracking-wider border-b border-gray-600">
