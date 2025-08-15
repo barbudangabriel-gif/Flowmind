@@ -5127,10 +5127,15 @@ const TradeStationPortfolio = () => {
               
               {/* Table */}
               <div 
-                className="overflow-y-scroll portfolio-scroll border border-gray-600 rounded" 
-                style={{ height: '500px', maxHeight: '500px' }}
+                className="overflow-y-scroll border border-gray-600 rounded-lg bg-gray-900" 
+                style={{ 
+                  height: '400px', 
+                  maxHeight: '400px',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#9ca3af #374151'
+                }}
               >
-                <table className="w-full text-sm border border-white/20 table-fixed">
+                <table className="w-full text-sm table-fixed">
                   <thead>
                     <tr className="bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 text-xs uppercase tracking-wider border-b border-gray-600">
                       <th className="px-3 py-3 text-left font-medium border-r border-gray-600 w-32 min-w-32">Symbol</th>
