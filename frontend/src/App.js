@@ -4866,44 +4866,55 @@ const TradeStationPortfolio = () => {
                       <th className="px-4 py-3 text-center font-medium">Qty</th>
                     </tr>
                   </thead>
-                  <tbody className={isDarkMode ? 'text-gray-200' : 'text-gray-800'}>
-                  <thead className={`${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Price</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Price</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Market Value</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P&L</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P&L %</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                  <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'} divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                     {portfolioData.positions.map((position, index) => (
-                      <tr key={index} className={`${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="font-medium text-blue-600">{position.symbol}</div>
-                            <div className="text-xs text-gray-500 ml-2">{position.asset_type}</div>
+                      <tr key={index} className={`${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'} transition-colors duration-200`}>
+                        {/* Symbol Column */}
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-blue-600 text-base">{position.symbol}</span>
+                            <span className="text-xs text-gray-500 uppercase">{position.asset_type || 'EQ'}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`${position.quantity >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {position.quantity >= 0 ? '+' : ''}{position.quantity}
-                          </span>
+                        
+                        {/* Position Column (Long/Short + Quantity) */}
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex flex-col items-center">
+                            <span className={`text-xs font-medium px-2 py-1 rounded ${position.quantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {position.quantity > 0 ? 'LONG' : 'SHORT'}
+                            </span>
+                            <span className="text-sm font-medium mt-1">{Math.abs(position.quantity)}</span>
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">{formatCurrency(position.average_price)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{formatCurrency(position.current_price)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap font-medium">{formatCurrency(position.market_value)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`font-medium ${position.unrealized_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency(position.unrealized_pnl)}
-                          </span>
+                        
+                        {/* Average Price */}
+                        <td className="px-4 py-3 text-right font-medium">
+                          {formatCurrency(position.average_price)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`font-medium ${position.unrealized_pnl_percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatPercent(position.unrealized_pnl_percent)}
-                          </span>
+                        
+                        {/* Current Price */}
+                        <td className="px-4 py-3 text-right font-medium">
+                          {formatCurrency(position.current_price)}
+                        </td>
+                        
+                        {/* Market Value */}
+                        <td className="px-4 py-3 text-right font-semibold">
+                          {formatCurrency(position.market_value)}
+                        </td>
+                        
+                        {/* Open P&L */}
+                        <td className={`px-4 py-3 text-right font-semibold ${getPnlColor(position.unrealized_pnl)}`}>
+                          {position.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(position.unrealized_pnl)}
+                        </td>
+                        
+                        {/* Open P&L % */}
+                        <td className={`px-4 py-3 text-right font-semibold ${getPnlColor(position.unrealized_pnl_percent)}`}>
+                          {position.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(position.unrealized_pnl_percent)}
+                        </td>
+                        
+                        {/* Quantity */}
+                        <td className="px-4 py-3 text-center font-medium">
+                          {formatNumber(Math.abs(position.quantity))}
                         </td>
                       </tr>
                     ))}
