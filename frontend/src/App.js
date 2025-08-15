@@ -5153,7 +5153,7 @@ const TradeStationPortfolio = () => {
                       <th className="px-3 py-3 text-center font-medium w-20 min-w-20">Qty</th>
                     </tr>
                   </thead>
-                  <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                  <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`} style={{ minHeight: '600px' }}>
                     {(() => {
                       const filteredPositions = filterPositionsByAsset(portfolioData.positions);
                       const symbolGroups = groupPositionsBySymbol(filteredPositions);
