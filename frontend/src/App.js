@@ -880,7 +880,7 @@ const EnhancedPortfolio = () => {
   const tabs = [
     { id: 'positions', label: 'Positions', icon: BarChart3 },
     { id: 'performance', label: 'Performance', icon: TrendingUp },
-    { id: 'allocation', label: 'Allocation', icon: PieChart },
+    { id: 'allocation', label: 'Allocation', icon: PieChartIcon },
     { id: 'risk', label: 'Risk Analysis', icon: Shield }
   ];
 
