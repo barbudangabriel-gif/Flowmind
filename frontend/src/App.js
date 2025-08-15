@@ -419,12 +419,12 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           {/* Bottom section with version/status */}
           {!isCollapsed && (
             <div className="absolute bottom-4 left-4 right-4 space-y-3">
-              {/* Status Info */}
+              {/* Status Info - REMOVED Live Data as requested */}
               <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-600/30">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-slate-400">Live Data</span>
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-slate-400">System Active</span>
                   </div>
                   <span className="text-xs text-slate-500">v2.1.0</span>
                 </div>
