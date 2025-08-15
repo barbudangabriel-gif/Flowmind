@@ -430,9 +430,11 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                       </React.Fragment>
                     );
                   })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </nav>
 
           {/* Bottom section with version/status */}
