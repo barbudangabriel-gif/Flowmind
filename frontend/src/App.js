@@ -5328,6 +5328,308 @@ const TradeStationPortfolio = () => {
   );
 };
 
+// TradeStation Account Balance Component
+const TradeStationAccountBalance = () => {
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [balanceData, setBalanceData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API}/tradestation/accounts`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        mode: 'cors',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setAccounts(data.accounts || []);
+      if (data.accounts?.length > 0) {
+        setSelectedAccount(data.accounts[0].AccountID);
+      }
+      setError(null);
+    } catch (err) {
+      setError('Failed to load accounts. Please ensure you are authenticated.');
+      console.error('Accounts error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadBalanceData = async (accountId) => {
+    if (!accountId) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`${API}/tradestation/accounts/${accountId}/balances`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        mode: 'cors',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setBalanceData(data.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load balance data');
+      console.error('Balance error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedAccount) {
+      loadBalanceData(selectedAccount);
+    }
+  }, [selectedAccount]);
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value || 0);
+  };
+
+  const formatNumber = (value) => {
+    return new Intl.NumberFormat('en-US').format(value || 0);
+  };
+
+  return (
+    <div className={`p-6 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'} min-h-screen`}>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <DollarSign className="w-6 h-6 text-green-500" />
+          Account Balance
+        </h2>
+        <div className="flex items-center gap-3">
+          {accounts.length > 0 && (
+            <select
+              value={selectedAccount || ''}
+              onChange={(e) => setSelectedAccount(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            >
+              {accounts.map((account) => (
+                <option key={account.AccountID} value={account.AccountID}>
+                  {account.AccountType} Account ({account.AccountID})
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            onClick={() => loadBalanceData(selectedAccount)}
+            disabled={loading}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-12">
+          <RefreshCw className="w-8 h-8 text-green-500 animate-spin mx-auto mb-4" />
+          <p>Loading balance data...</p>
+        </div>
+      )}
+
+      {/* Balance Data */}
+      {balanceData && !loading && (
+        <div className="space-y-6">
+          {/* Account Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            
+            {/* Cash Balance */}
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-600 mb-1">Cash Balance</div>
+                <div className="text-3xl font-bold text-green-600">
+                  {formatCurrency(balanceData.CashBalance)}
+                </div>
+                <div className="flex items-center justify-center mt-1">
+                  <DollarSign className="w-4 h-4 text-green-600 mr-1" />
+                  <span className="text-xs text-gray-500">Available Cash</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Total Equity */}
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-600 mb-1">Total Equity</div>
+                <div className="text-3xl font-bold text-blue-600">
+                  {formatCurrency(balanceData.Equity)}
+                </div>
+                <div className="flex items-center justify-center mt-1">
+                  <TrendingUp className="w-4 h-4 text-blue-600 mr-1" />
+                  <span className="text-xs text-gray-500">Net Worth</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Market Value */}
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-600 mb-1">Market Value</div>
+                <div className="text-3xl font-bold text-purple-600">
+                  {formatCurrency(balanceData.MarketValue)}
+                </div>
+                <div className="flex items-center justify-center mt-1">
+                  <BarChart className="w-4 h-4 text-purple-600 mr-1" />
+                  <span className="text-xs text-gray-500">Positions Value</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Today's P&L */}
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-600 mb-1">Today's P&L</div>
+                <div className={`text-3xl font-bold ${balanceData.TodaysProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {balanceData.TodaysProfitLoss >= 0 ? '+' : ''}
+                  {formatCurrency(balanceData.TodaysProfitLoss)}
+                </div>
+                <div className="flex items-center justify-center mt-1">
+                  <TrendingUp className={`w-4 h-4 ${balanceData.TodaysProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'} mr-1`} />
+                  <span className="text-xs text-gray-500">Daily Change</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Buying Power Section */}
+          <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+            <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-blue-500" />
+              Buying Power
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Stock Buying Power */}
+              <div className={`${isDarkMode ? 'bg-gray-700' : 'bg-blue-50'} rounded-lg p-6`}>
+                <h4 className="text-lg font-semibold text-blue-600 mb-4">Stock Buying Power</h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Day Trading:</span>
+                    <span className="font-semibold">{formatCurrency(balanceData.BuyingPower)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Overnight:</span>
+                    <span className="font-semibold">{formatCurrency(balanceData.BalanceDetail?.OvernightBuyingPower)}</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2">
+                    <span className="text-gray-600 font-medium">Total Available:</span>
+                    <span className="font-bold text-blue-600">{formatCurrency(balanceData.BuyingPower)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Options Buying Power */}
+              <div className={`${isDarkMode ? 'bg-gray-700' : 'bg-green-50'} rounded-lg p-6`}>
+                <h4 className="text-lg font-semibold text-green-600 mb-4">Options Buying Power</h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Options BP:</span>
+                    <span className="font-semibold">{formatCurrency(balanceData.BalanceDetail?.OptionBuyingPower)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Options Market Value:</span>
+                    <span className="font-semibold">{formatCurrency(balanceData.BalanceDetail?.OptionsMarketValue)}</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2">
+                    <span className="text-gray-600 font-medium">Available for Options:</span>
+                    <span className="font-bold text-green-600">{formatCurrency(balanceData.BalanceDetail?.OptionBuyingPower)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Account Details */}
+          <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+            <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+              <Settings className="w-5 h-5 text-gray-500" />
+              Account Details
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Account Type</div>
+                <div className="font-semibold">{balanceData.AccountType}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Day Trades</div>
+                <div className="font-semibold">{balanceData.BalanceDetail?.DayTrades || 0}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Maintenance Rate</div>
+                <div className="font-semibold">{balanceData.BalanceDetail?.MaintenanceRate}%</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Required Margin</div>
+                <div className="font-semibold">{formatCurrency(balanceData.BalanceDetail?.RequiredMargin)}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Cost of Positions</div>
+                <div className="font-semibold">{formatCurrency(balanceData.BalanceDetail?.CostOfPositions)}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-600 mb-1">Unrealized P&L</div>
+                <div className={`font-semibold ${balanceData.BalanceDetail?.UnrealizedProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatCurrency(balanceData.BalanceDetail?.UnrealizedProfitLoss)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No Accounts State */}
+      {!loading && !error && accounts.length === 0 && (
+        <div className="text-center py-12">
+          <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-500 mb-2">No Accounts Found</h3>
+          <p className="text-gray-400">Please authenticate with TradeStation first</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // TradeStation Live Trading Component
 const TradeStationTrading = () => {
   const [accounts, setAccounts] = useState([]);
