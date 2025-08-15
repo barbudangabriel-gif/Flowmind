@@ -4784,8 +4784,19 @@ const TradeStationPortfolio = () => {
       }
     } catch (err) {
       console.error('🔍 DEBUG: Portfolio loading error:', err);
-      setError(`Failed to load portfolio data: ${err.message}`);
+      setError(`Failed to load portfolio data: ${err.message}. Please try refreshing the page or check your connection.`);
       console.error('Portfolio error:', err);
+      
+      // Show a user-friendly error instead of permanent loading
+      setPortfolioData({
+        portfolio_metrics: {
+          total_market_value: 0,
+          total_unrealized_pnl: 0,
+          total_daily_pnl: 0,
+          total_positions: 0
+        },
+        positions: []
+      });
     } finally {
       console.log('🔍 DEBUG: Setting loading to false');
       setLoading(false);
