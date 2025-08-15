@@ -294,14 +294,33 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
           {/* Navigation Groups */}
           <nav className="space-y-6">
-            {menuGroups.map((group, groupIndex) => (
-              <div key={groupIndex}>
-                {!isCollapsed && (
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-3">
-                    {group.title}
-                  </h3>
-                )}
-                <div className="space-y-1">
+            {menuGroups.map((group, groupIndex) => {
+              const isTradeStation = group.title === 'TradeStation 🏛️';
+              const isExpanded = expandedSections.has(group.title);
+              
+              return (
+                <div key={groupIndex}>
+                  {!isCollapsed && (
+                    <div className="flex items-center justify-between mb-3 px-3">
+                      <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        {isTradeStation ? (
+                          <button
+                            onClick={() => toggleSection(group.title)}
+                            className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                          >
+                            <span>TradeStation</span>
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+                        ) : (
+                          group.title
+                        )}
+                      </h3>
+                    </div>
+                  )}
+                  {/* Show items only if expanded (or not TradeStation) */}
+                  {(!isTradeStation || isExpanded) && (
+                    <div className="space-y-1">
                   {group.items.map((item, itemIndex) => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.id;
