@@ -4743,10 +4743,7 @@ const TradeStationPortfolio = () => {
       console.log('🔥 DEBUG: API base URL:', API);
       setLoading(true);
       
-      // Small delay to avoid race conditions
-      console.log('🔥 DEBUG: Waiting 1 second before API call...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('🔥 DEBUG: Delay completed, making API call...');
+      console.log('🔥 DEBUG: Making API call immediately...');
       
       const apiUrl = `${API}/tradestation/accounts/${accountId}/positions-simple`;
       console.log('🔥 DEBUG: About to fetch:', apiUrl);
