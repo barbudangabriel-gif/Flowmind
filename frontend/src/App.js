@@ -4705,7 +4705,7 @@ const TradeStationPortfolio = () => {
   const [assetFilter, setAssetFilter] = useState('all'); // 'all', 'stocks', 'options'
   const [groupBy, setGroupBy] = useState('none'); // 'none', 'symbol', 'position_type'
   const [expandedGroups, setExpandedGroups] = useState(new Set());
-  const [expandedSymbols, setExpandedSymbols] = useState(new Set(['IBM', 'OSCR', 'GOOGL', 'TSLA', 'NVO', 'COIN'])); // Force expand ALL for testing
+  const [expandedSymbols, setExpandedSymbols] = useState(new Set()); // Reset to empty for normal functionality
   const [showGroupControls, setShowGroupControls] = useState(false);
   const { isDarkMode } = useTheme();
 
