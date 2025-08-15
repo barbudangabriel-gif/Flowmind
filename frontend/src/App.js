@@ -5077,19 +5077,19 @@ const TradeStationPortfolio = () => {
               
               {/* Table */}
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm border border-white/20">
                   <thead>
-                    <tr className={`${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-600'} text-xs uppercase tracking-wider`}>
-                      <th className="px-4 py-3 text-left font-medium">Symbol</th>
-                      <th className="px-4 py-3 text-left font-medium">Description</th>
-                      <th className="px-4 py-3 text-center font-medium">Position</th>
-                      <th className="px-4 py-3 text-right font-medium">Open P/L</th>
-                      <th className="px-4 py-3 text-right font-medium">Avg Price</th>
-                      <th className="px-4 py-3 text-right font-medium">Today's Open P/L</th>
-                      <th className="px-4 py-3 text-right font-medium">Open P/L Qty</th>
-                      <th className="px-4 py-3 text-right font-medium">Open P/L %</th>
-                      <th className="px-4 py-3 text-right font-medium">Total Cost</th>
-                      <th className="px-4 py-3 text-right font-medium">Market Value</th>
+                    <tr className={`${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-600'} text-xs uppercase tracking-wider border-b border-white/20`}>
+                      <th className="px-4 py-3 text-left font-medium border-r border-white/10">Symbol</th>
+                      <th className="px-4 py-3 text-left font-medium border-r border-white/10">Description</th>
+                      <th className="px-4 py-3 text-center font-medium border-r border-white/10">Position</th>
+                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Open P/L</th>
+                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Avg Price</th>
+                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Today's Open P/L</th>
+                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Open P/L Qty</th>
+                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Open P/L %</th>
+                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Total Cost</th>
+                      <th className="px-4 py-3 text-right font-medium border-r border-white/10">Market Value</th>
                       <th className="px-4 py-3 text-center font-medium">Qty</th>
                     </tr>
                   </thead>
