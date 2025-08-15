@@ -129,99 +129,71 @@ select {
 .ts-double-arrow::after {
     content: '';
     position: absolute;
-    width: 0;
-    height: 0;
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(135deg, 
+        #f8fafc 0%, 
+        #e2e8f0 15%, 
+        #cbd5e1 30%, 
+        #94a3b8 45%, 
+        #64748b 60%, 
+        #475569 75%, 
+        #334155 90%, 
+        #1e293b 100%
+    );
+    clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
     transition: all 0.3s ease;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.3)) drop-shadow(0 0 6px rgba(255,255,255,0.2));
 }
 
 /* Double arrows pointing down (collapsed state) */
 .ts-double-arrow::before {
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 4px solid;
-    border-image: linear-gradient(135deg, #e2e8f0, #94a3b8, #475569, #1e293b) 1;
-    background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 25%, #64748b 50%, #334155 75%, #1e293b 100%);
-    -webkit-background-clip: border-box;
-    background-clip: border-box;
-    top: 3px;
-    box-shadow: 
-        0 1px 3px rgba(255,255,255,0.6) inset,
-        0 -1px 2px rgba(0,0,0,0.4) inset,
-        0 2px 6px rgba(0,0,0,0.2);
+    top: 2px;
 }
 
 .ts-double-arrow::after {
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 4px solid;
-    border-image: linear-gradient(135deg, #e2e8f0, #94a3b8, #475569, #1e293b) 1;
-    background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 25%, #64748b 50%, #334155 75%, #1e293b 100%);
-    -webkit-background-clip: border-box;
-    background-clip: border-box;
-    top: 8px;
-    box-shadow: 
-        0 1px 3px rgba(255,255,255,0.6) inset,
-        0 -1px 2px rgba(0,0,0,0.4) inset,
-        0 2px 6px rgba(0,0,0,0.2);
+    top: 7px;
 }
 
 /* Double arrows pointing up (expanded state) */
 .ts-double-arrow.expanded::before,
 .ts-double-arrow.expanded::after {
-    border-top: none;
-    border-bottom: 4px solid;
-    border-image: linear-gradient(135deg, #e2e8f0, #94a3b8, #475569, #1e293b) 1;
-    background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 25%, #64748b 50%, #334155 75%, #1e293b 100%);
-    -webkit-background-clip: border-box;
-    background-clip: border-box;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 
 .ts-double-arrow.expanded::before {
-    top: 8px;
+    top: 7px;
 }
 
 .ts-double-arrow.expanded::after {
-    top: 3px;
+    top: 2px;
 }
 
 /* Hover effects with enhanced glow */
 .ts-double-arrow:hover::before,
 .ts-double-arrow:hover::after {
-    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)) drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8)) 
+            drop-shadow(0 1px 3px rgba(0,0,0,0.4)) 
+            drop-shadow(0 0 12px rgba(147, 197, 253, 0.4));
+    transform: scale(1.15);
+    background: linear-gradient(135deg, 
+        #dbeafe 0%, 
+        #bfdbfe 15%, 
+        #93c5fd 30%, 
+        #60a5fa 45%, 
+        #3b82f6 60%, 
+        #2563eb 75%, 
+        #1d4ed8 90%, 
+        #1e40af 100%
+    );
 }
 
-/* Alternative implementation using CSS gradients for better browser support */
-.ts-double-arrow-alt {
-    position: relative;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.ts-double-arrow-alt::before {
-    content: '⏷⏷';
-    font-size: 8px;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 20%, #94a3b8 40%, #475569 60%, #334155 80%, #1e293b 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-    transition: all 0.3s ease;
-}
-
-.ts-double-arrow-alt.expanded::before {
-    content: '⏶⏶';
-    transform: rotate(180deg);
-}
-
-.ts-double-arrow-alt:hover::before {
-    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.8)) drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-    transform: scale(1.2);
+/* Active state */
+.ts-double-arrow:active::before,
+.ts-double-arrow:active::after {
+    transform: scale(0.95);
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.6)) 
+            drop-shadow(0 1px 2px rgba(0,0,0,0.5));
 }
 
 /* Chart container */
