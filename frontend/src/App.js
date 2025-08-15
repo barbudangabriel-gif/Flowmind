@@ -6366,7 +6366,7 @@ const TradeStationCallback = () => {
 
 // Main App Component
 function App() {
-  const [activeTab, setActiveTab] = useState('ts-balance'); // Test improved text visibility
+  const [activeTab, setActiveTab] = useState('ts-portfolio'); // Back to default
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isDarkMode } = useTheme();
 
