@@ -5528,23 +5528,9 @@ const TradeStationAccountBalance = () => {
       const apiUrl = `${API}/tradestation/accounts/${accountId}/balances`;
       console.log('🔍 DEBUG: Balance API URL:', apiUrl);
       
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        mode: 'cors',
-        credentials: 'include'
-      });
+      const response = await axios.get(apiUrl);
       
-      console.log('🔍 DEBUG: Balance response status:', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
+      const data = response.data;
       console.log('🔍 DEBUG: Balance response:', data);
       // The API returns {balances: {Balances: [...]}} structure
       if (data.balances && data.balances.Balances && data.balances.Balances.length > 0) {
