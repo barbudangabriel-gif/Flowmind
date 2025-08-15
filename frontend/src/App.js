@@ -4680,13 +4680,27 @@ const TradeStationPortfolio = () => {
   const loadAccounts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API}/tradestation/accounts`);
-      setAccounts(response.data.accounts || []);
-      if (response.data.accounts?.length > 0) {
-        setSelectedAccount(response.data.accounts[0].AccountID);
+      console.log('🔍 DEBUG: Loading accounts...');
+      const response = await fetch(`${API}/tradestation/accounts`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        mode: 'cors',
+        credentials: 'include'
+      });
+      console.log('🔍 DEBUG: Accounts response status:', response.status);
+      const data = await response.json();
+      console.log('🔍 DEBUG: Accounts data:', data);
+      setAccounts(data.accounts || []);
+      if (data.accounts?.length > 0) {
+        console.log('🔍 DEBUG: Setting selected account to:', data.accounts[0].AccountID);
+        setSelectedAccount(data.accounts[0].AccountID);
       }
       setError(null);
     } catch (err) {
+      console.error('🔍 DEBUG: Accounts error:', err);
       setError('Failed to load accounts. Please ensure you are authenticated.');
       console.error('Accounts error:', err);
     } finally {
