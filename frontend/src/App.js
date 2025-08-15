@@ -6513,6 +6513,17 @@ function App() {
     setSidebarCollapsed(collapsed);
   };
 
+  // Function to toggle section expansion
+  const toggleSection = (sectionTitle) => {
+    const newExpanded = new Set(expandedSections);
+    if (newExpanded.has(sectionTitle)) {
+      newExpanded.delete(sectionTitle);
+    } else {
+      newExpanded.add(sectionTitle);
+    }
+    setExpandedSections(newExpanded);
+  };
+
   // Get the current URL path to handle callback
   const currentPath = window.location.pathname;
   
