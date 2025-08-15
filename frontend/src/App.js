@@ -4815,6 +4815,9 @@ const TradeStationPortfolio = () => {
   const groupPositions = (positions) => {
     // First filter by asset type
     const filteredPositions = filterPositionsByAsset(positions);
+    console.log('🔍 DEBUG: Original positions count:', positions?.length || 0);
+    console.log('🔍 DEBUG: Asset filter:', assetFilter);
+    console.log('🔍 DEBUG: Filtered positions count:', filteredPositions?.length || 0);
     
     if (groupBy === 'none') {
       return { 'All Positions': filteredPositions };
