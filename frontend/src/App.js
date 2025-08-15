@@ -4754,13 +4754,20 @@ const TradeStationPortfolio = () => {
       const simpleApiUrl = `${API}/tradestation/accounts/${accountId}/positions-simple`;
       console.log('🔍 DEBUG: Simple API URL:', simpleApiUrl);
       
+      // Add timeout to prevent hanging
+      const timeoutController = new AbortController();
+      const timeoutId = setTimeout(() => timeoutController.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(simpleApiUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        }
+        },
+        signal: timeoutController.signal
       });
+      
+      clearTimeout(timeoutId);
       
       console.log('🔍 DEBUG: Fetch response received!');
       console.log('🔍 DEBUG: Fetch response status:', response.status);
