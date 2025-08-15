@@ -5386,6 +5386,7 @@ const TradeStationPortfolio = () => {
                           </React.Fragment>
                         );
                       });
+                      });
                       
                       return rows;
                     })()}
