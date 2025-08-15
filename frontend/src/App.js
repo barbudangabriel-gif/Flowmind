@@ -5264,8 +5264,8 @@ const TradeStationPortfolio = () => {
                           if (isExpanded) {
                             positions.forEach((position, posIndex) => {
                               rows.push(
+                                <React.Fragment key={`${ticker}-pos-${posIndex}`}>
                                 <tr 
-                                  key={`${ticker}-pos-${posIndex}`}
                                   className="bg-gradient-to-r from-gray-750 to-gray-800 hover:from-gray-700 hover:to-gray-750 transition-all duration-200 border-b border-gray-600 border-l-4 border-l-cyan-400"
                                 >
                                   <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
