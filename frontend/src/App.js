@@ -6395,6 +6395,8 @@ function App() {
         return <TradeStationAuth />;
       case 'ts-portfolio':
         return <TradeStationPortfolio />;
+      case 'ts-balance':
+        return <TradeStationAccountBalance />;
       case 'ts-trading':
         return <TradeStationTrading />;
       case 'ts-orders':
