@@ -5359,7 +5359,7 @@ const TradeStationPortfolio = () => {
                           </React.Fragment>
                         );
                     })()}
-                            <tr 
+                  </tbody> 
                               key={`main-${baseSymbol}`}
                               className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600"
                             >
