@@ -4789,54 +4789,59 @@ const TradeStationPortfolio = () => {
 
       {portfolioData && (
         <>
-          {/* Portfolio Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Total Value</p>
-                  <p className="text-2xl font-bold text-emerald-600">
-                    {formatCurrency(portfolioData.portfolio_metrics?.total_market_value)}
-                  </p>
+          {/* TradeStation Style Portfolio Summary */}
+          <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gradient-to-r from-blue-50 to-emerald-50 border-blue-200'} border rounded-lg p-6 shadow-lg`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              
+              {/* Total Portfolio Value */}
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-600 mb-1">Total Portfolio Value</div>
+                <div className="text-3xl font-bold text-blue-700">
+                  {formatCurrency(portfolioData.portfolio_metrics?.total_market_value || 0)}
                 </div>
-                <DollarSign className="w-8 h-8 text-emerald-600" />
+                <div className="flex items-center justify-center mt-1">
+                  <DollarSign className="w-4 h-4 text-blue-600 mr-1" />
+                  <span className="text-xs text-gray-500">Market Value</span>
+                </div>
               </div>
-            </div>
 
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Total P&L</p>
-                  <p className={`text-2xl font-bold ${(portfolioData.portfolio_metrics?.total_unrealized_pnl || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(portfolioData.portfolio_metrics?.total_unrealized_pnl)}
-                  </p>
+              {/* Today's P&L */}
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-600 mb-1">Total Open P&L</div>
+                <div className={`text-3xl font-bold ${getPnlColor(portfolioData.portfolio_metrics?.total_unrealized_pnl)}`}>
+                  {portfolioData.portfolio_metrics?.total_unrealized_pnl > 0 ? '+' : ''}
+                  {formatCurrency(portfolioData.portfolio_metrics?.total_unrealized_pnl || 0)}
                 </div>
-                <TrendingUp className={`w-8 h-8 ${(portfolioData.portfolio_metrics?.total_unrealized_pnl || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                <div className={`text-sm font-medium ${getPnlColor(portfolioData.portfolio_metrics?.total_return_percent)}`}>
+                  {portfolioData.portfolio_metrics?.total_return_percent > 0 ? '+' : ''}
+                  {formatPercent(portfolioData.portfolio_metrics?.total_return_percent || 0)}
+                </div>
               </div>
-            </div>
 
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Total Return</p>
-                  <p className={`text-2xl font-bold ${(portfolioData.portfolio_metrics?.total_return_percent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatPercent(portfolioData.portfolio_metrics?.total_return_percent)}
-                  </p>
+              {/* Total Positions */}
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-600 mb-1">Total Positions</div>
+                <div className="text-3xl font-bold text-emerald-600">
+                  {portfolioData.portfolio_metrics?.position_count || 0}
                 </div>
-                <BarChart3 className={`w-8 h-8 ${(portfolioData.portfolio_metrics?.total_return_percent || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`} />
+                <div className="flex items-center justify-center mt-1">
+                  <Briefcase className="w-4 h-4 text-emerald-600 mr-1" />
+                  <span className="text-xs text-gray-500">Active Holdings</span>
+                </div>
               </div>
-            </div>
 
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Positions</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {portfolioData.portfolio_metrics?.position_count || 0}
-                  </p>
+              {/* Account Info */}
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-600 mb-1">Account</div>
+                <div className="text-2xl font-bold text-gray-700">
+                  {selectedAccount}
                 </div>
-                <Briefcase className="w-8 h-8 text-blue-600" />
+                <div className="flex items-center justify-center mt-1">
+                  <Target className="w-4 h-4 text-gray-600 mr-1" />
+                  <span className="text-xs text-gray-500">Live Trading</span>
+                </div>
               </div>
+
             </div>
           </div>
 
