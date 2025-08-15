@@ -4747,9 +4747,9 @@ const TradeStationPortfolio = () => {
     
     switch (assetFilter) {
       case 'stocks':
-        return positions.filter(pos => pos.asset_type === 'EQ' || !pos.asset_type);
+        return positions.filter(pos => pos.asset_type === 'STOCK' || pos.asset_type === 'EQ' || !pos.asset_type);
       case 'options':
-        return positions.filter(pos => pos.asset_type === 'OPT');
+        return positions.filter(pos => pos.asset_type === 'STOCKOPTION' || pos.asset_type === 'OPT');
       default:
         return positions;
     }
