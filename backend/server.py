@@ -1628,7 +1628,6 @@ async def get_tradestation_positions_simple(account_id: str):
     try:
         async with ts_client:
             positions = await ts_client.get_positions(account_id)
-            balances = await ts_client.get_balances(account_id)
         
         # Convert to simple dict format for frontend
         positions_data = []
@@ -1659,8 +1658,7 @@ async def get_tradestation_positions_simple(account_id: str):
                     "total_daily_pnl": total_daily_pnl,
                     "total_positions": len(positions_data)
                 },
-                "positions": positions_data,
-                "balances": balances.dict() if balances else {}
+                "positions": positions_data
             },
             "timestamp": datetime.utcnow().isoformat()
         }
