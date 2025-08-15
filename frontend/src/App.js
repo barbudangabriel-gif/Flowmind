@@ -5191,41 +5191,50 @@ const TradeStationPortfolio = () => {
                   <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`} style={{ minHeight: '600px' }}>
                     {(() => {
                       const filteredPositions = filterPositionsByAsset(portfolioData.positions);
+                      const groupedPositions = groupPositionsBySymbol(filteredPositions);
                       
-                      // SIMPLIFIED: Show each position as individual row with potential dropdown
-                      return filteredPositions.map((position, index) => {
-                        const baseSymbol = getBaseSymbol(position.symbol);
-                        const isOption = isOptionPosition(position);
-                        const isExpanded = expandedSymbols.has(`pos-${index}`); // Use position index for unique keys
+                      const rows = [];
+                      
+                      // Iterate through grouped positions
+                      Object.entries(groupedPositions).forEach(([baseSymbol, group]) => {
+                        const hasOptions = group.options.length > 0;
+                        const isExpanded = expandedSymbols.has(baseSymbol);
                         
-                        return (
-                          <tr 
-                            key={`position-${index}`}
-                            className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600"
-                          >
-                            {/* Symbol Column with Expand/Collapse */}
-                            <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
-                              <div className="flex items-center gap-1">
-                                {/* Always show dropdown arrow for testing */}
-                                <button 
-                                  className="text-gray-400 hover:text-gray-200 transition-colors flex-shrink-0"
-                                  onClick={() => {
-                                    console.log(`Clicking dropdown for position ${index}: ${position.symbol}`);
-                                    toggleSymbolExpansion(`pos-${index}`);
-                                  }}
-                                >
-                                  <div className={`ts-double-arrow ${isExpanded ? 'expanded' : ''}`}></div>
-                                </button>
-                                
-                                <div className="flex flex-col min-w-0 flex-1">
-                                  <span className="font-semibold text-blue-300 text-sm truncate">{position.symbol}</span>
-                                  <span className="text-xs text-gray-400 uppercase truncate">
-                                    {position.asset_type || (isOption ? 'OPT' : 'EQ')}
-                                    {isExpanded ? ' (EXPANDED)' : ' (COLLAPSED)'}
-                                  </span>
+                        // Show main position (stock) first if it exists
+                        if (group.mainPosition) {
+                          const position = group.mainPosition;
+                          rows.push(
+                            <tr 
+                              key={`main-${baseSymbol}`}
+                              className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600"
+                            >
+                              {/* Symbol Column with Expand/Collapse */}
+                              <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
+                                <div className="flex items-center gap-1">
+                                  {/* Only show dropdown arrow if there are options */}
+                                  {hasOptions ? (
+                                    <button 
+                                      className="text-gray-400 hover:text-gray-200 transition-colors flex-shrink-0"
+                                      onClick={() => {
+                                        console.log(`Toggling ${baseSymbol} options (${group.options.length} options)`);
+                                        toggleSymbolExpansion(baseSymbol);
+                                      }}
+                                    >
+                                      <div className={`ts-double-arrow ${isExpanded ? 'expanded' : ''}`}></div>
+                                    </button>
+                                  ) : (
+                                    <div className="w-4 h-4 flex-shrink-0"></div> // Spacer for alignment
+                                  )}
+                                  
+                                  <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="font-semibold text-blue-300 text-sm truncate">{position.symbol}</span>
+                                    <span className="text-xs text-gray-400 uppercase truncate">
+                                      {position.asset_type || 'STOCK'}
+                                      {hasOptions && ` (${group.options.length} options)`}
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
+                              </td>
                             
                             {/* Description Column */}
                             <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
