@@ -5119,7 +5119,7 @@ const TradeStationPortfolio = () => {
               </div>
               
               {/* Table */}
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto overflow-y-auto max-h-96" style={{ maxHeight: '600px' }}>
                 <table className="w-full text-sm border border-white/20">
                   <thead>
                     <tr className={`${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-600'} text-xs uppercase tracking-wider border-b border-white/20`}>
