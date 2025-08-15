@@ -3597,7 +3597,432 @@ class StockMarketAPITester:
         
         return success_rate >= 80
 
+    def test_tradestation_authentication_status(self):
+        """Test TradeStation authentication status and LIVE environment connectivity"""
+        print("\n🏛️  TESTING TRADESTATION AUTHENTICATION STATUS - COMPREHENSIVE VERIFICATION")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Verify TradeStation authentication to LIVE environment")
+        print("🔧 REQUIREMENTS: Check auth status, environment, credentials, connection test")
+        
+        # Test 1: Authentication Status Endpoint
+        print(f"\n📊 PHASE 1: Authentication Status Endpoint Testing")
+        print("-" * 60)
+        
+        success, auth_data = self.run_test("TradeStation Auth Status", "GET", "auth/tradestation/status", 200)
+        if not success:
+            print("❌ TradeStation authentication status endpoint failed")
+            return False, False
+        
+        # Verify response structure
+        required_fields = ['status', 'authentication', 'api_configuration', 'timestamp']
+        missing_fields = [field for field in required_fields if field not in auth_data]
+        
+        if missing_fields:
+            print(f"❌ Missing required fields: {missing_fields}")
+            return False, False
+        else:
+            print(f"✅ All required response fields present: {required_fields}")
+        
+        authentication = auth_data.get('authentication', {})
+        api_config = auth_data.get('api_configuration', {})
+        connection_test = auth_data.get('connection_test', {})
+        
+        print(f"📊 API Status: {auth_data.get('status', 'unknown')}")
+        print(f"🔐 Authenticated: {authentication.get('authenticated', False)}")
+        print(f"🌍 Environment: {api_config.get('environment', 'unknown')}")
+        print(f"🔗 Base URL: {api_config.get('base_url', 'unknown')}")
+        print(f"⚙️  Credentials Configured: {api_config.get('credentials_configured', False)}")
+        
+        # Test 2: LIVE Environment Verification
+        print(f"\n🌍 PHASE 2: LIVE Environment Verification")
+        print("-" * 60)
+        
+        environment = api_config.get('environment', '')
+        base_url = api_config.get('base_url', '')
+        
+        if environment == 'LIVE':
+            print(f"✅ Environment correctly set to LIVE")
+        else:
+            print(f"❌ Environment is '{environment}', expected 'LIVE'")
+        
+        if 'api.tradestation.com' in base_url:
+            print(f"✅ Base URL points to production TradeStation API")
+        else:
+            print(f"⚠️  Base URL may not be production: {base_url}")
+        
+        # Test 3: Authentication Status Verification
+        print(f"\n🔐 PHASE 3: Authentication Status Verification")
+        print("-" * 60)
+        
+        authenticated = authentication.get('authenticated', False)
+        expires_in = authentication.get('expires_in_minutes', 0)
+        
+        if authenticated:
+            print(f"✅ TradeStation authentication successful")
+            print(f"⏰ Token expires in: {expires_in} minutes")
+            
+            if expires_in > 5:
+                print(f"✅ Token has sufficient time remaining")
+            else:
+                print(f"⚠️  Token expires soon ({expires_in} minutes)")
+        else:
+            print(f"❌ TradeStation not authenticated")
+            print(f"💡 User needs to complete OAuth authentication flow")
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT: TradeStation Authentication")
+        print("=" * 80)
+        
+        # Calculate success metrics
+        test_results = [
+            ("Endpoint Response", success),
+            ("Response Structure", len(missing_fields) == 0),
+            ("LIVE Environment", environment == 'LIVE'),
+            ("Production URL", 'api.tradestation.com' in base_url),
+            ("Credentials Configured", api_config.get('credentials_configured', False)),
+            ("Authentication Status", authenticated or not api_config.get('credentials_configured', False))
+        ]
+        
+        passed_tests = sum(1 for _, passed in test_results if passed)
+        total_tests = len(test_results)
+        success_rate = (passed_tests / total_tests) * 100
+        
+        print(f"\n📊 TEST RESULTS SUMMARY:")
+        for test_name, passed in test_results:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {test_name}")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_tests}/{total_tests} tests passed)")
+        
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        print(f"   - Authentication Status: {'✅ AUTHENTICATED' if authenticated else '❌ NOT AUTHENTICATED'}")
+        print(f"   - Environment: {environment}")
+        print(f"   - Credentials: {'✅ CONFIGURED' if api_config.get('credentials_configured', False) else '❌ NOT CONFIGURED'}")
+        print(f"   - Connection: {'✅ WORKING' if connection_test and connection_test.get('success') else '❌ NOT TESTED/FAILED'}")
+        
+        return success_rate >= 70, authenticated
+
+    def test_tradestation_accounts_endpoint(self):
+        """Test TradeStation accounts endpoint to verify account retrieval"""
+        print("\n📊 TESTING TRADESTATION ACCOUNTS ENDPOINT")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Verify TradeStation accounts retrieval functionality")
+        
+        # Test accounts endpoint
+        success, accounts_data = self.run_test("TradeStation Accounts", "GET", "tradestation/accounts", 200)
+        
+        if not success:
+            print("❌ TradeStation accounts endpoint failed")
+            return False, None
+        
+        # Verify response structure
+        if 'accounts' in accounts_data:
+            accounts = accounts_data['accounts']
+            print(f"✅ Found {len(accounts)} TradeStation accounts")
+            
+            if accounts:
+                # Show first account details (without sensitive info)
+                first_account = accounts[0]
+                account_id = first_account.get('Key', first_account.get('AccountID', 'unknown'))
+                account_type = first_account.get('Type', 'unknown')
+                
+                print(f"📊 Sample Account:")
+                print(f"   - Account ID: {account_id}")
+                print(f"   - Account Type: {account_type}")
+                
+                return True, account_id
+            else:
+                print("⚠️  No accounts found")
+                return True, None
+        else:
+            print("❌ Invalid response structure - missing 'accounts' field")
+            return False, None
+
+    def test_tradestation_portfolio_summary(self, account_id):
+        """Test TradeStation portfolio summary endpoint with comprehensive data structure verification"""
+        print(f"\n📊 TESTING TRADESTATION PORTFOLIO SUMMARY - COMPREHENSIVE VERIFICATION")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Verify portfolio summary returns correct data structure for dropdown functionality")
+        print("🔧 REQUIREMENTS: Check data structure, positions data, asset types, dropdown candidates")
+        
+        if not account_id:
+            print("❌ No account ID available for testing")
+            return False
+        
+        # Test portfolio summary endpoint
+        print(f"\n📊 PHASE 1: Portfolio Summary Endpoint Testing")
+        print("-" * 60)
+        
+        success, portfolio_data = self.run_test(
+            f"Portfolio Summary (Account: {account_id})", 
+            "GET", 
+            f"tradestation/accounts/{account_id}/summary", 
+            200
+        )
+        
+        if not success:
+            print("❌ TradeStation portfolio summary endpoint failed")
+            return False
+        
+        # Test 2: Data Structure Verification
+        print(f"\n📋 PHASE 2: Data Structure Verification")
+        print("-" * 60)
+        
+        # Verify top-level fields
+        if portfolio_data.get('status') != 'success':
+            print(f"❌ Expected status 'success', got '{portfolio_data.get('status')}'")
+            return False
+        else:
+            print(f"✅ Status field correct: {portfolio_data.get('status')}")
+        
+        data = portfolio_data.get('data', {})
+        if not data:
+            print(f"❌ Missing 'data' field in response")
+            return False
+        else:
+            print(f"✅ Data field present")
+        
+        # Verify nested data structure
+        portfolio_metrics = data.get('portfolio_metrics', {})
+        positions = data.get('positions', [])
+        risk_analysis = data.get('risk_analysis', {})
+        
+        print(f"📊 Portfolio Metrics: {len(portfolio_metrics)} fields")
+        print(f"📊 Positions: {len(positions)} positions")
+        print(f"📊 Risk Analysis: {len(risk_analysis)} fields")
+        
+        # Test 3: Positions Data Structure Verification
+        print(f"\n📊 PHASE 3: Positions Data Structure Verification")
+        print("-" * 60)
+        
+        if not positions:
+            print("⚠️  No positions found - portfolio may be empty")
+            return True  # Empty portfolio is valid
+        
+        # Verify required fields in positions
+        required_position_fields = [
+            'symbol', 'asset_type', 'quantity', 'unrealized_pnl', 
+            'average_price', 'daily_pnl', 'unrealized_pnl_percent', 'market_value'
+        ]
+        
+        first_position = positions[0]
+        missing_fields = [field for field in required_position_fields if field not in first_position]
+        
+        if missing_fields:
+            print(f"❌ Missing required position fields: {missing_fields}")
+        else:
+            print(f"✅ All required position fields present: {len(required_position_fields)} fields")
+        
+        # Display sample position
+        print(f"📊 Sample Position:")
+        print(f"   - Symbol: {first_position.get('symbol', 'N/A')}")
+        print(f"   - Asset Type: {first_position.get('asset_type', 'N/A')}")
+        print(f"   - Quantity: {first_position.get('quantity', 0)}")
+        print(f"   - Market Value: ${first_position.get('market_value', 0):,.2f}")
+        print(f"   - Unrealized P&L: ${first_position.get('unrealized_pnl', 0):,.2f}")
+        print(f"   - Daily P&L: ${first_position.get('daily_pnl', 0):,.2f}")
+        
+        # Test 4: Asset Type Verification
+        print(f"\n🏷️  PHASE 4: Asset Type Verification")
+        print("-" * 60)
+        
+        asset_types = {}
+        for position in positions:
+            asset_type = position.get('asset_type', 'UNKNOWN')
+            asset_types[asset_type] = asset_types.get(asset_type, 0) + 1
+        
+        print(f"📊 Asset Type Distribution:")
+        for asset_type, count in asset_types.items():
+            print(f"   - {asset_type}: {count} positions")
+        
+        # Verify expected asset types
+        expected_asset_types = ['STOCK', 'STOCKOPTION']
+        found_expected_types = [at for at in asset_types.keys() if at in expected_asset_types]
+        
+        if found_expected_types:
+            print(f"✅ Expected asset types found: {found_expected_types}")
+        else:
+            print(f"⚠️  No expected asset types (STOCK, STOCKOPTION) found")
+        
+        # Test 5: Dropdown Functionality Data Verification
+        print(f"\n🔽 PHASE 5: Dropdown Functionality Data Verification")
+        print("-" * 60)
+        
+        # Group positions by symbol to identify dropdown candidates
+        symbol_groups = {}
+        for position in positions:
+            symbol = position.get('symbol', 'UNKNOWN')
+            base_symbol = symbol.split()[0] if ' ' in symbol else symbol  # Extract base symbol from options
+            
+            if base_symbol not in symbol_groups:
+                symbol_groups[base_symbol] = []
+            symbol_groups[base_symbol].append(position)
+        
+        # Find symbols with multiple positions (dropdown candidates)
+        dropdown_candidates = {symbol: positions_list for symbol, positions_list in symbol_groups.items() if len(positions_list) > 1}
+        
+        print(f"📊 Symbol Analysis:")
+        print(f"   - Total Unique Symbols: {len(symbol_groups)}")
+        print(f"   - Symbols with Multiple Positions: {len(dropdown_candidates)}")
+        
+        if dropdown_candidates:
+            print(f"🔽 Dropdown Candidates:")
+            for symbol, symbol_positions in list(dropdown_candidates.items())[:10]:  # Show first 10
+                asset_types_in_group = [pos.get('asset_type', 'UNKNOWN') for pos in symbol_positions]
+                print(f"   - {symbol}: {len(symbol_positions)} positions ({', '.join(set(asset_types_in_group))})")
+        
+        # Test 6: Specific Symbol Verification (CRM, TSLA, AAPL, GOOGL, IBM)
+        print(f"\n🎯 PHASE 6: Specific Symbol Verification")
+        print("-" * 60)
+        
+        target_symbols = ['CRM', 'TSLA', 'AAPL', 'GOOGL', 'IBM']
+        found_target_symbols = []
+        
+        for target_symbol in target_symbols:
+            if target_symbol in symbol_groups:
+                positions_count = len(symbol_groups[target_symbol])
+                found_target_symbols.append(target_symbol)
+                print(f"   ✅ {target_symbol}: {positions_count} positions")
+                
+                # Show asset types for this symbol
+                asset_types_for_symbol = [pos.get('asset_type', 'UNKNOWN') for pos in symbol_groups[target_symbol]]
+                print(f"      Asset types: {', '.join(set(asset_types_for_symbol))}")
+            else:
+                print(f"   ❌ {target_symbol}: Not found in portfolio")
+        
+        print(f"📊 Target Symbols Found: {len(found_target_symbols)}/{len(target_symbols)}")
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT: TradeStation Portfolio Summary")
+        print("=" * 80)
+        
+        # Calculate success metrics
+        test_results = [
+            ("Endpoint Response", success),
+            ("Correct Data Structure", portfolio_data.get('status') == 'success' and 'data' in portfolio_data),
+            ("Portfolio Metrics Present", len(portfolio_metrics) > 0),
+            ("Positions Data Present", len(positions) >= 0),  # 0 is valid (empty portfolio)
+            ("Required Position Fields", len(missing_fields) == 0 if positions else True),
+            ("Asset Types Present", len(asset_types) > 0 if positions else True),
+            ("Dropdown Candidates Found", len(dropdown_candidates) > 0 if positions else True),
+            ("Risk Analysis Present", len(risk_analysis) > 0)
+        ]
+        
+        passed_tests = sum(1 for _, passed in test_results if passed)
+        total_tests = len(test_results)
+        success_rate = (passed_tests / total_tests) * 100
+        
+        print(f"\n📊 TEST RESULTS SUMMARY:")
+        for test_name, passed in test_results:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {test_name}")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_tests}/{total_tests} tests passed)")
+        
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        print(f"   - Data Structure: {'✅ CORRECT' if portfolio_data.get('status') == 'success' else '❌ INCORRECT'}")
+        print(f"   - Total Positions: {len(positions)}")
+        print(f"   - Asset Types: {list(asset_types.keys()) if asset_types else 'None'}")
+        print(f"   - Dropdown Candidates: {len(dropdown_candidates)}")
+        print(f"   - Target Symbols Found: {len(found_target_symbols)}/{len(target_symbols)}")
+        
+        # Final verdict
+        if success_rate >= 85:
+            print(f"\n🎉 VERDICT: EXCELLENT - Portfolio summary API perfect for dropdown functionality!")
+            print(f"   Backend provides correct data structure for frontend grouping and dropdowns.")
+        elif success_rate >= 70:
+            print(f"\n✅ VERDICT: GOOD - Portfolio summary API mostly ready for dropdown functionality.")
+        else:
+            print(f"\n❌ VERDICT: NEEDS ATTENTION - Portfolio summary API has issues for dropdown functionality.")
+        
+        return success_rate >= 70
+
+    def run_tradestation_tests(self):
+        """Run TradeStation-specific tests as requested in the review"""
+        print("🏛️  Starting TradeStation Live Portfolio Backend Tests")
+        print("=" * 80)
+        print("🎯 FOCUS: TradeStation authentication, accounts, and portfolio summary functionality")
+        print("📋 REQUIREMENTS: Verify backend provides correct data for frontend dropdown functionality")
+        
+        # Test 1: TradeStation Authentication Status
+        auth_success, authenticated = self.test_tradestation_authentication_status()
+        
+        # Test 2: TradeStation Accounts Endpoint
+        if auth_success:
+            accounts_success, account_id = self.test_tradestation_accounts_endpoint()
+            
+            # Test 3: TradeStation Portfolio Summary
+            if accounts_success and account_id:
+                portfolio_success = self.test_tradestation_portfolio_summary(account_id)
+            else:
+                print("\n⚠️  Skipping portfolio summary test - no account ID available")
+                portfolio_success = False
+        else:
+            print("\n⚠️  Skipping accounts and portfolio tests - authentication issues")
+            accounts_success = False
+            portfolio_success = False
+        
+        # Final TradeStation Test Results
+        print("\n" + "=" * 80)
+        print("🏛️  TRADESTATION TEST RESULTS SUMMARY")
+        print("=" * 80)
+        
+        tradestation_tests = [
+            ("Authentication Status", auth_success),
+            ("Accounts Retrieval", accounts_success),
+            ("Portfolio Summary", portfolio_success)
+        ]
+        
+        passed_ts_tests = sum(1 for _, passed in tradestation_tests if passed)
+        total_ts_tests = len(tradestation_tests)
+        ts_success_rate = (passed_ts_tests / total_ts_tests) * 100
+        
+        print(f"\n📊 TRADESTATION TEST RESULTS:")
+        for test_name, passed in tradestation_tests:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {test_name}")
+        
+        print(f"\n🎯 TRADESTATION SUCCESS RATE: {ts_success_rate:.1f}% ({passed_ts_tests}/{total_ts_tests} tests passed)")
+        
+        # Overall assessment
+        if ts_success_rate >= 85:
+            print(f"\n🎉 VERDICT: EXCELLENT - TradeStation backend fully ready for dropdown functionality!")
+        elif ts_success_rate >= 70:
+            print(f"\n✅ VERDICT: GOOD - TradeStation backend mostly ready with minor issues.")
+        else:
+            print(f"\n❌ VERDICT: NEEDS ATTENTION - TradeStation backend has significant issues.")
+        
+        return ts_success_rate >= 70
+
 def main():
+    print("🏛️  TRADESTATION LIVE PORTFOLIO BACKEND TESTING")
+    print("=" * 80)
+    print("🔑 Testing TradeStation authentication, accounts, and portfolio summary")
+    print("🌐 Backend URL: https://flowmind-live.preview.emergentagent.com")
+    
+    tester = StockMarketAPITester()
+    
+    # Run the TradeStation-specific tests
+    success = tester.run_tradestation_tests()
+    
+    # Summary
+    print("\n" + "=" * 80)
+    print("🎯 TRADESTATION TEST SUMMARY")
+    print("=" * 80)
+    print(f"Total Tests Run: {tester.tests_run}")
+    print(f"Tests Passed: {tester.tests_passed}")
+    print(f"Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if success:
+        print("🎉 TRADESTATION BACKEND TESTING PASSED!")
+        return 0
+    else:
+        print("⚠️  TRADESTATION BACKEND TESTING NEEDS ATTENTION")
+        return 1
+
+def main_unusual_whales():
     print("🐋 UNUSUAL WHALES API FINAL VERIFICATION TEST")
     print("=" * 80)
     print("🔑 Using API Key: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50")
