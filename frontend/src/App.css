@@ -113,6 +113,50 @@ select {
     --tw-gradient-to: #1a1a1a;
 }
 
+/* TradeStation style double arrow */
+.ts-double-arrow {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ts-double-arrow::before,
+.ts-double-arrow::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+}
+
+.ts-double-arrow::before {
+    border-top: 3px solid currentColor;
+    top: 2px;
+}
+
+.ts-double-arrow::after {
+    border-top: 3px solid currentColor;
+    top: 6px;
+}
+
+.ts-double-arrow.expanded::before,
+.ts-double-arrow.expanded::after {
+    border-top: none;
+    border-bottom: 3px solid currentColor;
+}
+
+.ts-double-arrow.expanded::before {
+    top: 6px;
+}
+
+.ts-double-arrow.expanded::after {
+    top: 2px;
+}
+
 /* Chart container */
 .chart-container {
     @apply bg-white p-6 rounded-lg shadow-md;
