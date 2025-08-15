@@ -5212,11 +5212,6 @@ const TradeStationPortfolio = () => {
                         
                         return (
                           <React.Fragment key={baseSymbol}>
-                            {/* DEBUG INFO */}
-                            {process.env.NODE_ENV === 'development' && (
-                              console.log(`${baseSymbol}: hasOptions=${hasOptions}, isExpanded=${isExpanded}, optionsCount=${group.options.length}`)
-                            )}
-                            
                             {/* Main Stock Position OR Header for options-only symbols */}
                             <tr className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600">
                               {/* Symbol Column with Expand/Collapse */}
