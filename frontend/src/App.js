@@ -5073,6 +5073,9 @@ const TradeStationPortfolio = () => {
                                     </div>
                                     <div className="flex items-center gap-4 text-sm">
                                       <span className="font-semibold">
+                                        Total Cost: {formatCurrency(groupTotals.totalCost)}
+                                      </span>
+                                      <span className="font-semibold">
                                         Market Value: {formatCurrency(groupTotals.marketValue)}
                                       </span>
                                       <span className={`font-semibold ${getPnlColor(groupTotals.unrealizedPnl)}`}>
