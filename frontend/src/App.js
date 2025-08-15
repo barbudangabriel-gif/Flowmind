@@ -4700,7 +4700,14 @@ const TradeStationPortfolio = () => {
     try {
       setLoading(true);
       console.log('🔍 DEBUG: Starting portfolio data load for account:', accountId);
-      const response = await axios.get(`${API}/tradestation/accounts/${accountId}/summary`);
+      console.log('🔍 DEBUG: Making request to:', `${API}/tradestation/accounts/${accountId}/summary`);
+      const response = await axios.get(`${API}/tradestation/accounts/${accountId}/summary`, {
+        timeout: 15000, // 15 second timeout
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
       console.log('🔍 DEBUG: API response received, status:', response.status);
       console.log('🔍 DEBUG: response.data:', response.data);
       console.log('🔍 DEBUG: response.data.data exists?', response.data.data ? 'YES' : 'NO');
@@ -4712,6 +4719,13 @@ const TradeStationPortfolio = () => {
       setError(null);
     } catch (err) {
       console.error('🔍 DEBUG: Error in loadPortfolioData:', err);
+      console.error('🔍 DEBUG: Error name:', err.name);
+      console.error('🔍 DEBUG: Error message:', err.message);
+      console.error('🔍 DEBUG: Error code:', err.code);
+      if (err.response) {
+        console.error('🔍 DEBUG: Error response status:', err.response.status);
+        console.error('🔍 DEBUG: Error response data:', err.response.data);
+      }
       setError('Failed to load portfolio data');
       console.error('Portfolio error:', err);
     } finally {
