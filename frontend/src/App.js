@@ -4666,8 +4666,9 @@ const TradeStationPortfolio = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // Grouping functionality
-  const [groupBy, setGroupBy] = useState('none'); // 'none', 'symbol', 'sector', 'asset_type', 'position_type'
+  // TradeStation style filtering
+  const [assetFilter, setAssetFilter] = useState('all'); // 'all', 'stocks', 'options'
+  const [groupBy, setGroupBy] = useState('none'); // 'none', 'symbol', 'position_type'
   const [expandedGroups, setExpandedGroups] = useState(new Set());
   const [showGroupControls, setShowGroupControls] = useState(false);
   const { isDarkMode } = useTheme();
