@@ -5150,84 +5150,84 @@ const TradeStationPortfolio = () => {
                           <React.Fragment key={baseSymbol}>
                             {/* Main Stock Position */}
                             {group.mainPosition && (
-                              <tr className={`${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'} transition-colors duration-200 border-b border-white/10`}>
+                              <tr className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600">
                                 {/* Symbol Column with Expand/Collapse */}
-                                <td className="px-4 py-3 border-r border-white/10">
-                                  <div className="flex items-center gap-2">
+                                <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
+                                  <div className="flex items-center gap-1">
                                     {/* Expand/Collapse icon */}
                                     <button 
-                                      className="text-gray-500 hover:text-gray-700 transition-colors"
+                                      className="text-gray-400 hover:text-gray-200 transition-colors flex-shrink-0"
                                       onClick={() => toggleSymbolExpansion(baseSymbol)}
                                       disabled={!hasOptions}
                                     >
                                       {hasOptions ? (
-                                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                                        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                                       ) : (
-                                        <div className="w-4 h-4"></div>
+                                        <div className="w-3 h-3"></div>
                                       )}
                                     </button>
                                     
-                                    <div className="flex flex-col">
-                                      <span className="font-semibold text-blue-600 text-base">{group.mainPosition.symbol}</span>
-                                      <span className="text-xs text-gray-500 uppercase">{group.mainPosition.asset_type || 'EQ'}</span>
+                                    <div className="flex flex-col min-w-0 flex-1">
+                                      <span className="font-semibold text-blue-300 text-sm truncate">{group.mainPosition.symbol}</span>
+                                      <span className="text-xs text-gray-400 uppercase truncate">{group.mainPosition.asset_type || 'EQ'}</span>
                                     </div>
                                   </div>
                                 </td>
                                 
                                 {/* Description Column */}
-                                <td className="px-4 py-3 text-left border-r border-white/10">
-                                  <div className="text-sm text-gray-600">
+                                <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
+                                  <div className="text-sm text-gray-300 truncate">
                                     {group.mainPosition.description || 'Stock Position'}
                                   </div>
                                 </td>
                                 
                                 {/* Position Column (Long/Short + Quantity) */}
-                                <td className="px-4 py-3 text-center border-r border-white/10">
+                                <td className="px-3 py-2 text-center border-r border-gray-600 w-24 min-w-24">
                                   <div className="flex flex-col items-center">
-                                    <span className={`text-xs font-medium px-2 py-1 rounded ${group.mainPosition.quantity > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                    <span className={`text-xs font-medium px-1 py-0.5 rounded ${group.mainPosition.quantity > 0 ? 'bg-green-700 text-green-200' : 'bg-red-700 text-red-200'}`}>
                                       {group.mainPosition.quantity > 0 ? 'LONG' : 'SHORT'}
                                     </span>
-                                    <span className="text-sm font-medium mt-1">{Math.abs(group.mainPosition.quantity)}</span>
+                                    <span className="text-sm font-medium text-gray-200">{Math.abs(group.mainPosition.quantity)}</span>
                                   </div>
                                 </td>
                                 
                                 {/* Open P&L */}
-                                <td className={`px-4 py-3 text-right font-semibold border-r border-white/10 ${getPnlColor(group.mainPosition.unrealized_pnl)}`}>
+                                <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-28 min-w-28 ${getPnlColor(group.mainPosition.unrealized_pnl)} truncate`}>
                                   {group.mainPosition.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(group.mainPosition.unrealized_pnl)}
                                 </td>
                                 
                                 {/* Average Price */}
-                                <td className="px-4 py-3 text-right font-medium border-r border-white/10">
+                                <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
                                   {formatCurrency(group.mainPosition.average_price)}
                                 </td>
                                 
                                 {/* Today's Open P/L */}
-                                <td className={`px-4 py-3 text-right font-semibold border-r border-white/10 ${getPnlColor(group.mainPosition.daily_pnl || 0)}`}>
+                                <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 ${getPnlColor(group.mainPosition.daily_pnl || 0)} truncate`}>
                                   {(group.mainPosition.daily_pnl || 0) > 0 ? '+' : ''}{formatCurrency(group.mainPosition.daily_pnl || 0)}
                                 </td>
                                 
                                 {/* Open P/L Qty */}
-                                <td className="px-4 py-3 text-right font-medium border-r border-white/10">
+                                <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">
                                   {formatNumber(Math.abs(group.mainPosition.quantity))}
                                 </td>
                                 
                                 {/* Open P&L % */}
-                                <td className={`px-4 py-3 text-right font-semibold border-r border-white/10 ${getPnlColor(group.mainPosition.unrealized_pnl_percent)}`}>
+                                <td className={`px-3 py-2 text-right font-semibold border-r border-gray-600 w-24 min-w-24 ${getPnlColor(group.mainPosition.unrealized_pnl_percent)} truncate`}>
                                   {group.mainPosition.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(group.mainPosition.unrealized_pnl_percent)}
                                 </td>
                                 
                                 {/* Total Cost */}
-                                <td className="px-4 py-3 text-right font-medium border-r border-white/10">
+                                <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-28 min-w-28 text-gray-200 truncate">
                                   {formatCurrency(calculateTotalCost(group.mainPosition))}
                                 </td>
                                 
                                 {/* Market Value */}
-                                <td className="px-4 py-3 text-right font-semibold border-r border-white/10">
+                                <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 text-gray-200 truncate">
                                   {formatCurrency(group.mainPosition.market_value)}
                                 </td>
                                 
                                 {/* Quantity */}
-                                <td className="px-4 py-3 text-center font-medium">
+                                <td className="px-3 py-2 text-center font-medium w-20 min-w-20 text-gray-200 truncate">
                                   {formatNumber(Math.abs(group.mainPosition.quantity))}
                                 </td>
                               </tr>
