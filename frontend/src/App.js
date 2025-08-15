@@ -4750,24 +4750,20 @@ const TradeStationPortfolio = () => {
       
       console.log('🔍 DEBUG: About to make fetch request to simple endpoint...');
       
-      // Use the new simpler endpoint for faster loading
-      const simpleApiUrl = `${API}/tradestation/accounts/${accountId}/positions-simple`;
-      console.log('🔍 DEBUG: Simple API URL:', simpleApiUrl);
+      // Add a small delay to avoid race conditions with accounts loading
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Add timeout to prevent hanging
-      const timeoutController = new AbortController();
-      const timeoutId = setTimeout(() => timeoutController.abort(), 10000); // 10 second timeout
+      // Use original summary endpoint - it works from curl
+      const apiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
+      console.log('🔍 DEBUG: Portfolio API URL:', apiUrl);
       
-      const response = await fetch(simpleApiUrl, {
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        },
-        signal: timeoutController.signal
+        }
       });
-      
-      clearTimeout(timeoutId);
       
       console.log('🔍 DEBUG: Fetch response received!');
       console.log('🔍 DEBUG: Fetch response status:', response.status);
