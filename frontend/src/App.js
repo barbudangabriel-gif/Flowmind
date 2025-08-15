@@ -5157,20 +5157,33 @@ const TradeStationPortfolio = () => {
                   {/* Totals Row */}
                   <tfoot className={`${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-100 border-gray-300'} border-t-2`}>
                     <tr className="font-semibold text-base">
-                      <td className="px-4 py-4 font-bold">TOTALS</td>
-                      <td className="px-4 py-4 text-center font-bold">{portfolioData.portfolio_metrics?.position_count || 0}</td>
-                      <td className="px-4 py-4 text-right">-</td>
-                      <td className="px-4 py-4 text-right">-</td>
-                      <td className="px-4 py-4 text-right font-bold">
-                        {formatCurrency(portfolioData.portfolio_metrics?.total_market_value || 0)}
-                      </td>
-                      <td className={`px-4 py-4 text-right font-bold ${getPnlColor(portfolioData.portfolio_metrics?.total_unrealized_pnl)}`}>
-                        {portfolioData.portfolio_metrics?.total_unrealized_pnl > 0 ? '+' : ''}{formatCurrency(portfolioData.portfolio_metrics?.total_unrealized_pnl || 0)}
-                      </td>
-                      <td className={`px-4 py-4 text-right font-bold ${getPnlColor(portfolioData.portfolio_metrics?.total_return_percent)}`}>
-                        {portfolioData.portfolio_metrics?.total_return_percent > 0 ? '+' : ''}{formatPercent(portfolioData.portfolio_metrics?.total_return_percent || 0)}
-                      </td>
-                      <td className="px-4 py-4 text-center font-bold">-</td>
+                      {(() => {
+                        const filteredPositions = filterPositionsByAsset(portfolioData.positions);
+                        const totals = calculateGroupTotals(filteredPositions);
+                        const returnPercent = totals.totalCost > 0 ? ((totals.marketValue - totals.totalCost) / totals.totalCost) * 100 : 0;
+                        
+                        return (
+                          <>
+                            <td className="px-4 py-4 font-bold">TOTALS</td>
+                            <td className="px-4 py-4 text-center font-bold">{totals.positionCount}</td>
+                            <td className="px-4 py-4 text-right">-</td>
+                            <td className="px-4 py-4 text-right">-</td>
+                            <td className="px-4 py-4 text-right font-bold">
+                              {formatCurrency(totals.totalCost)}
+                            </td>
+                            <td className="px-4 py-4 text-right font-bold">
+                              {formatCurrency(totals.marketValue)}
+                            </td>
+                            <td className={`px-4 py-4 text-right font-bold ${getPnlColor(totals.unrealizedPnl)}`}>
+                              {totals.unrealizedPnl > 0 ? '+' : ''}{formatCurrency(totals.unrealizedPnl)}
+                            </td>
+                            <td className={`px-4 py-4 text-right font-bold ${getPnlColor(returnPercent)}`}>
+                              {returnPercent > 0 ? '+' : ''}{formatPercent(returnPercent)}
+                            </td>
+                            <td className="px-4 py-4 text-center font-bold">-</td>
+                          </>
+                        );
+                      })()}
                     </tr>
                   </tfoot>
                 </table>
