@@ -5379,7 +5379,11 @@ const TradeStationAccountBalance = () => {
     
     try {
       setLoading(true);
-      const response = await fetch(`${API}/tradestation/accounts/${accountId}/balances`, {
+      console.log('🔍 DEBUG: Loading balance data for account:', accountId);
+      const apiUrl = `${API}/tradestation/accounts/${accountId}/balances`;
+      console.log('🔍 DEBUG: Balance API URL:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
@@ -5389,6 +5393,8 @@ const TradeStationAccountBalance = () => {
         credentials: 'include'
       });
       
+      console.log('🔍 DEBUG: Balance response status:', response.status);
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -5397,15 +5403,19 @@ const TradeStationAccountBalance = () => {
       console.log('🔍 DEBUG: Balance response:', data);
       // The API returns {balances: {Balances: [...]}} structure
       if (data.balances && data.balances.Balances && data.balances.Balances.length > 0) {
+        console.log('🔍 DEBUG: Setting balance data:', data.balances.Balances[0]);
         setBalanceData(data.balances.Balances[0]); // Get first (and likely only) balance record
       } else {
+        console.log('🔍 DEBUG: No balance data found, data structure:', data);
         throw new Error('No balance data found in response');
       }
       setError(null);
     } catch (err) {
-      setError('Failed to load balance data');
+      console.error('🔍 DEBUG: Balance error:', err);
+      setError(`Failed to load balance data: ${err.message}`);
       console.error('Balance error:', err);
     } finally {
+      console.log('🔍 DEBUG: Setting loading to false');
       setLoading(false);
     }
   };
