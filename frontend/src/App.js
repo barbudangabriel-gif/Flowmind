@@ -4749,21 +4749,9 @@ const TradeStationPortfolio = () => {
     
     try {
       setLoading(true);
-      const response = await fetch(`${API}/tradestation/accounts/${accountId}/summary`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        mode: 'cors',
-        credentials: 'include'
-      });
+      const response = await axios.get(`${API}/tradestation/accounts/${accountId}/summary`);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
+      const data = response.data;
       
       // Backend returns {status: "success", data: {portfolio_metrics, positions, risk_analysis}}
       if (data.data) {
