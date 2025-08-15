@@ -4783,6 +4783,7 @@ const TradeStationPortfolio = () => {
 
   useEffect(() => {
     if (selectedAccount) {
+      console.log('🔥 DEBUG: useEffect triggered for selectedAccount:', selectedAccount);
       loadPortfolioData(selectedAccount);
     }
   }, [selectedAccount]);
