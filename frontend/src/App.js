@@ -5562,15 +5562,15 @@ const TradeStationAccountBalance = () => {
                 <h4 className="text-lg font-semibold text-blue-600 mb-4">Stock Buying Power</h4>
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Day Trading:</span>
+                    <span className="text-gray-300 font-medium">Day Trading:</span>
                     <span className="font-semibold">{formatCurrency(balanceData.BuyingPower)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Overnight:</span>
+                    <span className="text-gray-300 font-medium">Overnight:</span>
                     <span className="font-semibold">{formatCurrency(balanceData.BalanceDetail?.OvernightBuyingPower)}</span>
                   </div>
                   <div className="flex justify-between border-t pt-2">
-                    <span className="text-gray-600 font-medium">Total Available:</span>
+                    <span className="text-gray-200 font-semibold">Total Available:</span>
                     <span className="font-bold text-blue-600">{formatCurrency(balanceData.BuyingPower)}</span>
                   </div>
                 </div>
