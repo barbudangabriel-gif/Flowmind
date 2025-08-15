@@ -5237,32 +5237,43 @@ const TradeStationPortfolio = () => {
                   <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`} style={{ minHeight: '600px' }}>
                     {(() => {
                       const filteredPositions = filterPositionsByAsset(portfolioData.positions);
+                      const groupedByTicker = groupPositionsByTicker(filteredPositions);
                       
-                      return filteredPositions.map((position, index) => {
-                        const positionKey = `pos-${index}`;
-                        const isExpanded = expandedSymbols.has(positionKey);
+                      const rows = [];
+                      
+                      // Iterate through each ticker group
+                      Object.entries(groupedByTicker).forEach(([ticker, group]) => {
+                        const isExpanded = expandedSymbols.has(ticker);
+                        const { positions, hasMultiplePositions } = group;
                         
-                        return (
-                          <React.Fragment key={positionKey}>
-                            {/* Main Position Row */}
-                            <tr className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600">
-                              {/* Symbol Column with Dropdown */}
+                        if (hasMultiplePositions) {
+                          // Show ticker header row with dropdown for groups with multiple positions
+                          const totalMarketValue = positions.reduce((sum, pos) => sum + pos.market_value, 0);
+                          const totalPnL = positions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
+                          const totalPositions = positions.length;
+                          
+                          rows.push(
+                            <tr 
+                              key={`ticker-${ticker}`}
+                              className="bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-850 hover:to-blue-750 transition-all duration-200 border-b-2 border-blue-600"
+                            >
+                              {/* Ticker Symbol Column with Dropdown */}
                               <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
                                 <div className="flex items-center gap-1">
                                   <button 
-                                    className="text-gray-400 hover:text-gray-200 transition-colors flex-shrink-0"
+                                    className="text-gray-300 hover:text-white transition-colors flex-shrink-0"
                                     onClick={() => {
-                                      console.log(`Toggle dropdown for ${position.symbol} (Position #${index + 1})`);
-                                      toggleSymbolExpansion(positionKey);
+                                      console.log(`Toggle ${ticker} positions (${totalPositions} positions)`);
+                                      toggleSymbolExpansion(ticker);
                                     }}
                                   >
                                     <div className={`ts-double-arrow ${isExpanded ? 'expanded' : ''}`}></div>
                                   </button>
                                   
                                   <div className="flex flex-col min-w-0 flex-1">
-                                    <span className="font-semibold text-blue-300 text-sm truncate">{position.symbol}</span>
-                                    <span className="text-xs text-gray-400 uppercase truncate">
-                                      {position.asset_type || 'POSITION'} #{index + 1}
+                                    <span className="font-bold text-white text-base truncate">{ticker}</span>
+                                    <span className="text-xs text-blue-200 truncate">
+                                      {totalPositions} positions {isExpanded ? '▼' : '▶'}
                                     </span>
                                   </div>
                                 </div>
