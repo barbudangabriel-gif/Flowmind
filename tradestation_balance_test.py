@@ -140,15 +140,26 @@ class TradeStationBalanceAPITester:
         print(f"\n💰 PHASE 3: Balance Data Structure Analysis")
         print("-" * 60)
         
-        if isinstance(balances, list) and len(balances) > 0:
+        # Handle the actual TradeStation API structure: balances.Balances[0]
+        balance_record = None
+        
+        if isinstance(balances, dict):
+            print(f"   📊 Balance data is dictionary format")
+            print(f"   📊 Balance keys: {list(balances.keys())}")
+            
+            # Look for Balances array
+            if 'Balances' in balances and isinstance(balances['Balances'], list) and len(balances['Balances']) > 0:
+                balance_record = balances['Balances'][0]
+                print(f"   📊 Found {len(balances['Balances'])} balance record(s) in Balances array")
+                print(f"   📊 Balance record keys: {list(balance_record.keys())}")
+            else:
+                print(f"   ❌ No Balances array found or empty")
+                return False
+                
+        elif isinstance(balances, list) and len(balances) > 0:
             balance_record = balances[0]
             print(f"   📊 Found {len(balances)} balance record(s)")
             print(f"   📊 Balance record keys: {list(balance_record.keys())}")
-            
-        elif isinstance(balances, dict):
-            balance_record = balances
-            print(f"   📊 Balance data is dictionary format")
-            print(f"   📊 Balance keys: {list(balance_record.keys())}")
         else:
             print(f"   ❌ Unexpected balance data format: {type(balances)}")
             return False
