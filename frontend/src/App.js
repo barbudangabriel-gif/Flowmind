@@ -5114,6 +5114,73 @@ const TradeStationPortfolio = () => {
             </div>
           )}
 
+          {/* TEMPORARY MOCK DATA FOR SCROLL TESTING */}
+          {(!portfolioData.positions || portfolioData.positions.length === 0) && (
+            <div className="bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 border rounded-lg overflow-hidden shadow-lg">
+              <div className="bg-gradient-to-r from-gray-700 to-gray-800 px-4 py-3 border-b border-gray-600">
+                <h3 className="text-lg font-semibold flex items-center gap-2 text-gray-200">
+                  <Briefcase className="w-5 h-5 text-emerald-600" />
+                  Mock Positions (Testing Scroll)
+                </h3>
+              </div>
+              
+              <div 
+                className="overflow-y-scroll portfolio-scroll border border-gray-600 rounded" 
+                style={{ height: '500px', maxHeight: '500px' }}
+              >
+                <table className="w-full text-sm border border-white/20 table-fixed">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-gray-700 to-gray-800 text-gray-200 text-xs uppercase tracking-wider border-b border-gray-600 sticky top-0">
+                      <th className="px-3 py-3 text-left font-medium border-r border-gray-600 w-32 min-w-32">Symbol</th>
+                      <th className="px-3 py-3 text-left font-medium border-r border-gray-600 w-48 min-w-48">Description</th>
+                      <th className="px-3 py-3 text-center font-medium border-r border-gray-600 w-24 min-w-24">Position</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-28 min-w-28">Open P/L</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-24 min-w-24">Avg Price</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-32 min-w-32">Today's P/L</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-24 min-w-24">P/L Qty</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-24 min-w-24">P/L %</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-28 min-w-28">Total Cost</th>
+                      <th className="px-3 py-3 text-right font-medium border-r border-gray-600 w-32 min-w-32">Market Value</th>
+                      <th className="px-3 py-3 text-center font-medium w-20 min-w-20">Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-200">
+                    {Array.from({ length: 30 }, (_, i) => (
+                      <tr key={i} className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 transition-all duration-200 border-b border-gray-600">
+                        <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
+                          <div className="flex items-center gap-1">
+                            <div className="ts-double-arrow"></div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="font-semibold text-blue-300 text-sm truncate">TEST{i + 1}</span>
+                              <span className="text-xs text-gray-400 uppercase truncate">STOCK</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
+                          <div className="text-sm text-gray-300 truncate">Test Stock {i + 1}</div>
+                        </td>
+                        <td className="px-3 py-2 text-center border-r border-gray-600 w-24 min-w-24">
+                          <div className="flex flex-col items-center">
+                            <span className="text-xs font-medium px-1 py-0.5 rounded bg-green-700 text-green-200">LONG</span>
+                            <span className="text-sm font-medium text-gray-200">100</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-28 min-w-28 text-green-400 truncate">+$1,234</td>
+                        <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">$45.67</td>
+                        <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 text-green-400 truncate">+$123</td>
+                        <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-gray-200 truncate">100</td>
+                        <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-24 min-w-24 text-green-400 truncate">+2.5%</td>
+                        <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-28 min-w-28 text-gray-200 truncate">$4,567</td>
+                        <td className="px-3 py-2 text-right font-semibold border-r border-gray-600 w-32 min-w-32 text-gray-200 truncate">$5,801</td>
+                        <td className="px-3 py-2 text-center font-medium w-20 min-w-20 text-gray-200 truncate">100</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* TradeStation Style Positions Table */}
           {portfolioData.positions && portfolioData.positions.length > 0 && (
             <div className={`bg-gradient-to-b from-gray-800 to-gray-900 border-gray-700 border rounded-lg overflow-hidden shadow-lg`}>
