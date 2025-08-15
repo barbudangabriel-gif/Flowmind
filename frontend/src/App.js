@@ -5293,6 +5293,7 @@ const TradeStationPortfolio = () => {
                               {formatNumber(Math.abs(position.quantity))}
                             </td>
                           </tr>
+                          );
                         }
                         
                         // Show options if expanded or if this symbol has no main position (orphaned options)
