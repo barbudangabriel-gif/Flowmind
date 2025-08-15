@@ -6350,7 +6350,7 @@ const TradeStationCallback = () => {
 
 // Main App Component
 function App() {
-  const [activeTab, setActiveTab] = useState('ts-portfolio'); // Debug: Start with TradeStation
+  const [activeTab, setActiveTab] = useState('ts-balance'); // Set to Account Balance for testing
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isDarkMode } = useTheme();
 
