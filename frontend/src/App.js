@@ -4735,100 +4735,60 @@ const TradeStationPortfolio = () => {
     }
   };
 
+  // Load mock data immediately for testing ticker grouping
   const loadPortfolioData = async (accountId) => {
-    if (!accountId) {
-      console.log('🔍 DEBUG: No accountId provided to loadPortfolioData');
-      return;
-    }
+    if (!accountId) return;
     
-    try {
-      console.log('🔍 DEBUG: Starting loadPortfolioData for account:', accountId);
-      setLoading(true);
-      
-      const apiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
-      console.log('🔍 DEBUG: Portfolio API URL:', apiUrl);
-      
-      console.log('🔍 DEBUG: About to make fetch request to simple endpoint...');
-      
-      // Add a small delay to avoid race conditions with accounts loading
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Use original summary endpoint - it works from curl
-      const portfolioApiUrl = `${API}/tradestation/accounts/${accountId}/summary`;
-      console.log('🔍 DEBUG: Portfolio API URL:', portfolioApiUrl);
-      
-      const response = await fetch(portfolioApiUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('🔍 DEBUG: Fetch response received!');
-      console.log('🔍 DEBUG: Fetch response status:', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('🔍 DEBUG: Portfolio response data:', data);
-      
-      // Backend returns {status: "success", data: {portfolio_metrics, positions, risk_analysis}}
-      if (data.data) {
-        console.log('🔍 DEBUG: Setting portfolio data:', data.data);
-        setPortfolioData(data.data);
-        setError(null);
-        console.log('🔍 DEBUG: Portfolio data set successfully');
-      } else {
-        console.log('🔍 DEBUG: API call timeout - loading mock data for dropdown testing');
-        // Use mock data immediately for dropdown testing
-        const mockData = {
-          portfolio_metrics: {
-            total_market_value: 1000000,
-            total_unrealized_pnl: -50000,
-            total_daily_pnl: 2500,
-            position_count: 8
-          },
-          positions: [
-            { symbol: "AAPL", asset_type: "STOCK", quantity: 100, average_price: 150.00, market_value: 15000, unrealized_pnl: 500, unrealized_pnl_percent: 3.45, daily_pnl: 75, description: "Apple Inc." },
-            { symbol: "TSLA", asset_type: "STOCK", quantity: 50, average_price: 800.00, market_value: 40000, unrealized_pnl: -2000, unrealized_pnl_percent: -4.76, daily_pnl: -150, description: "Tesla Inc." },
-            { symbol: "GOOGL", asset_type: "STOCK", quantity: 25, average_price: 2800.00, market_value: 70000, unrealized_pnl: 5000, unrealized_pnl_percent: 7.69, daily_pnl: 300, description: "Alphabet Inc." },
-            { symbol: "MSFT", asset_type: "STOCK", quantity: 75, average_price: 350.00, market_value: 26250, unrealized_pnl: 1250, unrealized_pnl_percent: 5.00, daily_pnl: 125, description: "Microsoft Corp." },
-            { symbol: "NVDA", asset_type: "STOCK", quantity: 30, average_price: 900.00, market_value: 27000, unrealized_pnl: -3000, unrealized_pnl_percent: -10.00, daily_pnl: -200, description: "NVIDIA Corp." },
-            { symbol: "META", asset_type: "STOCK", quantity: 40, average_price: 300.00, market_value: 12000, unrealized_pnl: 800, unrealized_pnl_percent: 7.14, daily_pnl: 60, description: "Meta Platforms" },
-            { symbol: "AMZN", asset_type: "STOCK", quantity: 20, average_price: 1600.00, market_value: 32000, unrealized_pnl: 2000, unrealized_pnl_percent: 6.67, daily_pnl: 180, description: "Amazon.com Inc." },
-            { symbol: "NFLX", asset_type: "STOCK", quantity: 15, average_price: 500.00, market_value: 7500, unrealized_pnl: -500, unrealized_pnl_percent: -6.25, daily_pnl: -25, description: "Netflix Inc." }
-          ]
-        };
+    console.log('🔥 DEBUG: Loading MOCK DATA for ticker grouping test');
+    setLoading(true);
+    
+    // Simulate loading delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Mock data based on real TradeStation structure but simplified for testing
+    const mockData = {
+      portfolio_metrics: {
+        total_market_value: 885000,
+        total_unrealized_pnl: -45000,
+        total_daily_pnl: 2500,
+        position_count: 15
+      },
+      positions: [
+        // AAPL group (4 positions) - SHOULD HAVE DROPDOWN
+        { symbol: "AAPL", asset_type: "STOCK", quantity: 300, average_price: 230.79, market_value: 69238, unrealized_pnl: 5864, unrealized_pnl_percent: 9.25, daily_pnl: 150, description: "Apple Inc." },
+        { symbol: "AAPL 260618C190", asset_type: "STOCKOPTION", quantity: 2, average_price: 38.50, market_value: 10580, unrealized_pnl: 2880, unrealized_pnl_percent: 37.40, daily_pnl: 50, description: "AAPL Jun 18 2026 190 Call" },
+        { symbol: "AAPL 271217C195", asset_type: "STOCKOPTION", quantity: 2, average_price: 49.75, market_value: 13070, unrealized_pnl: 3120, unrealized_pnl_percent: 31.36, daily_pnl: 75, description: "AAPL Dec 17 2027 195 Call" },
+        { symbol: "AAPL 271217C205", asset_type: "STOCKOPTION", quantity: 2, average_price: 44.35, market_value: 11706, unrealized_pnl: 2836, unrealized_pnl_percent: 31.97, daily_pnl: 60, description: "AAPL Dec 17 2027 205 Call" },
         
-        // Force load mock data immediately
-        setTimeout(() => {
-          setPortfolioData(mockData);
-          setError("🔥 TESTING MODE: Using mock data for dropdown functionality test");
-          console.log('🔍 DEBUG: Mock data loaded for dropdown testing');
-        }, 2000); // 2 second delay
-      }
-    } catch (err) {
-      console.error('🔍 DEBUG: Portfolio loading error:', err);
-      setError(`Failed to load portfolio data: ${err.message}. Please try refreshing the page or check your connection.`);
-      console.error('Portfolio error:', err);
-      
-      // Show a user-friendly error instead of permanent loading
-      setPortfolioData({
-        portfolio_metrics: {
-          total_market_value: 0,
-          total_unrealized_pnl: 0,
-          total_daily_pnl: 0,
-          total_positions: 0
-        },
-        positions: []
-      });
-    } finally {
-      console.log('🔍 DEBUG: Setting loading to false');
-      setLoading(false);
-    }
+        // TSLA group (3 positions) - SHOULD HAVE DROPDOWN
+        { symbol: "TSLA", asset_type: "STOCK", quantity: 500, average_price: 309.86, market_value: 165095, unrealized_pnl: 10165, unrealized_pnl_percent: 6.56, daily_pnl: 800, description: "Tesla Inc." },
+        { symbol: "TSLA 271217C260", asset_type: "STOCKOPTION", quantity: 1, average_price: 130.88, market_value: 14670, unrealized_pnl: 1583, unrealized_pnl_percent: 12.09, daily_pnl: 120, description: "TSLA Dec 17 2027 260 Call" },
+        { symbol: "TSLA 271217C300", asset_type: "STOCKOPTION", quantity: 3, average_price: 116.22, market_value: 38685, unrealized_pnl: 3820, unrealized_pnl_percent: 10.96, daily_pnl: 200, description: "TSLA Dec 17 2027 300 Call" },
+        
+        // CRM group (3 positions) - SHOULD HAVE DROPDOWN
+        { symbol: "CRM", asset_type: "STOCK", quantity: 1200, average_price: 258.98, market_value: 291660, unrealized_pnl: -19110, unrealized_pnl_percent: -6.15, daily_pnl: -500, description: "Salesforce Inc." },
+        { symbol: "CRM 260116C210", asset_type: "STOCKOPTION", quantity: 1, average_price: 42.30, market_value: 4488, unrealized_pnl: 258, unrealized_pnl_percent: 6.10, daily_pnl: 15, description: "CRM Jan 16 2026 210 Call" },
+        { symbol: "CRM 271217C200", asset_type: "STOCKOPTION", quantity: 1, average_price: 88.25, market_value: 7925, unrealized_pnl: -900, unrealized_pnl_percent: -10.20, daily_pnl: -25, description: "CRM Dec 17 2027 200 Call" },
+        
+        // Single positions (NO DROPDOWN)
+        { symbol: "ETOR", asset_type: "STOCK", quantity: 500, average_price: 50.08, market_value: 23860, unrealized_pnl: -1181, unrealized_pnl_percent: -4.72, daily_pnl: -50, description: "Eaton Vance TABS 5-to-15 Year Laddered Municipal Bond NextShares" },
+        { symbol: "FTNT", asset_type: "STOCK", quantity: 700, average_price: 82.59, market_value: 55475, unrealized_pnl: -2341, unrealized_pnl_percent: -4.05, daily_pnl: -100, description: "Fortinet Inc." },
+        { symbol: "NVDA", asset_type: "STOCK", quantity: 50, average_price: 890.00, market_value: 44500, unrealized_pnl: 3500, unrealized_pnl_percent: 8.54, daily_pnl: 200, description: "NVIDIA Corp." },
+        { symbol: "MSFT", asset_type: "STOCK", quantity: 100, average_price: 415.00, market_value: 41500, unrealized_pnl: 2000, unrealized_pnl_percent: 5.06, daily_pnl: 150, description: "Microsoft Corp." },
+        { symbol: "AMZN", asset_type: "STOCK", quantity: 25, average_price: 1580.00, market_value: 39500, unrealized_pnl: 1000, unrealized_pnl_percent: 2.60, daily_pnl: 75, description: "Amazon.com Inc." }
+      ]
+    };
+    
+    setPortfolioData(mockData);
+    setError("🎯 DROPDOWN TEST MODE: Mock data loaded - AAPL(4), TSLA(3), CRM(3) should have dropdowns");
+    setLoading(false);
+    
+    console.log('🔥 DEBUG: Mock data loaded with ticker groups:', {
+      'AAPL': '4 positions (dropdown expected)',
+      'TSLA': '3 positions (dropdown expected)', 
+      'CRM': '3 positions (dropdown expected)',
+      'ETOR/FTNT/NVDA/MSFT/AMZN': 'single positions (no dropdown)'
+    });
   };
 
   useEffect(() => {
