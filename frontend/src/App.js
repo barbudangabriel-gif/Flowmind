@@ -5247,23 +5247,21 @@ const TradeStationPortfolio = () => {
                         const { positions, hasMultiplePositions } = group;
                         
                         if (hasMultiplePositions) {
-                          // Show ticker header row with dropdown for groups with multiple positions
+                          // TICKER GROUP - Show header with dropdown
                           const totalMarketValue = positions.reduce((sum, pos) => sum + pos.market_value, 0);
                           const totalPnL = positions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
-                          const totalPositions = positions.length;
                           
                           rows.push(
                             <tr 
                               key={`ticker-${ticker}`}
                               className="bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-850 hover:to-blue-750 transition-all duration-200 border-b-2 border-blue-600"
                             >
-                              {/* Ticker Symbol Column with Dropdown */}
                               <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
                                 <div className="flex items-center gap-1">
                                   <button 
                                     className="text-gray-300 hover:text-white transition-colors flex-shrink-0"
                                     onClick={() => {
-                                      console.log(`Toggle ${ticker} positions (${totalPositions} positions)`);
+                                      console.log(`🔥 Toggle ${ticker} - ${positions.length} positions`);
                                       toggleSymbolExpansion(ticker);
                                     }}
                                   >
@@ -5273,11 +5271,50 @@ const TradeStationPortfolio = () => {
                                   <div className="flex flex-col min-w-0 flex-1">
                                     <span className="font-bold text-white text-base truncate">{ticker}</span>
                                     <span className="text-xs text-blue-200 truncate">
-                                      {totalPositions} positions {isExpanded ? '▼' : '▶'}
+                                      {positions.length} positions {isExpanded ? '▼' : '▶'}
                                     </span>
                                   </div>
                                 </div>
                               </td>
+                              <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
+                                <div className="text-sm text-blue-100 truncate">GROUP: {ticker}</div>
+                              </td>
+                              <td className="px-3 py-2 text-center border-r border-gray-600 w-24 min-w-24">
+                                <div className="text-sm font-medium text-blue-100">{positions.length}</div>
+                              </td>
+                              <td className={`px-3 py-2 text-right font-bold border-r border-gray-600 w-28 min-w-28 ${getPnlColor(totalPnL)} truncate`}>
+                                {totalPnL > 0 ? '+' : ''}{formatCurrency(totalPnL)}
+                              </td>
+                              <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-blue-100 truncate">-</td>
+                              <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-32 min-w-32 text-blue-100 truncate">-</td>
+                              <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-blue-100 truncate">-</td>
+                              <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-24 min-w-24 text-blue-100 truncate">-</td>
+                              <td className="px-3 py-2 text-right font-medium border-r border-gray-600 w-28 min-w-28 text-blue-100 truncate">-</td>
+                              <td className="px-3 py-2 text-right font-bold border-r border-gray-600 w-32 min-w-32 text-blue-100 truncate">
+                                {formatCurrency(totalMarketValue)}
+                              </td>
+                              <td className="px-3 py-2 text-center font-medium w-20 min-w-20 text-blue-100 truncate">{positions.length}</td>
+                            </tr>
+                          );
+                          
+                          // Show individual positions when expanded
+                          if (isExpanded) {
+                            positions.forEach((position, posIndex) => {
+                              rows.push(
+                                <tr 
+                                  key={`${ticker}-pos-${posIndex}`}
+                                  className="bg-gradient-to-r from-gray-750 to-gray-800 hover:from-gray-700 hover:to-gray-750 transition-all duration-200 border-b border-gray-600 border-l-4 border-l-cyan-400"
+                                >
+                                  <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
+                                    <div className="flex items-center gap-1 pl-8">
+                                      <div className="flex flex-col min-w-0 flex-1">
+                                        <span className="font-semibold text-cyan-300 text-sm truncate">{position.symbol}</span>
+                                        <span className="text-xs text-gray-500 uppercase truncate">
+                                          {position.asset_type || 'POS'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </td>
                               
                               {/* Description Column */}
                               <td className="px-3 py-2 text-left border-r border-gray-600 w-48 min-w-48">
