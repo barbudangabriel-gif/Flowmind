@@ -1622,6 +1622,53 @@ async def get_tradestation_account_summary(account_id: str):
         logger.error(f"Error fetching account summary: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch account summary: {str(e)}")
 
+@api_router.get("/tradestation/accounts/{account_id}/positions-simple")
+async def get_tradestation_positions_simple(account_id: str):
+    """Get basic position information quickly for UI display"""
+    try:
+        async with ts_client:
+            positions = await ts_client.get_positions(account_id)
+            balances = await ts_client.get_balances(account_id)
+        
+        # Convert to simple dict format for frontend
+        positions_data = []
+        for pos in positions:
+            positions_data.append({
+                "symbol": pos.symbol,
+                "asset_type": pos.asset_type,
+                "quantity": pos.quantity,
+                "average_price": pos.average_price,
+                "market_value": pos.market_value,
+                "unrealized_pnl": pos.unrealized_pnl,
+                "unrealized_pnl_percent": pos.unrealized_pnl_percent,
+                "daily_pnl": getattr(pos, 'daily_pnl', 0),
+                "description": getattr(pos, 'description', f"{pos.symbol} Position")
+            })
+        
+        # Simple portfolio metrics
+        total_market_value = sum(pos['market_value'] for pos in positions_data)
+        total_unrealized_pnl = sum(pos['unrealized_pnl'] for pos in positions_data)
+        total_daily_pnl = sum(pos['daily_pnl'] for pos in positions_data)
+        
+        return {
+            "status": "success",
+            "data": {
+                "portfolio_metrics": {
+                    "total_market_value": total_market_value,
+                    "total_unrealized_pnl": total_unrealized_pnl,
+                    "total_daily_pnl": total_daily_pnl,
+                    "total_positions": len(positions_data)
+                },
+                "positions": positions_data,
+                "balances": balances.dict() if balances else {}
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching simple positions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch positions: {str(e)}")
+
 @api_router.get("/tradestation/accounts/{account_id}/positions")
 async def get_tradestation_positions(
     account_id: str,
