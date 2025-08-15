@@ -64,6 +64,8 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 // Configure axios with timeout and better error handling
 axios.defaults.timeout = 30000; // 30 seconds timeout
 axios.defaults.headers.common['Content-Type'] = 'application/json';
+axios.defaults.withCredentials = false; // Don't send cookies for CORS
+axios.defaults.headers.common['Accept'] = 'application/json';
 
 // Error Boundary Component to prevent browser extension crashes
 class ErrorBoundary extends React.Component {
