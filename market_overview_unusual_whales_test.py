@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Tuple
 
 class MarketOverviewUnusualWhalesTest:
-    def __init__(self, base_url="https://tradestation-sync.preview.emergentagent.com"):
+    def __init__(self, base_url="https://flowmind-live.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.test_results = {
