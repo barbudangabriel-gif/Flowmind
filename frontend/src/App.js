@@ -4919,7 +4919,53 @@ const TradeStationPortfolio = () => {
                       </tr>
                     ))}
                   </tbody>
+                  
+                  {/* Totals Row */}
+                  <tfoot className={`${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-100 border-gray-300'} border-t-2`}>
+                    <tr className="font-semibold text-base">
+                      <td className="px-4 py-4 font-bold">TOTALS</td>
+                      <td className="px-4 py-4 text-center font-bold">{portfolioData.portfolio_metrics?.position_count || 0}</td>
+                      <td className="px-4 py-4 text-right">-</td>
+                      <td className="px-4 py-4 text-right">-</td>
+                      <td className="px-4 py-4 text-right font-bold">
+                        {formatCurrency(portfolioData.portfolio_metrics?.total_market_value || 0)}
+                      </td>
+                      <td className={`px-4 py-4 text-right font-bold ${getPnlColor(portfolioData.portfolio_metrics?.total_unrealized_pnl)}`}>
+                        {portfolioData.portfolio_metrics?.total_unrealized_pnl > 0 ? '+' : ''}{formatCurrency(portfolioData.portfolio_metrics?.total_unrealized_pnl || 0)}
+                      </td>
+                      <td className={`px-4 py-4 text-right font-bold ${getPnlColor(portfolioData.portfolio_metrics?.total_return_percent)}`}>
+                        {portfolioData.portfolio_metrics?.total_return_percent > 0 ? '+' : ''}{formatPercent(portfolioData.portfolio_metrics?.total_return_percent || 0)}
+                      </td>
+                      <td className="px-4 py-4 text-center font-bold">-</td>
+                    </tr>
+                  </tfoot>
                 </table>
+              </div>
+              
+              {/* Account Summary Bar like TradeStation */}
+              <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-blue-50 border-blue-200'} border-t px-4 py-3`}>
+                <div className="flex justify-between items-center text-sm">
+                  <div className="flex gap-8">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Total Portfolio Value:</span>
+                      <span className="font-bold text-lg text-blue-600">
+                        {formatCurrency(portfolioData.portfolio_metrics?.total_market_value || 0)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Today's P&L:</span>
+                      <span className={`font-bold text-lg ${getPnlColor(portfolioData.portfolio_metrics?.total_unrealized_pnl)}`}>
+                        {portfolioData.portfolio_metrics?.total_unrealized_pnl > 0 ? '+' : ''}{formatCurrency(portfolioData.portfolio_metrics?.total_unrealized_pnl || 0)}
+                        <span className="text-sm ml-1">
+                          ({portfolioData.portfolio_metrics?.total_return_percent > 0 ? '+' : ''}{formatPercent(portfolioData.portfolio_metrics?.total_return_percent || 0)})
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Last updated: {new Date().toLocaleTimeString()}
+                  </div>
+                </div>
               </div>
             </div>
           )}
