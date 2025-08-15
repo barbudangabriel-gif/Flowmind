@@ -1314,7 +1314,7 @@ const SimpleStockScreener = () => {
       )}
 
       {stockData && (
-        <div className="space-y-6">
+        <div className="space-y-4 w-full max-w-none">
           {/* Stock Info Card */}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex justify-between items-start">
