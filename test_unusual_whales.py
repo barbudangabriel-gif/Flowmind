@@ -6,7 +6,7 @@ from datetime import datetime
 
 def test_unusual_whales_endpoints():
     """Test all Unusual Whales API endpoints"""
-    base_url = "https://flowmind-analytics-1.preview.emergentagent.com/api"
+    base_url = "https://tradestation-sync.preview.emergentagent.com/api"
     
     print("🐋 Testing Unusual Whales API Integration")
     print("=" * 50)
