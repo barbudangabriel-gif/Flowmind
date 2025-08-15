@@ -4721,6 +4721,20 @@ const TradeStationPortfolio = () => {
     return `${value >= 0 ? '+' : ''}${(value || 0).toFixed(2)}%`;
   };
 
+  const formatNumber = (value) => {
+    return new Intl.NumberFormat('en-US').format(value || 0);
+  };
+
+  const getPnlColor = (value) => {
+    if (!value || value === 0) return 'text-gray-600';
+    return value > 0 ? 'text-green-600' : 'text-red-600';
+  };
+
+  const getPnlBgColor = (value) => {
+    if (!value || value === 0) return 'bg-gray-50';
+    return value > 0 ? 'bg-green-50' : 'bg-red-50';
+  };
+
   return (
     <div className={`space-y-6 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
       <div className="flex items-center justify-between">
