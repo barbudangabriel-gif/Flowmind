@@ -243,9 +243,41 @@ async def get_stock_quote(symbol: str) -> Dict[str, Any]:
     except Exception as e:
         logger.warning(f"TradeStation quote failed for {symbol}: {str(e)}, falling back to Yahoo Finance")
     
-    # Fallback to Yahoo Finance via enhanced ticker manager
+    # Fallback to Unusual Whales
     try:
-        logger.info(f"Using Yahoo Finance for {symbol} pricing (fallback)")
+        logger.info(f"Using Unusual Whales for {symbol} pricing (fallback)")
+        
+        # Get stock data from Unusual Whales screener
+        uw_stocks = await uw_service.get_stock_screener_data(limit=500, exchange="all")
+        
+        # Find the specific symbol
+        uw_stock_data = None
+        for stock in uw_stocks:
+            if stock.get('symbol', '').upper() == symbol.upper():
+                uw_stock_data = stock
+                break
+        
+        if uw_stock_data:
+            return {
+                "symbol": uw_stock_data.get("symbol", symbol),
+                "price": float(uw_stock_data.get("price", 0)),
+                "change": float(uw_stock_data.get("change", 0)),
+                "change_percent": float(uw_stock_data.get("change_percent", 0)),
+                "volume": int(uw_stock_data.get("volume", 0)),
+                "market_cap": uw_stock_data.get("market_cap"),
+                "pe_ratio": uw_stock_data.get("pe_ratio"),
+                "timestamp": datetime.utcnow(),
+                "data_source": "Unusual Whales (Fallback)"
+            }
+        else:
+            logger.warning(f"Symbol {symbol} not found in Unusual Whales data")
+            
+    except Exception as e:
+        logger.warning(f"Unusual Whales fallback failed for {symbol}: {str(e)}")
+    
+    # Final fallback to Yahoo Finance if UW fails
+    try:
+        logger.info(f"Using Yahoo Finance for {symbol} pricing (final fallback)")
         enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
         
         # Convert enhanced data to basic format for compatibility
@@ -258,7 +290,7 @@ async def get_stock_quote(symbol: str) -> Dict[str, Any]:
             "market_cap": enhanced_data["market_cap"],
             "pe_ratio": enhanced_data["pe_ratio"],
             "timestamp": datetime.utcnow(),
-            "data_source": "Yahoo Finance (Fallback)"
+            "data_source": "Yahoo Finance (Final Fallback)"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching data for {symbol}: {str(e)}")
