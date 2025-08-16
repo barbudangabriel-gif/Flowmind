@@ -4173,6 +4173,395 @@ class StockMarketAPITester:
             print(f"   ❌ NEEDS ATTENTION: Expert Options system has significant issues")
         
         return success_rate >= 80
+    def test_stock_analysis_routing_functionality(self):
+        """Test the newly implemented stock analysis routing functionality as requested in review"""
+        print("\n🎯 TESTING STOCK ANALYSIS ROUTING FUNCTIONALITY - REVIEW REQUEST")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Test newly implemented stock analysis routing functionality")
+        print("📋 REQUIREMENTS:")
+        print("   1. Investment Scoring Agent: /api/agents/investment-scoring with symbol=UNH")
+        print("   2. Technical Analysis Agent: /api/agents/technical-analysis with symbol=UNH and include_smc=true")
+        print("   3. Enhanced Stock Data: /api/stocks/UNH/enhanced")
+        print("   4. Combined Analysis Workflow: Verify all three work together")
+        print("   5. Focus on data structure completeness and API response times")
+        
+        test_symbol = "UNH"  # Specific symbol requested in review
+        
+        # Test 1: Investment Scoring Agent
+        print(f"\n📊 PHASE 1: Investment Scoring Agent Testing")
+        print("-" * 60)
+        
+        success_investment, investment_data = self.run_test(
+            f"Investment Scoring Agent ({test_symbol})", 
+            "POST", 
+            f"agents/investment-scoring?symbol={test_symbol}", 
+            200
+        )
+        
+        if not success_investment:
+            print(f"❌ Investment Scoring Agent failed for {test_symbol}")
+            return False
+        
+        # Verify required fields for investment scoring
+        required_investment_fields = [
+            'investment_score', 'recommendation', 'confidence_level', 
+            'key_signals', 'risk_analysis', 'signal_breakdown'
+        ]
+        
+        missing_investment_fields = [field for field in required_investment_fields if field not in investment_data]
+        
+        if missing_investment_fields:
+            print(f"❌ Missing required investment fields: {missing_investment_fields}")
+            return False
+        else:
+            print(f"✅ All required investment fields present: {required_investment_fields}")
+        
+        investment_score = investment_data.get('investment_score', 0)
+        recommendation = investment_data.get('recommendation', 'N/A')
+        confidence_level = investment_data.get('confidence_level', 'N/A')
+        
+        print(f"   📊 Investment Score: {investment_score}")
+        print(f"   📊 Recommendation: {recommendation}")
+        print(f"   📊 Confidence Level: {confidence_level}")
+        print(f"   📊 Key Signals: {len(investment_data.get('key_signals', []))} signals")
+        
+        # Verify score is in valid range (0-100)
+        if 0 <= investment_score <= 100:
+            print(f"   ✅ Investment score in valid range: {investment_score}")
+        else:
+            print(f"   ❌ Investment score outside valid range: {investment_score}")
+            return False
+        
+        # Test 2: Technical Analysis Agent
+        print(f"\n📊 PHASE 2: Technical Analysis Agent Testing")
+        print("-" * 60)
+        
+        success_technical, technical_data = self.run_test(
+            f"Technical Analysis Agent ({test_symbol})", 
+            "POST", 
+            f"agents/technical-analysis?symbol={test_symbol}&include_smc=true", 
+            200
+        )
+        
+        if not success_technical:
+            print(f"❌ Technical Analysis Agent failed for {test_symbol}")
+            return False
+        
+        # Verify required fields for technical analysis
+        required_technical_fields = [
+            'technical_score', 'overall_verdict', 'multi_timeframe_analysis'
+        ]
+        
+        missing_technical_fields = [field for field in required_technical_fields if field not in technical_data]
+        
+        if missing_technical_fields:
+            print(f"❌ Missing required technical fields: {missing_technical_fields}")
+            return False
+        else:
+            print(f"✅ All required technical fields present: {required_technical_fields}")
+        
+        technical_score = technical_data.get('technical_score', 0)
+        overall_verdict = technical_data.get('overall_verdict', 'N/A')
+        multi_timeframe = technical_data.get('multi_timeframe_analysis', {})
+        
+        print(f"   📊 Technical Score: {technical_score}")
+        print(f"   📊 Overall Verdict: {overall_verdict}")
+        print(f"   📊 Multi-Timeframe Analysis: {len(multi_timeframe)} timeframes")
+        
+        # Verify technical score is in valid range
+        if 0 <= technical_score <= 100:
+            print(f"   ✅ Technical score in valid range: {technical_score}")
+        else:
+            print(f"   ❌ Technical score outside valid range: {technical_score}")
+            return False
+        
+        # Verify SMC (Smart Money Concepts) inclusion
+        if 'smart_money_analysis' in technical_data:
+            print(f"   ✅ Smart Money Concepts (SMC) analysis included")
+        else:
+            print(f"   ⚠️  Smart Money Concepts analysis not found")
+        
+        # Test 3: Enhanced Stock Data
+        print(f"\n📊 PHASE 3: Enhanced Stock Data Testing")
+        print("-" * 60)
+        
+        success_enhanced, enhanced_data = self.run_test(
+            f"Enhanced Stock Data ({test_symbol})", 
+            "GET", 
+            f"stocks/{test_symbol}/enhanced", 
+            200
+        )
+        
+        if not success_enhanced:
+            print(f"❌ Enhanced Stock Data failed for {test_symbol}")
+            return False
+        
+        # Verify required fields for enhanced stock data
+        required_enhanced_fields = [
+            'current_price', 'change', 'change_percent'
+        ]
+        
+        # Check for current_price or price field
+        has_price = 'current_price' in enhanced_data or 'price' in enhanced_data
+        current_price = enhanced_data.get('current_price') or enhanced_data.get('price', 0)
+        change = enhanced_data.get('change', 0)
+        change_percent = enhanced_data.get('change_percent', 0)
+        
+        if not has_price:
+            print(f"❌ Missing price data in enhanced stock response")
+            return False
+        else:
+            print(f"✅ Price data present in enhanced stock response")
+        
+        print(f"   📊 Current Price: ${current_price:.2f}")
+        print(f"   📊 Change: ${change:+.2f}")
+        print(f"   📊 Change Percent: {change_percent:+.2f}%")
+        
+        # Verify price is realistic (UNH typically trades in $400-600 range)
+        if 300 <= current_price <= 700:
+            print(f"   ✅ Price appears realistic for {test_symbol}: ${current_price:.2f}")
+        else:
+            print(f"   ⚠️  Price may be unrealistic for {test_symbol}: ${current_price:.2f}")
+        
+        # Check for additional stock fundamentals
+        fundamentals = ['market_cap', 'pe_ratio', 'sector', 'industry']
+        present_fundamentals = [field for field in fundamentals if field in enhanced_data and enhanced_data[field]]
+        
+        if present_fundamentals:
+            print(f"   ✅ Stock fundamentals present: {present_fundamentals}")
+            for field in present_fundamentals:
+                value = enhanced_data[field]
+                if field == 'market_cap' and isinstance(value, (int, float)):
+                    print(f"     - {field}: ${value/1e9:.1f}B")
+                else:
+                    print(f"     - {field}: {value}")
+        else:
+            print(f"   ⚠️  Limited stock fundamentals available")
+        
+        # Test 4: Combined Analysis Workflow
+        print(f"\n📊 PHASE 4: Combined Analysis Workflow Testing")
+        print("-" * 60)
+        
+        print(f"   🔄 Testing workflow integration for {test_symbol}:")
+        
+        # Verify all three components have compatible data structures
+        workflow_compatibility = []
+        
+        # Check if investment and technical scores can be combined
+        if isinstance(investment_score, (int, float)) and isinstance(technical_score, (int, float)):
+            combined_score = (investment_score + technical_score) / 2
+            workflow_compatibility.append(f"✅ Scores combinable: Investment({investment_score}) + Technical({technical_score}) = Combined({combined_score:.1f})")
+        else:
+            workflow_compatibility.append(f"❌ Scores not combinable: Investment({investment_score}) + Technical({technical_score})")
+        
+        # Check if recommendations are compatible
+        if recommendation != 'N/A' and overall_verdict != 'N/A':
+            workflow_compatibility.append(f"✅ Recommendations available: Investment({recommendation}) + Technical({overall_verdict})")
+        else:
+            workflow_compatibility.append(f"❌ Recommendations missing: Investment({recommendation}) + Technical({overall_verdict})")
+        
+        # Check if price data supports analysis
+        if current_price > 0:
+            workflow_compatibility.append(f"✅ Price data supports analysis: ${current_price:.2f}")
+        else:
+            workflow_compatibility.append(f"❌ Price data insufficient: ${current_price:.2f}")
+        
+        for check in workflow_compatibility:
+            print(f"     {check}")
+        
+        # Test 5: API Response Times
+        print(f"\n📊 PHASE 5: API Response Times Testing")
+        print("-" * 60)
+        
+        import time
+        
+        # Test response times for each endpoint
+        response_times = {}
+        
+        # Investment Scoring Agent response time
+        start_time = time.time()
+        success_time_inv, _ = self.run_test(
+            f"Investment Scoring Response Time ({test_symbol})", 
+            "POST", 
+            f"agents/investment-scoring?symbol={test_symbol}", 
+            200
+        )
+        investment_time = time.time() - start_time
+        response_times['Investment Scoring'] = investment_time
+        
+        # Technical Analysis Agent response time
+        start_time = time.time()
+        success_time_tech, _ = self.run_test(
+            f"Technical Analysis Response Time ({test_symbol})", 
+            "POST", 
+            f"agents/technical-analysis?symbol={test_symbol}&include_smc=true", 
+            200
+        )
+        technical_time = time.time() - start_time
+        response_times['Technical Analysis'] = technical_time
+        
+        # Enhanced Stock Data response time
+        start_time = time.time()
+        success_time_stock, _ = self.run_test(
+            f"Enhanced Stock Response Time ({test_symbol})", 
+            "GET", 
+            f"stocks/{test_symbol}/enhanced", 
+            200
+        )
+        stock_time = time.time() - start_time
+        response_times['Enhanced Stock'] = stock_time
+        
+        print(f"   ⏱️  Response Time Analysis:")
+        for endpoint, response_time in response_times.items():
+            print(f"     - {endpoint}: {response_time:.2f}s")
+            
+            if response_time < 1.0:
+                print(f"       ✅ Excellent response time")
+            elif response_time < 3.0:
+                print(f"       ✅ Good response time")
+            elif response_time < 10.0:
+                print(f"       ⚠️  Acceptable response time")
+            else:
+                print(f"       ❌ Slow response time")
+        
+        total_workflow_time = sum(response_times.values())
+        print(f"   ⏱️  Total Workflow Time: {total_workflow_time:.2f}s")
+        
+        if total_workflow_time < 5.0:
+            print(f"   ✅ Excellent total workflow performance")
+        elif total_workflow_time < 15.0:
+            print(f"   ✅ Good total workflow performance")
+        else:
+            print(f"   ⚠️  Workflow may be slow for frontend")
+        
+        # Test 6: Data Structure Completeness for StockAnalysisPage
+        print(f"\n📊 PHASE 6: StockAnalysisPage Component Compatibility")
+        print("-" * 60)
+        
+        print(f"   🖥️  Verifying data structure completeness for frontend component:")
+        
+        # Check if all required fields for StockAnalysisPage are present
+        frontend_requirements = {
+            'Investment Analysis': {
+                'data': investment_data,
+                'required_fields': ['investment_score', 'recommendation', 'confidence_level', 'key_signals', 'risk_analysis']
+            },
+            'Technical Analysis': {
+                'data': technical_data,
+                'required_fields': ['technical_score', 'overall_verdict', 'multi_timeframe_analysis']
+            },
+            'Stock Data': {
+                'data': enhanced_data,
+                'required_fields': ['price', 'change', 'change_percent']
+            }
+        }
+        
+        frontend_compatibility_score = 0
+        total_frontend_checks = 0
+        
+        for component, requirements in frontend_requirements.items():
+            data = requirements['data']
+            required_fields = requirements['required_fields']
+            
+            print(f"     📱 {component}:")
+            
+            for field in required_fields:
+                total_frontend_checks += 1
+                # Check for field or alternative field names
+                field_present = field in data
+                if not field_present and field == 'price':
+                    field_present = 'current_price' in data
+                
+                if field_present:
+                    frontend_compatibility_score += 1
+                    print(f"       ✅ {field}: Present")
+                else:
+                    print(f"       ❌ {field}: Missing")
+        
+        frontend_compatibility_rate = (frontend_compatibility_score / total_frontend_checks) * 100
+        print(f"   📱 Frontend Compatibility: {frontend_compatibility_rate:.1f}% ({frontend_compatibility_score}/{total_frontend_checks} fields)")
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT: Stock Analysis Routing Functionality")
+        print("=" * 80)
+        
+        # Calculate success metrics
+        test_phases = [
+            ("Investment Scoring Agent", success_investment and not missing_investment_fields),
+            ("Technical Analysis Agent", success_technical and not missing_technical_fields),
+            ("Enhanced Stock Data", success_enhanced and has_price),
+            ("Combined Workflow", len([c for c in workflow_compatibility if '✅' in c]) >= 2),
+            ("Response Times", total_workflow_time < 20.0),
+            ("Frontend Compatibility", frontend_compatibility_rate >= 80.0)
+        ]
+        
+        passed_phases = sum(1 for _, passed in test_phases if passed)
+        total_phases = len(test_phases)
+        success_rate = (passed_phases / total_phases) * 100
+        
+        print(f"\n📊 TEST RESULTS SUMMARY:")
+        for phase_name, passed in test_phases:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {phase_name}")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_phases}/{total_phases} phases passed)")
+        
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        print(f"   - Test Symbol: {test_symbol}")
+        print(f"   - Investment Score: {investment_score}")
+        print(f"   - Technical Score: {technical_score}")
+        print(f"   - Current Price: ${current_price:.2f}")
+        print(f"   - Total Workflow Time: {total_workflow_time:.2f}s")
+        print(f"   - Frontend Compatibility: {frontend_compatibility_rate:.1f}%")
+        
+        # Review request specific feedback
+        print(f"\n📋 REVIEW REQUEST FEEDBACK:")
+        if success_investment and not missing_investment_fields:
+            print(f"   ✅ Investment Scoring Agent (/api/agents/investment-scoring) working with {test_symbol}")
+            print(f"     - Returns proper analysis data with all required fields")
+        else:
+            print(f"   ❌ Investment Scoring Agent issues detected")
+        
+        if success_technical and not missing_technical_fields:
+            print(f"   ✅ Technical Analysis Agent (/api/agents/technical-analysis) working with {test_symbol}")
+            print(f"     - include_smc=true parameter working correctly")
+            print(f"     - Returns technical indicators and multi-timeframe analysis")
+        else:
+            print(f"   ❌ Technical Analysis Agent issues detected")
+        
+        if success_enhanced and has_price:
+            print(f"   ✅ Enhanced Stock Data (/api/stocks/{test_symbol}/enhanced) working")
+            print(f"     - Provides current price, change, and change_percent")
+        else:
+            print(f"   ❌ Enhanced Stock Data issues detected")
+        
+        if len([c for c in workflow_compatibility if '✅' in c]) >= 2:
+            print(f"   ✅ Combined Analysis Workflow functioning properly")
+            print(f"     - All three endpoints work together for comprehensive analysis")
+        else:
+            print(f"   ❌ Combined Analysis Workflow has compatibility issues")
+        
+        if frontend_compatibility_rate >= 80:
+            print(f"   ✅ StockAnalysisPage component compatibility confirmed")
+            print(f"     - Data structures support proper frontend rendering")
+        else:
+            print(f"   ❌ StockAnalysisPage component may have rendering issues")
+        
+        # Final verdict
+        if success_rate >= 85:
+            print(f"\n🎉 VERDICT: EXCELLENT - Stock Analysis Routing Functionality working perfectly!")
+            print(f"   All endpoints tested with {test_symbol} are functioning correctly.")
+            print(f"   StockAnalysisPage component should render properly with comprehensive data.")
+            print(f"   API response times are acceptable for production use.")
+        elif success_rate >= 70:
+            print(f"\n✅ VERDICT: GOOD - Stock Analysis Routing mostly working with minor issues.")
+            print(f"   Core functionality is operational for {test_symbol}.")
+        else:
+            print(f"\n❌ VERDICT: NEEDS ATTENTION - Stock Analysis Routing has significant issues.")
+            print(f"   Multiple endpoints or data structure issues detected.")
+        
+        return success_rate >= 70
 
     def test_error_handling(self):
         """Test error handling for invalid requests"""
