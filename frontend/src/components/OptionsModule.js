@@ -302,9 +302,10 @@ const OptionsModule = () => {
         
         {/* BUILDER Tab */}
         {activeTab === 'builder' && (
+          <div className="grid grid-cols-12 gap-6">
           
-          {/* Left Panel - OptionStrat style controls */}
-          <div className="col-span-12 lg:col-span-4 space-y-4">
+            {/* Left Panel - OptionStrat style controls */}
+            <div className="col-span-12 lg:col-span-4 space-y-4">
             
             {/* Symbol și Price - OptionStrat style */}
             <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
