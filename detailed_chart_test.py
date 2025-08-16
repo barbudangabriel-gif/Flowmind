@@ -10,7 +10,7 @@ import sys
 
 def test_chart_data_details():
     """Test detailed chart data structure"""
-    url = "https://tradedash-11.preview.emergentagent.com/api/unusual-whales/trading-strategies"
+    url = "https://stockai-platform-1.preview.emergentagent.com/api/unusual-whales/trading-strategies"
     
     try:
         response = requests.get(url, timeout=30)
