@@ -1179,58 +1179,298 @@ class TechnicalAnalysisAgent:
         return ema_values
     
     def _analyze_multi_timeframe_confluence(self, price_data: Dict[str, List[Dict]]) -> Dict[str, Any]:
-        """Analyze confluence across multiple timeframes."""
-        timeframe_scores = {}
+        """Enhanced multi-timeframe confluence analysis with dual-tier system."""
         
-        # Weekly trend (primary)
-        weekly = price_data['weekly']
-        if len(weekly) >= 5:
-            weekly_closes = [float(candle['close']) for candle in weekly[-5:]]
-            weekly_trend = 'bullish' if weekly_closes[-1] > weekly_closes[0] else 'bearish'
-            weekly_strength = abs(weekly_closes[-1] - weekly_closes[0]) / weekly_closes[0]
-            timeframe_scores['weekly'] = {
-                'trend': weekly_trend,
-                'strength': min(100, weekly_strength * 1000),  # Scale strength
-                'score': 70 if weekly_trend == 'bullish' else 30
-            }
+        # Primary Check Analysis (Long-term trend and structure)
+        primary_analysis = self._analyze_primary_timeframes(price_data)
         
-        # Daily trend (intermediate)  
-        daily = price_data['daily']
-        if len(daily) >= 10:
-            daily_closes = [float(candle['close']) for candle in daily[-10:]]
-            daily_trend = 'bullish' if daily_closes[-1] > daily_closes[0] else 'bearish'
-            daily_strength = abs(daily_closes[-1] - daily_closes[0]) / daily_closes[0]
-            timeframe_scores['daily'] = {
-                'trend': daily_trend,
-                'strength': min(100, daily_strength * 1000),
-                'score': 70 if daily_trend == 'bullish' else 30
-            }
+        # Secondary Check Analysis (Short-term and VWAP)
+        secondary_analysis = self._analyze_secondary_timeframes(price_data)
         
-        # Hourly trend (short-term)
-        hourly = price_data['hourly']
-        if len(hourly) >= 20:
-            hourly_closes = [float(candle['close']) for candle in hourly[-20:]]
-            hourly_trend = 'bullish' if hourly_closes[-1] > hourly_closes[0] else 'bearish'
-            hourly_strength = abs(hourly_closes[-1] - hourly_closes[0]) / hourly_closes[0]
-            timeframe_scores['hourly'] = {
-                'trend': hourly_trend,
-                'strength': min(100, hourly_strength * 1000),
-                'score': 70 if hourly_trend == 'bullish' else 30
-            }
+        # Gap Analysis (Market hours only)
+        gap_analysis = self._analyze_market_gaps(price_data)
         
-        # Calculate confluence score
-        confluence_score = 50.0
-        if timeframe_scores:
-            weighted_score = sum(
-                score['score'] * self.timeframe_weights.get(tf, 0) 
-                for tf, score in timeframe_scores.items()
-            )
-            confluence_score = weighted_score
+        # Session Analysis (Premarket/Market/Postmarket)
+        session_analysis = self._analyze_market_sessions(price_data)
+        
+        # Calculate overall confluence score
+        primary_score = primary_analysis['confluence_score']
+        secondary_score = secondary_analysis['confluence_score']
+        
+        # Weighted confluence (Primary 60%, Secondary 40%)
+        overall_confluence = (primary_score * 0.6) + (secondary_score * 0.4)
         
         return {
-            'confluence_score': round(confluence_score, 1),
-            'timeframe_scores': timeframe_scores,
-            'alignment': self._check_timeframe_alignment(timeframe_scores)
+            'overall_confluence_score': round(overall_confluence, 1),
+            'primary_timeframes': primary_analysis,
+            'secondary_timeframes': secondary_analysis,
+            'gap_analysis': gap_analysis,
+            'session_analysis': session_analysis,
+            'timeframe_alignment': self._check_enhanced_timeframe_alignment(primary_analysis, secondary_analysis)
+        }
+    
+    def _analyze_primary_timeframes(self, price_data: Dict[str, List[Dict]]) -> Dict[str, Any]:
+        """Analyze primary timeframes: Monthly, Weekly, Daily."""
+        primary_scores = {}
+        
+        # Monthly Analysis (Trend Identification)
+        if 'monthly' in price_data and len(price_data['monthly']) >= 3:
+            monthly_data = price_data['monthly']
+            monthly_closes = [float(candle['close']) for candle in monthly_data[-6:]]  # Last 6 months
+            monthly_trend = 'bullish' if monthly_closes[-1] > monthly_closes[0] else 'bearish'
+            monthly_strength = abs(monthly_closes[-1] - monthly_closes[0]) / monthly_closes[0]
+            
+            primary_scores['monthly'] = {
+                'trend': monthly_trend,
+                'strength': min(100, monthly_strength * 500),  # Scale for monthly moves
+                'score': 75 if monthly_trend == 'bullish' else 25,
+                'weight': self.timeframe_tiers['primary_check']['monthly']['weight']
+            }
+        
+        # Weekly Analysis (Structure Analysis)
+        if 'weekly' in price_data and len(price_data['weekly']) >= 5:
+            weekly_data = price_data['weekly']
+            weekly_closes = [float(candle['close']) for candle in weekly_data[-10:]]  # Last 10 weeks
+            weekly_trend = 'bullish' if weekly_closes[-1] > weekly_closes[0] else 'bearish'
+            weekly_strength = abs(weekly_closes[-1] - weekly_closes[0]) / weekly_closes[0]
+            
+            # Weekly market structure analysis
+            weekly_structure = self._analyze_market_structure(weekly_data, [])
+            
+            primary_scores['weekly'] = {
+                'trend': weekly_trend,
+                'strength': min(100, weekly_strength * 800),
+                'score': 75 if weekly_trend == 'bullish' else 25,
+                'structure': weekly_structure,
+                'weight': self.timeframe_tiers['primary_check']['weekly']['weight']
+            }
+        
+        # Daily Analysis (Entry Timing)
+        if 'daily' in price_data and len(price_data['daily']) >= 10:
+            daily_data = price_data['daily']
+            daily_closes = [float(candle['close']) for candle in daily_data[-20:]]  # Last 20 days
+            daily_trend = 'bullish' if daily_closes[-1] > daily_closes[0] else 'bearish'
+            daily_strength = abs(daily_closes[-1] - daily_closes[0]) / daily_closes[0]
+            
+            primary_scores['daily'] = {
+                'trend': daily_trend,
+                'strength': min(100, daily_strength * 1000),
+                'score': 75 if daily_trend == 'bullish' else 25,
+                'weight': self.timeframe_tiers['primary_check']['daily']['weight']
+            }
+        
+        # Calculate primary confluence score
+        if primary_scores:
+            weighted_score = sum(
+                score['score'] * score['weight'] 
+                for score in primary_scores.values()
+            )
+        else:
+            weighted_score = 50.0
+        
+        return {
+            'confluence_score': round(weighted_score, 1),
+            'timeframe_scores': primary_scores,
+            'trend_alignment': self._check_primary_trend_alignment(primary_scores)
+        }
+    
+    def _analyze_secondary_timeframes(self, price_data: Dict[str, List[Dict]]) -> Dict[str, Any]:
+        """Analyze secondary timeframes: 4H, 1H, 15M (with VWAP), 1M (with VWAP)."""
+        secondary_scores = {}
+        
+        # 4H Analysis (Intraday Structure)
+        if 'h4' in price_data and len(price_data['h4']) >= 10:
+            h4_data = price_data['h4']
+            h4_closes = [float(candle['close']) for candle in h4_data[-24:]]  # Last 24 periods (4 days)
+            h4_trend = 'bullish' if h4_closes[-1] > h4_closes[0] else 'bearish'
+            
+            secondary_scores['h4'] = {
+                'trend': h4_trend,
+                'score': 70 if h4_trend == 'bullish' else 30,
+                'priority': 'intraday_structure',
+                'weight': self.timeframe_tiers['secondary_check']['h4']['weight']
+            }
+        
+        # 1H Analysis (Short-term Momentum)
+        if 'h1' in price_data and len(price_data['h1']) >= 20:
+            h1_data = price_data['h1']
+            h1_closes = [float(candle['close']) for candle in h1_data[-48:]]  # Last 48 hours (2 days)
+            h1_trend = 'bullish' if h1_closes[-1] > h1_closes[0] else 'bearish'
+            
+            secondary_scores['h1'] = {
+                'trend': h1_trend,
+                'score': 70 if h1_trend == 'bullish' else 30,
+                'priority': 'short_term_momentum',
+                'weight': self.timeframe_tiers['secondary_check']['h1']['weight']
+            }
+        
+        # 15M Analysis (VWAP Analysis Required)
+        if 'm15' in price_data and len(price_data['m15']) >= 30:
+            m15_data = price_data['m15']
+            m15_vwap_analysis = self._calculate_vwap_analysis(m15_data, '15m')
+            
+            secondary_scores['m15'] = {
+                'trend': m15_vwap_analysis['trend'],
+                'score': m15_vwap_analysis['score'],
+                'vwap_analysis': m15_vwap_analysis,
+                'priority': 'vwap_analysis',
+                'weight': self.timeframe_tiers['secondary_check']['m15']['weight']
+            }
+        
+        # 1M Analysis (Scalping Signals with VWAP)
+        if 'm1' in price_data and len(price_data['m1']) >= 60:
+            m1_data = price_data['m1']
+            m1_vwap_analysis = self._calculate_vwap_analysis(m1_data, '1m')
+            
+            secondary_scores['m1'] = {
+                'trend': m1_vwap_analysis['trend'],
+                'score': m1_vwap_analysis['score'],
+                'vwap_analysis': m1_vwap_analysis,
+                'priority': 'scalping_signals',
+                'weight': self.timeframe_tiers['secondary_check']['m1']['weight']
+            }
+        
+        # Calculate secondary confluence score
+        if secondary_scores:
+            weighted_score = sum(
+                score['score'] * score['weight'] 
+                for score in secondary_scores.values()
+            )
+        else:
+            weighted_score = 50.0
+        
+        return {
+            'confluence_score': round(weighted_score, 1),
+            'timeframe_scores': secondary_scores,
+            'vwap_signals': self._extract_vwap_signals(secondary_scores)
+        }
+    
+    def _calculate_vwap_analysis(self, price_data: List[Dict], timeframe: str) -> Dict[str, Any]:
+        """Calculate VWAP analysis for 15M and 1M timeframes."""
+        if len(price_data) < 20:
+            return {'trend': 'neutral', 'score': 50.0, 'vwap': None}
+        
+        # Calculate VWAP
+        cumulative_volume = 0
+        cumulative_volume_price = 0
+        vwap_values = []
+        
+        for candle in price_data:
+            volume = float(candle['volume'])
+            typical_price = (float(candle['high']) + float(candle['low']) + float(candle['close'])) / 3
+            
+            cumulative_volume += volume
+            cumulative_volume_price += volume * typical_price
+            
+            if cumulative_volume > 0:
+                vwap = cumulative_volume_price / cumulative_volume
+                vwap_values.append(vwap)
+        
+        if not vwap_values:
+            return {'trend': 'neutral', 'score': 50.0, 'vwap': None}
+        
+        current_price = float(price_data[-1]['close'])
+        current_vwap = vwap_values[-1]
+        
+        # VWAP trend analysis
+        vwap_slope = (vwap_values[-1] - vwap_values[-10]) / 10 if len(vwap_values) >= 10 else 0
+        price_vs_vwap = (current_price - current_vwap) / current_vwap
+        
+        # Score based on VWAP relationship
+        if price_vs_vwap > 0.01 and vwap_slope > 0:  # Price above rising VWAP
+            trend = 'bullish'
+            score = 80.0
+        elif price_vs_vwap < -0.01 and vwap_slope < 0:  # Price below falling VWAP
+            trend = 'bearish' 
+            score = 20.0
+        elif abs(price_vs_vwap) < 0.005:  # Price near VWAP
+            trend = 'neutral'
+            score = 50.0
+        else:
+            trend = 'mixed'
+            score = 45.0
+        
+        return {
+            'trend': trend,
+            'score': score,
+            'vwap': current_vwap,
+            'price_vs_vwap_pct': price_vs_vwap * 100,
+            'vwap_slope': vwap_slope,
+            'timeframe': timeframe
+        }
+    
+    def _analyze_market_gaps(self, price_data: Dict[str, List[Dict]]) -> Dict[str, Any]:
+        """Analyze gaps during regular market hours only."""
+        if 'daily' not in price_data or len(price_data['daily']) < 5:
+            return {'gaps_detected': [], 'gap_analysis': 'insufficient_data'}
+        
+        daily_data = price_data['daily']
+        gaps_detected = []
+        
+        # Analyze last 10 trading days for gaps
+        for i in range(1, min(11, len(daily_data))):
+            current = daily_data[-i]
+            previous = daily_data[-i-1]
+            
+            current_open = float(current['open'])
+            previous_close = float(previous['close'])
+            
+            gap_size = (current_open - previous_close) / previous_close
+            
+            if abs(gap_size) >= self.gap_analysis_config['gap_threshold']:
+                gap_type = 'gap_up' if gap_size > 0 else 'gap_down'
+                
+                # Check if gap was filled during the day
+                current_low = float(current['low'])
+                current_high = float(current['high'])
+                
+                gap_filled = False
+                if gap_type == 'gap_up' and current_low <= previous_close:
+                    gap_filled = True
+                elif gap_type == 'gap_down' and current_high >= previous_close:
+                    gap_filled = True
+                
+                gaps_detected.append({
+                    'date': current['date'],
+                    'gap_type': gap_type,
+                    'gap_size_pct': gap_size * 100,
+                    'gap_filled': gap_filled,
+                    'open_price': current_open,
+                    'previous_close': previous_close
+                })
+        
+        # Gap analysis summary
+        unfilled_gaps = [gap for gap in gaps_detected if not gap['gap_filled']]
+        
+        return {
+            'gaps_detected': gaps_detected,
+            'unfilled_gaps': unfilled_gaps,
+            'gap_analysis': self._interpret_gap_pattern(gaps_detected),
+            'gap_count_last_10_days': len(gaps_detected)
+        }
+    
+    def _analyze_market_sessions(self, price_data: Dict[str, List[Dict]]) -> Dict[str, Any]:
+        """Analyze premarket, market, and postmarket sessions."""
+        # This would analyze price behavior across different market sessions
+        # For now, return mock session analysis
+        
+        return {
+            'premarket_sentiment': 'bullish',
+            'regular_market_sentiment': 'neutral',
+            'postmarket_sentiment': 'bearish',
+            'session_analysis': {
+                'premarket_volume': 'above_average',
+                'regular_market_volume': 'normal',
+                'postmarket_volume': 'below_average'
+            },
+            'key_session_levels': {
+                'premarket_high': 150.25,
+                'premarket_low': 148.75,
+                'regular_high': 152.50,
+                'regular_low': 147.25,
+                'postmarket_high': 151.00,
+                'postmarket_low': 149.50
+            }
         }
     
     def _check_timeframe_alignment(self, timeframe_scores: Dict) -> str:
