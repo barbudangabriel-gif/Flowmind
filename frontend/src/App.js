@@ -172,7 +172,7 @@ const LoadingFallback = ({ componentName }) => (
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(new Set(['TradeStation 🏛️'])); // TradeStation expanded by default
+  const [expandedSections, setExpandedSections] = useState(new Set(['TradeStation 🏛️', 'Unusual Whales 🐋'])); // TradeStation and Unusual Whales expanded by default
   const { isDarkMode, toggleDarkMode } = useTheme();
 
   // Check if mobile on mount and resize
