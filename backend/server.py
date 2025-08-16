@@ -2433,29 +2433,27 @@ class OptionsCalculationResponse(BaseModel):
 async def calculate_options_strategy(request: OptionsStrategyRequest):
     """Calculate options strategy with P&L analysis și Greeks"""
     try:
-        # Validate strategy name
-        if request.strategy_name.lower() not in ["long call", "long put"]:
-            raise HTTPException(status_code=400, detail=f"Strategy '{request.strategy_name}' not yet implemented")
+        # Create strategy using the new create_strategy_by_name method
+        parameters = {
+            'strike': request.strike,
+            'long_strike': getattr(request, 'long_strike', request.strike - 5),
+            'short_strike': getattr(request, 'short_strike', request.strike + 5),
+            'call_strike': getattr(request, 'call_strike', request.strike + 5),
+            'put_short_strike': getattr(request, 'put_short_strike', request.strike - 10),
+            'put_long_strike': getattr(request, 'put_long_strike', request.strike - 20),
+            'call_short_strike': getattr(request, 'call_short_strike', request.strike + 10),
+            'call_long_strike': getattr(request, 'call_long_strike', request.strike + 20)
+        }
         
-        # Create strategy configuration
-        if request.strategy_name.lower() == "long call":
-            strategy = options_engine.create_long_call_strategy(
-                symbol=request.symbol.upper(),
-                stock_price=request.stock_price,
-                strike=request.strike,
-                days_to_expiry=request.days_to_expiry,
-                volatility=request.volatility,
-                risk_free_rate=request.risk_free_rate
-            )
-        else:  # long put
-            strategy = options_engine.create_long_put_strategy(
-                symbol=request.symbol.upper(),
-                stock_price=request.stock_price,
-                strike=request.strike,
-                days_to_expiry=request.days_to_expiry,
-                volatility=request.volatility,
-                risk_free_rate=request.risk_free_rate
-            )
+        strategy = options_engine.create_strategy_by_name(
+            strategy_name=request.strategy_name,
+            symbol=request.symbol.upper(),
+            stock_price=request.stock_price,
+            parameters=parameters,
+            days_to_expiry=request.days_to_expiry,
+            volatility=request.volatility,
+            risk_free_rate=request.risk_free_rate
+        )
         
         # Analyze strategy
         analysis = options_engine.analyze_strategy(strategy)
