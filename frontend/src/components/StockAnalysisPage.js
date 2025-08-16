@@ -36,8 +36,6 @@ const StockAnalysisPage = () => {
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
-  const [optionsStrategies, setOptionsStrategies] = useState(null);
-  const [optionsLoading, setOptionsLoading] = useState(false);
   
   // Load options strategies for the ticker
   const loadOptionsStrategies = useCallback(async () => {
