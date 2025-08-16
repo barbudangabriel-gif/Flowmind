@@ -130,8 +130,7 @@ class InvestmentScoringAgent:
             
             logger.info(f"Fetched UW data for {symbol}: Options={len(filtered_data['options_flow'])}, "
                        f"DarkPool={len(filtered_data['dark_pool'])}, "
-                       f"Congressional={len(filtered_data['congressional'])}, "
-                       f"Strategies={len(filtered_data['strategies'])}")
+                       f"Congressional={len(filtered_data['congressional'])}")
             
             return filtered_data
             
