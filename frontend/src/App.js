@@ -7159,23 +7159,33 @@ function AppContent() {
   };
 
   return (
-    <BrowserRouter>
-      <div className={`min-h-screen flex transition-all duration-300 ${
-        isDarkMode 
-          ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' 
-          : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
-      }`}>
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        <main className={`flex-1 transition-all duration-300 ${
-          // Dynamic margin based on screen size and sidebar state
-          'ml-16 md:ml-64'
-        } p-4 md:p-8`}>
-          <div className="max-w-7xl mx-auto">
-            {renderContent()}
-          </div>
-        </main>
-      </div>
-    </BrowserRouter>
+    <div className={`min-h-screen flex transition-all duration-300 ${
+      isDarkMode 
+        ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800' 
+        : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50'
+    }`}>
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <main className={`flex-1 transition-all duration-300 ${
+        'ml-16 md:ml-64'
+      } p-4 md:p-8`}>
+        <div className="max-w-7xl mx-auto">
+          <Routes>
+            {/* Stock Analysis Route */}
+            <Route 
+              path="/stock-analysis/:symbol" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Stock Analysis" />}>
+                  <StockAnalysisPage />
+                </Suspense>
+              } 
+            />
+            
+            {/* Default Route - renders based on activeTab */}
+            <Route path="/*" element={renderContent()} />
+          </Routes>
+        </div>
+      </main>
+    </div>
   );
 }
 
