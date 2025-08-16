@@ -219,6 +219,269 @@ class OptionsStrategyEngine:
             days_to_expiry=days_to_expiry
         )
     
+    def create_bull_call_spread_strategy(
+        self,
+        symbol: str,
+        stock_price: float,
+        long_strike: float,
+        short_strike: float,
+        days_to_expiry: int = 30,
+        volatility: float = 0.25,
+        risk_free_rate: float = 0.05
+    ) -> StrategyConfig:
+        """Create Bull Call Spread strategy configuration"""
+        
+        time_to_expiry = days_to_expiry / 365.0
+        
+        # Long call premium
+        long_premium = self.calculator.calculate_option_price(
+            stock_price, long_strike, time_to_expiry, risk_free_rate, volatility, OptionType.CALL
+        )
+        
+        # Short call premium  
+        short_premium = self.calculator.calculate_option_price(
+            stock_price, short_strike, time_to_expiry, risk_free_rate, volatility, OptionType.CALL
+        )
+        
+        legs = [
+            OptionLeg(
+                option_type=OptionType.CALL,
+                action=ActionType.BUY,
+                strike=long_strike,
+                quantity=1,
+                premium=long_premium
+            ),
+            OptionLeg(
+                option_type=OptionType.CALL,
+                action=ActionType.SELL,
+                strike=short_strike,
+                quantity=1,
+                premium=short_premium
+            )
+        ]
+        
+        return StrategyConfig(
+            name="Bull Call Spread",
+            description=f"Bullish strategy - Buy {symbol} ${long_strike}C, Sell ${short_strike}C expiring în {days_to_expiry} days",
+            legs=legs,
+            stock_price=stock_price,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            days_to_expiry=days_to_expiry
+        )
+    
+    def create_bear_put_spread_strategy(
+        self,
+        symbol: str,
+        stock_price: float,
+        long_strike: float,
+        short_strike: float,
+        days_to_expiry: int = 30,
+        volatility: float = 0.25,
+        risk_free_rate: float = 0.05
+    ) -> StrategyConfig:
+        """Create Bear Put Spread strategy configuration"""
+        
+        time_to_expiry = days_to_expiry / 365.0
+        
+        # Long put premium (higher strike)
+        long_premium = self.calculator.calculate_option_price(
+            stock_price, long_strike, time_to_expiry, risk_free_rate, volatility, OptionType.PUT
+        )
+        
+        # Short put premium (lower strike)
+        short_premium = self.calculator.calculate_option_price(
+            stock_price, short_strike, time_to_expiry, risk_free_rate, volatility, OptionType.PUT
+        )
+        
+        legs = [
+            OptionLeg(
+                option_type=OptionType.PUT,
+                action=ActionType.BUY,
+                strike=long_strike,
+                quantity=1,
+                premium=long_premium
+            ),
+            OptionLeg(
+                option_type=OptionType.PUT,
+                action=ActionType.SELL,
+                strike=short_strike,
+                quantity=1,
+                premium=short_premium
+            )
+        ]
+        
+        return StrategyConfig(
+            name="Bear Put Spread",
+            description=f"Bearish strategy - Buy {symbol} ${long_strike}P, Sell ${short_strike}P expiring în {days_to_expiry} days",
+            legs=legs,
+            stock_price=stock_price,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            days_to_expiry=days_to_expiry
+        )
+    
+    def create_iron_condor_strategy(
+        self,
+        symbol: str,
+        stock_price: float,
+        put_short_strike: float,
+        put_long_strike: float,
+        call_short_strike: float,
+        call_long_strike: float,
+        days_to_expiry: int = 30,
+        volatility: float = 0.25,
+        risk_free_rate: float = 0.05
+    ) -> StrategyConfig:
+        """Create Iron Condor strategy configuration"""
+        
+        time_to_expiry = days_to_expiry / 365.0
+        
+        # Calculate premiums for all four legs
+        put_long_premium = self.calculator.calculate_option_price(
+            stock_price, put_long_strike, time_to_expiry, risk_free_rate, volatility, OptionType.PUT
+        )
+        put_short_premium = self.calculator.calculate_option_price(
+            stock_price, put_short_strike, time_to_expiry, risk_free_rate, volatility, OptionType.PUT
+        )
+        call_short_premium = self.calculator.calculate_option_price(
+            stock_price, call_short_strike, time_to_expiry, risk_free_rate, volatility, OptionType.CALL
+        )
+        call_long_premium = self.calculator.calculate_option_price(
+            stock_price, call_long_strike, time_to_expiry, risk_free_rate, volatility, OptionType.CALL
+        )
+        
+        legs = [
+            # Put spread (bear put spread - sell lower, buy higher)
+            OptionLeg(
+                option_type=OptionType.PUT,
+                action=ActionType.BUY,
+                strike=put_long_strike,
+                quantity=1,
+                premium=put_long_premium
+            ),
+            OptionLeg(
+                option_type=OptionType.PUT,
+                action=ActionType.SELL,
+                strike=put_short_strike,
+                quantity=1,
+                premium=put_short_premium
+            ),
+            # Call spread (bear call spread - sell lower, buy higher)
+            OptionLeg(
+                option_type=OptionType.CALL,
+                action=ActionType.SELL,
+                strike=call_short_strike,
+                quantity=1,
+                premium=call_short_premium
+            ),
+            OptionLeg(
+                option_type=OptionType.CALL,
+                action=ActionType.BUY,
+                strike=call_long_strike,
+                quantity=1,
+                premium=call_long_premium
+            )
+        ]
+        
+        return StrategyConfig(
+            name="Iron Condor",
+            description=f"Neutral strategy - {symbol} ${put_long_strike}P/{put_short_strike}P/{call_short_strike}C/{call_long_strike}C",
+            legs=legs,
+            stock_price=stock_price,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            days_to_expiry=days_to_expiry
+        )
+    
+    def create_long_straddle_strategy(
+        self,
+        symbol: str,
+        stock_price: float,
+        strike: float,
+        days_to_expiry: int = 30,
+        volatility: float = 0.25,
+        risk_free_rate: float = 0.05
+    ) -> StrategyConfig:
+        """Create Long Straddle strategy configuration"""
+        
+        time_to_expiry = days_to_expiry / 365.0
+        
+        # Calculate premiums for both call and put at same strike
+        call_premium = self.calculator.calculate_option_price(
+            stock_price, strike, time_to_expiry, risk_free_rate, volatility, OptionType.CALL
+        )
+        put_premium = self.calculator.calculate_option_price(
+            stock_price, strike, time_to_expiry, risk_free_rate, volatility, OptionType.PUT
+        )
+        
+        legs = [
+            OptionLeg(
+                option_type=OptionType.CALL,
+                action=ActionType.BUY,
+                strike=strike,
+                quantity=1,
+                premium=call_premium
+            ),
+            OptionLeg(
+                option_type=OptionType.PUT,
+                action=ActionType.BUY,
+                strike=strike,
+                quantity=1,
+                premium=put_premium
+            )
+        ]
+        
+        return StrategyConfig(
+            name="Long Straddle",
+            description=f"Volatility strategy - Buy {symbol} ${strike}C and ${strike}P expiring în {days_to_expiry} days",
+            legs=legs,
+            stock_price=stock_price,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            days_to_expiry=days_to_expiry
+        )
+    
+    def create_covered_call_strategy(
+        self,
+        symbol: str,
+        stock_price: float,
+        call_strike: float,
+        days_to_expiry: int = 30,
+        volatility: float = 0.25,
+        risk_free_rate: float = 0.05
+    ) -> StrategyConfig:
+        """Create Covered Call strategy configuration"""
+        
+        time_to_expiry = days_to_expiry / 365.0
+        
+        # Calculate call premium
+        call_premium = self.calculator.calculate_option_price(
+            stock_price, call_strike, time_to_expiry, risk_free_rate, volatility, OptionType.CALL
+        )
+        
+        # Note: This assumes the user already owns 100 shares
+        # The "stock leg" is not included in the legs array as it's assumed to be owned
+        legs = [
+            OptionLeg(
+                option_type=OptionType.CALL,
+                action=ActionType.SELL,
+                strike=call_strike,
+                quantity=1,
+                premium=call_premium
+            )
+        ]
+        
+        return StrategyConfig(
+            name="Covered Call",
+            description=f"Income strategy - Own 100 shares {symbol}, Sell ${call_strike}C expiring în {days_to_expiry} days",
+            legs=legs,
+            stock_price=stock_price,
+            risk_free_rate=risk_free_rate,
+            volatility=volatility,
+            days_to_expiry=days_to_expiry
+        )
+    
     def analyze_strategy(self, strategy: StrategyConfig) -> StrategyAnalysis:
         """Analyze complete strategy - P&L, Greeks, breakevens"""
         
