@@ -11,12 +11,26 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedInterval, setSelectedInterval] = useState(interval);
+  const [selectedIndicators, setSelectedIndicators] = useState(['volume']); // Default volume
+  const [chartInstance, setChartInstance] = useState(null);
 
   const intervals = [
     { label: '1D', value: '1D' },
+    { label: '4H', value: '4H' },
     { label: '1H', value: '1H' },
     { label: '15m', value: '15m' },
     { label: '5m', value: '5m' }
+  ];
+
+  const availableIndicators = [
+    { id: 'volume', label: 'Volume', type: 'histogram' },
+    { id: 'sma20', label: 'SMA 20', type: 'line' },
+    { id: 'sma50', label: 'SMA 50', type: 'line' },
+    { id: 'ema12', label: 'EMA 12', type: 'line' },
+    { id: 'ema26', label: 'EMA 26', type: 'line' },
+    { id: 'bollinger', label: 'Bollinger Bands', type: 'bands' },
+    { id: 'rsi', label: 'RSI (14)', type: 'oscillator' },
+    { id: 'macd', label: 'MACD', type: 'oscillator' }
   ];
 
   // Load and render chart
