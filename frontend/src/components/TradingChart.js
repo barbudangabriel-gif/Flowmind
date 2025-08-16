@@ -364,6 +364,11 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
     });
   };
 
+  const handleIntervalChange = (newInterval) => {
+    console.log(`Changing interval to ${newInterval}`);
+    setSelectedInterval(newInterval);
+  };
+
   if (error) {
     return (
       <div className="bg-gray-800 rounded-lg p-6 text-center">
