@@ -567,6 +567,12 @@ class TechnicalAnalysisAgent:
                 'volume': volume
             })
         
+        return {
+            'weekly': weekly_data,
+            'daily': daily_data,
+            'hourly': hourly_data
+        }
+        
     def _calculate_rsi_score(self, price_data: List[Dict]) -> float:
         """Calculate RSI-based score with advanced oversold/overbought analysis."""
         closes = [float(candle['close']) for candle in price_data[-14:]]  # 14-period RSI
