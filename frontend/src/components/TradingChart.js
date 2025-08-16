@@ -387,27 +387,47 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
   return (
     <div className="bg-gray-900 rounded-lg p-4">
       {/* Chart Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center space-x-2">
-          <h3 className="text-lg font-semibold text-white">{symbol} Chart</h3>
-          {loading && (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-          )}
+      <div className="flex flex-col space-y-4 mb-4">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <h3 className="text-lg font-semibold text-white">{symbol} Chart</h3>
+            {loading && (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+            )}
+          </div>
+          
+          {/* Interval Selector */}
+          <div className="flex space-x-1">
+            {intervals.map((int) => (
+              <button
+                key={int.value}
+                onClick={() => handleIntervalChange(int.value)}
+                className={`px-3 py-1 text-xs rounded transition-colors ${
+                  selectedInterval === int.value
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {int.label}
+              </button>
+            ))}
+          </div>
         </div>
-        
-        {/* Interval Selector */}
-        <div className="flex space-x-1">
-          {intervals.map((int) => (
+
+        {/* Indicators Selector */}
+        <div className="flex flex-wrap gap-2">
+          <span className="text-sm text-gray-400 mr-2">Indicators:</span>
+          {availableIndicators.map((indicator) => (
             <button
-              key={int.value}
-              onClick={() => handleIntervalChange(int.value)}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
-                selectedInterval === int.value
-                  ? 'bg-blue-600 text-white'
+              key={indicator.id}
+              onClick={() => toggleIndicator(indicator.id)}
+              className={`px-2 py-1 text-xs rounded transition-colors ${
+                selectedIndicators.includes(indicator.id)
+                  ? 'bg-green-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
             >
-              {int.label}
+              {indicator.label}
             </button>
           ))}
         </div>
@@ -416,13 +436,13 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
       {/* Chart Container */}
       <div 
         ref={chartContainerRef}
-        className="w-full bg-gray-800 rounded"
+        className="w-full bg-black rounded" // Black background for chart
         style={{ height: `${height}px` }}
       />
       
       {/* Chart Info */}
       <div className="mt-2 text-xs text-gray-400 text-center">
-        {loading ? 'Loading chart data...' : `${symbol.toUpperCase()} • ${selectedInterval} • Candlestick + Volume`}
+        {loading ? 'Loading chart data...' : `${symbol?.toUpperCase()} • ${selectedInterval} • ${selectedIndicators.length} indicators`}
       </div>
     </div>
   );
