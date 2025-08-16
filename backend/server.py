@@ -202,8 +202,50 @@ class TopInvestments(BaseModel):
 
 # Utility functions for data fetching
 async def get_stock_quote(symbol: str) -> Dict[str, Any]:
-    """Get current stock quote - fallback for basic compatibility"""
+    """Get current stock quote with TradeStation priority when authenticated"""
+    
+    # First, try TradeStation if authenticated
     try:
+        if ts_auth.is_authenticated():
+            logger.info(f"Using TradeStation API for {symbol} pricing (authenticated user preference)")
+            
+            async with ts_client:
+                quotes = await ts_client.get_quote([symbol])
+                
+                if quotes and len(quotes) > 0:
+                    ts_quote = quotes[0]
+                    
+                    # Get additional data from enhanced ticker manager for completeness
+                    try:
+                        enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
+                    except:
+                        # If enhanced data fails, use basic data structure
+                        enhanced_data = {
+                            "market_cap": None,
+                            "pe_ratio": None
+                        }
+                    
+                    # Return TradeStation data with enhanced supplementary info
+                    return {
+                        "symbol": ts_quote.symbol,
+                        "price": ts_quote.last,
+                        "change": ts_quote.change,
+                        "change_percent": ts_quote.change_percent,
+                        "volume": ts_quote.volume,
+                        "market_cap": enhanced_data.get("market_cap"),
+                        "pe_ratio": enhanced_data.get("pe_ratio"),
+                        "timestamp": datetime.utcnow(),
+                        "data_source": "TradeStation API (Primary)"
+                    }
+                else:
+                    logger.warning(f"No TradeStation quote data for {symbol}, falling back to Yahoo Finance")
+        
+    except Exception as e:
+        logger.warning(f"TradeStation quote failed for {symbol}: {str(e)}, falling back to Yahoo Finance")
+    
+    # Fallback to Yahoo Finance via enhanced ticker manager
+    try:
+        logger.info(f"Using Yahoo Finance for {symbol} pricing (fallback)")
         enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
         
         # Convert enhanced data to basic format for compatibility
@@ -215,7 +257,8 @@ async def get_stock_quote(symbol: str) -> Dict[str, Any]:
             "volume": enhanced_data["volume"],
             "market_cap": enhanced_data["market_cap"],
             "pe_ratio": enhanced_data["pe_ratio"],
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
+            "data_source": "Yahoo Finance (Fallback)"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching data for {symbol}: {str(e)}")
