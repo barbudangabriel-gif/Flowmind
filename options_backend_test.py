@@ -73,7 +73,7 @@ class OptionsCalculatorTester:
                     "volatility": 0.25,
                     "risk_free_rate": 0.05
                 },
-                "expected_premium_range": (8, 15),  # Expected range for ATM call
+                "expected_premium_range": (4, 6),  # Expected range for ATM call
                 "critical": True
             },
             {
