@@ -91,7 +91,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "UNH (Healthcare) at $304.01 presents a solid investment opportunity with strong fundamentals.",
           risk_level: "LOW",
           key_strengths: ["Attractive Valuation", "Financial Stability", "High Profitability"],
-          key_risks: []
+          key_risks: [],
+          current_price: 525.42
         },
         {
           symbol: "HD",
@@ -100,7 +101,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "HD (Consumer Cyclical) at $399.38 presents a solid investment opportunity.",
           risk_level: "LOW",
           key_strengths: ["Financial Stability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"]
+          key_risks: ["Near Resistance Level"],
+          current_price: 399.38
         },
         {
           symbol: "META",
@@ -109,7 +111,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "META (Communication Services) at $785.23 presents a solid investment opportunity.",
           risk_level: "LOW", 
           key_strengths: ["Financial Stability", "Strong Technical Trend", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"]
+          key_risks: ["Near Resistance Level"],
+          current_price: 557.13
         },
         {
           symbol: "AAPL",
@@ -118,7 +121,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "AAPL (Technology) at $231.59 presents a solid investment opportunity.",
           risk_level: "LOW",
           key_strengths: ["Financial Stability", "High Profitability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"]
+          key_risks: ["Near Resistance Level"],
+          current_price: 231.59
         },
         {
           symbol: "GOOGL", 
@@ -127,7 +131,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "GOOGL (Communication Services) at $203.90 presents a solid investment opportunity.",
           risk_level: "LOW",
           key_strengths: ["Attractive Valuation", "Financial Stability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"]
+          key_risks: ["Near Resistance Level"],
+          current_price: 163.25
         },
         {
           symbol: "JNJ",
@@ -136,7 +141,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "JNJ (Healthcare) at $176.64 presents a solid investment opportunity.",
           risk_level: "LOW", 
           key_strengths: ["Attractive Valuation", "Financial Stability", "High Profitability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"]
+          key_risks: ["Near Resistance Level"],
+          current_price: 157.88
         },
         {
           symbol: "MSFT",
@@ -145,7 +151,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "MSFT (Technology) at $520.17 presents a solid investment opportunity.",
           risk_level: "LOW",
           key_strengths: ["Financial Stability", "High Profitability", "Bullish Trend"], 
-          key_risks: ["Near Resistance Level"]
+          key_risks: ["Near Resistance Level"],
+          current_price: 420.55
         },
         {
           symbol: "AMZN",
@@ -154,7 +161,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "AMZN (Consumer Cyclical) at $231.03 presents a solid investment opportunity.",
           risk_level: "LOW",
           key_strengths: ["Financial Stability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"]
+          key_risks: ["Near Resistance Level"],
+          current_price: 186.44
         },
         {
           symbol: "TSLA",
@@ -163,7 +171,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "TSLA (Consumer Cyclical) at $330.56 offers moderate investment appeal.",
           risk_level: "MODERATE",
           key_strengths: ["Financial Stability", "Bullish Trend"],
-          key_risks: ["Valuation Concerns"]
+          key_risks: ["Valuation Concerns"],
+          current_price: 239.85
         },
         {
           symbol: "NVDA",
@@ -172,7 +181,8 @@ const InvestmentScoring = React.memo(() => {
           explanation: "NVDA (Technology) at $142.50 offers moderate investment appeal.",
           risk_level: "MODERATE", 
           key_strengths: ["Growth Potential", "Market Leadership"],
-          key_risks: ["High Volatility", "Valuation Concerns"]
+          key_risks: ["High Volatility", "Valuation Concerns"],
+          current_price: 118.76
         }
       ];
       
