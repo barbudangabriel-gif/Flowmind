@@ -236,6 +236,44 @@ const OptionsModule = () => {
     }
   };
 
+  // Optimizer function - OptionStrat style
+  const runOptimizer = async () => {
+    setOptimizing(true);
+    setError(null);
+    
+    try {
+      // Simulate API call pentru optimization
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Filter și rank strategies based on sentiment și parameters
+      let filteredStrategies = [...mockOptimizedStrategies];
+      
+      // Apply sentiment filter
+      if (optimizerSentiment === 'Very Bullish' || optimizerSentiment === 'Bullish') {
+        filteredStrategies = filteredStrategies.filter(s => 
+          s.name.includes('Call') || s.name.includes('Bull')
+        );
+      } else if (optimizerSentiment === 'Very Bearish' || optimizerSentiment === 'Bearish') {
+        filteredStrategies = filteredStrategies.filter(s => 
+          s.name.includes('Put') || s.name.includes('Bear')
+        );
+      }
+      
+      // Sort by ranking mode
+      if (rankingMode === 'Max Return') {
+        filteredStrategies.sort((a, b) => 
+          parseFloat(b.returnOnRisk) - parseFloat(a.returnOnRisk)
+        );
+      }
+      
+      setOptimizedStrategies(filteredStrategies);
+    } catch (error) {
+      setError('Optimization failed: ' + error.message);
+    } finally {
+      setOptimizing(false);
+    }
+  };
+
   // Tab switching - cu optimizer support
   const [activeTab, setActiveTab] = useState('builder');
 
