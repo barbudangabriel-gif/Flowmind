@@ -662,10 +662,205 @@ class TechnicalAnalysisAgent:
                 'volume': volume
             })
         
+    def _get_enhanced_mock_price_data(self, symbol: str) -> Dict[str, List[Dict]]:
+        """Generate enhanced mock OHLCV data for all required timeframes."""
+        # Mock data for different market conditions
+        base_price = {
+            'AAPL': 231.59,
+            'MSFT': 520.17,
+            'NVDA': 142.50,
+            'TSLA': 330.56,
+            'META': 785.23,
+            'GOOGL': 203.90
+        }.get(symbol, 100.0)
+        
+        # Generate Monthly data (last 12 months)
+        monthly_data = []
+        for i in range(12):
+            # Simulate monthly price movement
+            volatility = 0.08  # 8% monthly volatility
+            change = (hash(f"{symbol}_M_{i}") % 200 - 100) / 100 * volatility
+            
+            if i == 0:
+                open_price = base_price * 0.85  # Start lower for trend
+            else:
+                open_price = monthly_data[-1]['close']
+            
+            high = open_price * (1 + abs(change) + 0.05)
+            low = open_price * (1 - abs(change) - 0.02)
+            close = open_price * (1 + change)
+            volume = 5000000 + (hash(f"{symbol}_M_vol_{i}") % 2000000)
+            
+            monthly_data.append({
+                'date': (datetime.now() - timedelta(days=(11-i)*30)).strftime('%Y-%m-%d'),
+                'open': round(open_price, 2),
+                'high': round(high, 2),
+                'low': round(low, 2),
+                'close': round(close, 2),
+                'volume': volume
+            })
+        
+        # Generate Weekly data (last 20 weeks)
+        weekly_data = []
+        for i in range(20):
+            volatility = 0.04  # 4% weekly volatility
+            change = (hash(f"{symbol}_W_{i}") % 200 - 100) / 100 * volatility
+            
+            if i == 0:
+                open_price = base_price * 0.92
+            else:
+                open_price = weekly_data[-1]['close']
+            
+            high = open_price * (1 + abs(change) + 0.03)
+            low = open_price * (1 - abs(change) - 0.015)
+            close = open_price * (1 + change)
+            volume = 25000000 + (hash(f"{symbol}_W_vol_{i}") % 10000000)
+            
+            weekly_data.append({
+                'date': (datetime.now() - timedelta(days=(19-i)*7)).strftime('%Y-%m-%d'),
+                'open': round(open_price, 2),
+                'high': round(high, 2),
+                'low': round(low, 2),
+                'close': round(close, 2),
+                'volume': volume
+            })
+        
+        # Generate Daily data (last 50 days)
+        daily_data = []
+        for i in range(50):
+            volatility = 0.02  # 2% daily volatility
+            change = (hash(f"{symbol}_D_{i}") % 200 - 100) / 100 * volatility
+            
+            if i == 0:
+                open_price = base_price * 0.96
+            else:
+                open_price = daily_data[-1]['close']
+            
+            high = open_price * (1 + abs(change) + 0.01)
+            low = open_price * (1 - abs(change) - 0.005)
+            close = open_price * (1 + change)
+            volume = 1000000 + (hash(f"{symbol}_D_vol_{i}") % 500000)
+            
+            daily_data.append({
+                'date': (datetime.now() - timedelta(days=49-i)).strftime('%Y-%m-%d'),
+                'open': round(open_price, 2),
+                'high': round(high, 2),
+                'low': round(low, 2),
+                'close': round(close, 2),
+                'volume': volume
+            })
+        
+        # Generate 4H data (last 100 periods = ~17 days)
+        h4_data = []
+        for i in range(100):
+            volatility = 0.008  # 0.8% per 4H
+            change = (hash(f"{symbol}_4H_{i}") % 100 - 50) / 100 * volatility
+            
+            if i == 0:
+                open_price = base_price * 0.98
+            else:
+                open_price = h4_data[-1]['close']
+            
+            high = open_price * (1 + abs(change) + 0.003)
+            low = open_price * (1 - abs(change) - 0.002)
+            close = open_price * (1 + change)
+            volume = 200000 + (hash(f"{symbol}_4H_vol_{i}") % 100000)
+            
+            h4_data.append({
+                'date': (datetime.now() - timedelta(hours=(99-i)*4)).strftime('%Y-%m-%d %H:00'),
+                'open': round(open_price, 2),
+                'high': round(high, 2),
+                'low': round(low, 2),
+                'close': round(close, 2),
+                'volume': volume
+            })
+        
+        # Generate 1H data (last 200 periods = ~8 days)
+        h1_data = []
+        for i in range(200):
+            volatility = 0.003  # 0.3% per hour
+            change = (hash(f"{symbol}_1H_{i}") % 100 - 50) / 100 * volatility
+            
+            if i == 0:
+                open_price = base_price * 0.995
+            else:
+                open_price = h1_data[-1]['close']
+            
+            high = open_price * (1 + abs(change) + 0.001)
+            low = open_price * (1 - abs(change) - 0.0005)
+            close = open_price * (1 + change)
+            volume = 50000 + (hash(f"{symbol}_1H_vol_{i}") % 25000)
+            
+            h1_data.append({
+                'date': (datetime.now() - timedelta(hours=199-i)).strftime('%Y-%m-%d %H:00'),
+                'open': round(open_price, 2),
+                'high': round(high, 2),
+                'low': round(low, 2),
+                'close': round(close, 2),
+                'volume': volume
+            })
+        
+        # Generate 15M data (last 400 periods = ~4 days) - VWAP Required
+        m15_data = []
+        for i in range(400):
+            volatility = 0.001  # 0.1% per 15min
+            change = (hash(f"{symbol}_15M_{i}") % 100 - 50) / 100 * volatility
+            
+            if i == 0:
+                open_price = base_price * 0.999
+            else:
+                open_price = m15_data[-1]['close']
+            
+            high = open_price * (1 + abs(change) + 0.0005)
+            low = open_price * (1 - abs(change) - 0.0003)
+            close = open_price * (1 + change)
+            volume = 10000 + (hash(f"{symbol}_15M_vol_{i}") % 5000)
+            
+            m15_data.append({
+                'date': (datetime.now() - timedelta(minutes=(399-i)*15)).strftime('%Y-%m-%d %H:%M'),
+                'open': round(open_price, 2),
+                'high': round(high, 2),
+                'low': round(low, 2),
+                'close': round(close, 2),
+                'volume': volume
+            })
+        
+        # Generate 1M data (last 500 periods = ~8 hours) - VWAP Required
+        m1_data = []
+        for i in range(500):
+            volatility = 0.0005  # 0.05% per minute
+            change = (hash(f"{symbol}_1M_{i}") % 100 - 50) / 100 * volatility
+            
+            if i == 0:
+                open_price = base_price
+            else:
+                open_price = m1_data[-1]['close']
+            
+            high = open_price * (1 + abs(change) + 0.0002)
+            low = open_price * (1 - abs(change) - 0.0001)
+            close = open_price * (1 + change)
+            volume = 2000 + (hash(f"{symbol}_1M_vol_{i}") % 1000)
+            
+            m1_data.append({
+                'date': (datetime.now() - timedelta(minutes=499-i)).strftime('%Y-%m-%d %H:%M'),
+                'open': round(open_price, 2),
+                'high': round(high, 2),
+                'low': round(low, 2),
+                'close': round(close, 2),
+                'volume': volume
+            })
+        
         return {
+            # Primary Check Timeframes
+            'monthly': monthly_data,
             'weekly': weekly_data,
             'daily': daily_data,
-            'hourly': hourly_data
+            
+            # Secondary Check Timeframes
+            'h4': h4_data,
+            'h1': h1_data,
+            'm15': m15_data,  # VWAP Required
+            'm1': m1_data     # VWAP Required
         }
         
     def _calculate_rsi_score(self, price_data: List[Dict]) -> float:
