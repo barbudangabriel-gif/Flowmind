@@ -618,48 +618,32 @@ const StockAnalysisPage = () => {
                 📉 Interactive Charts
               </h3>
               
-              {/* Chart Controls */}
-              <div className="flex flex-wrap gap-4 mb-6">
-                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option>1D</option>
-                  <option>1W</option>
-                  <option>1M</option>
-                  <option>3M</option>
-                  <option>1Y</option>
-                </select>
-                <select className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option>Candlestick</option>
-                  <option>Line</option>
-                  <option>Area</option>
-                </select>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                  Add Indicators
-                </button>
-              </div>
-
-              {/* Main Chart Placeholder */}
-              <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center mb-6">
-                <div className="text-center text-gray-500">
-                  <LineChart size={64} className="mx-auto mb-4" />
-                  <h4 className="text-lg font-semibold mb-2">Advanced Chart Component</h4>
-                  <p>TradingView Chart, Chart.js, or Recharts integration</p>
-                  <p className="text-sm mt-2">Features: Candlesticks, Volume, Technical Indicators, Drawing Tools</p>
+              {/* TradingView Chart Component */}
+              <TradingChart 
+                symbol={symbol} 
+                interval="1D"
+                height={500}
+              />
+            </div>
+            
+            {/* Chart Controls & Info */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">Chart Features</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <BarChart3 className="text-blue-600 mb-2" size={24} />
+                  <h5 className="font-semibold text-gray-900">Candlestick Analysis</h5>
+                  <p className="text-sm text-gray-600">OHLC data with volume analysis</p>
                 </div>
-              </div>
-
-              {/* Secondary Charts */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-center text-gray-500">
-                    <BarChart3 size={32} className="mx-auto mb-2" />
-                    <p>Volume Chart</p>
-                  </div>
+                <div className="bg-green-50 rounded-lg p-4">
+                  <Activity className="text-green-600 mb-2" size={24} />
+                  <h5 className="font-semibold text-gray-900">Multiple Timeframes</h5>
+                  <p className="text-sm text-gray-600">1m, 5m, 15m, 1H, 1D intervals</p>
                 </div>
-                <div className="h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <div className="text-center text-gray-500">
-                    <Activity size={32} className="mx-auto mb-2" />
-                    <p>RSI Indicator</p>
-                  </div>
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <Target className="text-purple-600 mb-2" size={24} />
+                  <h5 className="font-semibold text-gray-900">TradeStation Data</h5>
+                  <p className="text-sm text-gray-600">Real-time market data integration</p>
                 </div>
               </div>
             </div>
