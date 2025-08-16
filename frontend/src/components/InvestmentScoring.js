@@ -45,12 +45,9 @@ const InvestmentScoring = React.memo(() => {
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   
-  // Top Picks expansion and modal states
+  // Top Picks expansion states
   const [displayLimit, setDisplayLimit] = useState(10); // Start with 10
   const [maxScrollLimit, setMaxScrollLimit] = useState(50); // Can scroll to 50
-  const [selectedTickerModal, setSelectedTickerModal] = useState(null);
-  const [modalLoading, setModalLoading] = useState(false);
-  const [modalAnalysis, setModalAnalysis] = useState(null);
   const [loadingMore, setLoadingMore] = useState(false);
 
   const sectors = [
