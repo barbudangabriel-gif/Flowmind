@@ -7056,12 +7056,28 @@ const TradeStationCallback = () => {
   );
 };
 
-// Main App Component
-function App() {
-  const [activeTab, setActiveTab] = useState('dashboard'); // Start with dashboard // Back to default
+// Main App Component with Routing
+function AppContent() {
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(new Set(['TradeStation 🏛️', 'Unusual Whales 🐋'])); // TradeStation and Unusual Whales expanded by default
+  const [expandedSections, setExpandedSections] = useState(new Set(['TradeStation 🏛️', 'Unusual Whales 🐋']));
   const { isDarkMode } = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Update activeTab based on current route
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/') {
+      setActiveTab('dashboard');
+    } else if (path.startsWith('/stock-analysis/')) {
+      // Keep the current activeTab for stock analysis pages
+      // This allows users to return to their previous section
+    } else {
+      // For other routes, you could map them to activeTab if needed
+      // For now, maintain the existing state-based approach
+    }
+  }, [location.pathname]);
 
   // Function to handle sidebar state from Sidebar component
   const handleSidebarToggle = (collapsed) => {
