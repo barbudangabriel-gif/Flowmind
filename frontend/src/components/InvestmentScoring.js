@@ -312,9 +312,10 @@ const InvestmentScoring = React.memo(() => {
 
   // useEffect hooks - MUST be declared after useCallback functions
   useEffect(() => {
+    console.log('Component mounted, loading initial data...');
     loadTopPicks();
     loadRiskAnalysis();
-  }, []); // Remove dependencies for initial load
+  }, []); // Load data immediately on mount
 
   useEffect(() => {
     if (selectedSector) {
