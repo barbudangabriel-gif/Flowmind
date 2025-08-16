@@ -6464,7 +6464,7 @@ const TradeStationCallback = () => {
 function App() {
   const [activeTab, setActiveTab] = useState('ts-portfolio'); // Back to default
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(new Set(['TradeStation 🏛️'])); // TradeStation expanded by default
+  const [expandedSections, setExpandedSections] = useState(new Set(['TradeStation 🏛️', 'Unusual Whales 🐋'])); // TradeStation and Unusual Whales expanded by default
   const { isDarkMode } = useTheme();
 
   // Function to handle sidebar state from Sidebar component
