@@ -23,14 +23,37 @@ class InvestmentScoringAgent:
     def __init__(self):
         self.uw_service = UnusualWhalesService()
         
-        # Scoring weights for different signal types
+        # Enhanced scoring weights for discount/premium logic
         self.signal_weights = {
-            'options_flow': 0.25,        # Options sentiment from flow data
-            'dark_pool': 0.20,           # Institutional activity
-            'congressional': 0.15,       # Political insider information  
-            'ai_strategies': 0.20,       # UW AI trading strategies
-            'market_momentum': 0.10,     # General market indicators
-            'risk_assessment': 0.10      # Risk-adjusted scoring
+            'discount_opportunity': 0.35,   # NEW: Heavily weight discount opportunities
+            'options_flow': 0.20,           # Reduced: Options sentiment (still important)
+            'dark_pool': 0.15,              # Institutional activity
+            'congressional': 0.10,          # Political insider information  
+            'risk_reward_ratio': 0.10,      # NEW: Risk/reward calculation
+            'market_momentum': 0.05,        # Reduced: General market indicators
+            'premium_penalty': 0.05         # NEW: Penalty for premium positions
+        }
+        
+        # Discount/Premium thresholds
+        self.discount_thresholds = {
+            'rsi_oversold': 30,             # RSI below 30 = oversold discount
+            'support_distance': 5,          # Within 5% of major support
+            'pullback_threshold': -10,      # 10%+ pullback from recent high
+            'pe_discount': 0.8              # P/E below sector average * 0.8
+        }
+        
+        self.premium_thresholds = {
+            'rsi_overbought': 70,           # RSI above 70 = overbought premium
+            'resistance_distance': 3,       # Within 3% of major resistance
+            'rally_threshold': 20,          # 20%+ rally from recent low
+            'pe_premium': 1.3               # P/E above sector average * 1.3
+        }
+        
+        # Risk/Reward calculation parameters
+        self.risk_reward_params = {
+            'min_reward_ratio': 2.0,        # Minimum 2:1 reward:risk ratio
+            'max_risk_percentage': 8,       # Maximum 8% risk from entry
+            'optimal_risk_percentage': 5    # Optimal 5% risk from entry
         }
         
         # Confidence thresholds
