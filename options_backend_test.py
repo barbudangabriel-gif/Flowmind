@@ -419,7 +419,7 @@ class OptionsCalculatorTester:
             {
                 "name": "Bull Call Spread",
                 "data": {
-                    "strategy": "Bull Call Spread",
+                    "strategy_name": "Bull Call Spread",
                     "symbol": "CRCL",
                     "stock_price": 149.53,
                     "strike": 145.0,  # Long strike
@@ -433,7 +433,7 @@ class OptionsCalculatorTester:
             {
                 "name": "Covered Call",
                 "data": {
-                    "strategy": "Covered Call",
+                    "strategy_name": "Covered Call",
                     "symbol": "CRCL",
                     "stock_price": 149.53,
                     "strike": 155.0,  # Call strike above current price
