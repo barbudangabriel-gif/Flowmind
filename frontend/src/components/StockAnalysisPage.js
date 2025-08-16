@@ -477,8 +477,8 @@ const StockAnalysisPage = () => {
                   <div className="text-gray-600 text-sm mt-2">Technical Score</div>
                 </div>
                 <div className="text-center bg-gray-50 rounded-lg p-6">
-                  <div className={`text-xl font-bold px-4 py-2 rounded-full ${getVerdictColor(analysis.technical.overall_verdict || 'NEUTRAL')}`}>
-                    {analysis.technical.overall_verdict || 'NEUTRAL'}
+                  <div className={`text-xl font-bold px-4 py-2 rounded-full ${getVerdictColor(analysis.technical.recommendation || 'NEUTRAL')}`}>
+                    {analysis.technical.recommendation || 'NEUTRAL'}
                   </div>
                   <div className="text-gray-600 text-sm mt-2">Overall Verdict</div>
                 </div>
