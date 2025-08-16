@@ -387,63 +387,250 @@ const OptionsModule = () => {
                 </div>
               )}
 
-              {/* Results List */}
+              {/* Results List - OptionStrat Style Cards with Charts */}
               {optimizedStrategies.length > 0 && !optimizing && (
-                <div className="space-y-3">
+                <div className="space-y-6">
                   {optimizedStrategies.map((strategy, index) => (
-                    <div key={index} className="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 transition-colors">
-                      <div className="grid grid-cols-12 gap-4 items-center">
+                    <div key={index} className="bg-gray-800 rounded-lg border border-gray-700 hover:border-blue-500 transition-colors">
+                      
+                      {/* Strategy Header */}
+                      <div className="p-4 border-b border-gray-700">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <div>
+                              <h4 className="text-xl font-bold text-white">{strategy.name}</h4>
+                              <div className="text-sm text-gray-400">
+                                {strategy.strikes || strategy.strike}
+                              </div>
+                            </div>
+                            <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              strategy.category === 'Novice' ? 'bg-green-900/50 text-green-300 border border-green-700' :
+                              strategy.category === 'Intermediate' ? 'bg-blue-900/50 text-blue-300 border border-blue-700' :
+                              'bg-purple-900/50 text-purple-300 border border-purple-700'
+                            }`}>
+                              {strategy.category}
+                            </div>
+                          </div>
+                          
+                          {/* Key Metrics */}
+                          <div className="flex items-center space-x-6">
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-green-400">
+                                {strategy.returnOnRisk}
+                              </div>
+                              <div className="text-xs text-gray-400">Return on Risk</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-blue-400">
+                                {strategy.chance}
+                              </div>
+                              <div className="text-xs text-gray-400">Chance</div>
+                            </div>
+                            <button 
+                              onClick={() => {
+                                setSelectedStrategy(strategy.name);
+                                setActiveTab('builder');
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold transition-colors"
+                            >
+                              Open in Builder
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Strategy Content - Chart & Details */}
+                      <div className="grid grid-cols-12 gap-6 p-6">
                         
-                        {/* Strategy Info */}
-                        <div className="col-span-4">
-                          <div className="font-semibold text-white">{strategy.name}</div>
-                          <div className="text-sm text-gray-400">
-                            {strategy.strikes || strategy.strike}
-                          </div>
-                          <div className={`text-xs px-2 py-1 rounded mt-1 inline-block ${
-                            strategy.category === 'Novice' ? 'bg-green-900/30 text-green-300' :
-                            strategy.category === 'Intermediate' ? 'bg-blue-900/30 text-blue-300' :
-                            'bg-purple-900/30 text-purple-300'
-                          }`}>
-                            {strategy.category}
+                        {/* Left: P&L Chart - OptionStrat Style */}
+                        <div className="col-span-8">
+                          <div className="bg-gray-900 rounded-lg p-4 h-64 border border-gray-600">
+                            {/* Mock P&L Chart */}
+                            <div className="h-full flex flex-col">
+                              <div className="flex items-center justify-between mb-4">
+                                <h5 className="text-white font-semibold">Profit & Loss</h5>
+                                <div className="flex items-center space-x-2 text-xs text-gray-400">
+                                  <span>At Expiration</span>
+                                  <span>•</span>
+                                  <span>{selectedExpiry}</span>
+                                </div>
+                              </div>
+                              
+                              {/* Mock Chart Area */}
+                              <div className="flex-1 relative bg-gray-800 rounded border border-gray-700 overflow-hidden">
+                                {/* Grid lines */}
+                                <div className="absolute inset-0 opacity-20">
+                                  {Array.from({length: 5}).map((_, i) => (
+                                    <div key={i} className="absolute w-full border-t border-gray-600" style={{top: `${i * 25}%`}}></div>
+                                  ))}
+                                  {Array.from({length: 7}).map((_, i) => (
+                                    <div key={i} className="absolute h-full border-l border-gray-600" style={{left: `${i * 16.67}%`}}></div>
+                                  ))}
+                                </div>
+                                
+                                {/* Mock P&L Curve */}
+                                <svg className="absolute inset-0 w-full h-full">
+                                  {strategy.name === 'Long Call' ? (
+                                    // Long Call curve - hockey stick up
+                                    <path
+                                      d="M 20 180 L 100 180 L 120 160 L 140 140 L 160 120 L 180 100 L 200 80 L 220 60 L 240 40 L 260 20"
+                                      stroke="#10b981"
+                                      strokeWidth="3"
+                                      fill="none"
+                                      className="drop-shadow-lg"
+                                    />
+                                  ) : strategy.name === 'Bull Call Spread' ? (
+                                    // Bull Call Spread - limited upside
+                                    <path
+                                      d="M 20 180 L 100 180 L 120 160 L 140 140 L 160 120 L 180 100 L 200 80 L 220 80 L 240 80 L 260 80"
+                                      stroke="#3b82f6"
+                                      strokeWidth="3"
+                                      fill="none"
+                                      className="drop-shadow-lg"
+                                    />
+                                  ) : (
+                                    // Bull Put Spread - limited profit at top
+                                    <path
+                                      d="M 20 80 L 100 80 L 120 80 L 140 90 L 160 110 L 180 140 L 200 180 L 220 180 L 240 180 L 260 180"
+                                      stroke="#f59e0b"
+                                      strokeWidth="3"
+                                      fill="none"
+                                      className="drop-shadow-lg"
+                                    />
+                                  )}
+                                  
+                                  {/* Breakeven line */}
+                                  <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#6b7280" strokeWidth="1" strokeDasharray="4,4" opacity="0.5"/>
+                                  
+                                  {/* Current price line */}
+                                  <line x1="50%" y1="0" x2="50%" y2="100%" stroke="#f97316" strokeWidth="1" strokeDasharray="4,4" opacity="0.7"/>
+                                </svg>
+                                
+                                {/* Price labels */}
+                                <div className="absolute bottom-2 left-2 text-xs text-gray-400">
+                                  ${(stockPrice * 0.9).toFixed(0)}
+                                </div>
+                                <div className="absolute bottom-2 right-2 text-xs text-gray-400">
+                                  ${(stockPrice * 1.1).toFixed(0)}
+                                </div>
+                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs text-orange-400 font-semibold">
+                                  ${stockPrice}
+                                </div>
+                                
+                                {/* P&L labels */}
+                                <div className="absolute top-2 left-2 text-xs text-green-400">
+                                  {strategy.profit}
+                                </div>
+                                <div className="absolute bottom-16 left-2 text-xs text-red-400">
+                                  -{strategy.risk}
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Return on Risk */}
-                        <div className="col-span-2 text-center">
-                          <div className="text-lg font-bold text-green-400">
-                            {strategy.returnOnRisk}
+                        {/* Right: Strategy Details - OptionStrat Style */}
+                        <div className="col-span-4 space-y-4">
+                          
+                          {/* Risk & Reward */}
+                          <div className="space-y-3">
+                            <div className="bg-gray-700 rounded-lg p-3">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-300">Max Profit</span>
+                                <span className="font-bold text-green-400">{strategy.profit}</span>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-gray-700 rounded-lg p-3">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-300">Max Loss</span>
+                                <span className="font-bold text-red-400">{strategy.risk}</span>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-gray-700 rounded-lg p-3">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-300">Return on Risk</span>
+                                <span className="font-bold text-blue-400">{strategy.returnOnRisk}</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-400">Return</div>
-                        </div>
 
-                        {/* Profit */}
-                        <div className="col-span-2 text-center">
-                          <div className="text-lg font-bold text-green-400">
-                            {strategy.profit}
+                          {/* Strategy Legs */}
+                          <div className="bg-gray-700 rounded-lg p-3">
+                            <h6 className="text-sm font-semibold text-white mb-2">Strategy Legs</h6>
+                            <div className="space-y-2 text-sm">
+                              {strategy.name === 'Long Call' && (
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center space-x-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span className="text-gray-300">Buy Call</span>
+                                  </div>
+                                  <span className="text-white font-mono">{strategy.strike || '645C'}</span>
+                                </div>
+                              )}
+                              
+                              {strategy.name === 'Bull Call Spread' && (
+                                <>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                      <span className="text-gray-300">Buy Call</span>
+                                    </div>
+                                    <span className="text-white font-mono">646C</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                      <span className="text-gray-300">Sell Call</span>
+                                    </div>
+                                    <span className="text-white font-mono">665C</span>
+                                  </div>
+                                </>
+                              )}
+                              
+                              {strategy.name === 'Bull Put Spread' && (
+                                <>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                      <span className="text-gray-300">Buy Put</span>
+                                    </div>
+                                    <span className="text-white font-mono">643P</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2">
+                                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                      <span className="text-gray-300">Sell Put</span>
+                                    </div>
+                                    <span className="text-white font-mono">646P</span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-400">Profit</div>
-                        </div>
 
-                        {/* Risk */}
-                        <div className="col-span-2 text-center">
-                          <div className="text-lg font-bold text-red-400">
-                            {strategy.risk}
+                          {/* Key Stats */}
+                          <div className="bg-gray-700 rounded-lg p-3">
+                            <h6 className="text-sm font-semibold text-white mb-2">Key Statistics</h6>
+                            <div className="space-y-1 text-xs">
+                              <div className="flex justify-between">
+                                <span className="text-gray-400">Breakeven</span>
+                                <span className="text-yellow-400">${(stockPrice + 10).toFixed(2)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-400">Days to Expiry</span>
+                                <span className="text-white">{daysToExpiry}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-400">Prob. of Profit</span>
+                                <span className="text-blue-400">
+                                  {strategy.name === 'Long Call' ? '45%' : 
+                                   strategy.name === 'Bull Call Spread' ? '62%' : '73%'}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-400">Risk</div>
-                        </div>
-
-                        {/* Action */}
-                        <div className="col-span-2">
-                          <button 
-                            onClick={() => {
-                              setSelectedStrategy(strategy.name);
-                              setActiveTab('builder');
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-colors w-full"
-                          >
-                            Build
-                          </button>
                         </div>
                       </div>
                     </div>
