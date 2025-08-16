@@ -53,6 +53,9 @@ ti = TechIndicators(key=ALPHA_VANTAGE_API_KEY, output_format='pandas') if ALPHA_
 # Initialize Unusual Whales Service
 uw_service = UnusualWhalesService()
 
+# Initialize AI Agents
+investment_scoring_agent = InvestmentScoringAgent()
+
 # Initialize TradeStation Services
 ts_client = TradeStationClient(ts_auth)
 portfolio_service = PortfolioService(ts_client)
