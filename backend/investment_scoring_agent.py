@@ -181,8 +181,8 @@ class InvestmentScoringAgent:
         # 3. Congressional Activity Analysis
         signal_scores['congressional'] = self._analyze_congressional_sentiment(uw_data['congressional'])
         
-        # 4. AI Strategies Analysis
-        signal_scores['ai_strategies'] = self._analyze_ai_strategies_confidence(uw_data['strategies'])
+        # 4. AI Strategies Analysis (placeholder for now)
+        signal_scores['ai_strategies'] = 50.0  # Neutral since no strategies available yet
         
         # 5. Market Momentum (derived from options flow patterns)
         signal_scores['market_momentum'] = self._analyze_market_momentum(uw_data['options_flow'])
