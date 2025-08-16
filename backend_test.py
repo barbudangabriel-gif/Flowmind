@@ -4689,5 +4689,37 @@ def main_unusual_whales():
         print("⚠️  UNUSUAL WHALES VERIFICATION NEEDS ATTENTION")
         return 1
 
+def main_top_picks():
+    print("🎯 TOP PICKS ENDPOINT COMPREHENSIVE TESTING")
+    print("=" * 80)
+    print("👤 USER REQUEST: 'am nevoie de top picks minim 10' - need at least 10 recommendations")
+    print("🌐 Backend URL: https://tradedash-11.preview.emergentagent.com")
+    print("📊 Testing: GET /api/investments/top-picks with different parameters")
+    
+    tester = StockMarketAPITester()
+    
+    # Run the comprehensive Top Picks test
+    success = tester.test_top_picks_endpoint_comprehensive()
+    
+    # Summary
+    print("\n" + "=" * 80)
+    print("🎯 TOP PICKS TEST SUMMARY")
+    print("=" * 80)
+    print(f"Total Tests Run: {tester.tests_run}")
+    print(f"Tests Passed: {tester.tests_passed}")
+    print(f"Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if success:
+        print("🎉 TOP PICKS ENDPOINT TESTING PASSED!")
+        print("✅ User requirement 'am nevoie de top picks minim 10' is satisfied")
+        print("📊 Investment Scoring page should work correctly")
+        return 0
+    else:
+        print("⚠️  TOP PICKS ENDPOINT TESTING FAILED!")
+        print("❌ User requirement may not be satisfied")
+        print("🔧 Investment Scoring page may need attention")
+        return 1
+
 if __name__ == "__main__":
-    sys.exit(main())
+    # Run the Top Picks test as requested by user
+    sys.exit(main_top_picks())
