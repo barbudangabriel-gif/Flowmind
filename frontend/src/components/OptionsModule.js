@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import InteractiveOptionsChart from './InteractiveOptionsChart';
 import {
   Zap,
   Target,
@@ -22,7 +23,8 @@ import {
   Calendar,
   Info,
   ChevronDown,
-  Maximize2
+  Maximize2,
+  AlertCircle
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
