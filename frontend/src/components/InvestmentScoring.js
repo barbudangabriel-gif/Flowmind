@@ -1105,11 +1105,11 @@ const InvestmentScoring = React.memo(() => {
               {/* Statistics and Controls */}
               <div className="flex justify-between items-center bg-gray-800 p-4 rounded-lg">
                 <div className="text-sm text-gray-300">
-                  Showing <span className="font-bold text-blue-400">{Math.min(displayLimit, maxScrollLimit)}</span> of{' '}
+                  Showing <span className="font-bold text-blue-400">{Math.min(displayLimit, topPicks.length)}</span> of{' '}
                   <span className="font-bold text-green-400">{topPicks.length}</span> recommendations
-                  {maxScrollLimit < topPicks.length && (
-                    <span className="text-yellow-400"> (scroll limit: {maxScrollLimit})</span>
-                  )}
+                  <div className="text-xs text-gray-400 mt-1">
+                    Max scroll: {maxScrollLimit} • Can expand to: 1000 total
+                  </div>
                 </div>
                 
                 <div className="flex space-x-2">
