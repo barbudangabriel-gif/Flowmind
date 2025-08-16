@@ -2,7 +2,7 @@ import requests
 import json
 from datetime import datetime
 
-base_url = 'https://tradewise-78.preview.emergentagent.com/api'
+base_url = 'https://flowmind-analytics-2.preview.emergentagent.com/api'
 
 print('🎯 FOCUSED TESTING: 3-Tier Priority System with Unusual Whales Fallback')
 print('=' * 80)
