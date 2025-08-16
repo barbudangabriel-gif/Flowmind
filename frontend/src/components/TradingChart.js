@@ -10,7 +10,6 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
   const chartContainerRef = useRef();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [chartData, setChartData] = useState(null);
   const [selectedInterval, setSelectedInterval] = useState(interval);
 
   const intervals = [
@@ -20,111 +19,101 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
     { label: '5m', value: '5m' }
   ];
 
-  // Load chart data from API
-  const loadChartData = async (timeframe) => {
-    if (!symbol) {
-      setError('No symbol provided');
-      return;
-    }
+  // Load and render chart
+  useEffect(() => {
+    if (!symbol || !chartContainerRef.current) return;
 
-    setLoading(true);
-    setError(null);
+    const loadAndRenderChart = async () => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      console.log(`Loading ${timeframe} chart data for ${symbol}`);
-      
-      const response = await axios.get(
-        `${API}/stocks/${symbol.toUpperCase()}/historical`,
-        {
-          params: {
-            interval: timeframe,
-            bars_back: 50
-          },
-          timeout: 10000
+      try {
+        // Load data first
+        console.log(`Loading chart data for ${symbol} (${selectedInterval})`);
+        const response = await axios.get(
+          `${API}/stocks/${symbol.toUpperCase()}/historical`,
+          {
+            params: { interval: selectedInterval, bars_back: 50 },
+            timeout: 10000
+          }
+        );
+
+        if (!response.data?.data || response.data.data.length === 0) {
+          throw new Error('No chart data available');
         }
-      );
 
-      if (response.data?.data && response.data.data.length > 0) {
-        setChartData(response.data);
-        console.log(`Loaded ${response.data.data.length} bars for ${symbol}`);
-      } else {
-        setError('No chart data available');
-      }
-    } catch (err) {
-      console.error('Error loading chart data:', err);
-      setError(`Failed to load chart: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const chartData = response.data.data;
+        console.log(`Loaded ${chartData.length} data points`);
 
-  // Initialize chart when data is available
-  useEffect(() => {
-    if (!chartData || !chartContainerRef.current) return;
+        // Clear container
+        chartContainerRef.current.innerHTML = '';
 
-    try {
-      // Create chart
-      const chart = createChart(chartContainerRef.current, {
-        width: chartContainerRef.current.clientWidth,
-        height: height,
-        layout: {
-          background: { type: 'solid', color: '#1a1a1a' },
-          textColor: '#DDD',
-        },
-        grid: {
-          vertLines: { color: '#444' },
-          horzLines: { color: '#444' },
-        },
-        rightPriceScale: {
-          borderColor: '#555',
-        },
-        timeScale: {
-          borderColor: '#555',
-        },
-      });
-
-      // Add candlestick series
-      const candlestickSeries = chart.addCandlestickSeries({
-        upColor: '#4ade80',
-        downColor: '#f87171',
-        borderVisible: false,
-        wickUpColor: '#4ade80',
-        wickDownColor: '#f87171',
-      });
-
-      // Set data
-      candlestickSeries.setData(chartData.data);
-
-      // Fit content
-      chart.timeScale().fitContent();
-
-      // Handle resize
-      const handleResize = () => {
-        chart.applyOptions({
-          width: chartContainerRef.current?.clientWidth || 800,
+        // Create chart
+        console.log('Creating chart...');
+        const chart = createChart(chartContainerRef.current, {
+          width: chartContainerRef.current.clientWidth || 800,
+          height: height,
+          layout: {
+            background: { color: '#1a1a1a' },
+            textColor: '#DDD',
+          },
+          grid: {
+            vertLines: { color: '#333' },
+            horzLines: { color: '#333' },
+          },
+          rightPriceScale: {
+            borderColor: '#555',
+          },
+          timeScale: {
+            borderColor: '#555',
+          },
         });
-      };
 
-      window.addEventListener('resize', handleResize);
+        console.log('Chart created, adding series...');
+        
+        // Add candlestick series
+        const series = chart.addCandlestickSeries({
+          upColor: '#00D4AA',
+          downColor: '#FF6B6B',
+          borderVisible: false,
+          wickUpColor: '#00D4AA',
+          wickDownColor: '#FF6B6B',
+        });
 
-      // Cleanup
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        chart.remove();
-      };
-    } catch (chartError) {
-      console.error('Chart creation error:', chartError);
-      setError(`Chart error: ${chartError.message}`);
-    }
-  }, [chartData, height]);
+        console.log('Series created, setting data...');
+        series.setData(chartData);
+        chart.timeScale().fitContent();
 
-  // Load data when symbol or interval changes
-  useEffect(() => {
-    loadChartData(selectedInterval);
-  }, [symbol, selectedInterval]);
+        console.log('Chart rendered successfully!');
+        setLoading(false);
 
-  // Handle interval change
+        // Handle resize
+        const handleResize = () => {
+          chart.applyOptions({
+            width: chartContainerRef.current?.clientWidth || 800,
+          });
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        // Cleanup function
+        return () => {
+          window.removeEventListener('resize', handleResize);
+          chart.remove();
+        };
+
+      } catch (err) {
+        console.error('Chart error:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    loadAndRenderChart();
+  }, [symbol, selectedInterval, height]);
+
   const handleIntervalChange = (newInterval) => {
+    console.log(`Changing interval to ${newInterval}`);
     setSelectedInterval(newInterval);
   };
 
