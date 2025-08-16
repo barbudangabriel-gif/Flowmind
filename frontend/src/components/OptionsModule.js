@@ -1,243 +1,442 @@
 import React, { useMemo, useState } from "react";
-import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid, Legend } from "recharts";
+import { ComposedChart, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
 
-/**
- * Option-like payoff calculators (simplified). All values per 1 share for clarity.
- */
-
-function range(start, end, step = 5) {
+// Helper functions
+function range(start, end, step = 10) {
   const out = [];
   for (let x = start; x <= end; x += step) out.push(x);
   return out;
 }
 
-function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
-
-// --- Payoff functions
-const payoffs = {
-  longCall: ({ S, K, premium }) => Math.max(0, S - K) - premium,
-  shortPut: ({ S, K, premium }) => premium - Math.max(0, K - S),
-  coveredCall: ({ S, S0, K, premium }) => (S - S0) - Math.max(0, S - K) + premium,
-  bullCallSpread: ({ S, K1, K2, premium1, premium2 }) => Math.max(0, S - K1) - premium1 - (Math.max(0, S - K2) - premium2),
-  bullPutSpread: ({ S, K1, K2, premium1, premium2 }) => (premium2 - premium1) - Math.max(0, K2 - S) + Math.max(0, K1 - S),
-};
-
-/**
- * Generate chart data with positive/negative split for area gradients
- */
-function buildChartData({ xMin = 0, xMax = 400, step = 5, fn }) {
+function buildChartData({ xMin = 0, xMax = 400, step = 10, payoffFn }) {
   const xs = range(xMin, xMax, step);
-  let minY = Infinity, maxY = -Infinity;
   const raw = xs.map((x) => {
-    const y = fn(x);
-    if (y < minY) minY = y;
-    if (y > maxY) maxY = y;
-    return { x, y };
+    const y = payoffFn(x);
+    return { x, y, pos: y > 0 ? y : 0, neg: y < 0 ? y : 0 };
   });
-  // Split into positive/negative for gradient fill
-  return raw.map((d) => ({
-    ...d,
-    pos: d.y > 0 ? d.y : 0,
-    neg: d.y < 0 ? d.y : 0,
-  }));
+  return raw;
 }
 
-function pretty(n, digits = 2) {
-  const sign = n < 0 ? "-" : "";
+function formatUSD(n, showSign = true) {
+  const sign = n < 0 ? "-" : (showSign && n > 0 ? "+" : "");
   const v = Math.abs(n);
-  return sign + "$" + v.toLocaleString(undefined, { maximumFractionDigits: digits, minimumFractionDigits: digits });
+  return `${sign}$${v.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 }
 
-// --- Reusable payoff mini chart
-function PnLChart({ data, xMarker, idSuffix }) {
+// Strategy Cards Component
+function StrategyCard({ 
+  title, 
+  subtitle, 
+  returnOnRisk, 
+  returnLabel = "Return on Risk",
+  chance, 
+  profit, 
+  risk, 
+  riskLabel = "Risk",
+  chartData, 
+  idSuffix,
+  spotPrice = 149.53,
+  targetPrice = 263.91 
+}) {
   return (
-    <div className="h-52 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={data} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-          <defs>
-            <linearGradient id={`greenGrad-${idSuffix}`} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#2ecc71" stopOpacity={0.7} />
-              <stop offset="100%" stopColor="#2ecc71" stopOpacity={0.15} />
-            </linearGradient>
-            <linearGradient id={`redGrad-${idSuffix}`} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#ff4d4f" stopOpacity={0.7} />
-              <stop offset="100%" stopColor="#ff4d4f" stopOpacity={0.15} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid stroke="#263143" vertical={false} />
-          <XAxis dataKey="x" stroke="#8a97ad" tick={{ fontSize: 11 }} />
-          <YAxis stroke="#8a97ad" tick={{ fontSize: 11 }} />
-          <ReferenceLine y={0} stroke="#8a97ad" strokeDasharray="4 4" />
-          {typeof xMarker === "number" && (
-            <ReferenceLine x={xMarker} stroke="#8a97ad" strokeDasharray="4 4" />
-          )}
-          {/* Fill positive/negative areas */}
-          <Area type="monotone" dataKey="pos" stroke="none" fill={`url(#greenGrad-${idSuffix})`} />
-          <Area type="monotone" dataKey="neg" stroke="none" fill={`url(#redGrad-${idSuffix})`} />
-          {/* PnL line */}
-          <Line type="monotone" dataKey="y" stroke="#89a3ff" dot={false} strokeWidth={2} />
-          <Tooltip
-            formatter={(value, name) => {
-              if (name === "x") return value;
-              return [pretty(value), "PnL"];
-            }}
-            labelFormatter={(label) => `Preț la expirare: $${label}`}
-            contentStyle={{ background: "#0f1626", border: "1px solid #263143", borderRadius: 12 }}
-            itemStyle={{ color: "#d1d7e0" }}
-          />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-function Metric({ label, value, accent = "#d1d7e0" }) {
-  return (
-    <div className="flex items-center gap-2 text-[13px]">
-      <span className="text-[#8a97ad]">{label}</span>
-      <span className="font-semibold" style={{ color: accent }}>{value}</span>
-    </div>
-  );
-}
-
-function StrategyCard({ title, subtitleLeft, subtitleRight, children }) {
-  return (
-    <div className="rounded-2xl bg-[#0f1626] border border-[#263143] p-4 flex flex-col gap-3 shadow-xl">
-      <div>
-        <div className="text-[15px] font-semibold text-white">{title}</div>
-        <div className="mt-1 flex items-center justify-between">
-          <Metric label="Return on risk" value={subtitleLeft} accent="#ffde69" />
-          <Metric label="Chance" value={subtitleRight} accent="#9be28c" />
+    <div className="bg-[#2c3e50] rounded-2xl p-4 border border-[#34495e] shadow-lg">
+      {/* Header */}
+      <div className="mb-3">
+        <h3 className="text-white text-lg font-bold">{title}</h3>
+        <p className="text-gray-400 text-xs">{subtitle}</p>
+      </div>
+      
+      {/* Metrics Row */}
+      <div className="grid grid-cols-2 gap-4 mb-3">
+        <div>
+          <div className="text-yellow-400 text-lg font-bold">{returnOnRisk}</div>
+          <div className="text-gray-400 text-xs">{returnLabel}</div>
+        </div>
+        <div>
+          <div className="text-green-400 text-lg font-bold">{chance}</div>
+          <div className="text-gray-400 text-xs">Chance</div>
         </div>
       </div>
-      {children}
-      <button className="mt-auto self-start px-3 py-1.5 text-sm rounded-xl bg-[#1b2033] border border-[#2a3550] hover:bg-[#222a44] transition">Open in Builder</button>
+      
+      {/* Profit/Risk Row */}
+      <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
+        <div>
+          <span className="text-green-400 font-semibold">{profit}</span>
+          <span className="text-gray-400"> Profit</span>
+        </div>
+        <div>
+          <span className="text-red-400 font-semibold">{risk}</span>
+          <span className="text-gray-400"> {riskLabel}</span>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className="h-40 mb-3">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
+            <defs>
+              <linearGradient id={`greenGrad-${idSuffix}`} x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="#2ecc71" stopOpacity={0.8} />
+                <stop offset="100%" stopColor="#2ecc71" stopOpacity={0.3} />
+              </linearGradient>
+              <linearGradient id={`redGrad-${idSuffix}`} x1="0" x2="0" y1="1" y2="0">
+                <stop offset="0%" stopColor="#e74c3c" stopOpacity={0.8} />
+                <stop offset="100%" stopColor="#e74c3c" stopOpacity={0.3} />
+              </linearGradient>
+            </defs>
+            
+            <CartesianGrid stroke="#34495e" strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="x" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#7f8c8d", fontSize: 10 }}
+              tickFormatter={(v) => `$${v}`}
+            />
+            <YAxis 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: "#7f8c8d", fontSize: 10 }}
+              tickFormatter={(v) => v >= 0 ? `$${Math.abs(v)}` : `-$${Math.abs(v)}`}
+            />
+            
+            {/* Zero line */}
+            <ReferenceLine y={0} stroke="#7f8c8d" strokeDasharray="2 2" />
+            
+            {/* Spot price line */}
+            <ReferenceLine x={spotPrice} stroke="#3498db" strokeDasharray="2 2" strokeWidth={1} />
+            
+            {/* Target price line */}
+            <ReferenceLine x={targetPrice} stroke="#f39c12" strokeDasharray="2 2" strokeWidth={1} />
+            
+            {/* Fill areas */}
+            <Area 
+              type="monotone" 
+              dataKey="pos" 
+              stroke="none" 
+              fill={`url(#greenGrad-${idSuffix})`} 
+            />
+            <Area 
+              type="monotone" 
+              dataKey="neg" 
+              stroke="none" 
+              fill={`url(#redGrad-${idSuffix})`} 
+            />
+            
+            {/* P&L Line */}
+            <Line 
+              type="monotone" 
+              dataKey="y" 
+              stroke="#ecf0f1" 
+              strokeWidth={2} 
+              dot={false} 
+            />
+            
+            <Tooltip
+              formatter={(value) => [formatUSD(value), "P&L"]}
+              labelFormatter={(label) => `Price: $${label}`}
+              contentStyle={{ 
+                background: "#2c3e50", 
+                border: "1px solid #34495e", 
+                borderRadius: "8px",
+                color: "#ecf0f1"
+              }}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Open in Builder Button */}
+      <button className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white py-2 px-4 rounded-lg font-semibold transition-colors">
+        Open in Builder
+      </button>
+    </div>
+  );
+}
+
+// Sentiment Circle Component
+function SentimentCircle({ icon, label, active, onClick }) {
+  const getColors = () => {
+    if (label.includes('Bearish')) return active ? 'bg-red-500' : 'bg-gray-700 border-red-500';
+    if (label.includes('Bullish')) return active ? 'bg-green-500' : 'bg-gray-700 border-green-500';
+    if (label === 'Directional') return active ? 'bg-purple-500' : 'bg-gray-700 border-purple-500';
+    return active ? 'bg-blue-500' : 'bg-gray-700 border-blue-500';
+  };
+
+  return (
+    <div className="flex flex-col items-center">
+      <button
+        onClick={onClick}
+        className={`w-16 h-16 rounded-full border-2 flex items-center justify-center text-2xl transition-all ${getColors()}`}
+      >
+        {icon}
+      </button>
+      <span className="text-white text-xs mt-2 text-center">{label}</span>
     </div>
   );
 }
 
 export default function OptionsModule() {
   const [symbol, setSymbol] = useState("CRCL");
-  const [spot, setSpot] = useState(149.53);
-  const [target, setTarget] = useState(263.91);
+  const [spotPrice, setSpotPrice] = useState(149.53);
+  const [targetPrice, setTargetPrice] = useState(263.91);
+  const [sentiment, setSentiment] = useState("Bullish");
 
-  // Example parameter set inspired by screenshot
-  const params = useMemo(() => ({
-    longCall: { K: 95, premium: 60 },
-    coveredCall: { S0: spot, K: 200, premium: 12.85 },
-    cashSecPut: { K: 125, premium: 26.15 },
-    shortPut: { K: 115, premium: 24.05 },
-    bullCallSpread: { K1: 95, K2: 265, premium1: 60, premium2: 5 },
-    bullPutSpread: { K1: 90, K2: 185, premium1: 8.5, premium2: 26.15 },
-  }), [spot]);
+  // Chart data for each strategy
+  const chartData = useMemo(() => {
+    const longCallData = buildChartData({
+      xMin: 0, xMax: 400, step: 20,
+      payoffFn: (S) => Math.max(0, S - 95) * 100 - 6455
+    });
 
-  // Chart data builders
-  const dataLongCall = useMemo(() => buildChartData({ fn: (S) => payoffs.longCall({ S, ...params.longCall }) }), [params]);
-  const dataCoveredCall = useMemo(() => buildChartData({ fn: (S) => payoffs.coveredCall({ S, ...params.coveredCall }) }), [params]);
-  const dataCashPut = useMemo(() => buildChartData({ fn: (S) => payoffs.shortPut({ S, ...params.cashSecPut }) }), [params]);
-  const dataShortPut = useMemo(() => buildChartData({ fn: (S) => payoffs.shortPut({ S, ...params.shortPut }) }), [params]);
-  const dataBullCall = useMemo(() => buildChartData({ fn: (S) => payoffs.bullCallSpread({ S, ...params.bullCallSpread }) }), [params]);
-  const dataBullPut = useMemo(() => buildChartData({ fn: (S) => payoffs.bullPutSpread({ S, ...params.bullPutSpread }) }), [params]);
+    const coveredCallData = buildChartData({
+      xMin: 0, xMax: 400, step: 20,
+      payoffFn: (S) => (S - spotPrice) * 100 + Math.min(0, 210 - S) * 100 + 1285
+    });
 
-  const headerChip = (label, active=false) => (
-    <button className={`px-3 py-1 rounded-xl border text-sm ${active?"bg-[#213352] border-[#2f4772] text-white":"bg-[#0f1626] border-[#263143] text-[#c4ccda]"}`}>{label}</button>
-  );
+    const cashSecuredPutData = buildChartData({
+      xMin: 0, xMax: 400, step: 20,
+      payoffFn: (S) => -Math.max(0, 125 - S) * 100 + 2615
+    });
+
+    const shortPutData = buildChartData({
+      xMin: 0, xMax: 400, step: 20,
+      payoffFn: (S) => -Math.max(0, 115 - S) * 100 + 2405
+    });
+
+    const bullCallSpreadData = buildChartData({
+      xMin: 0, xMax: 400, step: 20,
+      payoffFn: (S) => Math.min(Math.max(0, S - 95), 265 - 95) * 100 - 5025
+    });
+
+    const bullPutSpreadData = buildChartData({
+      xMin: 0, xMax: 400, step: 20,
+      payoffFn: (S) => 1810 - Math.min(Math.max(0, 185 - S), 185 - 90) * 100
+    });
+
+    return {
+      longCall: longCallData,
+      coveredCall: coveredCallData,
+      cashSecuredPut: cashSecuredPutData,
+      shortPut: shortPutData,
+      bullCallSpread: bullCallSpreadData,
+      bullPutSpread: bullPutSpreadData
+    };
+  }, [spotPrice]);
+
+  const sentiments = [
+    { icon: "📉", label: "Very Bearish" },
+    { icon: "📈", label: "Bearish" },
+    { icon: "➡️", label: "Neutral" },
+    { icon: "⚡", label: "Directional" },
+    { icon: "📈", label: "Bullish" },
+    { icon: "📊", label: "Very Bullish" }
+  ];
+
+  const months = ["Sep", "Oct", "Nov", "Dec", "Jan '26", "Feb", "Mar", "Apr", "Jun", "Dec", "Jan '27"];
+  const days = ["12", "19", "26", "17", "21", "19", "16", "20", "20", "17", "18", "18", "15"];
 
   return (
-    <div className="min-h-screen w-full text-[#d1d7e0] bg-[#0b0f1a]">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[#1c2438] bg-[#0e1422] sticky top-0 z-10">
-        <div className="flex items-center gap-2 font-semibold text-white">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#5aa9ff]" />
-          <span>FlowMind Options</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <span className="opacity-70">Symbol:</span>
-          <input value={symbol} onChange={(e)=>setSymbol(e.target.value.toUpperCase())} className="w-16 bg-transparent border border-[#263143] rounded-lg px-2 py-1"/>
-          <span className="border border-[#263143] rounded-lg px-2 py-1">${spot.toFixed(2)} <span className="text-[#64d98a] ml-1">+7.40%</span></span>
-          <span className="text-[11px] px-2 py-0.5 rounded bg-[#142033] border border-[#223153] ml-1">Real‑time</span>
-        </div>
-        <div />
-      </div>
-
-      {/* Banner */}
-      <div className="px-5 pt-4">
-        <div className="rounded-xl bg-[#0f1b2d] border border-[#243250] p-3 text-sm">
-          <span className="inline-flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-[#1b2a46] flex items-center justify-center">ℹ️</span>
-            {symbol} shares are trading higher. The company announced a public offering of 10 million shares at $130 per share. <span className="opacity-60">(updated 8/15/25, 8:06 PM)</span>
-          </span>
-        </div>
-      </div>
-
-      {/* Sentiment buttons */}
-      <div className="px-5 mt-4 flex items-center gap-2 overflow-x-auto">
-        {headerChip("Very Bearish")}
-        {headerChip("Bearish")}
-        {headerChip("Neutral", true)}
-        {headerChip("Directional")}
-        {headerChip("Bullish")}
-        {headerChip("Very Bullish")}
-      </div>
-
-      {/* Target + Budget */}
-      <div className="px-5 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-        <div className="rounded-xl bg-[#0f1626] border border-[#263143] p-4">
-          <div className="text-sm opacity-70">Target Price</div>
-          <div className="mt-1 text-2xl font-semibold">${target.toFixed(2)} <span className="text-[#64d98a] text-base align-middle">({(((target/spot)-1)*100).toFixed(0)}%)</span></div>
-          <input type="range" min={0} max={400} step={1} value={target} onChange={(e)=>setTarget(Number(e.target.value))} className="w-full mt-3"/>
-        </div>
-        <div className="rounded-xl bg-[#0f1626] border border-[#263143] p-4 flex items-center gap-2">
-          <div className="text-sm opacity-70">Budget</div>
-          <input type="number" placeholder="$" className="ml-3 flex-1 bg-transparent border border-[#263143] rounded-lg px-3 py-2"/>
-        </div>
-      </div>
-
-      {/* Months row */}
-      <div className="px-5 mt-3">
-        <div className="flex flex-wrap gap-2 items-center text-sm">
-          {["Sep","Oct","Nov","Dec","Jan 26","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan 27"].map((m,i)=> (
-            <button key={i} className={`px-3 py-1 rounded-xl border ${i===3?"bg-[#213352] border-[#2f4772] text-white":"bg-[#0f1626] border-[#263143] text-[#c4ccda]"}`}>{m}</button>
-          ))}
-        </div>
-        <div className="mt-3">
-          <input type="range" min={12} max={31} defaultValue={18} className="w-full"/>
-          <div className="flex justify-between text-xs text-[#8a97ad] mt-1">
-            <span>← Max Return</span>
-            <span>Max Chance →</span>
+    <div className="min-h-screen bg-[#1a252f] text-white">
+      {/* Header */}
+      <div className="bg-[#2c3e50] px-6 py-4 border-b border-[#34495e]">
+        <div className="flex items-center justify-between max-w-7xl mx-auto">
+          <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-blue-500 rounded"></div>
+              <span className="text-xl font-bold">OptionStrat</span>
+            </div>
+            <nav className="hidden md:flex space-x-6">
+              <button className="text-gray-300 hover:text-white">Build ▼</button>
+              <button className="text-gray-300 hover:text-white">Optimize</button>
+              <button className="text-gray-300 hover:text-white">Flow ▼</button>
+            </nav>
+          </div>
+          
+          <div className="flex items-center space-x-6">
+            <span>Tutorials</span>
+            <span>Blog</span>
+            <button>My Account ▼</button>
           </div>
         </div>
       </div>
 
-      {/* Strategy grid */}
-      <div className="px-5 py-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        <StrategyCard title="Long Call" subtitleLeft="162%" subtitleRight="47%">
-          <PnLChart idSuffix="lc" data={dataLongCall} xMarker={target} />
-        </StrategyCard>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        
+        {/* Symbol and Price */}
+        <div className="flex items-center justify-center space-x-4 mb-6">
+          <span className="text-gray-400">Symbol:</span>
+          <input 
+            value={symbol}
+            onChange={(e) => setSymbol(e.target.value)}
+            className="bg-[#34495e] border border-[#4a5f7a] rounded px-2 py-1 text-white w-20"
+          />
+          <span className="text-2xl font-bold">${spotPrice.toFixed(2)}</span>
+          <span className="text-green-400">+7.40%</span>
+          <span className="text-green-400">+$10.30</span>
+          <span className="text-gray-400 text-sm">🔄 Real-time</span>
+        </div>
 
-        <StrategyCard title="Covered Call" subtitleLeft="63%" subtitleRight="58%">
-          <PnLChart idSuffix="cc" data={dataCoveredCall} xMarker={target} />
-        </StrategyCard>
+        {/* News Banner */}
+        <div className="bg-[#3498db] rounded-lg p-4 mb-6 text-center">
+          <span className="text-white">
+            📊 Circle Internet Group shares are trading higher. The company announced a 
+            public offering of 10 million shares at $130 per share. 
+            <em className="text-blue-200">updated 8/15/25, 8:06 PM</em>
+          </span>
+          <button className="ml-4 text-blue-200 hover:text-white">✕</button>
+        </div>
 
-        <StrategyCard title="Cash‑Secured Put" subtitleLeft="27%" subtitleRight="74%">
-          <PnLChart idSuffix="csp" data={dataCashPut} xMarker={target} />
-        </StrategyCard>
+        {/* Sentiment Circles */}
+        <div className="flex justify-center space-x-8 mb-8">
+          {sentiments.map((s, i) => (
+            <SentimentCircle
+              key={s.label}
+              icon={s.icon}
+              label={s.label}
+              active={sentiment === s.label}
+              onClick={() => setSentiment(s.label)}
+            />
+          ))}
+        </div>
 
-        <StrategyCard title="Short Put" subtitleLeft="209%" subtitleRight="74%">
-          <PnLChart idSuffix="sp" data={dataShortPut} xMarker={target} />
-        </StrategyCard>
+        {/* Target Price and Budget */}
+        <div className="flex items-center justify-center space-x-8 mb-6">
+          <div className="flex items-center space-x-2">
+            <span className="text-gray-400">Target Price: $</span>
+            <input
+              type="number"
+              value={targetPrice}
+              onChange={(e) => setTargetPrice(parseFloat(e.target.value))}
+              className="bg-[#34495e] border border-[#4a5f7a] rounded px-2 py-1 text-white w-24"
+            />
+            <span className="text-gray-400">(+76%)</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-gray-400">Budget: $</span>
+            <input
+              placeholder="None"
+              className="bg-[#34495e] border border-[#4a5f7a] rounded px-2 py-1 text-gray-400 w-24"
+            />
+          </div>
+        </div>
 
-        <StrategyCard title="Bull Call Spread" subtitleLeft="236%" subtitleRight="52%"> 
-          <PnLChart idSuffix="bcs" data={dataBullCall} xMarker={target} />
-        </StrategyCard>
+        {/* Month Tabs */}
+        <div className="flex justify-center space-x-2 mb-4">
+          {months.map((month, i) => (
+            <div key={i} className="text-center">
+              <button
+                className={`px-3 py-1 rounded text-sm ${
+                  month === "Dec" ? "bg-[#3498db] text-white" : "bg-[#34495e] text-gray-300"
+                }`}
+              >
+                {month}
+              </button>
+              <div className="text-xs text-gray-400 mt-1">{days[i] || ""}</div>
+            </div>
+          ))}
+        </div>
 
-        <StrategyCard title="Bull Put Spread" subtitleLeft="124%" subtitleRight="58%">
-          <PnLChart idSuffix="bps" data={dataBullPut} xMarker={target} />
-        </StrategyCard>
-      </div>
+        {/* Max Return/Max Chance Slider */}
+        <div className="mb-8">
+          <div className="flex justify-between text-sm text-gray-400 mb-2">
+            <span>← Max Return</span>
+            <span>Max Chance →</span>
+          </div>
+          <input 
+            type="range" 
+            min="0" 
+            max="100" 
+            defaultValue="50"
+            className="w-full h-2 bg-[#34495e] rounded-lg appearance-none cursor-pointer"
+          />
+        </div>
 
-      <div className="px-5 pb-10 text-xs text-[#8a97ad]">
-        * Mockup educațional. Nu reprezintă recomandări financiare. Formulele sunt simplificate; valorile sunt per acțiune.
+        {/* Strategy Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <StrategyCard
+            title="Long Call"
+            subtitle="Buy 95C"
+            returnOnRisk="162%"
+            chance="47%"
+            profit="$10,435.59"
+            risk="$6,455"
+            chartData={chartData.longCall}
+            idSuffix="lc"
+            spotPrice={spotPrice}
+            targetPrice={targetPrice}
+          />
+          
+          <StrategyCard
+            title="Covered Call"
+            subtitle="Own the underlying, Sell 210C"
+            returnOnRisk="63%"
+            chance="58%"
+            profit="$8,147"
+            risk="$12,853"
+            chartData={chartData.coveredCall}
+            idSuffix="cc"
+            spotPrice={spotPrice}
+            targetPrice={targetPrice}
+          />
+          
+          <StrategyCard
+            title="Cash-Secured Put"
+            subtitle="Sell 125P, Have cash to buy shares if assigned"
+            returnOnRisk=""
+            returnLabel="Return on collateral"
+            chance="74%"
+            profit="$3,315"
+            risk="$12,500"
+            riskLabel="Collateral"
+            chartData={chartData.cashSecuredPut}
+            idSuffix="csp"
+            spotPrice={spotPrice}
+            targetPrice={targetPrice}
+          />
+          
+          <StrategyCard
+            title="Short Put"
+            subtitle="Sell 115P"
+            returnOnRisk="209%"
+            returnLabel="Return on Collateral"
+            chance="74%"
+            profit="$2,405"
+            risk="$1,150"
+            riskLabel="Collateral"
+            chartData={chartData.shortPut}
+            idSuffix="sp"
+            spotPrice={spotPrice}
+            targetPrice={targetPrice}
+          />
+          
+          <StrategyCard
+            title="Bull Call Spread"
+            subtitle="Buy 95C, Sell 265C"
+            returnOnRisk="236%"
+            chance="52%"
+            profit="$11,865.59"
+            risk="$5,025"
+            chartData={chartData.bullCallSpread}
+            idSuffix="bcs"
+            spotPrice={spotPrice}
+            targetPrice={targetPrice}
+          />
+          
+          <StrategyCard
+            title="Bull Put Spread"
+            subtitle="Buy 90P, Sell 185P"
+            returnOnRisk="124%"
+            chance="58%"
+            profit="$5,805"
+            risk="$4,695"
+            chartData={chartData.bullPutSpread}
+            idSuffix="bps"
+            spotPrice={spotPrice}
+            targetPrice={targetPrice}
+          />
+        </div>
       </div>
     </div>
   );
