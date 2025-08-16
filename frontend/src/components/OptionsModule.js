@@ -358,7 +358,7 @@ export default function OptionsModule() {
             min="0" 
             max="100" 
             defaultValue="50"
-            className="w-full h-2 bg-[#34495e] rounded-lg appearance-none cursor-pointer"
+            className="w-full h-2 bg-[#34495e] appearance-none cursor-pointer"
           />
         </div>
 
