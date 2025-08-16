@@ -52,11 +52,33 @@ class TechnicalAnalysisAgent:
             'bollinger': {'squeeze_threshold': 0.02}
         }
         
-        # Timeframe Analysis Weights
-        self.timeframe_weights = {
-            'weekly': 0.40,      # Primary trend
-            'daily': 0.35,       # Intermediate trend  
-            'hourly': 0.25       # Short-term confirmation
+        # Enhanced Multi-Timeframe Analysis Weights (Dual-Tier System)
+        self.timeframe_tiers = {
+            'primary_check': {
+                'monthly': {'weight': 0.35, 'priority': 'trend_identification'},
+                'weekly': {'weight': 0.35, 'priority': 'structure_analysis'}, 
+                'daily': {'weight': 0.30, 'priority': 'entry_timing'}
+            },
+            'secondary_check': {
+                'h4': {'weight': 0.25, 'priority': 'intraday_structure'},
+                'h1': {'weight': 0.25, 'priority': 'short_term_momentum'},
+                'm15': {'weight': 0.25, 'priority': 'vwap_analysis', 'vwap_required': True},
+                'm1': {'weight': 0.25, 'priority': 'scalping_signals', 'vwap_required': True}
+            }
+        }
+        
+        # Market Sessions for Session-Aware Analysis
+        self.market_sessions = {
+            'premarket': {'start': '04:00', 'end': '09:30', 'timezone': 'US/Eastern'},
+            'regular': {'start': '09:30', 'end': '16:00', 'timezone': 'US/Eastern'},
+            'postmarket': {'start': '16:00', 'end': '20:00', 'timezone': 'US/Eastern'}
+        }
+        
+        # Gap Analysis Settings (Only for Regular Market Hours)
+        self.gap_analysis_config = {
+            'enabled_sessions': ['regular'],  # Gaps only during market hours
+            'gap_threshold': 0.005,  # 0.5% minimum gap size
+            'gap_types': ['gap_up', 'gap_down', 'gap_fill', 'gap_continuation']
         }
     
     async def generate_technical_analysis(self, symbol: str, include_smc: bool = True) -> Dict[str, Any]:
