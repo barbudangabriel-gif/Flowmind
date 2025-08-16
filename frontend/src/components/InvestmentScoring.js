@@ -326,7 +326,44 @@ const InvestmentScoring = React.memo(() => {
         }
       } else {
         console.log('API returned empty data, using fallback mock data');
-        setTopPicks(mockTopPicks);
+        
+        // Update mock data with real-time prices
+        try {
+          console.log('Updating mock data with real-time prices...');
+          const updatedMockData = await Promise.allSettled(
+            mockTopPicks.slice(0, 5).map(async (pick) => {
+              try {
+                const priceResponse = await axios.get(`${API}/stocks/${pick.symbol}/enhanced`, {
+                  timeout: 3000
+                });
+                
+                if (priceResponse.data && priceResponse.data.price) {
+                  return {
+                    ...pick,
+                    current_price: priceResponse.data.price,
+                    explanation: pick.explanation.replace(/shows.*\./, `shows current price of $${priceResponse.data.price.toFixed(2)}.`)
+                  };
+                }
+                return pick;
+              } catch (priceError) {
+                console.warn(`Could not update price for ${pick.symbol}:`, priceError.message);
+                return pick;
+              }
+            })
+          );
+          
+          const finalMockData = updatedMockData
+            .filter(result => result.status === 'fulfilled')
+            .map(result => result.value)
+            .concat(mockTopPicks.slice(5)); // Add remaining mock data unchanged
+          
+          console.log('Updated mock data with real prices for', finalMockData.length, 'items');
+          setTopPicks(finalMockData);
+          
+        } catch (priceUpdateError) {
+          console.error('Error updating mock prices:', priceUpdateError.message);
+          setTopPicks(mockTopPicks);
+        }
       }
     } catch (error) {
       console.error('Error loading top picks, using mock data:', error.message);
