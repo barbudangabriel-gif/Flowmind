@@ -125,33 +125,33 @@ const OptionsModule = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-gray-800 shadow-sm border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate('/')}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
               >
                 <ArrowLeft size={20} />
                 <span>Back to Dashboard</span>
               </button>
-              <div className="h-6 w-px bg-gray-300"></div>
+              <div className="h-6 w-px bg-gray-600"></div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <Zap className="mr-3 text-blue-600" size={28} />
+                <h1 className="text-2xl font-bold text-white flex items-center">
+                  <Zap className="mr-3 text-blue-500" size={28} />
                   Options Module
                 </h1>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-400">
                   Complete options trading toolkit - Real-time Black-Scholes calculations
                 </p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+              <div className="bg-green-900 text-green-300 px-3 py-1 rounded-full text-sm font-medium border border-green-700">
                 ✅ Live Calculations
               </div>
             </div>
@@ -160,7 +160,7 @@ const OptionsModule = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white border-b">
+      <div className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
             {[
@@ -176,8 +176,8 @@ const OptionsModule = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
                   }`}
                 >
                   <Icon size={16} />
