@@ -326,7 +326,7 @@ export default function OptionsModule() {
             <span className="text-gray-400">Budget: $</span>
             <input
               placeholder="None"
-              className="bg-[#34495e] border border-[#4a5f7a] rounded-none px-2 py-1 text-gray-400 w-24"
+              className="bg-[#34495e] border border-[#4a5f7a] px-2 py-1 text-gray-400 w-24"
             />
           </div>
         </div>
