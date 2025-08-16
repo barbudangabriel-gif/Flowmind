@@ -611,21 +611,28 @@ class InvestmentScoringAgent:
         return round(min(100, max(0, composite)), 1)
     
     def _generate_recommendation(self, composite_score: float, signal_scores: Dict[str, float]) -> str:
-        """Generate investment recommendation based on composite score."""
-        if composite_score >= 75:
-            return "STRONG BUY"
-        elif composite_score >= 65:
-            return "BUY"
-        elif composite_score >= 55:
-            return "HOLD+"
+        """Generate investment recommendation based on composite score and discount/premium analysis."""
+        
+        # Get key factors for context
+        discount_score = signal_scores.get('discount_opportunity', 50)
+        premium_penalty = signal_scores.get('premium_penalty', 100)
+        risk_reward_score = signal_scores.get('risk_reward_ratio', 50)
+        
+        # Enhanced recommendation logic
+        if composite_score >= 75 and discount_score >= 65:
+            return "STRONG BUY - DISCOUNT OPPORTUNITY"
+        elif composite_score >= 65 and discount_score >= 55:
+            return "BUY - GOOD ENTRY"
+        elif composite_score >= 55 and risk_reward_score >= 60:
+            return "HOLD+ - DECENT SETUP"
         elif composite_score >= 45:
-            return "HOLD"
-        elif composite_score >= 35:
-            return "HOLD-"
+            return "HOLD - WAIT FOR BETTER ENTRY"
+        elif composite_score >= 35 or premium_penalty < 40:
+            return "HOLD- - AVOID PREMIUM LEVELS"
         elif composite_score >= 25:
-            return "SELL"
+            return "SELL - WEAK FUNDAMENTALS"
         else:
-            return "STRONG SELL"
+            return "STRONG SELL - POOR OPPORTUNITY"
     
     def _calculate_confidence_level(self, signal_scores: Dict[str, float]) -> str:
         """Calculate confidence level based on signal consistency."""
