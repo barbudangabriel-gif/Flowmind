@@ -336,7 +336,7 @@ export default function OptionsModule() {
           {months.map((month, i) => (
             <div key={i} className="text-center">
               <button
-                className={`px-3 py-1 rounded text-sm ${
+                className={`px-3 py-1 rounded-none text-sm ${
                   month === "Dec" ? "bg-[#3498db] text-white" : "bg-[#34495e] text-gray-300"
                 }`}
               >
