@@ -4013,9 +4013,8 @@ class StockMarketAPITester:
         success, aapl_score = self.run_test(
             "Investment Scoring Agent (AAPL)", 
             "POST", 
-            "agents/investment-scoring", 
-            200, 
-            params={"symbol": "AAPL", "include_personalization": False}
+            "agents/investment-scoring?symbol=AAPL&include_personalization=false", 
+            200
         )
         
         if success:
