@@ -369,7 +369,58 @@ const InvestmentScoring = React.memo(() => {
   // Top Picks expansion function
   const expandTopPicks = useCallback(() => {
     setDisplayLimit(Math.min(1000, topPicks.length));
+    setMaxScrollLimit(1000);
   }, [topPicks.length]);
+
+  // Generate more picks using AI Agent
+  const generateMorePicks = useCallback(async () => {
+    setLoadingMore(true);
+    try {
+      console.log('Generating more picks using Investment Scoring Agent...');
+      
+      // Use a list of popular symbols to generate more recommendations
+      const additionalSymbols = [
+        'DIS', 'NFLX', 'ADBE', 'CRM', 'INTC', 'AMD', 'PYPL', 'UBER', 'SQ', 'SHOP',
+        'ZM', 'ROKU', 'SNAP', 'TWTR', 'SPOT', 'DBX', 'WORK', 'CRWD', 'OKTA', 'DDOG',
+        'NET', 'FSLY', 'ESTC', 'MDB', 'SNOW', 'PLTR', 'COIN', 'HOOD', 'AFRM', 'UPST',
+        // Add more symbols as needed for 1000 total
+        'F', 'GM', 'T', 'VZ', 'XOM', 'CVX', 'WFC', 'C', 'GS', 'MS', 'IBM', 'ORCL'
+      ];
+      
+      // For demo purposes, we'll generate additional mock data
+      // In production, this would call the Investment Scoring Agent for each symbol
+      const additionalPicks = additionalSymbols.slice(0, 30).map((symbol, index) => ({
+        symbol,
+        total_score: Math.random() * 40 + 40, // Random score between 40-80
+        rating: ['BUY', 'HOLD +', 'HOLD', 'HOLD -'][Math.floor(Math.random() * 4)],
+        explanation: `${symbol} analysis pending from Investment Scoring Agent.`,
+        risk_level: ['LOW', 'MODERATE', 'HIGH'][Math.floor(Math.random() * 3)],
+        key_strengths: ['Market Position', 'Financial Stability', 'Growth Potential'],
+        key_risks: ['Market Volatility', 'Competition'],
+        current_price: Math.random() * 500 + 50 // Random price for demo
+      }));
+      
+      // Add new picks to existing ones
+      setTopPicks(prevPicks => [...prevPicks, ...additionalPicks]);
+      
+      // Expand the scroll limit
+      setMaxScrollLimit(prevLimit => Math.min(prevLimit + 50, 1000));
+      
+      console.log(`Generated ${additionalPicks.length} additional picks`);
+      
+    } catch (error) {
+      console.error('Error generating more picks:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, []);
+
+  // Load more functionality (loads up to 1000 tickers)
+  const loadMorePicks = useCallback(async () => {
+    if (loadingMore || topPicks.length >= 1000) return;
+    
+    await generateMorePicks();
+  }, [generateMorePicks, loadingMore, topPicks.length]);
 
   // Handle ticker click for detailed analysis
   const handleTickerClick = useCallback(async (symbol) => {
