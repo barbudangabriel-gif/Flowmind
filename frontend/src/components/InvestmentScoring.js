@@ -689,7 +689,7 @@ const InvestmentScoring = React.memo(() => {
                   <div className="font-semibold text-red-700 mb-1">🚨 Premium Penalty</div>
                   <div className="text-red-600">
                     • Applied when stocks are at HIGH prices<br/>
-                    • Overbought conditions (RSI > 70)<br/>
+                    • Overbought conditions (RSI &gt; 70)<br/>
                     • Near resistance levels<br/>
                     • Overvalued relative to fundamentals<br/>
                     • <strong>Result:</strong> Lower investment score
@@ -699,7 +699,7 @@ const InvestmentScoring = React.memo(() => {
                   <div className="font-semibold text-green-700 mb-1">💰 Discount Opportunity</div>
                   <div className="text-green-600">
                     • Applied when stocks are at LOW prices<br/>
-                    • Oversold conditions (RSI < 30)<br/>
+                    • Oversold conditions (RSI &lt; 30)<br/>
                     • Near support levels<br/>
                     • Undervalued relative to fundamentals<br/>
                     • <strong>Result:</strong> Higher investment score
