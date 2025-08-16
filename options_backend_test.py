@@ -526,7 +526,7 @@ class OptionsCalculatorTester:
             {
                 "name": "Missing Parameters",
                 "data": {
-                    "strategy": "Long Call",
+                    "strategy_name": "Long Call",
                     "symbol": "TEST"
                     # Missing required parameters
                 },
@@ -535,7 +535,7 @@ class OptionsCalculatorTester:
             {
                 "name": "Invalid Strike Price",
                 "data": {
-                    "strategy": "Long Call",
+                    "strategy_name": "Long Call",
                     "symbol": "TEST",
                     "stock_price": 100.0,
                     "strike": -50.0,  # Negative strike price
@@ -548,7 +548,7 @@ class OptionsCalculatorTester:
             {
                 "name": "Negative Volatility",
                 "data": {
-                    "strategy": "Long Call",
+                    "strategy_name": "Long Call",
                     "symbol": "TEST",
                     "stock_price": 100.0,
                     "strike": 100.0,
@@ -561,7 +561,7 @@ class OptionsCalculatorTester:
             {
                 "name": "Invalid Expiration",
                 "data": {
-                    "strategy": "Long Call",
+                    "strategy_name": "Long Call",
                     "symbol": "TEST",
                     "stock_price": 100.0,
                     "strike": 100.0,
