@@ -35,6 +35,7 @@ from token_manager import get_token_manager
 
 # AI Agents
 from investment_scoring_agent import InvestmentScoringAgent
+from technical_analysis_agent import TechnicalAnalysisAgent
 
 
 ROOT_DIR = Path(__file__).parent
