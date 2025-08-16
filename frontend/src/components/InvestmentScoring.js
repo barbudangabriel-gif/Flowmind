@@ -31,8 +31,13 @@ const InvestmentScoring = React.memo(() => {
   const [selectedSector, setSelectedSector] = useState('Technology');
   const [selectedStock, setSelectedStock] = useState('');
   const [stockAnalysis, setStockAnalysis] = useState(null);
-  const [activeTab, setActiveTab] = useState('top-picks');
+  const [activeTab, setActiveTab] = useState('ai-agent');  // Default to AI Agent tab
   const [loading, setLoading] = useState(false);
+  
+  // AI Agent specific states
+  const [aiAnalysisSymbol, setAiAnalysisSymbol] = useState('');
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const sectors = [
     'Technology', 'Healthcare', 'Financial Services', 'Consumer Cyclical',
