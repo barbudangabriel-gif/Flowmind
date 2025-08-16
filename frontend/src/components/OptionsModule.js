@@ -267,9 +267,41 @@ const OptionsModule = () => {
         </div>
       </div>
 
+      {/* Navigation Tabs - OptionStrat style */}
+      <div className="bg-gray-800 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex space-x-8">
+            {[
+              { id: 'builder', label: '🏗️ Strategy Builder', icon: Calculator },
+              { id: 'optimizer', label: '🎯 Optimizer', icon: Target },
+              { id: 'flow', label: '🌊 Options Flow', icon: Activity },
+              { id: 'portfolio', label: '📊 Portfolio', icon: PieChart }
+            ].map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === tab.id
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                  }`}
+                >
+                  <Icon size={16} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* Main OptionStrat-style layout */}
       <div className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-12 gap-6">
+        
+        {/* BUILDER Tab */}
+        {activeTab === 'builder' && (
           
           {/* Left Panel - OptionStrat style controls */}
           <div className="col-span-12 lg:col-span-4 space-y-4">
