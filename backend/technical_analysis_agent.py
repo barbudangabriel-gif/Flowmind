@@ -567,8 +567,512 @@ class TechnicalAnalysisAgent:
                 'volume': volume
             })
         
-        return {
-            'daily': daily_data,
-            'weekly': weekly_data,
-            'hourly': hourly_data
-        }
+    def _calculate_rsi_score(self, price_data: List[Dict]) -> float:
+        """Calculate RSI-based score with advanced oversold/overbought analysis."""
+        closes = [float(candle['close']) for candle in price_data[-14:]]  # 14-period RSI
+        
+        if len(closes) < 14:
+            return 50.0
+        
+        # Calculate RSI
+        gains = []
+        losses = []
+        
+        for i in range(1, len(closes)):
+            change = closes[i] - closes[i-1]
+            if change > 0:
+                gains.append(change)
+                losses.append(0)
+            else:
+                gains.append(0)
+                losses.append(abs(change))
+        
+        avg_gain = sum(gains) / len(gains) if gains else 0
+        avg_loss = sum(losses) / len(losses) if losses else 0.01  # Avoid division by zero
+        
+        rs = avg_gain / avg_loss
+        rsi = 100 - (100 / (1 + rs))
+        
+        # Score based on RSI levels
+        if rsi <= self.indicator_thresholds['rsi']['extreme_oversold']:
+            return 90.0  # Extreme oversold - strong buy signal
+        elif rsi <= self.indicator_thresholds['rsi']['oversold']:
+            return 75.0  # Oversold - buy signal
+        elif rsi >= self.indicator_thresholds['rsi']['extreme_overbought']:
+            return 10.0  # Extreme overbought - strong sell signal
+        elif rsi >= self.indicator_thresholds['rsi']['overbought']:
+            return 25.0  # Overbought - sell signal
+        else:
+            # Neutral zone - score based on direction toward oversold/overbought
+            return 50.0 + (50 - rsi) * 0.5  # Prefer lower RSI
+    
+    def _calculate_stochastic_score(self, price_data: List[Dict]) -> float:
+        """Calculate Stochastic oscillator score."""
+        if len(price_data) < 14:
+            return 50.0
+        
+        recent_data = price_data[-14:]
+        current_close = float(recent_data[-1]['close'])
+        lowest_low = min(float(candle['low']) for candle in recent_data)
+        highest_high = max(float(candle['high']) for candle in recent_data)
+        
+        if highest_high == lowest_low:
+            return 50.0
+        
+        k_percent = ((current_close - lowest_low) / (highest_high - lowest_low)) * 100
+        
+        # Score based on Stochastic levels
+        if k_percent <= self.indicator_thresholds['stochastic']['oversold']:
+            return 80.0  # Oversold - buy signal
+        elif k_percent >= self.indicator_thresholds['stochastic']['overbought']:
+            return 20.0  # Overbought - sell signal
+        else:
+            return 50.0 + (50 - k_percent) * 0.3  # Prefer lower values
+    
+    def _calculate_williams_r_score(self, price_data: List[Dict]) -> float:
+        """Calculate Williams %R score."""
+        if len(price_data) < 14:
+            return 50.0
+        
+        recent_data = price_data[-14:]
+        current_close = float(recent_data[-1]['close'])
+        highest_high = max(float(candle['high']) for candle in recent_data)
+        lowest_low = min(float(candle['low']) for candle in recent_data)
+        
+        if highest_high == lowest_low:
+            return 50.0
+        
+        williams_r = ((highest_high - current_close) / (highest_high - lowest_low)) * -100
+        
+        # Score based on Williams %R levels
+        if williams_r <= self.indicator_thresholds['williams_r']['oversold']:
+            return 80.0  # Oversold - buy signal
+        elif williams_r >= self.indicator_thresholds['williams_r']['overbought']:
+            return 20.0  # Overbought - sell signal
+        else:
+            return 50.0 + williams_r * 0.3  # Prefer more oversold values
+    
+    def _calculate_macd_score(self, price_data: List[Dict]) -> float:
+        """Calculate MACD score with signal line crossover."""
+        if len(price_data) < 26:
+            return 50.0
+        
+        closes = [float(candle['close']) for candle in price_data]
+        
+        # Calculate EMAs
+        ema_12 = self._calculate_ema(closes, 12)
+        ema_26 = self._calculate_ema(closes, 26)
+        
+        if not ema_12 or not ema_26:
+            return 50.0
+        
+        # MACD line
+        macd_line = ema_12[-1] - ema_26[-1]
+        macd_prev = ema_12[-2] - ema_26[-2] if len(ema_12) > 1 else macd_line
+        
+        # Signal line (9-period EMA of MACD)
+        macd_values = [ema_12[i] - ema_26[i] for i in range(len(ema_12))]
+        signal_line = self._calculate_ema(macd_values, 9)
+        
+        if not signal_line or len(signal_line) < 2:
+            return 50.0
+        
+        current_signal = signal_line[-1]
+        prev_signal = signal_line[-2]
+        
+        # Score based on MACD conditions
+        score = 50.0
+        
+        # MACD above signal line
+        if macd_line > current_signal:
+            score += 15
+        
+        # MACD crossover signal line (bullish)
+        if macd_prev <= prev_signal and macd_line > current_signal:
+            score += 20
+        
+        # MACD below signal line
+        if macd_line < current_signal:
+            score -= 15
+        
+        # MACD crossunder signal line (bearish)
+        if macd_prev >= prev_signal and macd_line < current_signal:
+            score -= 20
+        
+        # MACD above zero line
+        if macd_line > 0:
+            score += 10
+        else:
+            score -= 10
+        
+        return max(0, min(100, score))
+    
+    def _calculate_ema_crossover_score(self, price_data: List[Dict]) -> float:
+        """Calculate EMA crossover score (50/200 EMA system)."""
+        if len(price_data) < 200:
+            return 50.0
+        
+        closes = [float(candle['close']) for candle in price_data]
+        
+        ema_50 = self._calculate_ema(closes, 50)
+        ema_200 = self._calculate_ema(closes, 200)
+        
+        if not ema_50 or not ema_200 or len(ema_50) < 2 or len(ema_200) < 2:
+            return 50.0
+        
+        current_50 = ema_50[-1]
+        current_200 = ema_200[-1]
+        prev_50 = ema_50[-2]
+        prev_200 = ema_200[-2]
+        
+        score = 50.0
+        
+        # Golden Cross (50 EMA crosses above 200 EMA)
+        if prev_50 <= prev_200 and current_50 > current_200:
+            score = 85.0
+        
+        # Death Cross (50 EMA crosses below 200 EMA)
+        elif prev_50 >= prev_200 and current_50 < current_200:
+            score = 15.0
+        
+        # 50 EMA above 200 EMA (bullish trend)
+        elif current_50 > current_200:
+            distance = (current_50 - current_200) / current_200
+            score = 60.0 + min(20, distance * 1000)  # Scale distance
+        
+        # 50 EMA below 200 EMA (bearish trend)
+        else:
+            distance = (current_200 - current_50) / current_200
+            score = 40.0 - min(20, distance * 1000)  # Scale distance
+        
+        return max(0, min(100, score))
+    
+    def _calculate_adx_score(self, price_data: List[Dict]) -> float:
+        """Calculate ADX (Average Directional Index) score for trend strength."""
+        if len(price_data) < 14:
+            return 50.0
+        
+        # Simplified ADX calculation
+        recent_data = price_data[-14:]
+        
+        # Calculate True Range and Directional Movement
+        tr_values = []
+        dm_plus = []
+        dm_minus = []
+        
+        for i in range(1, len(recent_data)):
+            current = recent_data[i]
+            prev = recent_data[i-1]
+            
+            high = float(current['high'])
+            low = float(current['low'])
+            close = float(current['close'])
+            prev_high = float(prev['high'])
+            prev_low = float(prev['low'])
+            prev_close = float(prev['close'])
+            
+            # True Range
+            tr = max(
+                high - low,
+                abs(high - prev_close),
+                abs(low - prev_close)
+            )
+            tr_values.append(tr)
+            
+            # Directional Movement
+            dm_plus.append(max(0, high - prev_high) if high - prev_high > prev_low - low else 0)
+            dm_minus.append(max(0, prev_low - low) if prev_low - low > high - prev_high else 0)
+        
+        if not tr_values:
+            return 50.0
+        
+        # Average values
+        avg_tr = sum(tr_values) / len(tr_values)
+        avg_dm_plus = sum(dm_plus) / len(dm_plus)
+        avg_dm_minus = sum(dm_minus) / len(dm_minus)
+        
+        # Calculate DI+ and DI-
+        di_plus = (avg_dm_plus / avg_tr) * 100 if avg_tr > 0 else 0
+        di_minus = (avg_dm_minus / avg_tr) * 100 if avg_tr > 0 else 0
+        
+        # ADX calculation
+        dx = abs(di_plus - di_minus) / (di_plus + di_minus) * 100 if (di_plus + di_minus) > 0 else 0
+        
+        # Score based on ADX and DI values
+        score = 50.0
+        
+        if dx > self.indicator_thresholds['adx']['strong_trend']:
+            if di_plus > di_minus:
+                score = 80.0  # Strong bullish trend
+            else:
+                score = 20.0  # Strong bearish trend
+        elif dx > self.indicator_thresholds['adx']['trending']:
+            if di_plus > di_minus:
+                score = 65.0  # Moderate bullish trend
+            else:
+                score = 35.0  # Moderate bearish trend
+        
+        return score
+    
+    def _calculate_ichimoku_score(self, price_data: List[Dict]) -> float:
+        """Calculate Ichimoku Cloud score."""
+        if len(price_data) < 52:
+            return 50.0
+        
+        # Ichimoku lines calculation
+        recent_9 = price_data[-9:]
+        recent_26 = price_data[-26:]
+        recent_52 = price_data[-52:]
+        
+        # Tenkan-sen (Conversion Line) - 9 period
+        tenkan_high = max(float(candle['high']) for candle in recent_9)
+        tenkan_low = min(float(candle['low']) for candle in recent_9)
+        tenkan_sen = (tenkan_high + tenkan_low) / 2
+        
+        # Kijun-sen (Base Line) - 26 period
+        kijun_high = max(float(candle['high']) for candle in recent_26)
+        kijun_low = min(float(candle['low']) for candle in recent_26)
+        kijun_sen = (kijun_high + kijun_low) / 2
+        
+        # Current price
+        current_price = float(price_data[-1]['close'])
+        
+        # Score based on Ichimoku conditions
+        score = 50.0
+        
+        # Price above/below Kijun-sen
+        if current_price > kijun_sen:
+            score += 15
+        else:
+            score -= 15
+        
+        # Tenkan-sen above/below Kijun-sen
+        if tenkan_sen > kijun_sen:
+            score += 10
+        else:
+            score -= 10
+        
+        # TK Cross
+        if len(price_data) > 26:
+            prev_tenkan_high = max(float(candle['high']) for candle in price_data[-10:-1])
+            prev_tenkan_low = min(float(candle['low']) for candle in price_data[-10:-1])
+            prev_tenkan = (prev_tenkan_high + prev_tenkan_low) / 2
+            
+            # Bullish TK cross
+            if prev_tenkan <= kijun_sen and tenkan_sen > kijun_sen:
+                score += 20
+            # Bearish TK cross
+            elif prev_tenkan >= kijun_sen and tenkan_sen < kijun_sen:
+                score -= 20
+        
+        return max(0, min(100, score))
+    
+    def _calculate_obv_score(self, price_data: List[Dict]) -> float:
+        """Calculate On-Balance Volume score."""
+        if len(price_data) < 20:
+            return 50.0
+        
+        # Calculate OBV
+        obv_values = []
+        obv = 0
+        
+        for i in range(1, len(price_data)):
+            current_close = float(price_data[i]['close'])
+            prev_close = float(price_data[i-1]['close'])
+            volume = float(price_data[i]['volume'])
+            
+            if current_close > prev_close:
+                obv += volume
+            elif current_close < prev_close:
+                obv -= volume
+            # No change in OBV if close is unchanged
+            
+            obv_values.append(obv)
+        
+        if len(obv_values) < 10:
+            return 50.0
+        
+        # OBV trend analysis
+        recent_obv = obv_values[-10:]
+        obv_slope = (recent_obv[-1] - recent_obv[0]) / len(recent_obv)
+        
+        # Price trend
+        recent_closes = [float(candle['close']) for candle in price_data[-10:]]
+        price_slope = (recent_closes[-1] - recent_closes[0]) / len(recent_closes)
+        
+        # Score based on OBV-Price divergence/confirmation
+        if obv_slope > 0 and price_slope > 0:
+            return 75.0  # Bullish confirmation
+        elif obv_slope < 0 and price_slope < 0:
+            return 25.0  # Bearish confirmation
+        elif obv_slope > 0 and price_slope < 0:
+            return 80.0  # Bullish divergence - strong buy signal
+        elif obv_slope < 0 and price_slope > 0:
+            return 20.0  # Bearish divergence - strong sell signal
+        else:
+            return 50.0  # Neutral
+    
+    def _calculate_volume_trend_score(self, price_data: List[Dict]) -> float:
+        """Calculate volume trend score."""
+        if len(price_data) < 20:
+            return 50.0
+        
+        recent_data = price_data[-20:]
+        
+        # Calculate average volume
+        volumes = [float(candle['volume']) for candle in recent_data]
+        avg_volume = sum(volumes) / len(volumes)
+        
+        # Recent volume trend
+        recent_volumes = volumes[-5:]
+        older_volumes = volumes[-10:-5]
+        
+        recent_avg = sum(recent_volumes) / len(recent_volumes)
+        older_avg = sum(older_volumes) / len(older_volumes)
+        
+        # Price trend
+        recent_closes = [float(candle['close']) for candle in recent_data[-5:]]
+        price_trend = recent_closes[-1] - recent_closes[0]
+        
+        # Score based on volume-price relationship
+        volume_increase = recent_avg > older_avg * 1.2
+        volume_decrease = recent_avg < older_avg * 0.8
+        
+        if volume_increase and price_trend > 0:
+            return 75.0  # Rising prices on increasing volume
+        elif volume_increase and price_trend < 0:
+            return 25.0  # Falling prices on increasing volume
+        elif volume_decrease and price_trend > 0:
+            return 45.0  # Rising prices on decreasing volume (weak)
+        elif volume_decrease and price_trend < 0:
+            return 55.0  # Falling prices on decreasing volume (weak selling)
+        else:
+            return 50.0  # Neutral
+    
+    def _calculate_vwap_score(self, price_data: List[Dict]) -> float:
+        """Calculate Volume Weighted Average Price score."""
+        if len(price_data) < 20:
+            return 50.0
+        
+        recent_data = price_data[-20:]
+        
+        # Calculate VWAP
+        cumulative_volume = 0
+        cumulative_volume_price = 0
+        
+        for candle in recent_data:
+            volume = float(candle['volume'])
+            typical_price = (float(candle['high']) + float(candle['low']) + float(candle['close'])) / 3
+            
+            cumulative_volume += volume
+            cumulative_volume_price += volume * typical_price
+        
+        if cumulative_volume == 0:
+            return 50.0
+        
+        vwap = cumulative_volume_price / cumulative_volume
+        current_price = float(price_data[-1]['close'])
+        
+        # Score based on price relative to VWAP
+        price_vs_vwap = (current_price - vwap) / vwap
+        
+        if price_vs_vwap > 0.02:  # 2% above VWAP
+            return 70.0  # Bullish - above VWAP
+        elif price_vs_vwap < -0.02:  # 2% below VWAP
+            return 30.0  # Bearish - below VWAP
+        else:
+            return 50.0 + price_vs_vwap * 1000  # Gradual scoring around VWAP
+    
+    def _calculate_bollinger_score(self, price_data: List[Dict]) -> float:
+        """Calculate Bollinger Bands score."""
+        if len(price_data) < 20:
+            return 50.0
+        
+        recent_closes = [float(candle['close']) for candle in price_data[-20:]]
+        
+        # Calculate 20-period SMA and standard deviation
+        sma = sum(recent_closes) / len(recent_closes)
+        variance = sum((close - sma) ** 2 for close in recent_closes) / len(recent_closes)
+        std_dev = math.sqrt(variance)
+        
+        # Bollinger Bands
+        upper_band = sma + (2 * std_dev)
+        lower_band = sma - (2 * std_dev)
+        current_price = recent_closes[-1]
+        
+        # Score based on Bollinger Band position
+        if current_price <= lower_band:
+            return 85.0  # Oversold - potential bounce
+        elif current_price >= upper_band:
+            return 15.0  # Overbought - potential reversal
+        elif current_price < sma:
+            # Below middle line
+            distance_from_lower = (current_price - lower_band) / (sma - lower_band)
+            return 30.0 + distance_from_lower * 20
+        else:
+            # Above middle line
+            distance_from_upper = (upper_band - current_price) / (upper_band - sma)
+            return 50.0 + distance_from_upper * 20
+    
+    def _calculate_atr_score(self, price_data: List[Dict]) -> float:
+        """Calculate Average True Range score for volatility analysis."""
+        if len(price_data) < 14:
+            return 50.0
+        
+        tr_values = []
+        
+        for i in range(1, len(price_data)):
+            current = price_data[i]
+            prev = price_data[i-1]
+            
+            high = float(current['high'])
+            low = float(current['low'])
+            prev_close = float(prev['close'])
+            
+            tr = max(
+                high - low,
+                abs(high - prev_close),
+                abs(low - prev_close)
+            )
+            tr_values.append(tr)
+        
+        if len(tr_values) < 14:
+            return 50.0
+        
+        # Calculate 14-period ATR
+        atr = sum(tr_values[-14:]) / 14
+        current_price = float(price_data[-1]['close'])
+        
+        # ATR as percentage of price
+        atr_percentage = (atr / current_price) * 100
+        
+        # Score based on volatility (moderate volatility preferred)
+        if 1.0 <= atr_percentage <= 3.0:
+            return 60.0  # Good volatility for trading
+        elif 0.5 <= atr_percentage < 1.0:
+            return 45.0  # Low volatility
+        elif 3.0 < atr_percentage <= 5.0:
+            return 55.0  # Higher volatility
+        elif atr_percentage > 5.0:
+            return 30.0  # Very high volatility - risky
+        else:
+            return 40.0  # Very low volatility - stagnant
+    
+    def _calculate_ema(self, values: List[float], period: int) -> List[float]:
+        """Calculate Exponential Moving Average."""
+        if len(values) < period:
+            return []
+        
+        multiplier = 2 / (period + 1)
+        ema_values = []
+        
+        # Start with SMA for first value
+        sma = sum(values[:period]) / period
+        ema_values.append(sma)
+        
+        # Calculate EMA for remaining values
+        for i in range(period, len(values)):
+            ema = (values[i] * multiplier) + (ema_values[-1] * (1 - multiplier))
+            ema_values.append(ema)
+        
+        return ema_values
