@@ -810,7 +810,109 @@ async def get_available_sectors():
     ]
     return {"sectors": sectors}
 
-# Original endpoints remain the same...
+@api_router.get("/data-sources/status")
+async def get_data_sources_status():
+    """Get current data sources status and priority"""
+    try:
+        # Check TradeStation authentication
+        ts_authenticated = ts_auth.is_authenticated()
+        ts_status = "Available" if ts_authenticated else "Not Authenticated"
+        
+        # Test connection if authenticated
+        ts_connection_test = None
+        if ts_authenticated:
+            try:
+                async with ts_client:
+                    ts_connection_test = await ts_client.test_connection()
+            except Exception as e:
+                ts_connection_test = {"status": "error", "message": str(e)}
+        
+        return {
+            "data_source_priority": [
+                {
+                    "rank": 1,
+                    "source": "TradeStation API",
+                    "status": ts_status,
+                    "authenticated": ts_authenticated,
+                    "connection_test": ts_connection_test,
+                    "usage": "Primary source when authenticated",
+                    "reliability": "High (User's Brokerage Data)"
+                },
+                {
+                    "rank": 2, 
+                    "source": "Yahoo Finance",
+                    "status": "Available",
+                    "usage": "Fallback source",
+                    "reliability": "Medium (Free Market Data)"
+                }
+            ],
+            "current_primary_source": "TradeStation API" if ts_authenticated else "Yahoo Finance",
+            "recommendation": "Authenticate with TradeStation for most accurate pricing data" if not ts_authenticated else "Using TradeStation for accurate pricing ✅",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        return {
+            "error": f"Error checking data sources: {str(e)}",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+@api_router.get("/data-sources/test/{symbol}")
+async def test_data_sources(symbol: str):
+    """Test different data sources for a specific symbol"""
+    results = {}
+    
+    # Test TradeStation
+    try:
+        if ts_auth.is_authenticated():
+            async with ts_client:
+                quotes = await ts_client.get_quote([symbol])
+                if quotes:
+                    ts_quote = quotes[0]
+                    results["tradestation"] = {
+                        "status": "success",
+                        "price": ts_quote.last,
+                        "change": ts_quote.change,
+                        "change_percent": ts_quote.change_percent,
+                        "volume": ts_quote.volume,
+                        "timestamp": ts_quote.timestamp.isoformat()
+                    }
+                else:
+                    results["tradestation"] = {"status": "no_data", "message": "No quote data returned"}
+        else:
+            results["tradestation"] = {"status": "not_authenticated", "message": "TradeStation not authenticated"}
+    except Exception as e:
+        results["tradestation"] = {"status": "error", "message": str(e)}
+    
+    # Test Yahoo Finance
+    try:
+        enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
+        results["yahoo_finance"] = {
+            "status": "success",
+            "price": enhanced_data["price"],
+            "change": enhanced_data["change"],
+            "change_percent": enhanced_data["change_percent"],
+            "volume": enhanced_data["volume"],
+            "timestamp": enhanced_data["timestamp"]
+        }
+    except Exception as e:
+        results["yahoo_finance"] = {"status": "error", "message": str(e)}
+    
+    # Show which source would be used
+    primary_source = "tradestation" if ts_auth.is_authenticated() and results.get("tradestation", {}).get("status") == "success" else "yahoo_finance"
+    
+    return {
+        "symbol": symbol.upper(),
+        "test_results": results,
+        "primary_source_used": primary_source,
+        "price_comparison": {
+            "tradestation_price": results.get("tradestation", {}).get("price"),
+            "yahoo_price": results.get("yahoo_finance", {}).get("price"),
+            "difference": None if not (results.get("tradestation", {}).get("price") and results.get("yahoo_finance", {}).get("price")) 
+                        else round(results["tradestation"]["price"] - results["yahoo_finance"]["price"], 2)
+        },
+        "timestamp": datetime.utcnow().isoformat()
+    }
 @api_router.get("/stocks/search/{query}")
 async def search_stocks(query: str):
     """Search for stocks by symbol or company name"""
