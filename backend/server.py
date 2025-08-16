@@ -2523,13 +2523,16 @@ async def get_available_options_strategies():
             "status": "success",
             "strategies": strategies,
             "total_strategies": sum(
-                len(strategies) for category in strategies.values()
-                for strategies in category.values()
+                len(strategies_list) for category in strategies.values()
+                for strategies_list in category.values()
             ),
-            "implemented": ["Long Call", "Long Put"],
+            "implemented": [
+                "Long Call", "Long Put", "Bull Call Spread", "Bear Put Spread",
+                "Iron Condor", "Long Straddle", "Covered Call"
+            ],
             "coming_soon": [
-                "Bull Call Spread", "Bear Put Spread", "Iron Condor", 
-                "Iron Butterfly", "Straddle", "Strangle"
+                "Bull Put Spread", "Bear Call Spread", "Iron Butterfly", 
+                "Long Strangle", "Cash-Secured Put", "Protective Put"
             ],
             "timestamp": datetime.utcnow().isoformat()
         }
@@ -2537,6 +2540,135 @@ async def get_available_options_strategies():
     except Exception as e:
         logger.error(f"Failed to get strategies: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get strategies: {str(e)}")
+
+@api_router.post("/options/optimize")
+async def optimize_options_strategies(
+    symbol: str,
+    stock_price: float,
+    target_price: float,
+    sentiment: str,
+    budget: int = 10000,
+    days_to_expiry: int = 30,
+    volatility: float = 0.25,
+    risk_free_rate: float = 0.05
+):
+    """Optimize and rank options strategies based on parameters"""
+    try:
+        # List of strategies to evaluate
+        strategy_names = [
+            "Long Call", "Long Put", "Bull Call Spread", "Bear Put Spread",
+            "Iron Condor", "Long Straddle", "Covered Call"
+        ]
+        
+        optimized_strategies = []
+        
+        for strategy_name in strategy_names:
+            try:
+                # Create default parameters based on sentiment and target
+                parameters = {}
+                
+                if strategy_name in ["Long Call", "Covered Call"]:
+                    # Bullish strategies - strike near current price
+                    parameters['strike'] = stock_price - 5 if sentiment in ['Bullish', 'Very Bullish'] else stock_price + 5
+                    parameters['call_strike'] = stock_price + 10
+                elif strategy_name == "Long Put":
+                    # Bearish strategy
+                    parameters['strike'] = stock_price + 5 if sentiment in ['Bearish', 'Very Bearish'] else stock_price - 5  
+                elif strategy_name == "Bull Call Spread":
+                    parameters['long_strike'] = stock_price - 5
+                    parameters['short_strike'] = min(target_price, stock_price + 15)
+                elif strategy_name == "Bear Put Spread":
+                    parameters['long_strike'] = stock_price + 5
+                    parameters['short_strike'] = max(target_price, stock_price - 15)
+                elif strategy_name == "Iron Condor":
+                    parameters['put_short_strike'] = stock_price - 10
+                    parameters['put_long_strike'] = stock_price - 20
+                    parameters['call_short_strike'] = stock_price + 10
+                    parameters['call_long_strike'] = stock_price + 20
+                elif strategy_name == "Long Straddle":
+                    parameters['strike'] = stock_price
+                
+                # Create and analyze strategy
+                strategy = options_engine.create_strategy_by_name(
+                    strategy_name=strategy_name,
+                    symbol=symbol,
+                    stock_price=stock_price,
+                    parameters=parameters,
+                    days_to_expiry=days_to_expiry,
+                    volatility=volatility,
+                    risk_free_rate=risk_free_rate
+                )
+                
+                analysis = options_engine.analyze_strategy(strategy)
+                
+                # Calculate key metrics
+                total_premium = sum(leg.premium * leg.quantity * (1 if leg.action.value == 'buy' else -1) 
+                                  for leg in strategy.legs) * 100  # Convert to dollars
+                
+                if abs(total_premium) > budget:
+                    continue  # Skip strategies over budget
+                
+                return_on_risk = (analysis.max_profit / abs(analysis.max_loss)) * 100 if analysis.max_loss != 0 else 0
+                
+                # Create strategy result
+                strategy_result = {
+                    "name": strategy_name,
+                    "strikes": f"{strategy.legs[0].strike}" if len(strategy.legs) == 1 else 
+                             f"{strategy.legs[0].strike}/{strategy.legs[1].strike}" if len(strategy.legs) == 2 else
+                             f"{strategy.legs[0].strike}/{strategy.legs[1].strike}/{strategy.legs[2].strike}/{strategy.legs[3].strike}",
+                    "category": get_strategy_category(strategy_name),
+                    "max_profit": analysis.max_profit,
+                    "max_loss": analysis.max_loss,
+                    "return_on_risk": return_on_risk,
+                    "breakeven": analysis.breakeven_points[0] if analysis.breakeven_points else stock_price,
+                    "prob_profit": analysis.probability_of_profit * 100,
+                    "total_cost": abs(total_premium),
+                    "chart_data": {
+                        "x": analysis.price_array,
+                        "y": analysis.pnl_array
+                    }
+                }
+                
+                optimized_strategies.append(strategy_result)
+                
+            except Exception as e:
+                logger.warning(f"Failed to analyze {strategy_name}: {str(e)}")
+                continue
+        
+        # Sort strategies by return on risk (descending)
+        optimized_strategies.sort(key=lambda x: x['return_on_risk'], reverse=True)
+        
+        return {
+            "status": "success",
+            "symbol": symbol.upper(),
+            "sentiment": sentiment,
+            "target_price": target_price,
+            "strategies": optimized_strategies[:10],  # Top 10 strategies
+            "parameters": {
+                "stock_price": stock_price,
+                "days_to_expiry": days_to_expiry,
+                "volatility": volatility,
+                "budget": budget
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to optimize strategies: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to optimize strategies: {str(e)}")
+
+def get_strategy_category(strategy_name: str) -> str:
+    """Get strategy proficiency category"""
+    categories = {
+        "Long Call": "Novice",
+        "Long Put": "Novice", 
+        "Covered Call": "Novice",
+        "Bull Call Spread": "Intermediate",
+        "Bear Put Spread": "Intermediate",
+        "Iron Condor": "Intermediate",
+        "Long Straddle": "Intermediate"
+    }
+    return categories.get(strategy_name, "Advanced")
 
 @api_router.get("/options/quote/{symbol}")
 async def get_options_chain_data(symbol: str):
