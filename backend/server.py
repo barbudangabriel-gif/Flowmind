@@ -2543,17 +2543,20 @@ async def get_available_options_strategies():
 
 @api_router.post("/options/optimize")
 async def optimize_options_strategies(
-    symbol: str,
-    stock_price: float,
-    target_price: float,
-    sentiment: str,
-    budget: int = 10000,
-    days_to_expiry: int = 30,
-    volatility: float = 0.25,
-    risk_free_rate: float = 0.05
+    request: dict
 ):
     """Optimize and rank options strategies based on parameters"""
     try:
+        # Extract parameters from request body
+        symbol = request.get('symbol', 'SPY')
+        stock_price = request.get('stock_price', 100.0)
+        target_price = request.get('target_price', 105.0)
+        sentiment = request.get('sentiment', 'Neutral')
+        budget = request.get('budget', 10000)
+        days_to_expiry = request.get('days_to_expiry', 30)
+        volatility = request.get('volatility', 0.25)
+        risk_free_rate = request.get('risk_free_rate', 0.05)
+        
         # List of strategies to evaluate
         strategy_names = [
             "Long Call", "Long Put", "Bull Call Spread", "Bear Put Spread",
