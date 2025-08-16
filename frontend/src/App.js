@@ -240,6 +240,12 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       ]
     },
     {
+      title: "Advanced Trading 🎯",
+      items: [
+        { id: 'options-module', label: 'Options Module', icon: Zap, color: 'from-purple-500 to-indigo-600', badge: '⚡', shortLabel: 'Options', route: '/options' }
+      ]
+    },
+    {
       title: "Tools & Alerts",
       items: [
         { id: 'watchlist', label: 'Watchlist', icon: Star, color: 'from-yellow-500 to-amber-500', shortLabel: 'Watch' },
