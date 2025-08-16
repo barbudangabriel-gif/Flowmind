@@ -52,7 +52,8 @@ import {
   XCircle,
   CreditCard,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  Clock
 } from "lucide-react";
 
 // Lazy loading for heavy components
