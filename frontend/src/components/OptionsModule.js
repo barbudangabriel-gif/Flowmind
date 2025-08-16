@@ -78,6 +78,56 @@ const OptionsModule = () => {
     }
   };
 
+  // Sentiment options pentru Optimizer - OptionStrat style
+  const sentimentOptions = [
+    { value: 'Very Bearish', color: 'bg-red-600', textColor: 'text-red-100' },
+    { value: 'Bearish', color: 'bg-red-500', textColor: 'text-red-100' },
+    { value: 'Neutral', color: 'bg-gray-600', textColor: 'text-gray-100' },
+    { value: 'Directional', color: 'bg-purple-600', textColor: 'text-purple-100' },
+    { value: 'Bullish', color: 'bg-green-500', textColor: 'text-green-100' },
+    { value: 'Very Bullish', color: 'bg-green-600', textColor: 'text-green-100' }
+  ];
+
+  // Mock optimized strategies data - OptionStrat style results
+  const mockOptimizedStrategies = [
+    {
+      name: 'Long Call',
+      strike: '635C',
+      returnOnRisk: '87%',
+      chance: '--',
+      profit: '$1,362.94',
+      risk: '$1,570',
+      category: 'Novice'
+    },
+    {
+      name: 'Bull Call Spread', 
+      strikes: '646C/665C',
+      returnOnRisk: '173%',
+      chance: '--',
+      profit: '$1,161.94',
+      risk: '$671',
+      category: 'Intermediate'
+    },
+    {
+      name: 'Bull Put Spread',
+      strikes: '643P/646P', 
+      returnOnRisk: '63%',
+      chance: '--',
+      profit: '$116',
+      risk: '$184',
+      category: 'Intermediate'
+    },
+    {
+      name: 'Short Put',
+      strike: '625P',
+      returnOnRisk: '3%',
+      chance: '--',
+      profit: '$332',
+      risk: '$11,021.60',
+      category: 'Advanced'
+    }
+  ];
+
   // Strike prices pentru selection - OptionStrat style
   const generateStrikes = (currentPrice) => {
     const strikes = [];
