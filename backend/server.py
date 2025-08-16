@@ -384,10 +384,60 @@ async def get_stock(symbol: str):
 
 @api_router.get("/stocks/{symbol}/enhanced", response_model=EnhancedStockData)
 async def get_stock_enhanced(symbol: str):
-    """Get enhanced stock data with real-time prices and extended hours"""
+    """Get enhanced stock data with TradeStation priority for pricing"""
     try:
+        # Try TradeStation first if authenticated
+        if ts_auth.is_authenticated():
+            try:
+                async with ts_client:
+                    quotes = await ts_client.get_quote([symbol])
+                    
+                if quotes and len(quotes) > 0:
+                    ts_quote = quotes[0]
+                    
+                    # Get supplementary data from enhanced ticker manager
+                    try:
+                        enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
+                        
+                        # Merge TradeStation pricing with enhanced supplementary data
+                        enhanced_data.update({
+                            "price": ts_quote.last,
+                            "change": ts_quote.change,
+                            "change_percent": ts_quote.change_percent,
+                            "volume": ts_quote.volume,
+                            "data_source": "TradeStation API + Enhanced Data",
+                            "timestamp": datetime.utcnow().isoformat()
+                        })
+                        
+                        logger.info(f"Using TradeStation pricing for enhanced {symbol}: ${ts_quote.last}")
+                        return EnhancedStockData(**enhanced_data)
+                        
+                    except Exception as e:
+                        logger.warning(f"Enhanced data failed for {symbol}, using TradeStation data only: {str(e)}")
+                        
+                        # Fallback with TradeStation data only
+                        return EnhancedStockData(
+                            symbol=ts_quote.symbol,
+                            name=ts_quote.symbol,  # Limited data from TradeStation
+                            sector="Unknown",
+                            industry="Unknown", 
+                            price=ts_quote.last,
+                            change=ts_quote.change,
+                            change_percent=ts_quote.change_percent,
+                            volume=ts_quote.volume,
+                            exchange="Unknown",
+                            timestamp=datetime.utcnow().isoformat(),
+                            data_source="TradeStation API (Limited)"
+                        )
+                        
+            except Exception as e:
+                logger.warning(f"TradeStation enhanced quote failed for {symbol}: {str(e)}")
+        
+        # Fallback to standard enhanced data
         enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
+        enhanced_data["data_source"] = "Yahoo Finance Enhanced (Fallback)"
         return EnhancedStockData(**enhanced_data)
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching enhanced data for {symbol}: {str(e)}")
 
