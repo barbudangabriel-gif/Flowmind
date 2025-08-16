@@ -20,7 +20,9 @@ import {
   DollarSign,
   Percent,
   Calendar,
-  Info
+  Info,
+  ChevronDown,
+  Maximize2
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -28,39 +30,56 @@ const API = `${BACKEND_URL}/api`;
 
 const OptionsModule = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('builder');
   const [selectedStrategy, setSelectedStrategy] = useState('Long Call');
   const [loading, setLoading] = useState(false);
   const [calculationData, setCalculationData] = useState(null);
   const [error, setError] = useState(null);
   
-  // Strategy parameters
-  const [symbol, setSymbol] = useState('AAPL');
-  const [stockPrice, setStockPrice] = useState(150.0);
-  const [strike, setStrike] = useState(155.0);
+  // Strategy parameters - OptionStrat style
+  const [symbol, setSymbol] = useState('SPY');
+  const [stockPrice, setStockPrice] = useState(643.48);
+  const [strike, setStrike] = useState(645.0);
   const [daysToExpiry, setDaysToExpiry] = useState(30);
   const [volatility, setVolatility] = useState(0.25);
   const [riskFreeRate, setRiskFreeRate] = useState(0.05);
+  const [selectedExpiry, setSelectedExpiry] = useState('Dec 20');
 
-  // Available strategies
-  const [availableStrategies, setAvailableStrategies] = useState({});
+  // OptionStrat style strategy categories
+  const strategyCategories = {
+    'Novice': {
+      color: 'bg-green-900/20 border-green-700',
+      textColor: 'text-green-300',
+      strategies: ['Long Call', 'Long Put', 'Covered Call', 'Cash-Secured Put', 'Protective Put']
+    },
+    'Intermediate': {
+      color: 'bg-blue-900/20 border-blue-700', 
+      textColor: 'text-blue-300',
+      strategies: ['Bull Call Spread', 'Bear Put Spread', 'Iron Condor', 'Iron Butterfly', 'Straddle', 'Strangle']
+    },
+    'Advanced': {
+      color: 'bg-purple-900/20 border-purple-700',
+      textColor: 'text-purple-300', 
+      strategies: ['Short Straddle', 'Jade Lizard', 'Call Ratio Spread', 'Put Broken Wing']
+    },
+    'Expert': {
+      color: 'bg-red-900/20 border-red-700',
+      textColor: 'text-red-300',
+      strategies: ['Synthetic Future', 'Double Diagonal', 'Strip', 'Strap']
+    }
+  };
 
-  // Load available strategies
-  useEffect(() => {
-    const loadStrategies = async () => {
-      try {
-        const response = await fetch(`${API}/options/strategies`);
-        const data = await response.json();
-        if (data.status === 'success') {
-          setAvailableStrategies(data.strategies);
-        }
-      } catch (error) {
-        console.error('Failed to load strategies:', error);
-      }
-    };
-    
-    loadStrategies();
-  }, []);
+  // Strike prices pentru selection - OptionStrat style
+  const generateStrikes = (currentPrice) => {
+    const strikes = [];
+    const baseStrike = Math.round(currentPrice / 5) * 5; // Round to nearest 5
+    for (let i = -10; i <= 10; i++) {
+      strikes.push(baseStrike + (i * 5));
+    }
+    return strikes;
+  };
+
+  const availableStrikes = generateStrikes(stockPrice);
+  const expirationDates = ['Dec 20', 'Dec 27', 'Jan 3', 'Jan 10', 'Jan 17', 'Jan 24', 'Jan 31'];
 
   // Auto-calculate when parameters change
   useEffect(() => {
@@ -108,399 +127,346 @@ const OptionsModule = () => {
     }
   };
 
-  // Strategy categories for easy selection
-  const strategyCategories = {
-    novice: {
-      label: 'Novice',
-      strategies: ['Long Call', 'Long Put']
-    },
-    intermediate: {
-      label: 'Intermediate', 
-      strategies: ['Bull Call Spread', 'Bear Put Spread', 'Iron Condor', 'Straddle']
-    },
-    advanced: {
-      label: 'Advanced',
-      strategies: ['Short Straddle', 'Jade Lizard', 'Call Ratio Spread']
+  const getStrategyCategory = (strategy) => {
+    for (const [category, data] of Object.entries(strategyCategories)) {
+      if (data.strategies.includes(strategy)) {
+        return { category, ...data };
+      }
     }
+    return { category: 'Novice', ...strategyCategories.Novice };
   };
+
+  const currentStrategyInfo = getStrategyCategory(selectedStrategy);
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Header */}
-      <div className="bg-gray-800 shadow-sm border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      {/* OptionStrat style header */}
+      <div className="bg-gray-800 border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate('/')}
-                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors"
               >
                 <ArrowLeft size={20} />
-                <span>Back to Dashboard</span>
               </button>
-              <div className="h-6 w-px bg-gray-600"></div>
               <div>
-                <h1 className="text-2xl font-bold text-white flex items-center">
-                  <Zap className="mr-3 text-blue-500" size={28} />
-                  Options Module
+                <h1 className="text-xl font-bold text-white flex items-center">
+                  <Zap className="mr-2 text-blue-500" size={24} />
+                  FlowMind Options
                 </h1>
-                <p className="text-sm text-gray-400">
-                  Complete options trading toolkit - Real-time Black-Scholes calculations
-                </p>
+                <p className="text-sm text-gray-400">The Option Trader's Toolkit</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="bg-green-900 text-green-300 px-3 py-1 rounded-full text-sm font-medium border border-green-700">
-                ✅ Live Calculations
+              <div className="bg-green-900 text-green-300 px-3 py-1 rounded text-sm border border-green-700">
+                ✅ Live Data
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="bg-gray-800 border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            {[
-              { id: 'builder', label: '🏗️ Strategy Builder', icon: Calculator },
-              { id: 'optimizer', label: '🎯 Optimizer', icon: Target },
-              { id: 'flow', label: '🌊 Options Flow', icon: Activity },
-              { id: 'portfolio', label: '📊 Portfolio', icon: PieChart }
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-400'
-                      : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
-                  }`}
-                >
-                  <Icon size={16} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Strategy Builder Tab */}
-        {activeTab === 'builder' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Main OptionStrat-style layout */}
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="grid grid-cols-12 gap-6">
+          
+          {/* Left Panel - OptionStrat style controls */}
+          <div className="col-span-12 lg:col-span-4 space-y-4">
             
-            {/* Left Panel - Strategy Configuration */}
-            <div className="lg:col-span-1 space-y-6">
-              
-              {/* Strategy Selection */}
-              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                  <Target className="mr-2 text-blue-400" size={20} />
-                  Strategy Selection
-                </h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Strategy Type
-                    </label>
-                    <select 
-                      value={selectedStrategy}
-                      onChange={(e) => setSelectedStrategy(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
-                    >
-                      <optgroup label="✅ Implemented">
-                        <option>Long Call</option>
-                        <option>Long Put</option>
-                      </optgroup>
-                      <optgroup label="🚧 Coming Soon">
-                        <option disabled>Bull Call Spread</option>
-                        <option disabled>Bear Put Spread</option>
-                        <option disabled>Iron Condor</option>
-                        <option disabled>Straddle</option>
-                      </optgroup>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Parameters */}
-              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                  <Settings className="mr-2 text-blue-400" size={20} />
-                  Parameters
-                </h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Symbol
-                    </label>
+            {/* Symbol și Price - OptionStrat style */}
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="relative">
                     <input
                       type="text"
                       value={symbol}
                       onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
-                      placeholder="e.g. AAPL"
+                      className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 w-20 text-center font-bold"
+                      placeholder="SPY"
                     />
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Stock Price ($)
-                      </label>
-                      <input
-                        type="number"
-                        value={stockPrice}
-                        onChange={(e) => setStockPrice(e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
-                        step="0.01"
-                      />
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-white">${stockPrice}</div>
+                    <div className="text-sm text-green-400">+0.23% +$1.47</div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400">Delayed</div>
+              </div>
+            </div>
+
+            {/* Strategy Selection - OptionStrat style */}
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <label className="block text-sm font-medium text-gray-300 mb-3">Strategy</label>
+              
+              {/* Strategy categories */}
+              <div className="space-y-2 mb-4">
+                {Object.entries(strategyCategories).map(([category, data]) => (
+                  <div key={category} className={`rounded p-2 border ${data.color}`}>
+                    <div className={`text-xs font-semibold ${data.textColor} mb-1`}>
+                      {category}
                     </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Strike ($)
-                      </label>
-                      <input
-                        type="number"
-                        value={strike}
-                        onChange={(e) => setStrike(e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
-                        step="0.01"
-                      />
+                    <div className="grid grid-cols-1 gap-1">
+                      {data.strategies.slice(0, 2).map((strategy) => (
+                        <button
+                          key={strategy}
+                          onClick={() => setSelectedStrategy(strategy)}
+                          className={`text-left text-xs p-1 rounded transition-colors ${
+                            selectedStrategy === strategy 
+                              ? 'bg-blue-600 text-white' 
+                              : 'text-gray-300 hover:bg-gray-700'
+                          } ${!['Long Call', 'Long Put'].includes(strategy) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          disabled={!['Long Call', 'Long Put'].includes(strategy)}
+                        >
+                          {strategy}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                  
+                ))}
+              </div>
+
+              {/* Current strategy display */}
+              <div className={`rounded p-3 border ${currentStrategyInfo.color}`}>
+                <div className={`font-semibold ${currentStrategyInfo.textColor}`}>
+                  {selectedStrategy}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  {currentStrategyInfo.category} Strategy
+                </div>
+              </div>
+            </div>
+
+            {/* Strike Selection - OptionStrat style */}
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <label className="block text-sm font-medium text-gray-300 mb-3">Strike Price</label>
+              <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto">
+                {availableStrikes.map((strikePrice) => (
+                  <button
+                    key={strikePrice}
+                    onClick={() => setStrike(strikePrice)}
+                    className={`text-sm p-2 rounded border transition-colors ${
+                      strike === strikePrice
+                        ? 'bg-blue-600 text-white border-blue-500'
+                        : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
+                    }`}
+                  >
+                    ${strikePrice}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Expiration Selection - OptionStrat style */}
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <label className="block text-sm font-medium text-gray-300 mb-3">Expiration</label>
+              <div className="grid grid-cols-2 gap-2">
+                {expirationDates.map((date) => (
+                  <button
+                    key={date}
+                    onClick={() => setSelectedExpiry(date)}
+                    className={`text-sm p-2 rounded border transition-colors ${
+                      selectedExpiry === date
+                        ? 'bg-blue-600 text-white border-blue-500'
+                        : 'bg-gray-700 text-gray-300 border-gray-600 hover:bg-gray-600'
+                    }`}
+                  >
+                    {date}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Advanced Parameters - Collapsible */}
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <details className="group">
+                <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-gray-300 mb-3">
+                  <span>Advanced Parameters</span>
+                  <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform" />
+                </summary>
+                <div className="space-y-3 mt-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Days to Expiry
-                    </label>
+                    <label className="block text-xs text-gray-400 mb-1">Volatility (%)</label>
+                    <input
+                      type="number"
+                      value={volatility * 100}
+                      onChange={(e) => setVolatility(e.target.value / 100)}
+                      className="w-full bg-gray-700 text-white px-2 py-1 rounded border border-gray-600 text-sm"
+                      step="1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Risk-Free Rate (%)</label>
+                    <input
+                      type="number"
+                      value={riskFreeRate * 100}
+                      onChange={(e) => setRiskFreeRate(e.target.value / 100)}
+                      className="w-full bg-gray-700 text-white px-2 py-1 rounded border border-gray-600 text-sm"
+                      step="0.1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Days to Expiry</label>
                     <input
                       type="number"
                       value={daysToExpiry}
                       onChange={(e) => setDaysToExpiry(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
-                      min="1"
-                      max="365"
+                      className="w-full bg-gray-700 text-white px-2 py-1 rounded border border-gray-600 text-sm"
                     />
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Volatility (%)
-                      </label>
-                      <input
-                        type="number"
-                        value={volatility * 100}
-                        onChange={(e) => setVolatility(e.target.value / 100)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
-                        step="1"
-                        min="1"
-                        max="100"
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Risk Free Rate (%)
-                      </label>
-                      <input
-                        type="number"
-                        value={riskFreeRate * 100}
-                        onChange={(e) => setRiskFreeRate(e.target.value / 100)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
-                        step="0.1"
-                        min="0"
-                        max="10"
-                      />
-                    </div>
-                  </div>
                 </div>
-              </div>
-
-              {/* Strategy Analysis */}
-              {calculationData && (
-                <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                    <BarChart3 className="mr-2 text-blue-400" size={20} />
-                    Analysis
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    {/* Strategy Info */}
-                    <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
-                      <h4 className="font-semibold text-blue-300 mb-2">
-                        {calculationData.strategy_config.name}
-                      </h4>
-                      <p className="text-sm text-blue-200">
-                        {calculationData.strategy_config.description}
-                      </p>
-                    </div>
-                    
-                    {/* Legs */}
-                    {calculationData.strategy_config.legs.map((leg, index) => (
-                      <div key={index} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <span className="font-medium text-white">
-                              {leg.action.toUpperCase()} {leg.option_type.toUpperCase()}
-                            </span>
-                            <br />
-                            <span className="text-sm text-gray-300">
-                              Strike: ${leg.strike} × {leg.quantity}
-                            </span>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-green-400">
-                              ${leg.premium.toFixed(2)}
-                            </div>
-                            <div className="text-sm text-gray-400">Premium</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {/* P&L Summary */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-green-400">
-                          ${calculationData.analysis.max_profit.toFixed(0)}
-                        </div>
-                        <div className="text-sm text-green-300">Max Profit</div>
-                      </div>
-                      
-                      <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-red-400">
-                          ${Math.abs(calculationData.analysis.max_loss).toFixed(0)}
-                        </div>
-                        <div className="text-sm text-red-300">Max Loss</div>
-                      </div>
-                    </div>
-                    
-                    {/* Breakeven */}
-                    {calculationData.analysis.breakeven_points.length > 0 && (
-                      <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4">
-                        <div className="font-medium text-yellow-300 mb-2">Breakeven Points</div>
-                        {calculationData.analysis.breakeven_points.map((point, index) => (
-                          <div key={index} className="text-yellow-200">
-                            ${point.toFixed(2)}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Probability */}
-                    <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4 text-center">
-                      <div className="text-xl font-bold text-blue-400">
-                        {calculationData.analysis.probability_of_profit.toFixed(1)}%
-                      </div>
-                      <div className="text-sm text-blue-300">Probability of Profit</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              </details>
             </div>
+          </div>
+
+          {/* Right Panel - Chart și Analysis (OptionStrat style) */}
+          <div className="col-span-12 lg:col-span-8">
             
-            {/* Right Panel - P&L Chart și Greeks */}
-            <div className="lg:col-span-2 space-y-6">
+            {/* Main P&L Chart - OptionStrat style */}
+            <div className="bg-gray-800 rounded-lg border border-gray-700 mb-4">
+              <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                <h3 className="text-white font-semibold">Profit & Loss</h3>
+                <div className="flex items-center space-x-2">
+                  <button className="text-gray-400 hover:text-white">
+                    <Maximize2 size={16} />
+                  </button>
+                </div>
+              </div>
               
-              {/* P&L Chart */}
-              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
-                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                  <TrendingUp className="mr-2 text-blue-400" size={20} />
-                  Profit & Loss Chart
-                </h3>
-                
+              <div className="p-4">
                 {loading && (
-                  <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                    <span className="ml-2 text-gray-300">Calculating...</span>
-                  </div>
-                )}
-                
-                {error && (
-                  <div className="bg-red-900/30 border border-red-700 rounded-lg p-4">
-                    <div className="flex items-center">
-                      <div className="text-red-400 mr-2">⚠️</div>
-                      <div className="text-red-300">{error}</div>
+                  <div className="h-80 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                      <div className="text-gray-400">Calculating...</div>
                     </div>
                   </div>
                 )}
-                
+
+                {error && (
+                  <div className="h-80 flex items-center justify-center">
+                    <div className="text-center text-red-400">
+                      <div className="mb-2">⚠️</div>
+                      <div>{error}</div>
+                    </div>
+                  </div>
+                )}
+
                 {calculationData && !loading && !error && (
-                  <div className="h-64 bg-gray-900 rounded-lg flex items-center justify-center border border-gray-600">
+                  <div className="h-80 bg-gray-900 rounded border border-gray-600 flex items-center justify-center">
                     <div className="text-center">
-                      <BarChart3 className="mx-auto mb-2 text-blue-400" size={48} />
-                      <p className="text-gray-300 mb-2">Interactive P&L Chart</p>
-                      <p className="text-sm text-gray-400">
-                        Plotly.js integration coming în next phase
-                      </p>
-                      <div className="mt-4 text-xs text-gray-500">
-                        Data ready: {calculationData.chart_data.x.length} price points
+                      <BarChart3 className="mx-auto mb-3 text-blue-400" size={48} />
+                      <div className="text-white font-semibold mb-2">Interactive P&L Chart</div>
+                      <div className="text-gray-400 text-sm">
+                        Ready pentru Plotly.js integration
+                      </div>
+                      <div className="text-xs text-gray-500 mt-2">
+                        {calculationData.chart_data.x.length} price points calculated
                       </div>
                     </div>
                   </div>
                 )}
               </div>
-              
-              {/* Greeks */}
-              {calculationData && (
-                <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
-                  <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-                    <Calculator className="mr-2 text-blue-400" size={20} />
-                    Greeks Analysis
-                  </h3>
-                  
-                  <div className="grid grid-cols-5 gap-4">
-                    {Object.entries(calculationData.analysis.greeks).map(([greek, value]) => (
-                      <div key={greek} className="bg-gray-700 rounded-lg p-4 text-center border border-gray-600">
-                        <div className="text-lg font-bold text-white">
-                          {typeof value === 'number' ? value.toFixed(3) : value}
-                        </div>
-                        <div className="text-sm text-gray-300 capitalize">
-                          {greek}
-                        </div>
-                      </div>
-                    ))}
+            </div>
+
+            {/* Analysis Results - OptionStrat style */}
+            {calculationData && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                
+                {/* Max Profit */}
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                  <div className="text-xs text-gray-400 mb-1">MAX PROFIT</div>
+                  <div className="text-lg font-bold text-green-400">
+                    ${calculationData.analysis.max_profit.toFixed(0)}
                   </div>
-                  
-                  <div className="mt-4 text-sm text-gray-400 flex items-center">
-                    <Info className="inline mr-1" size={14} />
-                    Greeks calculated using Black-Scholes model în real-time
+                  <div className="text-xs text-gray-500">
+                    {calculationData.analysis.max_profit > 10000 ? 'Unlimited' : 'Limited'}
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* Other tabs placeholder */}
-        {activeTab !== 'builder' && (
-          <div className="bg-gray-800 rounded-lg shadow-lg p-8 text-center border border-gray-700">
-            <div className="mb-6">
-              {activeTab === 'optimizer' && <Target className="mx-auto mb-4 text-blue-400" size={64} />}
-              {activeTab === 'flow' && <Activity className="mx-auto mb-4 text-blue-400" size={64} />}
-              {activeTab === 'portfolio' && <PieChart className="mx-auto mb-4 text-blue-400" size={64} />}
-              
-              <h4 className="text-2xl font-bold text-white mb-2 capitalize">
-                {activeTab} Module
-              </h4>
-              <p className="text-gray-400 mb-6">
-                This section will be implemented în next development phases
-              </p>
-            </div>
+                {/* Max Loss */}
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                  <div className="text-xs text-gray-400 mb-1">MAX LOSS</div>
+                  <div className="text-lg font-bold text-red-400">
+                    ${Math.abs(calculationData.analysis.max_loss).toFixed(0)}
+                  </div>
+                  <div className="text-xs text-gray-500">Limited</div>
+                </div>
+
+                {/* Breakeven */}
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                  <div className="text-xs text-gray-400 mb-1">BREAKEVEN</div>
+                  <div className="text-lg font-bold text-yellow-400">
+                    {calculationData.analysis.breakeven_points.length > 0 
+                      ? `$${calculationData.analysis.breakeven_points[0].toFixed(2)}`
+                      : 'N/A'
+                    }
+                  </div>
+                  <div className="text-xs text-gray-500">At Expiration</div>
+                </div>
+
+                {/* Probability of Profit */}
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                  <div className="text-xs text-gray-400 mb-1">PROB OF PROFIT</div>
+                  <div className="text-lg font-bold text-blue-400">
+                    {calculationData.analysis.probability_of_profit.toFixed(1)}%
+                  </div>
+                  <div className="text-xs text-gray-500">Estimated</div>
+                </div>
+              </div>
+            )}
+
+            {/* Greeks - OptionStrat style */}
+            {calculationData && (
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <h4 className="text-white font-semibold mb-3">Greeks</h4>
+                <div className="grid grid-cols-5 gap-4">
+                  {Object.entries(calculationData.analysis.greeks).map(([greek, value]) => (
+                    <div key={greek} className="text-center">
+                      <div className="text-xs text-gray-400 mb-1">{greek.toUpperCase()}</div>
+                      <div className="text-sm font-mono text-white">
+                        {typeof value === 'number' ? value.toFixed(3) : value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Strategy Details - OptionStrat style */}
+            {calculationData && (
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 mt-4">
+                <h4 className="text-white font-semibold mb-3">Strategy Details</h4>
+                <div className="space-y-2">
+                  {calculationData.strategy_config.legs.map((leg, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-gray-700 rounded">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                          leg.action === 'buy' ? 'bg-green-400' : 'bg-red-400'
+                        }`}></div>
+                        <span className="text-white text-sm">
+                          {leg.action.toUpperCase()} {leg.option_type.toUpperCase()}
+                        </span>
+                        <span className="text-gray-300 text-sm">
+                          ${leg.strike}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-white font-mono text-sm">
+                          ${leg.premium.toFixed(2)}
+                        </div>
+                        <div className="text-xs text-gray-400">Premium</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
