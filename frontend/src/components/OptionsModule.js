@@ -232,20 +232,20 @@ export default function OptionsModule() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-500"></div>
+              <div className="w-8 h-8 bg-[#3498db] rounded-none"></div>
               <span className="text-xl font-bold">OptionStrat</span>
             </div>
             <nav className="hidden md:flex space-x-6">
-              <button className="text-gray-300 hover:text-white">Build ▼</button>
-              <button className="text-gray-300 hover:text-white">Optimize</button>
-              <button className="text-gray-300 hover:text-white">Flow ▼</button>
+              <button className="text-[#bdc3c7] hover:text-white transition-colors">Build ▼</button>
+              <button className="text-[#bdc3c7] hover:text-white transition-colors">Optimize</button>
+              <button className="text-[#bdc3c7] hover:text-white transition-colors">Flow ▼</button>
             </nav>
           </div>
           
           <div className="flex items-center space-x-6 text-sm">
-            <span>Tutorials</span>
-            <span>Blog</span>
-            <button>My Account ▼</button>
+            <span className="text-[#bdc3c7] hover:text-white transition-colors cursor-pointer">Tutorials</span>
+            <span className="text-[#bdc3c7] hover:text-white transition-colors cursor-pointer">Blog</span>
+            <button className="text-[#bdc3c7] hover:text-white transition-colors">My Account ▼</button>
           </div>
         </div>
       </div>
