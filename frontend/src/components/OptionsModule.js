@@ -293,31 +293,33 @@ export default function OptionsModule() {
         {/* Target Price and Budget */}
         <div className="flex items-center justify-center space-x-8 mb-6">
           <div className="flex items-center space-x-2">
-            <span className="text-gray-400">Target Price: $</span>
+            <span className="text-[#7f8c8d]">Target Price: $</span>
             <input
               type="number"
               value={targetPrice}
               onChange={(e) => setTargetPrice(parseFloat(e.target.value))}
-              className="bg-[#34495e] border border-[#4a5f7a] px-2 py-1 text-white w-24"
+              className="bg-[#34495e] border border-[#4a5f7a] px-2 py-1 text-white w-24 rounded-none focus:outline-none focus:border-[#3498db]"
             />
-            <span className="text-gray-400">(+76%)</span>
+            <span className="text-[#7f8c8d]">(+76%)</span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-gray-400">Budget: $</span>
+            <span className="text-[#7f8c8d]">Budget: $</span>
             <input
               placeholder="None"
-              className="bg-[#34495e] border border-[#4a5f7a] px-2 py-1 text-gray-400 w-24"
+              className="bg-[#34495e] border border-[#4a5f7a] px-2 py-1 text-[#7f8c8d] w-24 rounded-none focus:outline-none focus:border-[#3498db]"
             />
           </div>
         </div>
 
-        {/* Month Tabs */}
+        {/* Month Tabs - Sharp Corners */}
         <div className="flex justify-center space-x-2 mb-8">
           {months.map((month, i) => (
             <button
               key={i}
-              className={`px-3 py-1 text-sm border ${
-                month === "Dec" ? "bg-[#3498db] text-white border-[#3498db]" : "bg-[#34495e] text-gray-300 border-[#4a5f7a]"
+              className={`px-3 py-1 text-sm border rounded-none transition-colors ${
+                month === "Dec" 
+                  ? "bg-[#3498db] text-white border-[#3498db]" 
+                  : "bg-[#34495e] text-[#bdc3c7] border-[#4a5f7a] hover:border-[#3498db]"
               }`}
             >
               {month}
@@ -327,7 +329,7 @@ export default function OptionsModule() {
 
         {/* Max Return/Max Chance Slider */}
         <div className="mb-8">
-          <div className="flex justify-between text-sm text-gray-400 mb-2">
+          <div className="flex justify-between text-sm text-[#7f8c8d] mb-2">
             <span>← Max Return</span>
             <span>Max Chance →</span>
           </div>
@@ -336,7 +338,10 @@ export default function OptionsModule() {
             min="0" 
             max="100" 
             defaultValue="50"
-            className="w-full h-2 bg-[#34495e] appearance-none cursor-pointer"
+            className="w-full h-2 bg-[#34495e] appearance-none cursor-pointer rounded-none"
+            style={{
+              background: 'linear-gradient(to right, #3498db 0%, #3498db 50%, #34495e 50%, #34495e 100%)'
+            }}
           />
         </div>
 
