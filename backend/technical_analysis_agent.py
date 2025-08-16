@@ -142,6 +142,49 @@ class TechnicalAnalysisAgent:
                 'timestamp': datetime.now().isoformat()
             }
     
+    def _generate_fallback_analysis(self, symbol: str) -> Dict[str, Any]:
+        """Generate a basic fallback analysis when data is insufficient."""
+        return {
+            'symbol': symbol,
+            'technical_score': 50.0,
+            'recommendation': 'HOLD',
+            'confidence_level': 'low',
+            'key_signals': ['Insufficient data for comprehensive analysis'],
+            'smart_money_analysis': {
+                'order_blocks': {'bullish': [], 'bearish': []},
+                'fair_value_gaps': {'bullish': [], 'bearish': []},
+                'market_structure': 'neutral',
+                'liquidity_analysis': 'insufficient_data'
+            },
+            'multi_timeframe_analysis': {
+                'weekly': {'trend': 'neutral', 'score': 50.0},
+                'daily': {'trend': 'neutral', 'score': 50.0},
+                'hourly': {'trend': 'neutral', 'score': 50.0}
+            },
+            'technical_indicators': {
+                'rsi': 50.0, 'macd': 50.0, 'ema': 50.0, 'stochastic': 50.0,
+                'williams_r': 50.0, 'adx': 50.0, 'ichimoku': 50.0, 'obv': 50.0,
+                'vwap': 50.0, 'bollinger_bands': 50.0
+            },
+            'support_resistance_levels': {
+                'support_levels': [], 'resistance_levels': [], 'score': 50.0
+            },
+            'risk_reward_analysis': {
+                'risk_reward_ratio': 1.0, 'stop_loss': 0, 'take_profit': 0
+            },
+            'position_sizing': {
+                'recommended_position_size': 1.0, 'max_risk_per_trade': 2.0
+            },
+            'entry_timing': {
+                'entry_signal': 'WAIT', 'timing_confidence': 'low'
+            },
+            'timestamp': datetime.now().isoformat(),
+            'agent_type': 'technical_analysis',
+            'smc_included': True,
+            'timeframes_analyzed': ['weekly', 'daily', 'hourly'],
+            'api_version': '1.0'
+        }
+
     async def _fetch_multi_timeframe_data(self, symbol: str) -> Dict[str, List[Dict]]:
         """Fetch price data for multiple timeframes (mock implementation)."""
         # In production, this would fetch real OHLCV data from market data provider
