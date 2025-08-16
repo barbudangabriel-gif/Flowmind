@@ -200,21 +200,21 @@ const OptionsModule = () => {
             <div className="lg:col-span-1 space-y-6">
               
               {/* Strategy Selection */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <Target className="mr-2" size={20} />
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                  <Target className="mr-2 text-blue-400" size={20} />
                   Strategy Selection
                 </h3>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
                       Strategy Type
                     </label>
                     <select 
                       value={selectedStrategy}
                       onChange={(e) => setSelectedStrategy(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
                     >
                       <optgroup label="✅ Implemented">
                         <option>Long Call</option>
@@ -232,63 +232,63 @@ const OptionsModule = () => {
               </div>
 
               {/* Parameters */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <Settings className="mr-2" size={20} />
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                  <Settings className="mr-2 text-blue-400" size={20} />
                   Parameters
                 </h3>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
                       Symbol
                     </label>
                     <input
                       type="text"
                       value={symbol}
                       onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
                       placeholder="e.g. AAPL"
                     />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Stock Price ($)
                       </label>
                       <input
                         type="number"
                         value={stockPrice}
                         onChange={(e) => setStockPrice(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
                         step="0.01"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Strike ($)
                       </label>
                       <input
                         type="number"
                         value={strike}
                         onChange={(e) => setStrike(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
                         step="0.01"
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
                       Days to Expiry
                     </label>
                     <input
                       type="number"
                       value={daysToExpiry}
                       onChange={(e) => setDaysToExpiry(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
                       min="1"
                       max="365"
                     />
@@ -296,14 +296,14 @@ const OptionsModule = () => {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Volatility (%)
                       </label>
                       <input
                         type="number"
                         value={volatility * 100}
                         onChange={(e) => setVolatility(e.target.value / 100)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
                         step="1"
                         min="1"
                         max="100"
@@ -311,14 +311,14 @@ const OptionsModule = () => {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         Risk Free Rate (%)
                       </label>
                       <input
                         type="number"
                         value={riskFreeRate * 100}
                         onChange={(e) => setRiskFreeRate(e.target.value / 100)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-white"
                         step="0.1"
                         min="0"
                         max="10"
