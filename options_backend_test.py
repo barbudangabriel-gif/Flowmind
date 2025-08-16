@@ -51,7 +51,7 @@ class OptionsCalculatorTester:
             {
                 "name": "Long Call - CRCL $95 Strike",
                 "data": {
-                    "strategy": "Long Call",
+                    "strategy_name": "Long Call",
                     "symbol": "CRCL",
                     "stock_price": 149.53,
                     "strike": 95.0,
@@ -65,7 +65,7 @@ class OptionsCalculatorTester:
             {
                 "name": "Long Call - At The Money",
                 "data": {
-                    "strategy": "Long Call",
+                    "strategy_name": "Long Call",
                     "symbol": "CRCL", 
                     "stock_price": 149.53,
                     "strike": 149.53,
@@ -79,7 +79,7 @@ class OptionsCalculatorTester:
             {
                 "name": "Long Put - Out of Money",
                 "data": {
-                    "strategy": "Long Put",
+                    "strategy_name": "Long Put",
                     "symbol": "CRCL",
                     "stock_price": 149.53,
                     "strike": 130.0,
