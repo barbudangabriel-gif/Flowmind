@@ -931,27 +931,13 @@ async def test_data_sources(symbol: str):
     except Exception as e:
         results["unusual_whales"] = {"status": "error", "message": str(e)}
     
-    # Test Yahoo Finance
-    try:
-        enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
-        results["yahoo_finance"] = {
-            "status": "success",
-            "price": enhanced_data["price"],
-            "change": enhanced_data["change"],
-            "change_percent": enhanced_data["change_percent"],
-            "volume": enhanced_data["volume"],
-            "timestamp": enhanced_data["timestamp"]
-        }
-    except Exception as e:
-        results["yahoo_finance"] = {"status": "error", "message": str(e)}
-    
-    # Show which source would be used (updated priority)
+    # Show which source would be used (2-tier priority)
     if ts_auth.is_authenticated() and results.get("tradestation", {}).get("status") == "success":
         primary_source = "tradestation"
     elif results.get("unusual_whales", {}).get("status") == "success":
         primary_source = "unusual_whales"
     else:
-        primary_source = "yahoo_finance"
+        primary_source = "none_available"
     
     return {
         "symbol": symbol.upper(),
@@ -960,12 +946,10 @@ async def test_data_sources(symbol: str):
         "price_comparison": {
             "tradestation_price": results.get("tradestation", {}).get("price"),
             "unusual_whales_price": results.get("unusual_whales", {}).get("price"),
-            "yahoo_price": results.get("yahoo_finance", {}).get("price"),
-            "ts_vs_uw_difference": None if not (results.get("tradestation", {}).get("price") and results.get("unusual_whales", {}).get("price")) 
-                        else round(results["tradestation"]["price"] - results["unusual_whales"]["price"], 2),
-            "ts_vs_yahoo_difference": None if not (results.get("tradestation", {}).get("price") and results.get("yahoo_finance", {}).get("price")) 
-                        else round(results["tradestation"]["price"] - results["yahoo_finance"]["price"], 2)
+            "price_difference": None if not (results.get("tradestation", {}).get("price") and results.get("unusual_whales", {}).get("price")) 
+                        else round(results["tradestation"]["price"] - results["unusual_whales"]["price"], 2)
         },
+        "yahoo_finance_status": "❌ REMOVED - No longer tested as data source",
         "timestamp": datetime.utcnow().isoformat()
     }
 @api_router.get("/stocks/search/{query}")
