@@ -308,6 +308,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           <nav className="space-y-6">
             {menuGroups.map((group, groupIndex) => {
               const isTradeStation = group.title === 'TradeStation 🏛️';
+              const isUnusualWhales = group.title === 'Unusual Whales 🐋';
+              const hasDropdown = isTradeStation || isUnusualWhales;
               const isExpanded = expandedSections.has(group.title);
               
               return (
@@ -324,14 +326,23 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                             <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </button>
+                        ) : isUnusualWhales ? (
+                          <button
+                            onClick={() => toggleSection(group.title)}
+                            className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                          >
+                            <span>Unusual Whales</span>
+                            <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
                         ) : (
                           group.title
                         )}
                       </h3>
                     </div>
                   )}
-                  {/* Show items only if expanded (or not TradeStation) */}
-                  {(!isTradeStation || isExpanded) && (
+                  {/* Show items only if expanded (or not collapsible section) */}
+                  {(!hasDropdown || isExpanded) && (
                     <div className="space-y-1">
                   {group.items.map((item, itemIndex) => {
                     const Icon = item.icon;
