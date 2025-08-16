@@ -371,32 +371,41 @@ const InvestmentScoring = React.memo(() => {
       
       // ALWAYS update mock data with real prices from enhanced API
       try {
-        console.log('Fetching real-time prices for top picks...');
-        const pricePromises = mockTopPicks.slice(0, 5).map(async (pick) => {
+        console.log('Fetching real-time prices for top picks (sequential)...');
+        
+        const updatedPicks = [];
+        
+        // Process first 3 symbols sequentially to avoid overwhelming the API
+        for (const pick of mockTopPicks.slice(0, 3)) {
           try {
             console.log(`Fetching price for ${pick.symbol}...`);
             const priceResponse = await axios.get(`${API}/stocks/${pick.symbol}/enhanced`, {
-              timeout: 5000
+              timeout: 10000 // Increased timeout
             });
             
             if (priceResponse.data && priceResponse.data.price) {
-              console.log(`Updated ${pick.symbol} price: $${priceResponse.data.price}`);
-              return {
+              console.log(`✅ Updated ${pick.symbol}: $${priceResponse.data.price}`);
+              updatedPicks.push({
                 ...pick,
                 current_price: priceResponse.data.price
-              };
+              });
+            } else {
+              console.log(`⚠️ No price data for ${pick.symbol}, using mock`);
+              updatedPicks.push(pick);
             }
-            return pick;
           } catch (priceError) {
-            console.warn(`Could not update price for ${pick.symbol}:`, priceError.message);
-            return pick;
+            console.warn(`❌ Could not update price for ${pick.symbol}:`, priceError.message);
+            updatedPicks.push(pick); // Use original mock data
           }
-        });
+          
+          // Wait 500ms between requests to avoid overwhelming API
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
         
-        const updatedPicks = await Promise.all(pricePromises);
-        const finalMockData = updatedPicks.concat(mockTopPicks.slice(5));
+        // Add remaining mock data unchanged
+        const finalMockData = updatedPicks.concat(mockTopPicks.slice(3));
         
-        console.log('Successfully updated mock data with real prices');
+        console.log(`✅ Price sync complete: ${updatedPicks.filter(p => p.current_price !== mockTopPicks.find(m => m.symbol === p.symbol)?.current_price).length} prices updated`);
         setTopPicks(finalMockData);
         
       } catch (priceUpdateError) {
