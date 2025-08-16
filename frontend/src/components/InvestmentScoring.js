@@ -970,103 +970,144 @@ const InvestmentScoring = React.memo(() => {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full bg-gray-900 rounded-lg shadow-md border border-gray-700">
-                <thead className="bg-gradient-to-r from-gray-800 to-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rank</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Symbol</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Price</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Score</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rating</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Risk</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {topPicks.slice(0, displayLimit).map((pick, index) => (
-                    <tr 
-                      key={pick?.symbol || index} 
-                      className="hover:bg-gray-800 transition-colors cursor-pointer"
-                      onClick={() => handleTickerClick(pick?.symbol)}
-                    >
-                      <td className="px-4 py-4">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-                          index < 3 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900' :
-                          index < 6 ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-blue-900' :
-                          'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-900'
-                        }`}>
-                          {index + 1}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="font-bold text-lg text-blue-300 hover:text-blue-200 transition-colors">
-                          {pick?.symbol || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="text-green-400 font-semibold">
-                          ${pick?.current_price?.toFixed(2) || 'Loading...'}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className={`text-2xl font-bold ${getScoreColor(pick?.total_score || 50)}`}>
-                          {pick?.total_score || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getRatingColor(pick?.rating || 'HOLD')}`}>
-                          {pick?.rating || 'HOLD'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center space-x-2">
-                          <Shield className={`w-4 h-4 ${getRiskColor(pick?.risk_level || 'MODERATE').split(' ')[0]}`} />
-                          <span className={`text-xs px-2 py-1 rounded ${getRiskColor(pick?.risk_level || 'MODERATE')}`}>
-                            {pick?.risk_level || 'MODERATE'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="max-w-md">
-                          <p className="text-sm text-gray-300 mb-2">{pick?.explanation || 'Investment analysis pending...'}</p>
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            <div className="text-xs text-green-400 font-medium">Strengths:</div>
-                            {(pick?.key_strengths || []).slice(0, 3).map((strength, idx) => (
-                              <span key={idx} className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">
-                                {strength}
-                              </span>
-                            ))}
-                          </div>
-                          {(pick?.key_risks || []).length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              <div className="text-xs text-red-400 font-medium">Risks:</div>
-                              {(pick?.key_risks || []).slice(0, 2).map((risk, idx) => (
-                                <span key={idx} className="text-xs bg-red-900 text-red-300 px-2 py-1 rounded">
-                                  {risk}
-                                </span>
-                              ))}
+            <div className="space-y-4">
+              {/* Scroll Container for the table */}
+              <div className="overflow-x-auto">
+                <div 
+                  className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+                  style={{ maxHeight: '600px' }}
+                >
+                  <table className="w-full bg-gray-900 rounded-lg shadow-md border border-gray-700">
+                    <thead className="bg-gradient-to-r from-gray-800 to-gray-700 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rank</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Symbol</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Price</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Score</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rating</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Risk</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-700">
+                      {topPicks.slice(0, Math.min(displayLimit, maxScrollLimit)).map((pick, index) => (
+                        <tr 
+                          key={pick?.symbol || index} 
+                          className="hover:bg-gray-800 transition-colors cursor-pointer"
+                          onClick={() => handleTickerClick(pick?.symbol)}
+                        >
+                          <td className="px-4 py-4">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                              index < 3 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900' :
+                              index < 6 ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-blue-900' :
+                              index < 10 ? 'bg-gradient-to-r from-green-400 to-green-500 text-green-900' :
+                              'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-900'
+                            }`}>
+                              {index + 1}
                             </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              
-              {/* Expansion Button */}
-              {displayLimit < 1000 && topPicks.length >= displayLimit && (
-                <div className="mt-4 text-center">
-                  <button
-                    onClick={expandTopPicks}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 mx-auto"
-                  >
-                    <span>Load More Results</span>
-                    <span className="text-blue-200">({Math.min(1000, topPicks.length)} total available)</span>
-                  </button>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="font-bold text-lg text-blue-300 hover:text-blue-200 transition-colors">
+                              {pick?.symbol || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="text-green-400 font-semibold">
+                              ${pick?.current_price?.toFixed(2) || 'Loading...'}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className={`text-2xl font-bold ${getScoreColor(pick?.total_score || 50)}`}>
+                              {(pick?.total_score || 0).toFixed(1)}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getRatingColor(pick?.rating || 'HOLD')}`}>
+                              {pick?.rating || 'HOLD'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center space-x-2">
+                              <Shield className={`w-4 h-4 ${getRiskColor(pick?.risk_level || 'MODERATE').split(' ')[0]}`} />
+                              <span className={`text-xs px-2 py-1 rounded ${getRiskColor(pick?.risk_level || 'MODERATE')}`}>
+                                {pick?.risk_level || 'MODERATE'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="max-w-md">
+                              <p className="text-sm text-gray-300 mb-2">{pick?.explanation || 'Investment analysis pending...'}</p>
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                <div className="text-xs text-green-400 font-medium">Strengths:</div>
+                                {(pick?.key_strengths || []).slice(0, 3).map((strength, idx) => (
+                                  <span key={idx} className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">
+                                    {strength}
+                                  </span>
+                                ))}
+                              </div>
+                              {(pick?.key_risks || []).length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  <div className="text-xs text-red-400 font-medium">Risks:</div>
+                                  {(pick?.key_risks || []).slice(0, 2).map((risk, idx) => (
+                                    <span key={idx} className="text-xs bg-red-900 text-red-300 px-2 py-1 rounded">
+                                      {risk}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
+              </div>
+              
+              {/* Statistics and Controls */}
+              <div className="flex justify-between items-center bg-gray-800 p-4 rounded-lg">
+                <div className="text-sm text-gray-300">
+                  Showing <span className="font-bold text-blue-400">{Math.min(displayLimit, maxScrollLimit)}</span> of{' '}
+                  <span className="font-bold text-green-400">{topPicks.length}</span> recommendations
+                  {maxScrollLimit < topPicks.length && (
+                    <span className="text-yellow-400"> (scroll limit: {maxScrollLimit})</span>
+                  )}
+                </div>
+                
+                <div className="flex space-x-2">
+                  {/* Load More Button */}
+                  {topPicks.length < 1000 && maxScrollLimit >= topPicks.length && (
+                    <button
+                      onClick={loadMorePicks}
+                      disabled={loadingMore}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
+                    >
+                      {loadingMore ? (
+                        <>
+                          <RefreshCw className="animate-spin" size={16} />
+                          <span>Generating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={16} />
+                          <span>Load More Picks</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                  
+                  {/* Expand View Button */}
+                  {maxScrollLimit < topPicks.length && (
+                    <button
+                      onClick={expandTopPicks}
+                      className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
+                    >
+                      <ArrowDown size={16} />
+                      <span>Show All ({topPicks.length})</span>
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
