@@ -100,8 +100,8 @@ function StrategyCard({
               tickFormatter={(v) => v >= 0 ? `$${Math.abs(v)}` : `-$${Math.abs(v)}`}
             />
             
-            {/* Zero line - white visible for clear intersection */}
-            <ReferenceLine y={0} stroke="#ffffff" strokeWidth={2} strokeDasharray="3 3" />
+            {/* Zero line - white faded */}
+            <ReferenceLine y={0} stroke="#ffffff" strokeDasharray="2 2" strokeOpacity={0.4} />
             
             {/* Spot price line */}
             <ReferenceLine x={spotPrice} stroke="#3498db" strokeDasharray="2 2" strokeWidth={1} />
