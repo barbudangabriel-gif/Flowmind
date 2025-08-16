@@ -4073,9 +4073,8 @@ class StockMarketAPITester:
             success_sym, sym_score = self.run_test(
                 f"Investment Scoring Agent ({symbol})", 
                 "POST", 
-                "agents/investment-scoring", 
-                200, 
-                params={"symbol": symbol}
+                f"agents/investment-scoring?symbol={symbol}", 
+                200
             )
             
             if success_sym:
