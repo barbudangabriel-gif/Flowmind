@@ -515,6 +515,56 @@ const StockAnalysisPage = () => {
           </div>
         )}
 
+        {/* Options Strategies Tab */}
+        {activeTab === 'options' && (
+          <div className="space-y-8">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <Zap className="mr-2" size={24} />
+                ⚡ Options Strategies for {symbol?.toUpperCase()}
+              </h3>
+              
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-8 text-center">
+                <div className="mb-6">
+                  <Zap className="mx-auto mb-4 text-blue-500" size={64} />
+                  <h4 className="text-2xl font-bold text-gray-800 mb-2">Options Module Coming Soon</h4>
+                  <p className="text-gray-600 mb-4">
+                    Comprehensive options strategies and analysis for {symbol?.toUpperCase()} will be available in the dedicated options module.
+                  </p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <Target className="mx-auto mb-2 text-green-500" size={32} />
+                      <h5 className="font-semibold text-gray-800">Strategy Recommendations</h5>
+                      <p className="text-sm text-gray-600">AI-powered options strategies based on current analysis</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <BarChart3 className="mx-auto mb-2 text-blue-500" size={32} />
+                      <h5 className="font-semibold text-gray-800">Risk/Reward Analysis</h5>
+                      <p className="text-sm text-gray-600">Detailed P&L charts and risk assessments</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <Activity className="mx-auto mb-2 text-purple-500" size={32} />
+                      <h5 className="font-semibold text-gray-800">Live Options Flow</h5>
+                      <p className="text-sm text-gray-600">Real-time options activity for this ticker</p>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => navigate('/options')}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center space-x-2 mx-auto"
+                  >
+                    <Zap size={20} />
+                    <span>Go to Options Module</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Charts Tab */}
         {activeTab === 'charts' && (
           <div className="space-y-8">
