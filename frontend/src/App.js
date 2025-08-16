@@ -60,7 +60,7 @@ import {
 const AdvancedScreener = React.lazy(() => import("./components/AdvancedScreener"));
 const InvestmentScoring = React.lazy(() => import("./components/InvestmentScoring"));
 const StockAnalysisPage = React.lazy(() => import("./components/StockAnalysisPage"));
-const OptionsModule = React.lazy(() => import("./components/OptionsModule"));
+const CardTest = React.lazy(() => import("./components/CardTest"));
 
 import "./App.css";
 
