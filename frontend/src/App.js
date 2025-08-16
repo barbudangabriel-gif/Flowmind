@@ -59,6 +59,7 @@ import {
 // Lazy loading for heavy components
 const AdvancedScreener = React.lazy(() => import("./components/AdvancedScreener"));
 const InvestmentScoring = React.lazy(() => import("./components/InvestmentScoring"));
+const StockAnalysisPage = React.lazy(() => import("./components/StockAnalysisPage"));
 
 import "./App.css";
 
