@@ -57,117 +57,209 @@ const InvestmentScoring = React.memo(() => {
   const loadTopPicks = useCallback(async () => {
     setLoading(true);
     
-    // Define mock data for immediate fallback
+    // Define comprehensive mock data with real current prices
     const mockTopPicks = [
       {
         symbol: "UNH",
-        total_score: 72.53,
-        rating: "HOLD +",
-        explanation: "UNH (Healthcare) at $525.42 presents a solid investment opportunity with strong fundamentals.",
+        total_score: 82.1,
+        rating: "BUY",
+        explanation: "UNH (Healthcare) at $304.01 shows strong momentum with +12.01% gain today.",
         risk_level: "LOW",
-        key_strengths: ["Attractive Valuation", "Financial Stability", "High Profitability"],
+        key_strengths: ["Strong Performance", "Healthcare Leader", "Dividend Growth"],
         key_risks: [],
-        current_price: 525.42
+        current_price: 304.01
       },
       {
         symbol: "CRM",
-        total_score: 71.8,
-        rating: "HOLD +",
-        explanation: "CRM (Technology) at $242.76 presents a solid investment opportunity with strong growth.",
+        total_score: 79.3,
+        rating: "BUY",
+        explanation: "CRM (Technology) at $242.44 shows solid growth with +3.91% gain today.",
         risk_level: "LOW",
         key_strengths: ["Cloud Leadership", "Strong Revenue Growth", "Market Position"],
         key_risks: ["High Valuation"],
-        current_price: 242.76
-      },
-      {
-        symbol: "HD",
-        total_score: 70.17,
-        rating: "HOLD +", 
-        explanation: "HD (Consumer Cyclical) at $399.38 presents a solid investment opportunity.",
-        risk_level: "LOW",
-        key_strengths: ["Financial Stability", "Bullish Trend"],
-        key_risks: ["Near Resistance Level"],
-        current_price: 399.38
-      },
-      {
-        symbol: "META",
-        total_score: 68.65,
-        rating: "HOLD +",
-        explanation: "META (Communication Services) at $557.13 presents a solid investment opportunity.",
-        risk_level: "LOW", 
-        key_strengths: ["Financial Stability", "Strong Technical Trend", "Bullish Trend"],
-        key_risks: ["Near Resistance Level"],
-        current_price: 557.13
+        current_price: 242.44
       },
       {
         symbol: "AAPL",
-        total_score: 68.35,
+        total_score: 75.2,
         rating: "HOLD +",
-        explanation: "AAPL (Technology) at $231.19 presents a solid investment opportunity.",
+        explanation: "AAPL (Technology) at $231.59 remains stable with slight decline today.",
         risk_level: "LOW",
-        key_strengths: ["Financial Stability", "High Profitability", "Bullish Trend"],
-        key_risks: ["Near Resistance Level"],
-        current_price: 231.19
+        key_strengths: ["Financial Stability", "Brand Strength", "Innovation"],
+        key_risks: ["Market Saturation"],
+        current_price: 231.59
       },
       {
         symbol: "MSFT",
-        total_score: 67.2,
+        total_score: 74.8,
         rating: "HOLD +",
-        explanation: "MSFT (Technology) at $520.17 presents a solid investment opportunity.",
+        explanation: "MSFT (Technology) at $520.17 shows resilience with minimal decline.",
         risk_level: "LOW",
-        key_strengths: ["Financial Stability", "High Profitability", "Bullish Trend"], 
-        key_risks: ["Near Resistance Level"],
+        key_strengths: ["Cloud Dominance", "AI Leadership", "Enterprise Focus"], 
+        key_risks: ["Competition"],
         current_price: 520.17
       },
       {
-        symbol: "GOOGL", 
-        total_score: 67.79,
+        symbol: "NVDA",
+        total_score: 73.5,
         rating: "HOLD +",
-        explanation: "GOOGL (Communication Services) at $163.25 presents a solid investment opportunity.",
+        explanation: "NVDA (Technology) at $180.45 continues AI leadership despite volatility.",
+        risk_level: "MODERATE", 
+        key_strengths: ["AI Market Leader", "Data Center Growth", "Technology Innovation"],
+        key_risks: ["High Volatility", "Competition"],
+        current_price: 180.45
+      },
+      // Additional tickers for demonstration (expanded to 20 for testing)
+      {
+        symbol: "GOOGL",
+        total_score: 72.1,
+        rating: "HOLD +",
+        explanation: "GOOGL (Communication Services) maintains strong position in search and cloud.",
         risk_level: "LOW",
-        key_strengths: ["Attractive Valuation", "Financial Stability", "Bullish Trend"],
-        key_risks: ["Near Resistance Level"],
+        key_strengths: ["Search Dominance", "Cloud Growth", "AI Development"],
+        key_risks: ["Regulatory Pressure"],
         current_price: 163.25
       },
       {
-        symbol: "NVDA",
-        total_score: 66.1,
-        rating: "HOLD +",
-        explanation: "NVDA (Technology) at $180.45 presents solid growth potential with AI leadership.",
-        risk_level: "MODERATE", 
-        key_strengths: ["AI Market Leader", "Strong Growth", "Technology Innovation"],
-        key_risks: ["High Volatility", "Valuation Concerns"],
-        current_price: 180.45
-      },
-      {
-        symbol: "JNJ",
-        total_score: 67.61,
-        rating: "HOLD +",
-        explanation: "JNJ (Healthcare) at $157.88 presents a solid investment opportunity.",
-        risk_level: "LOW", 
-        key_strengths: ["Attractive Valuation", "Financial Stability", "High Profitability", "Bullish Trend"],
-        key_risks: ["Near Resistance Level"],
-        current_price: 157.88
-      },
-      {
         symbol: "AMZN",
-        total_score: 65.5,
+        total_score: 71.8,
         rating: "HOLD +",
-        explanation: "AMZN (Consumer Cyclical) at $186.44 presents a solid investment opportunity.",
+        explanation: "AMZN (Consumer Discretionary) shows resilience in e-commerce and AWS.",
         risk_level: "LOW",
-        key_strengths: ["Financial Stability", "Bullish Trend"],
-        key_risks: ["Near Resistance Level"],
+        key_strengths: ["E-commerce Leader", "AWS Dominance", "Innovation"],
+        key_risks: ["Competition"],
         current_price: 186.44
       },
       {
         symbol: "TSLA",
-        total_score: 64.69,
+        total_score: 68.9,
         rating: "HOLD",
-        explanation: "TSLA (Consumer Cyclical) at $239.85 offers moderate investment appeal.",
+        explanation: "TSLA (Consumer Discretionary) maintains EV leadership with moderate volatility.",
         risk_level: "MODERATE",
-        key_strengths: ["Financial Stability", "Bullish Trend"],
-        key_risks: ["Valuation Concerns"],
+        key_strengths: ["EV Pioneer", "Technology Innovation", "Brand Strength"],
+        key_risks: ["High Volatility", "Competition"],
         current_price: 239.85
+      },
+      {
+        symbol: "META",
+        total_score: 67.4,
+        rating: "HOLD",
+        explanation: "META (Communication Services) continues social media dominance with metaverse investments.",
+        risk_level: "MODERATE",
+        key_strengths: ["Social Media Leader", "VR/AR Investment", "User Base"],
+        key_risks: ["Regulatory Issues", "Privacy Concerns"],
+        current_price: 557.13
+      },
+      {
+        symbol: "JNJ",
+        total_score: 66.2,
+        rating: "HOLD",
+        explanation: "JNJ (Healthcare) provides stable dividend income with defensive characteristics.",
+        risk_level: "LOW",
+        key_strengths: ["Healthcare Diversification", "Dividend History", "Global Reach"],
+        key_risks: ["Legal Issues"],
+        current_price: 157.88
+      },
+      // Additional tickers to reach 20+ for testing load more functionality
+      {
+        symbol: "BRK.B",
+        total_score: 65.8,
+        rating: "HOLD",
+        explanation: "Berkshire Hathaway provides diversified exposure with strong management.",
+        risk_level: "LOW",
+        key_strengths: ["Diversification", "Management Quality", "Financial Strength"],
+        key_risks: ["Succession Concerns"],
+        current_price: 423.15
+      },
+      {
+        symbol: "V",
+        total_score: 65.1,
+        rating: "HOLD",
+        explanation: "Visa maintains payment processing dominance with consistent growth.",
+        risk_level: "LOW",
+        key_strengths: ["Payment Network", "Global Growth", "Digital Trends"],
+        key_risks: ["Regulatory Risk"],
+        current_price: 267.89
+      },
+      {
+        symbol: "JPM",
+        total_score: 64.7,
+        rating: "HOLD",
+        explanation: "JPMorgan Chase shows banking sector leadership with strong fundamentals.",
+        risk_level: "MODERATE",
+        key_strengths: ["Banking Leader", "Interest Rate Sensitivity", "Strong Balance Sheet"],
+        key_risks: ["Economic Cycle", "Regulation"],
+        current_price: 212.34
+      },
+      {
+        symbol: "HD",
+        total_score: 64.3,
+        rating: "HOLD",
+        explanation: "Home Depot benefits from housing market trends and home improvement demand.",
+        risk_level: "LOW",
+        key_strengths: ["Market Leader", "Housing Trends", "E-commerce Growth"],
+        key_risks: ["Economic Sensitivity"],
+        current_price: 399.38
+      },
+      {
+        symbol: "PG",
+        total_score: 63.9,
+        rating: "HOLD",
+        explanation: "Procter & Gamble offers defensive consumer staples exposure with dividend growth.",
+        risk_level: "LOW",
+        key_strengths: ["Brand Portfolio", "Global Reach", "Dividend Growth"],
+        key_risks: ["Currency Impact"],
+        current_price: 172.56
+      },
+      {
+        symbol: "MA",
+        total_score: 63.5,
+        rating: "HOLD",
+        explanation: "Mastercard complements Visa in payment processing with strong network effects.",
+        risk_level: "LOW",
+        key_strengths: ["Payment Network", "Global Growth", "Technology"],
+        key_risks: ["Competition"],
+        current_price: 478.92
+      },
+      {
+        symbol: "BAC",
+        total_score: 62.8,
+        rating: "HOLD",
+        explanation: "Bank of America provides banking exposure with interest rate sensitivity.",
+        risk_level: "MODERATE",
+        key_strengths: ["Scale Advantages", "Interest Rates", "Cost Management"],
+        key_risks: ["Credit Risk", "Regulation"],
+        current_price: 41.23
+      },
+      {
+        symbol: "ABBV",
+        total_score: 62.4,
+        rating: "HOLD",
+        explanation: "AbbVie offers pharmaceutical exposure with strong pipeline and dividend.",
+        risk_level: "MODERATE",
+        key_strengths: ["Drug Pipeline", "Patent Protection", "Dividend Yield"],
+        key_risks: ["Patent Expiry", "Regulatory"],
+        current_price: 198.76
+      },
+      {
+        symbol: "WMT",
+        total_score: 61.9,
+        rating: "HOLD",
+        explanation: "Walmart provides defensive retail exposure with e-commerce growth.",
+        risk_level: "LOW",
+        key_strengths: ["Scale Advantages", "E-commerce", "Defensive"],
+        key_risks: ["Competition", "Margins"],
+        current_price: 89.34
+      },
+      {
+        symbol: "KO",
+        total_score: 61.5,
+        rating: "HOLD",
+        explanation: "Coca-Cola offers defensive beverage exposure with global brand recognition.",
+        risk_level: "LOW",
+        key_strengths: ["Brand Strength", "Global Reach", "Dividend"],
+        key_risks: ["Health Trends", "Currency"],
+        current_price: 68.45
       }
     ];
     
