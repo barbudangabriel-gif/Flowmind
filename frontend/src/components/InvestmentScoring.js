@@ -60,23 +60,23 @@ const InvestmentScoring = React.memo(() => {
   const loadTopPicks = useCallback(async () => {
     setLoading(true);
     
-    // Define comprehensive mock data with real current prices
+    // Define comprehensive mock data with placeholders for real prices
     const mockTopPicks = [
       {
         symbol: "UNH",
         total_score: 82.1,
         rating: "BUY",
-        explanation: "UNH (Healthcare) at $304.01 shows strong momentum with +12.01% gain today.",
+        explanation: "UNH (Healthcare) shows strong momentum and healthcare leadership.",
         risk_level: "LOW",
         key_strengths: ["Strong Performance", "Healthcare Leader", "Dividend Growth"],
         key_risks: [],
-        current_price: 304.01
+        current_price: 304.01 // Will be updated with real price
       },
       {
         symbol: "CRM",
         total_score: 79.3,
         rating: "BUY",
-        explanation: "CRM (Technology) at $242.44 shows solid growth with +3.91% gain today.",
+        explanation: "CRM (Technology) shows solid growth and cloud leadership.",
         risk_level: "LOW",
         key_strengths: ["Cloud Leadership", "Strong Revenue Growth", "Market Position"],
         key_risks: ["High Valuation"],
