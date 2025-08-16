@@ -64,7 +64,7 @@ const OptionsModule = () => {
     { value: 'Very Bullish', color: 'bg-green-600', textColor: 'text-green-100' }
   ];
 
-  // Mock optimized strategies data - OptionStrat style results
+  // Mock optimized strategies data - OptionStrat style results (6 strategies)
   const mockOptimizedStrategies = [
     {
       name: 'Long Call',
@@ -73,7 +73,9 @@ const OptionsModule = () => {
       chance: '--',
       profit: '$1,362.94',
       risk: '$1,570',
-      category: 'Novice'
+      category: 'Novice',
+      breakeven: '$653.48',
+      probProfit: '45%'
     },
     {
       name: 'Bull Call Spread', 
@@ -82,7 +84,9 @@ const OptionsModule = () => {
       chance: '--',
       profit: '$1,161.94',
       risk: '$671',
-      category: 'Intermediate'
+      category: 'Intermediate',
+      breakeven: '$651.20',
+      probProfit: '62%'
     },
     {
       name: 'Bull Put Spread',
@@ -91,7 +95,42 @@ const OptionsModule = () => {
       chance: '--',
       profit: '$116',
       risk: '$184',
-      category: 'Intermediate'
+      category: 'Intermediate',
+      breakeven: '$644.84',
+      probProfit: '73%'
+    },
+    {
+      name: 'Short Put',
+      strike: '625P',
+      returnOnRisk: '3%',
+      chance: '--',
+      profit: '$332',
+      risk: '$11,021.60',
+      category: 'Advanced',
+      breakeven: '$621.68',
+      probProfit: '78%'
+    },
+    {
+      name: 'Covered Call',
+      strikes: 'Own + Sell 656C',
+      returnOnRisk: '2.5%',
+      chance: '--',
+      profit: '$1,579',
+      risk: '$64,021',
+      category: 'Novice',
+      breakeven: '$640.21',
+      probProfit: '85%'
+    },
+    {
+      name: 'Cash-Secured Put',
+      strike: 'Sell 628P',
+      returnOnRisk: '0.6%',  
+      chance: '--',
+      profit: '$378',
+      risk: '$62,800',
+      category: 'Novice',
+      breakeven: '$624.22',
+      probProfit: '82%'
     }
   ];
 
