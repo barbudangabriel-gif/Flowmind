@@ -643,6 +643,345 @@ class StockMarketAPITester:
         
         return success
 
+    def test_top_picks_endpoint_comprehensive(self):
+        """Test Top Picks endpoint comprehensively as requested by user - PRIORITY TEST"""
+        print("\n🎯 COMPREHENSIVE TOP PICKS ENDPOINT TESTING - USER PRIORITY REQUEST")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Test Top Picks endpoint that user needs working")
+        print("📋 REQUIREMENTS: 'am nevoie de top picks minim 10' - need at least 10 recommendations")
+        print("🔧 TESTING: Different limits, market cap filters, data quality verification")
+        
+        # Test 1: Basic Top Picks with limit=10 (User's primary requirement)
+        print(f"\n📊 PHASE 1: Basic Top Picks (limit=10) - PRIMARY USER REQUIREMENT")
+        print("-" * 60)
+        
+        success, top_picks_data = self.run_test("Top Picks (limit=10)", "GET", "investments/top-picks", 200, params={"limit": 10})
+        
+        if not success:
+            print("❌ CRITICAL: Top Picks endpoint failed - user's primary requirement not met")
+            return False
+        
+        # Verify response structure
+        required_fields = ['recommendations', 'total_analyzed', 'criteria', 'last_updated']
+        missing_fields = [field for field in required_fields if field not in top_picks_data]
+        
+        if missing_fields:
+            print(f"❌ Missing required response fields: {missing_fields}")
+            return False
+        else:
+            print(f"✅ All required response fields present: {required_fields}")
+        
+        recommendations = top_picks_data.get('recommendations', [])
+        total_analyzed = top_picks_data.get('total_analyzed', 0)
+        criteria = top_picks_data.get('criteria', '')
+        
+        print(f"📊 Found {len(recommendations)} investment recommendations")
+        print(f"📊 Total stocks analyzed: {total_analyzed}")
+        print(f"📊 Selection criteria: {criteria}")
+        
+        # CRITICAL CHECK: User needs at least 10 recommendations
+        if len(recommendations) < 10:
+            print(f"❌ CRITICAL FAILURE: Only {len(recommendations)} recommendations found, user needs minimum 10")
+            print(f"   🚨 USER REQUIREMENT NOT MET: 'am nevoie de top picks minim 10'")
+            return False
+        else:
+            print(f"✅ USER REQUIREMENT MET: {len(recommendations)} recommendations >= 10 minimum")
+        
+        # Test 2: Verify Investment Score and Rating Data Quality
+        print(f"\n📋 PHASE 2: Investment Score and Rating Data Quality")
+        print("-" * 60)
+        
+        if recommendations:
+            print(f"📊 Analyzing top 5 recommendations:")
+            
+            valid_recommendations = 0
+            for i, rec in enumerate(recommendations[:5]):
+                symbol = rec.get('symbol', 'N/A')
+                total_score = rec.get('total_score', 0)
+                rating = rec.get('rating', 'N/A')
+                risk_level = rec.get('risk_level', 'N/A')
+                
+                print(f"   #{i+1}: {symbol}")
+                print(f"     - Investment Score: {total_score}")
+                print(f"     - Rating: {rating}")
+                print(f"     - Risk Level: {risk_level}")
+                
+                # Verify score is reasonable (0-100 range)
+                if 0 <= total_score <= 100:
+                    print(f"     ✅ Score in valid range (0-100)")
+                    valid_recommendations += 1
+                else:
+                    print(f"     ❌ Score outside valid range: {total_score}")
+                
+                # Verify rating is valid
+                valid_ratings = ['STRONG BUY', 'BUY', 'BUY+', 'HOLD+', 'HOLD', 'HOLD-', 'SELL', 'STRONG SELL']
+                if rating in valid_ratings:
+                    print(f"     ✅ Valid rating: {rating}")
+                else:
+                    print(f"     ⚠️  Unusual rating: {rating}")
+                
+                # Check for required fields
+                required_rec_fields = ['symbol', 'total_score', 'rating', 'risk_level', 'key_strengths', 'key_risks']
+                missing_rec_fields = [field for field in required_rec_fields if field not in rec]
+                
+                if missing_rec_fields:
+                    print(f"     ❌ Missing fields: {missing_rec_fields}")
+                else:
+                    print(f"     ✅ All required fields present")
+            
+            print(f"📊 Valid recommendations: {valid_recommendations}/5")
+        
+        # Test 3: Stock Information Verification (symbol, price, change, etc.)
+        print(f"\n💰 PHASE 3: Stock Information Verification")
+        print("-" * 60)
+        
+        if recommendations:
+            print(f"📊 Verifying stock data for top recommendations:")
+            
+            stocks_with_price_data = 0
+            for i, rec in enumerate(recommendations[:3]):
+                symbol = rec.get('symbol', 'N/A')
+                
+                # Check if recommendation includes price information
+                price_fields = ['current_price', 'price', 'change', 'change_percent']
+                price_data_found = [field for field in price_fields if field in rec and rec[field] is not None]
+                
+                print(f"   📊 {symbol}:")
+                if price_data_found:
+                    print(f"     ✅ Price data fields found: {price_data_found}")
+                    stocks_with_price_data += 1
+                    
+                    # Display available price data
+                    for field in price_data_found:
+                        value = rec[field]
+                        if 'price' in field:
+                            print(f"     - {field}: ${value:.2f}")
+                        elif 'change' in field:
+                            print(f"     - {field}: {value:+.2f}{'%' if 'percent' in field else ''}")
+                else:
+                    print(f"     ⚠️  No direct price data in recommendation")
+                    print(f"     📝 Note: Price data may be fetched separately by frontend")
+                
+                # Check for additional stock information
+                info_fields = ['market_cap', 'pe_ratio', 'sector', 'industry']
+                info_found = [field for field in info_fields if field in rec and rec[field] is not None]
+                
+                if info_found:
+                    print(f"     ✅ Additional info: {info_found}")
+                    for field in info_found:
+                        value = rec[field]
+                        if field == 'market_cap':
+                            print(f"     - {field}: ${value/1e9:.1f}B" if value > 1e9 else f"${value/1e6:.1f}M")
+                        else:
+                            print(f"     - {field}: {value}")
+            
+            print(f"📊 Stocks with price data: {stocks_with_price_data}/3")
+        
+        # Test 4: Test with Different Limits (5, 15 as requested)
+        print(f"\n🔢 PHASE 4: Different Limit Parameters Testing")
+        print("-" * 60)
+        
+        limit_tests = [
+            {"limit": 5, "name": "Fewer picks (5)"},
+            {"limit": 15, "name": "More picks (15)"},
+            {"limit": 20, "name": "Extended picks (20)"}
+        ]
+        
+        limit_results = {}
+        
+        for test in limit_tests:
+            limit = test["limit"]
+            name = test["name"]
+            
+            success_limit, limit_data = self.run_test(
+                f"Top Picks ({name})", 
+                "GET", 
+                "investments/top-picks", 
+                200, 
+                params={"limit": limit}
+            )
+            
+            if success_limit:
+                limit_recommendations = limit_data.get('recommendations', [])
+                limit_results[limit] = len(limit_recommendations)
+                
+                print(f"   📊 Limit {limit}: {len(limit_recommendations)} recommendations returned")
+                
+                # Verify we get the requested number (or close to it)
+                if len(limit_recommendations) >= min(limit, 10):  # At least the minimum or requested
+                    print(f"     ✅ Adequate number of recommendations")
+                else:
+                    print(f"     ⚠️  Fewer recommendations than expected")
+                
+                # Check if recommendations are properly sorted by score
+                if len(limit_recommendations) >= 2:
+                    scores = [rec.get('total_score', 0) for rec in limit_recommendations]
+                    is_sorted = all(scores[i] >= scores[i+1] for i in range(len(scores)-1))
+                    
+                    if is_sorted:
+                        print(f"     ✅ Recommendations properly sorted by score")
+                        print(f"     - Top score: {scores[0]:.1f}")
+                        print(f"     - Lowest score: {scores[-1]:.1f}")
+                    else:
+                        print(f"     ⚠️  Recommendations may not be sorted by score")
+            else:
+                print(f"   ❌ Failed to get recommendations with limit {limit}")
+        
+        # Test 5: Market Cap Filter Testing
+        print(f"\n💰 PHASE 5: Market Cap Filter Testing")
+        print("-" * 60)
+        
+        market_cap_tests = [
+            {"min_market_cap": 1000, "name": "Large Cap (≥$1B)"},
+            {"min_market_cap": 10000, "name": "Mega Cap (≥$10B)"},
+            {"min_market_cap": 50000, "name": "Ultra Large Cap (≥$50B)"}
+        ]
+        
+        for test in market_cap_tests:
+            min_cap = test["min_market_cap"]
+            name = test["name"]
+            
+            params = {
+                "limit": 10,
+                "min_market_cap": min_cap
+            }
+            
+            success_cap, cap_data = self.run_test(
+                f"Top Picks ({name})", 
+                "GET", 
+                "investments/top-picks", 
+                200, 
+                params=params
+            )
+            
+            if success_cap:
+                cap_recommendations = cap_data.get('recommendations', [])
+                print(f"   📊 {name}: {len(cap_recommendations)} recommendations")
+                
+                if cap_recommendations:
+                    # Show top recommendation for this market cap filter
+                    top_rec = cap_recommendations[0]
+                    symbol = top_rec.get('symbol', 'N/A')
+                    score = top_rec.get('total_score', 0)
+                    print(f"     - Top pick: {symbol} (Score: {score:.1f})")
+        
+        # Test 6: Exchange Filter Testing
+        print(f"\n🏛️  PHASE 6: Exchange Filter Testing")
+        print("-" * 60)
+        
+        exchange_tests = [
+            {"exchange": "sp500", "name": "S&P 500"},
+            {"exchange": "nasdaq", "name": "NASDAQ"},
+            {"exchange": "all", "name": "All Exchanges"}
+        ]
+        
+        for test in exchange_tests:
+            exchange = test["exchange"]
+            name = test["name"]
+            
+            params = {
+                "limit": 10,
+                "exchange": exchange
+            }
+            
+            success_ex, ex_data = self.run_test(
+                f"Top Picks ({name})", 
+                "GET", 
+                "investments/top-picks", 
+                200, 
+                params=params
+            )
+            
+            if success_ex:
+                ex_recommendations = ex_data.get('recommendations', [])
+                print(f"   📊 {name}: {len(ex_recommendations)} recommendations")
+                
+                if ex_recommendations:
+                    # Show symbols for this exchange
+                    symbols = [rec.get('symbol', 'N/A') for rec in ex_recommendations[:5]]
+                    print(f"     - Top symbols: {symbols}")
+        
+        # Test 7: Response Time and Performance
+        print(f"\n⏱️  PHASE 7: Response Time and Performance")
+        print("-" * 60)
+        
+        import time
+        start_time = time.time()
+        
+        success_perf, perf_data = self.run_test("Top Picks (Performance Test)", "GET", "investments/top-picks", 200, params={"limit": 10})
+        
+        end_time = time.time()
+        response_time = end_time - start_time
+        
+        print(f"   ⏱️  Response Time: {response_time:.2f} seconds")
+        
+        if response_time < 5.0:
+            print(f"   ✅ Excellent response time")
+        elif response_time < 15.0:
+            print(f"   ✅ Good response time")
+        elif response_time < 30.0:
+            print(f"   ⚠️  Slow response time")
+        else:
+            print(f"   ❌ Very slow response time (may timeout)")
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT: Top Picks Endpoint")
+        print("=" * 80)
+        
+        # Calculate success metrics
+        test_phases = [
+            ("Basic Endpoint Response", success),
+            ("Minimum 10 Recommendations", len(recommendations) >= 10),
+            ("Valid Investment Scores", valid_recommendations >= 3 if recommendations else False),
+            ("Different Limits Working", len(limit_results) >= 2),
+            ("Response Structure Complete", len(missing_fields) == 0),
+            ("Performance Acceptable", response_time < 30.0)
+        ]
+        
+        passed_phases = sum(1 for _, passed in test_phases if passed)
+        total_phases = len(test_phases)
+        success_rate = (passed_phases / total_phases) * 100
+        
+        print(f"\n📊 TEST RESULTS SUMMARY:")
+        for phase_name, passed in test_phases:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {phase_name}")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_phases}/{total_phases} phases passed)")
+        
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        print(f"   - Recommendations Found: {len(recommendations)}")
+        print(f"   - User Requirement (≥10): {'✅ MET' if len(recommendations) >= 10 else '❌ NOT MET'}")
+        print(f"   - Response Time: {response_time:.2f}s")
+        print(f"   - Total Stocks Analyzed: {total_analyzed}")
+        print(f"   - Different Limits Tested: {list(limit_results.keys())}")
+        
+        # User-specific feedback
+        print(f"\n👤 USER FEEDBACK:")
+        if len(recommendations) >= 10:
+            print(f"   ✅ SUCCESS: Top Picks endpoint provides {len(recommendations)} recommendations")
+            print(f"   ✅ User requirement 'am nevoie de top picks minim 10' is satisfied")
+            print(f"   📊 Investment Scoring page should display recommendations correctly")
+        else:
+            print(f"   ❌ FAILURE: Only {len(recommendations)} recommendations found")
+            print(f"   🚨 User requirement 'am nevoie de top picks minim 10' is NOT satisfied")
+            print(f"   🔧 Investment Scoring page may show insufficient data")
+        
+        # Final verdict
+        if success_rate >= 85 and len(recommendations) >= 10:
+            print(f"\n🎉 VERDICT: EXCELLENT - Top Picks endpoint fully meets user requirements!")
+            print(f"   The Investment Scoring page Top Picks functionality is working perfectly.")
+            print(f"   User will see at least 10 investment recommendations with proper scores and ratings.")
+        elif success_rate >= 70 and len(recommendations) >= 10:
+            print(f"\n✅ VERDICT: GOOD - Top Picks endpoint meets user requirements with minor issues.")
+            print(f"   The Investment Scoring page should work correctly for the user.")
+        else:
+            print(f"\n❌ VERDICT: NEEDS IMMEDIATE ATTENTION - Top Picks endpoint does not meet user requirements.")
+            print(f"   The Investment Scoring page may not provide adequate functionality for the user.")
+        
+        return success_rate >= 70 and len(recommendations) >= 10
+
     def test_unusual_whales_options_flow(self):
         """Test Unusual Whales Options Flow API endpoints - COMPREHENSIVE TESTING WITH REAL API KEY"""
         print("\n🐋 TESTING UNUSUAL WHALES OPTIONS FLOW API - COMPREHENSIVE VERIFICATION")
