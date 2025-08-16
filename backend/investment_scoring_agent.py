@@ -115,9 +115,6 @@ class InvestmentScoringAgent:
                     days_back=90,  # Longer lookback for congressional activity
                     minimum_amount=50000,
                     limit=100
-                ),
-                self.uw_service.get_trading_strategies_enhanced(
-                    limit=10
                 )
             ]
             
