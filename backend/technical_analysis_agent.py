@@ -576,7 +576,7 @@ class TechnicalAnalysisAgent:
             'current_price': current_price
         }
     
-    def _get_mock_price_data(self, symbol: str) -> Dict[str, List[Dict]]:
+    def _get_enhanced_mock_price_data(self, symbol: str) -> Dict[str, List[Dict]]:
         """Generate mock OHLCV data for different symbols and timeframes."""
         # Mock data for different market conditions
         base_price = {
