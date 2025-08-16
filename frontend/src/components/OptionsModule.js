@@ -156,7 +156,7 @@ function StrategyCard({
       </div>
 
       {/* Open in Builder Button */}
-      <button className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white py-2 px-4 rounded-none font-semibold transition-colors">
+      <button className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white py-2 px-4 font-semibold transition-colors">
         Open in Builder
       </button>
     </div>
