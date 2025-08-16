@@ -177,6 +177,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [expandedSections, setExpandedSections] = useState(new Set(['TradeStation 🏛️', 'Unusual Whales 🐋'])); // TradeStation and Unusual Whales expanded by default
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const navigate = useNavigate();
 
   // Check if mobile on mount and resize
   useEffect(() => {
