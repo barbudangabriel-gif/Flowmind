@@ -140,6 +140,13 @@ const StockAnalysisPage = () => {
     loadAnalysis();
   }, [loadAnalysis]);
   
+  // Load options strategies when switching to options tab
+  useEffect(() => {
+    if (activeTab === 'options' && !optionsStrategies && !optionsLoading) {
+      loadOptionsStrategies();
+    }
+  }, [activeTab, optionsStrategies, optionsLoading, loadOptionsStrategies]);
+  
   // Utility functions
   const getScoreColor = (score) => {
     if (score >= 85) return 'text-green-700';
