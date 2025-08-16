@@ -252,7 +252,7 @@ export default function OptionsModule() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-500 rounded"></div>
+              <div className="w-8 h-8 bg-blue-500"></div>
               <span className="text-xl font-bold">OptionStrat</span>
             </div>
             <nav className="hidden md:flex space-x-6">
