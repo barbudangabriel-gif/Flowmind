@@ -447,25 +447,43 @@ async def get_stock_historical_data(
         # Fallback to mock data for demo
         logger.info(f"Using mock historical data for {symbol}")
         
-        # Generate realistic mock OHLC data
+        # Generate realistic mock OHLC data with more data points
         from datetime import timedelta
         import random
         
         mock_data = []
-        base_price = 100.0
+        base_price = random.uniform(80, 150)  # Random starting price
         current_date = datetime.utcnow() - timedelta(days=bars_back)
         
         for i in range(bars_back):
-            # Simulate price movement
-            price_change = random.uniform(-0.03, 0.03)  # ±3% daily change
-            base_price *= (1 + price_change)
+            # Simulate realistic price movement with trends
+            trend_factor = 0.0001 * i  # Slight upward trend
+            volatility = random.uniform(0.01, 0.04)  # 1-4% daily volatility
+            price_change = random.gauss(trend_factor, volatility)  # Normal distribution
             
-            # Generate OHLC
+            base_price *= (1 + price_change)
+            base_price = max(1.0, base_price)  # Ensure positive price
+            
+            # Generate realistic OHLC with intraday movement
             open_price = base_price
-            close_price = base_price * (1 + random.uniform(-0.02, 0.02))
-            high_price = max(open_price, close_price) * (1 + random.uniform(0, 0.015))
-            low_price = min(open_price, close_price) * (1 - random.uniform(0, 0.015))
-            volume = random.randint(100000, 10000000)
+            intraday_volatility = random.uniform(0.005, 0.025)  # 0.5-2.5% intraday
+            
+            # Create realistic high/low based on open/close
+            close_change = random.gauss(0, intraday_volatility)
+            close_price = open_price * (1 + close_change)
+            
+            # High and low with realistic wicks
+            high_wick = random.uniform(0, 0.015)  # Up to 1.5% wick
+            low_wick = random.uniform(0, 0.015)   # Up to 1.5% wick
+            
+            high_price = max(open_price, close_price) * (1 + high_wick)
+            low_price = min(open_price, close_price) * (1 - low_wick)
+            
+            # Volume with realistic patterns (higher on big moves)
+            price_move = abs(close_price - open_price) / open_price
+            base_volume = random.randint(500000, 2000000)
+            volume_multiplier = 1 + (price_move * 10)  # Higher volume on big moves
+            volume = int(base_volume * volume_multiplier)
             
             mock_data.append({
                 "time": current_date.strftime("%Y-%m-%d"),
@@ -477,7 +495,20 @@ async def get_stock_historical_data(
             })
             
             base_price = close_price
-            current_date += timedelta(days=1)
+            
+            # Adjust date increment based on interval
+            if interval == "1D":
+                current_date += timedelta(days=1)
+            elif interval == "4H":
+                current_date += timedelta(hours=4)
+            elif interval == "1H":
+                current_date += timedelta(hours=1)
+            elif interval == "15m":
+                current_date += timedelta(minutes=15)
+            elif interval == "5m":
+                current_date += timedelta(minutes=5)
+            else:
+                current_date += timedelta(days=1)
         
         return {
             "status": "success",
