@@ -208,14 +208,21 @@ class TechnicalAnalysisAgent:
         }
 
     async def _fetch_multi_timeframe_data(self, symbol: str) -> Dict[str, List[Dict]]:
-        """Fetch price data for multiple timeframes (mock implementation)."""
+        """Fetch comprehensive multi-timeframe data with session awareness."""
         # In production, this would fetch real OHLCV data from market data provider
-        mock_data = self._get_mock_price_data(symbol)
+        mock_data = self._get_enhanced_mock_price_data(symbol)
         
         return {
+            # Primary Check Timeframes
+            'monthly': mock_data['monthly'],
             'weekly': mock_data['weekly'],
             'daily': mock_data['daily'],
-            'hourly': mock_data['hourly']
+            
+            # Secondary Check Timeframes  
+            'h4': mock_data['h4'],
+            'h1': mock_data['h1'],
+            'm15': mock_data['m15'],
+            'm1': mock_data['m1']
         }
     
     async def _analyze_smart_money_concepts(self, price_data: Dict[str, List[Dict]], symbol: str) -> Dict[str, Any]:
