@@ -30,6 +30,7 @@ const API = `${BACKEND_URL}/api`;
 
 const OptionsModule = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('builder');
   const [selectedStrategy, setSelectedStrategy] = useState('Long Call');
   const [loading, setLoading] = useState(false);
   const [calculationData, setCalculationData] = useState(null);
@@ -43,6 +44,15 @@ const OptionsModule = () => {
   const [volatility, setVolatility] = useState(0.25);
   const [riskFreeRate, setRiskFreeRate] = useState(0.05);
   const [selectedExpiry, setSelectedExpiry] = useState('Dec 20');
+
+  // OPTIMIZER specific states - OptionStrat style
+  const [optimizerSentiment, setOptimizerSentiment] = useState('Neutral');
+  const [targetPrice, setTargetPrice] = useState(660.0);
+  const [budget, setBudget] = useState(1000);
+  const [targetDate, setTargetDate] = useState('Dec 20');
+  const [rankingMode, setRankingMode] = useState('Max Return');
+  const [optimizedStrategies, setOptimizedStrategies] = useState([]);
+  const [optimizing, setOptimizing] = useState(false);
 
   // OptionStrat style strategy categories
   const strategyCategories = {
