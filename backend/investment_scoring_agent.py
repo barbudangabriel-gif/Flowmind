@@ -735,13 +735,17 @@ class InvestmentScoringAgent:
         }
     
     def get_scoring_explanation(self) -> Dict[str, str]:
-        """Return explanation of scoring methodology for transparency."""
+        """Return explanation of enhanced discount/premium scoring methodology for transparency."""
         return {
+            'discount_opportunity': 'Identifies stocks in discount phase using RSI, support levels, pullbacks, and contrarian sentiment analysis',
             'options_flow': 'Analyzes options trading sentiment and premium volume to gauge market sentiment',
             'dark_pool': 'Evaluates institutional activity through dark pool trading percentages and volumes', 
-            'congressional': 'Tracks congressional insider trading activity and timing',
-            'ai_strategies': 'Incorporates AI-generated trading strategy confidence and directional bias',
+            'congressional': 'Tracks congressional insider trading activity and timing for insider sentiment',
+            'risk_reward_ratio': 'Calculates optimal risk/reward setups based on support/resistance levels and position sizing',
             'market_momentum': 'Assesses short-term momentum indicators from options flow patterns',
-            'risk_assessment': 'Evaluates various risk factors including volatility and signal consistency',
-            'composite_methodology': 'Weighted average of all signals with risk adjustment and confidence scoring'
+            'premium_penalty': 'Applies penalties for overextended stocks near resistance or in overbought conditions',
+            'discount_methodology': 'Prioritizes stocks with: RSI <30 (oversold), <5% from support, recent pullbacks >10%, high put/call ratios',
+            'premium_avoidance': 'Penalizes stocks with: RSI >70 (overbought), <3% from resistance, rallies >20%, distribution volume',
+            'risk_management': 'Ensures minimum 2:1 reward/risk ratio with maximum 8% risk from entry point',
+            'composite_methodology': 'Weighted scoring heavily favoring discount opportunities (35%) over premium momentum plays'
         }
