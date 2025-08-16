@@ -1375,7 +1375,12 @@ const TechnicalAnalysis = () => {
   const [symbol, setSymbol] = useState('AAPL');
   const [smartMoneyData, setSmartMoneyData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('tech-agent');  // Default to Technical Expert Agent
+  
+  // Technical Analysis Expert Agent states
+  const [techAnalysisSymbol, setTechAnalysisSymbol] = useState('');
+  const [techAnalysis, setTechAnalysis] = useState(null);
+  const [techLoading, setTechLoading] = useState(false);
 
   const fetchSmartMoneyAnalysis = async () => {
     if (!symbol) return;
