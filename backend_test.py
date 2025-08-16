@@ -4216,9 +4216,8 @@ class StockMarketAPITester:
         success_perf, perf_result = self.run_test(
             "Investment Scoring (Performance)", 
             "POST", 
-            "agents/investment-scoring", 
-            200, 
-            params={"symbol": "AAPL"}
+            "agents/investment-scoring?symbol=AAPL", 
+            200
         )
         
         end_time = time.time()
