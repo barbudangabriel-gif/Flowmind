@@ -202,12 +202,12 @@ class TopInvestments(BaseModel):
 
 # Utility functions for data fetching
 async def get_stock_quote(symbol: str) -> Dict[str, Any]:
-    """Get current stock quote with TradeStation priority when authenticated"""
+    """Get current stock quote with TradeStation primary, Unusual Whales fallback"""
     
     # First, try TradeStation if authenticated
     try:
         if ts_auth.is_authenticated():
-            logger.info(f"Using TradeStation API for {symbol} pricing (authenticated user preference)")
+            logger.info(f"Using TradeStation API for {symbol} pricing (primary source)")
             
             async with ts_client:
                 quotes = await ts_client.get_quote([symbol])
@@ -215,33 +215,22 @@ async def get_stock_quote(symbol: str) -> Dict[str, Any]:
                 if quotes and len(quotes) > 0:
                     ts_quote = quotes[0]
                     
-                    # Get additional data from enhanced ticker manager for completeness
-                    try:
-                        enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
-                    except:
-                        # If enhanced data fails, use basic data structure
-                        enhanced_data = {
-                            "market_cap": None,
-                            "pe_ratio": None
-                        }
-                    
-                    # Return TradeStation data with enhanced supplementary info
                     return {
                         "symbol": ts_quote.symbol,
                         "price": ts_quote.last,
                         "change": ts_quote.change,
                         "change_percent": ts_quote.change_percent,
                         "volume": ts_quote.volume,
-                        "market_cap": enhanced_data.get("market_cap"),
-                        "pe_ratio": enhanced_data.get("pe_ratio"),
+                        "market_cap": None,  # Not available in TradeStation
+                        "pe_ratio": None,   # Not available in TradeStation
                         "timestamp": datetime.utcnow(),
                         "data_source": "TradeStation API (Primary)"
                     }
                 else:
-                    logger.warning(f"No TradeStation quote data for {symbol}, falling back to Yahoo Finance")
+                    logger.warning(f"No TradeStation quote data for {symbol}, falling back to Unusual Whales")
         
     except Exception as e:
-        logger.warning(f"TradeStation quote failed for {symbol}: {str(e)}, falling back to Yahoo Finance")
+        logger.warning(f"TradeStation quote failed for {symbol}: {str(e)}, falling back to Unusual Whales")
     
     # Fallback to Unusual Whales
     try:
@@ -270,29 +259,11 @@ async def get_stock_quote(symbol: str) -> Dict[str, Any]:
                 "data_source": "Unusual Whales (Fallback)"
             }
         else:
-            logger.warning(f"Symbol {symbol} not found in Unusual Whales data")
+            logger.error(f"Symbol {symbol} not found in Unusual Whales data")
+            raise HTTPException(status_code=404, detail=f"Symbol {symbol} not found in any data source")
             
     except Exception as e:
-        logger.warning(f"Unusual Whales fallback failed for {symbol}: {str(e)}")
-    
-    # Final fallback to Yahoo Finance if UW fails
-    try:
-        logger.info(f"Using Yahoo Finance for {symbol} pricing (final fallback)")
-        enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
-        
-        # Convert enhanced data to basic format for compatibility
-        return {
-            "symbol": enhanced_data["symbol"],
-            "price": enhanced_data["price"],
-            "change": enhanced_data["change"],
-            "change_percent": enhanced_data["change_percent"],
-            "volume": enhanced_data["volume"],
-            "market_cap": enhanced_data["market_cap"],
-            "pe_ratio": enhanced_data["pe_ratio"],
-            "timestamp": datetime.utcnow(),
-            "data_source": "Yahoo Finance (Final Fallback)"
-        }
-    except Exception as e:
+        logger.error(f"Unusual Whales fallback also failed for {symbol}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching data for {symbol}: {str(e)}")
 
 async def get_historical_data(symbol: str, period: str = "1y") -> List[Dict[str, Any]]:
