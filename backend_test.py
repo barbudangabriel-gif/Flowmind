@@ -4998,6 +4998,348 @@ def main_unusual_whales():
         print("⚠️  UNUSUAL WHALES VERIFICATION NEEDS ATTENTION")
         return 1
 
+    def test_technical_analysis_expert_agent(self):
+        """Test Technical Analysis Expert Agent with Smart Money Concepts - COMPREHENSIVE TESTING"""
+        print("\n🔬 TESTING TECHNICAL ANALYSIS EXPERT AGENT - SMART MONEY CONCEPTS")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Test new Technical Analysis Expert Agent implementation")
+        print("📋 REQUIREMENTS:")
+        print("   1. ✅ POST /api/agents/technical-analysis?symbol=NVDA&include_smc=true")
+        print("   2. ✅ Different Symbol Test - POST /api/agents/technical-analysis?symbol=AAPL")
+        print("   3. ✅ Batch Technical Analysis - GET /api/agents/technical-analysis/batch?symbols=NVDA,AAPL,MSFT&include_smc=true")
+        print("   4. ✅ Technical Analysis Methodology - GET /api/agents/technical-analysis/methodology")
+        
+        # Test 1: Technical Analysis Agent - NVDA with Smart Money Concepts
+        print(f"\n📊 PHASE 1: Technical Analysis Agent - NVDA with Smart Money Concepts")
+        print("-" * 60)
+        print("🎯 EXPECTED: Comprehensive technical analysis with Smart Money Concepts")
+        print("📈 FEATURES: Multi-timeframe analysis, 12+ indicators, Order Blocks, Fair Value Gaps")
+        
+        success, nvda_data = self.run_test(
+            "Technical Analysis Agent (NVDA + SMC)", 
+            "POST", 
+            "agents/technical-analysis", 
+            200, 
+            params={"symbol": "NVDA", "include_smc": "true"}
+        )
+        
+        if not success:
+            print("❌ NVDA Technical Analysis failed")
+            return False
+        
+        # Verify NVDA response structure
+        required_fields = [
+            'symbol', 'technical_score', 'recommendation', 'confidence_level', 
+            'key_signals', 'smart_money_analysis', 'multi_timeframe_analysis',
+            'technical_indicators', 'support_resistance_levels', 'risk_reward_analysis',
+            'position_sizing', 'entry_timing', 'timestamp'
+        ]
+        missing_fields = [field for field in required_fields if field not in nvda_data]
+        
+        if missing_fields:
+            print(f"❌ Missing required fields in NVDA response: {missing_fields}")
+            return False
+        else:
+            print(f"✅ All required fields present in NVDA response")
+        
+        nvda_score = nvda_data.get('technical_score', 0)
+        nvda_recommendation = nvda_data.get('recommendation', 'UNKNOWN')
+        nvda_confidence = nvda_data.get('confidence_level', 'unknown')
+        nvda_signals = nvda_data.get('key_signals', [])
+        smc_analysis = nvda_data.get('smart_money_analysis', {})
+        timeframe_analysis = nvda_data.get('multi_timeframe_analysis', {})
+        indicators = nvda_data.get('technical_indicators', {})
+        
+        print(f"📊 NVDA Technical Analysis Results:")
+        print(f"   - Technical Score: {nvda_score}")
+        print(f"   - Recommendation: {nvda_recommendation}")
+        print(f"   - Confidence Level: {nvda_confidence}")
+        print(f"   - Key Signals: {len(nvda_signals)}")
+        print(f"   - Smart Money Concepts: {len(smc_analysis)} components")
+        print(f"   - Timeframes Analyzed: {list(timeframe_analysis.keys())}")
+        print(f"   - Technical Indicators: {len(indicators)} indicators")
+        
+        # Verify Smart Money Concepts components
+        expected_smc_components = ['order_blocks', 'fair_value_gaps', 'market_structure', 'liquidity_analysis']
+        smc_components_found = [comp for comp in expected_smc_components if comp in smc_analysis]
+        
+        if len(smc_components_found) >= 3:
+            print(f"   ✅ Smart Money Concepts comprehensive: {smc_components_found}")
+        else:
+            print(f"   ⚠️  Smart Money Concepts incomplete: {smc_components_found}")
+        
+        # Verify Multi-timeframe Analysis
+        expected_timeframes = ['weekly', 'daily', 'hourly']
+        timeframes_found = [tf for tf in expected_timeframes if tf in timeframe_analysis]
+        
+        if len(timeframes_found) >= 3:
+            print(f"   ✅ Multi-timeframe analysis complete: {timeframes_found}")
+        else:
+            print(f"   ⚠️  Multi-timeframe analysis incomplete: {timeframes_found}")
+        
+        # Verify Technical Indicators (12+ expected)
+        expected_indicators = ['rsi', 'macd', 'ema', 'stochastic', 'williams_r', 'adx', 'ichimoku', 'obv', 'vwap', 'bollinger_bands']
+        indicators_found = [ind for ind in expected_indicators if ind in indicators]
+        
+        if len(indicators_found) >= 8:
+            print(f"   ✅ Comprehensive technical indicators: {len(indicators_found)} found")
+        else:
+            print(f"   ⚠️  Limited technical indicators: {len(indicators_found)} found")
+        
+        # Test 2: Different Symbol Test - AAPL
+        print(f"\n📊 PHASE 2: Different Symbol Test - AAPL")
+        print("-" * 60)
+        print("🎯 EXPECTED: Different technical conditions than NVDA")
+        print("📈 VERIFICATION: Demonstrate agent's ability to analyze different market scenarios")
+        
+        success, aapl_data = self.run_test(
+            "Technical Analysis Agent (AAPL)", 
+            "POST", 
+            "agents/technical-analysis", 
+            200, 
+            params={"symbol": "AAPL"}
+        )
+        
+        if not success:
+            print("❌ AAPL Technical Analysis failed")
+            return False
+        
+        aapl_score = aapl_data.get('technical_score', 0)
+        aapl_recommendation = aapl_data.get('recommendation', 'UNKNOWN')
+        aapl_confidence = aapl_data.get('confidence_level', 'unknown')
+        
+        print(f"📊 AAPL Technical Analysis Results:")
+        print(f"   - Technical Score: {aapl_score}")
+        print(f"   - Recommendation: {aapl_recommendation}")
+        print(f"   - Confidence Level: {aapl_confidence}")
+        
+        # Verify different analysis results
+        if abs(nvda_score - aapl_score) >= 5:
+            print(f"   ✅ Different technical conditions detected (NVDA: {nvda_score}, AAPL: {aapl_score})")
+        else:
+            print(f"   ⚠️  Similar scores may indicate limited differentiation")
+        
+        if nvda_recommendation != aapl_recommendation:
+            print(f"   ✅ Different recommendations show market scenario analysis")
+        else:
+            print(f"   ⚠️  Same recommendations for both symbols")
+        
+        # Test 3: Batch Technical Analysis
+        print(f"\n📊 PHASE 3: Batch Technical Analysis")
+        print("-" * 60)
+        print("🎯 EXPECTED: Efficient analysis of multiple symbols with SMC")
+        print("📈 SYMBOLS: NVDA, AAPL, MSFT with Smart Money Concepts")
+        
+        success, batch_data = self.run_test(
+            "Batch Technical Analysis", 
+            "GET", 
+            "agents/technical-analysis/batch", 
+            200, 
+            params={"symbols": "NVDA,AAPL,MSFT", "include_smc": "true"}
+        )
+        
+        if not success:
+            print("❌ Batch Technical Analysis failed")
+            return False
+        
+        symbols_analyzed = batch_data.get('symbols_analyzed', 0)
+        successful_analyses = batch_data.get('successful_analyses', 0)
+        results = batch_data.get('results', {})
+        
+        print(f"📊 Batch Analysis Results:")
+        print(f"   - Symbols Analyzed: {symbols_analyzed}")
+        print(f"   - Successful Analyses: {successful_analyses}")
+        print(f"   - Success Rate: {(successful_analyses/symbols_analyzed)*100:.1f}%" if symbols_analyzed > 0 else "N/A")
+        
+        # Verify individual results
+        expected_symbols = ['NVDA', 'AAPL', 'MSFT']
+        for symbol in expected_symbols:
+            if symbol in results:
+                result = results[symbol]
+                score = result.get('technical_score', 0)
+                recommendation = result.get('recommendation', 'UNKNOWN')
+                print(f"   - {symbol}: Score {score}, {recommendation}")
+            else:
+                print(f"   ❌ Missing result for {symbol}")
+        
+        if successful_analyses >= 2:
+            print(f"   ✅ Batch analysis working effectively")
+        else:
+            print(f"   ❌ Batch analysis has issues")
+        
+        # Test 4: Technical Analysis Methodology
+        print(f"\n📊 PHASE 4: Technical Analysis Methodology")
+        print("-" * 60)
+        print("🎯 EXPECTED: Comprehensive methodology explanation")
+        print("📈 COMPONENTS: Smart Money Concepts details, multi-timeframe approach")
+        
+        success, methodology_data = self.run_test(
+            "Technical Analysis Methodology", 
+            "GET", 
+            "agents/technical-analysis/methodology", 
+            200
+        )
+        
+        if not success:
+            print("❌ Technical Analysis Methodology failed")
+            return False
+        
+        agent_name = methodology_data.get('agent_name', '')
+        version = methodology_data.get('version', '')
+        analysis_weights = methodology_data.get('analysis_weights', {})
+        smc_concepts = methodology_data.get('smart_money_concepts', {})
+        timeframe_analysis = methodology_data.get('timeframe_analysis', {})
+        risk_management = methodology_data.get('risk_management', {})
+        
+        print(f"📊 Methodology Information:")
+        print(f"   - Agent Name: {agent_name}")
+        print(f"   - Version: {version}")
+        print(f"   - Analysis Components: {len(analysis_weights)}")
+        print(f"   - Smart Money Concepts: {len(smc_concepts)}")
+        print(f"   - Timeframe Analysis: {len(timeframe_analysis)}")
+        print(f"   - Risk Management: {len(risk_management)}")
+        
+        # Verify Smart Money Concepts details
+        expected_smc_details = ['order_blocks', 'fair_value_gaps', 'market_structure', 'liquidity_zones']
+        smc_details_found = [detail for detail in expected_smc_details if detail in smc_concepts]
+        
+        if len(smc_details_found) >= 3:
+            print(f"   ✅ Smart Money Concepts detailed: {smc_details_found}")
+        else:
+            print(f"   ⚠️  Smart Money Concepts incomplete: {smc_details_found}")
+        
+        # Verify multi-timeframe approach
+        expected_timeframes = ['weekly', 'daily', 'hourly']
+        methodology_timeframes = [tf for tf in expected_timeframes if tf in timeframe_analysis]
+        
+        if len(methodology_timeframes) >= 3:
+            print(f"   ✅ Multi-timeframe approach documented: {methodology_timeframes}")
+        else:
+            print(f"   ⚠️  Multi-timeframe approach incomplete: {methodology_timeframes}")
+        
+        # Test 5: Support/Resistance Analysis with Risk/Reward
+        print(f"\n📊 PHASE 5: Support/Resistance Analysis with Risk/Reward")
+        print("-" * 60)
+        
+        # Check if NVDA analysis includes support/resistance levels
+        support_resistance = nvda_data.get('support_resistance_levels', {})
+        risk_reward = nvda_data.get('risk_reward_analysis', {})
+        
+        if support_resistance and risk_reward:
+            support_levels = support_resistance.get('support_levels', [])
+            resistance_levels = support_resistance.get('resistance_levels', [])
+            risk_reward_ratio = risk_reward.get('risk_reward_ratio', 0)
+            
+            print(f"   📊 Support/Resistance Analysis:")
+            print(f"   - Support Levels: {len(support_levels)}")
+            print(f"   - Resistance Levels: {len(resistance_levels)}")
+            print(f"   - Risk/Reward Ratio: {risk_reward_ratio}")
+            
+            if len(support_levels) >= 2 and len(resistance_levels) >= 2:
+                print(f"   ✅ Comprehensive support/resistance analysis")
+            else:
+                print(f"   ⚠️  Limited support/resistance levels")
+            
+            if risk_reward_ratio >= 2.0:
+                print(f"   ✅ Good risk/reward ratio: {risk_reward_ratio}:1")
+            elif risk_reward_ratio > 0:
+                print(f"   ⚠️  Moderate risk/reward ratio: {risk_reward_ratio}:1")
+            else:
+                print(f"   ❌ No risk/reward calculation")
+        else:
+            print(f"   ❌ Missing support/resistance or risk/reward analysis")
+        
+        # Test 6: Position Sizing and Entry Timing
+        print(f"\n📊 PHASE 6: Position Sizing and Entry Timing")
+        print("-" * 60)
+        
+        position_sizing = nvda_data.get('position_sizing', {})
+        entry_timing = nvda_data.get('entry_timing', {})
+        
+        if position_sizing and entry_timing:
+            recommended_size = position_sizing.get('recommended_position_size', 0)
+            max_risk = position_sizing.get('max_risk_per_trade', 0)
+            entry_signal = entry_timing.get('entry_signal', 'UNKNOWN')
+            timing_confidence = entry_timing.get('timing_confidence', 'unknown')
+            
+            print(f"   📊 Position Management:")
+            print(f"   - Recommended Position Size: {recommended_size}%")
+            print(f"   - Max Risk Per Trade: {max_risk}%")
+            print(f"   - Entry Signal: {entry_signal}")
+            print(f"   - Timing Confidence: {timing_confidence}")
+            
+            if recommended_size > 0 and max_risk <= 2.0:
+                print(f"   ✅ Professional position sizing recommendations")
+            else:
+                print(f"   ⚠️  Position sizing may need refinement")
+        else:
+            print(f"   ❌ Missing position sizing or entry timing analysis")
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT: Technical Analysis Expert Agent")
+        print("=" * 80)
+        
+        # Calculate success metrics
+        test_phases = [
+            ("NVDA Technical Analysis", success and nvda_score > 0),
+            ("AAPL Different Analysis", success and aapl_score > 0),
+            ("Batch Analysis", successful_analyses >= 2),
+            ("Methodology Documentation", len(smc_concepts) >= 3),
+            ("Smart Money Concepts", len(smc_components_found) >= 3),
+            ("Multi-timeframe Analysis", len(timeframes_found) >= 3),
+            ("Technical Indicators", len(indicators_found) >= 8),
+            ("Support/Resistance", len(support_resistance) > 0),
+            ("Risk/Reward Analysis", len(risk_reward) > 0),
+            ("Position Management", len(position_sizing) > 0 and len(entry_timing) > 0)
+        ]
+        
+        passed_phases = sum(1 for _, passed in test_phases if passed)
+        total_phases = len(test_phases)
+        success_rate = (passed_phases / total_phases) * 100
+        
+        print(f"\n📊 TEST RESULTS SUMMARY:")
+        for phase_name, passed in test_phases:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {phase_name}")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_phases}/{total_phases} phases passed)")
+        
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        print(f"   - NVDA Technical Score: {nvda_score}")
+        print(f"   - AAPL Technical Score: {aapl_score}")
+        print(f"   - Batch Analysis Success: {successful_analyses}/{symbols_analyzed}")
+        print(f"   - Smart Money Concepts: {len(smc_components_found)}/4 components")
+        print(f"   - Technical Indicators: {len(indicators_found)}/10+ indicators")
+        print(f"   - Multi-timeframe Analysis: {len(timeframes_found)}/3 timeframes")
+        
+        # Professional trading features
+        print(f"\n💼 PROFESSIONAL TRADING FEATURES:")
+        if len(support_resistance) > 0 and len(risk_reward) > 0:
+            print(f"   ✅ Support/Resistance analysis with risk/reward calculations")
+        else:
+            print(f"   ❌ Missing professional risk/reward analysis")
+        
+        if len(position_sizing) > 0 and len(entry_timing) > 0:
+            print(f"   ✅ Position sizing and entry timing recommendations")
+        else:
+            print(f"   ❌ Missing position management recommendations")
+        
+        # Final verdict
+        if success_rate >= 85:
+            print(f"\n🎉 VERDICT: EXCELLENT - Technical Analysis Expert Agent working perfectly!")
+            print(f"   All endpoints functional with sophisticated technical analysis.")
+            print(f"   Professional-grade trading recommendations with Smart Money Concepts.")
+            print(f"   Multi-timeframe confluence analysis operational.")
+        elif success_rate >= 70:
+            print(f"\n✅ VERDICT: GOOD - Technical Analysis Expert Agent mostly working.")
+            print(f"   Core functionality operational with minor issues.")
+        else:
+            print(f"\n❌ VERDICT: NEEDS ATTENTION - Technical Analysis Expert Agent has issues.")
+            print(f"   Multiple components not working as expected.")
+        
+        return success_rate >= 70
+
 def main_top_picks():
     print("🎯 TOP PICKS ENDPOINT COMPREHENSIVE TESTING")
     print("=" * 80)
