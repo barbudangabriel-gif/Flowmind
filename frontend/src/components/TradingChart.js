@@ -8,97 +8,24 @@ const API = `${BACKEND_URL}/api`;
 
 const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
   const chartContainerRef = useRef();
-  const chartRef = useRef(null);
-  const candlestickSeriesRef = useRef(null);
-  const volumeSeriesRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [chartData, setChartData] = useState(null);
   const [selectedInterval, setSelectedInterval] = useState(interval);
 
   const intervals = [
     { label: '1D', value: '1D' },
     { label: '1H', value: '1H' },
     { label: '15m', value: '15m' },
-    { label: '5m', value: '5m' },
-    { label: '1m', value: '1m' }
+    { label: '5m', value: '5m' }
   ];
 
-  // Initialize chart
-  const initChart = () => {
-    if (!chartContainerRef.current) return;
-
-    const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: height,
-      layout: {
-        background: { type: 'solid', color: '#1a1a1a' },
-        textColor: '#DDD',
-      },
-      grid: {
-        vertLines: { color: '#444' },
-        horzLines: { color: '#444' },
-      },
-      crosshair: {
-        mode: 1,
-      },
-      rightPriceScale: {
-        borderColor: '#555',
-      },
-      timeScale: {
-        borderColor: '#555',
-        timeVisible: true,
-        secondsVisible: false,
-      },
-    });
-
-    // Add candlestick series
-    const candlestickSeries = chart.addCandlestickSeries({
-      upColor: '#4ade80', // green-400
-      downColor: '#f87171', // red-400
-      borderVisible: false,
-      wickUpColor: '#4ade80',
-      wickDownColor: '#f87171',
-    });
-
-    // Add volume series
-    const volumeSeries = chart.addHistogramSeries({
-      color: '#26a69a',
-      priceFormat: {
-        type: 'volume',
-      },
-      priceScaleId: '',
-      scaleMargins: {
-        top: 0.8,
-        bottom: 0,
-      },
-    });
-
-    chartRef.current = chart;
-    candlestickSeriesRef.current = candlestickSeries;
-    volumeSeriesRef.current = volumeSeries;
-
-    // Handle resize
-    const handleResize = () => {
-      if (chartContainerRef.current && chartRef.current) {
-        chartRef.current.applyOptions({
-          width: chartContainerRef.current.clientWidth,
-        });
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (chartRef.current) {
-        chartRef.current.remove();
-      }
-    };
-  };
-
-  // Load chart data
+  // Load chart data from API
   const loadChartData = async (timeframe) => {
-    if (!symbol) return;
+    if (!symbol) {
+      setError('No symbol provided');
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -111,51 +38,89 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
         {
           params: {
             interval: timeframe,
-            bars_back: timeframe === '1m' ? 100 : timeframe === '5m' ? 200 : 300
-          }
+            bars_back: 50
+          },
+          timeout: 10000
         }
       );
 
       if (response.data?.data && response.data.data.length > 0) {
-        const chartData = response.data.data;
-        const volumeData = chartData.map(bar => ({
-          time: bar.time,
-          value: bar.volume,
-          color: bar.close >= bar.open ? '#4ade8066' : '#f8717166'
-        }));
-
-        // Set data to series
-        if (candlestickSeriesRef.current && volumeSeriesRef.current) {
-          candlestickSeriesRef.current.setData(chartData);
-          volumeSeriesRef.current.setData(volumeData);
-          
-          // Fit content nicely
-          chartRef.current.timeScale().fitContent();
-        }
-
-        console.log(`Loaded ${chartData.length} bars for ${symbol} (${timeframe})`);
+        setChartData(response.data);
+        console.log(`Loaded ${response.data.data.length} bars for ${symbol}`);
       } else {
         setError('No chart data available');
       }
     } catch (err) {
       console.error('Error loading chart data:', err);
-      setError(`Failed to load chart data: ${err.message}`);
+      setError(`Failed to load chart: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // Initialize chart on mount
+  // Initialize chart when data is available
   useEffect(() => {
-    const cleanup = initChart();
-    return cleanup;
-  }, []);
+    if (!chartData || !chartContainerRef.current) return;
+
+    try {
+      // Create chart
+      const chart = createChart(chartContainerRef.current, {
+        width: chartContainerRef.current.clientWidth,
+        height: height,
+        layout: {
+          background: { type: 'solid', color: '#1a1a1a' },
+          textColor: '#DDD',
+        },
+        grid: {
+          vertLines: { color: '#444' },
+          horzLines: { color: '#444' },
+        },
+        rightPriceScale: {
+          borderColor: '#555',
+        },
+        timeScale: {
+          borderColor: '#555',
+        },
+      });
+
+      // Add candlestick series
+      const candlestickSeries = chart.addCandlestickSeries({
+        upColor: '#4ade80',
+        downColor: '#f87171',
+        borderVisible: false,
+        wickUpColor: '#4ade80',
+        wickDownColor: '#f87171',
+      });
+
+      // Set data
+      candlestickSeries.setData(chartData.data);
+
+      // Fit content
+      chart.timeScale().fitContent();
+
+      // Handle resize
+      const handleResize = () => {
+        chart.applyOptions({
+          width: chartContainerRef.current?.clientWidth || 800,
+        });
+      };
+
+      window.addEventListener('resize', handleResize);
+
+      // Cleanup
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        chart.remove();
+      };
+    } catch (chartError) {
+      console.error('Chart creation error:', chartError);
+      setError(`Chart error: ${chartError.message}`);
+    }
+  }, [chartData, height]);
 
   // Load data when symbol or interval changes
   useEffect(() => {
-    if (chartRef.current && symbol) {
-      loadChartData(selectedInterval);
-    }
+    loadChartData(selectedInterval);
   }, [symbol, selectedInterval]);
 
   // Handle interval change
