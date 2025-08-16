@@ -737,7 +737,34 @@ const OptionsModule = () => {
                     </div>
                   </div>
 
-                  {optimizedStrategies.map((strategy, index) => (
+                  {/* Strategy Cards using the new component */}
+                  {optimizedStrategies.map((strategy, index) => {
+                    // Convert strategy data to new card format
+                    const cardStrategy = {
+                      name: strategy.name,
+                      strikes: strategy.strikes,
+                      returnOnRisk: strategy.returnOnRisk,
+                      chance: strategy.chance || '--',
+                      profit: strategy.profit,
+                      risk: strategy.risk,
+                      category: strategy.category,
+                      breakeven: strategy.breakeven,
+                      probProfit: strategy.probProfit,
+                      expiration: selectedExpiry,
+                      chartData: strategy.chartData
+                    };
+
+                    return (
+                      <OptionStrategyCard
+                        key={index}
+                        strategy={cardStrategy}
+                        onOpenInBuilder={() => {
+                          setSelectedStrategy(strategy.name);
+                          setActiveTab('builder');
+                        }}
+                      />
+                    );
+                  })}
                     <div key={index} className="bg-gray-800 rounded-lg border border-gray-700 hover:border-blue-500 transition-all duration-200 shadow-lg">
                       
                       {/* Strategy Header - OptionStrat exact style */}
