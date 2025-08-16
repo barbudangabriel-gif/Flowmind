@@ -351,6 +351,26 @@ const InvestmentScoring = React.memo(() => {
     return 'text-red-600';
   };
 
+  const getVerdictColor = (verdict) => {
+    switch (verdict?.toUpperCase()) {
+      case 'STRONG BUY': return 'bg-green-900 text-green-300';
+      case 'BUY': return 'bg-green-800 text-green-300';
+      case 'HOLD': return 'bg-gray-600 text-gray-200';
+      case 'SELL': return 'bg-red-800 text-red-300';
+      case 'STRONG SELL': return 'bg-red-900 text-red-300';
+      default: return 'bg-gray-600 text-gray-200';
+    }
+  };
+
+  const getSignalColor = (signal) => {
+    switch (signal?.toLowerCase()) {
+      case 'bullish': return 'text-green-400';
+      case 'bearish': return 'text-red-400';
+      case 'neutral': return 'text-gray-400';
+      default: return 'text-gray-400';
+    }
+  };
+
   const InvestmentCard = ({ investment, showDetails = false }) => {
     if (!investment) {
       return <div className="bg-white p-4 rounded-lg shadow-md">Loading...</div>;
