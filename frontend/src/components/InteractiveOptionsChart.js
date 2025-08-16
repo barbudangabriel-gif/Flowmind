@@ -1,5 +1,5 @@
 import React from 'react';
-import Plot from 'react-plotly.js';
+// import Plot from 'react-plotly.js';
 
 const InteractiveOptionsChart = ({ 
   chartData, 
@@ -41,130 +41,161 @@ const InteractiveOptionsChart = ({
   const maxProfit = Math.max(...chartData.y);
   const maxLoss = Math.min(...chartData.y);
 
-  // Plotly data
-  const plotData = [
-    {
-      x: chartData.x,
-      y: chartData.y,
-      type: 'scatter',
-      mode: 'lines',
-      name: `${strategyName} P&L`,
-      line: {
-        color: '#3b82f6',
-        width: 3
-      },
-      fill: 'tozeroy',
-      fillcolor: 'rgba(59, 130, 246, 0.1)',
-      hovertemplate: 'Price: $%{x:.2f}<br>P&L: $%{y:.2f}<extra></extra>'
+  // Create SVG path from data points
+  const createPathFromData = (xData, yData) => {
+    if (!xData || !yData || xData.length !== yData.length) return '';
+    
+    const minX = Math.min(...xData);
+    const maxX = Math.max(...xData);
+    const minY = Math.min(...yData);
+    const maxY = Math.max(...yData);
+    
+    const width = 280;
+    const heightSvg = 200;
+    
+    const scaleX = (x) => ((x - minX) / (maxX - minX)) * width;
+    const scaleY = (y) => heightSvg - ((y - minY) / (maxY - minY)) * heightSvg;
+    
+    let path = `M ${scaleX(xData[0])} ${scaleY(yData[0])}`;
+    for (let i = 1; i < xData.length; i++) {
+      path += ` L ${scaleX(xData[i])} ${scaleY(yData[i])}`;
     }
-  ];
-
-  // Add breakeven lines
-  if (showBreakeven && breakevenPoints.length > 0) {
-    breakevenPoints.forEach((breakeven, index) => {
-      plotData.push({
-        x: [breakeven, breakeven],
-        y: [maxLoss * 1.2, maxProfit * 1.2],
-        type: 'scatter',
-        mode: 'lines',
-        name: `Breakeven ${index + 1}`,
-        line: {
-          color: '#fbbf24',
-          width: 2,
-          dash: 'dash'
-        },
-        showlegend: index === 0,
-        hovertemplate: `Breakeven: $${breakeven.toFixed(2)}<extra></extra>`
-      });
-    });
-  }
-
-  // Add current price line
-  if (showCurrentPrice && stockPrice) {
-    plotData.push({
-      x: [stockPrice, stockPrice],
-      y: [maxLoss * 1.2, maxProfit * 1.2],
-      type: 'scatter',
-      mode: 'lines',
-      name: 'Current Price',
-      line: {
-        color: '#f97316',
-        width: 2,
-        dash: 'dot'
-      },
-      hovertemplate: `Current: $${stockPrice.toFixed(2)}<extra></extra>`
-    });
-  }
-
-  // Add zero line
-  plotData.push({
-    x: [Math.min(...chartData.x), Math.max(...chartData.x)],
-    y: [0, 0],
-    type: 'scatter',
-    mode: 'lines',
-    name: 'Zero Line',
-    line: {
-      color: '#6b7280',
-      width: 1,
-      dash: 'dot'
-    },
-    showlegend: false,
-    hoverinfo: 'skip'
-  });
-
-  const layout = {
-    title: {
-      text: `${strategyName} - Profit & Loss at Expiration`,
-      font: { color: '#ffffff', size: 16 }
-    },
-    xaxis: {
-      title: { text: 'Stock Price ($)', font: { color: '#9ca3af' } },
-      color: '#9ca3af',
-      gridcolor: '#374151',
-      zeroline: false
-    },
-    yaxis: {
-      title: { text: 'Profit / Loss ($)', font: { color: '#9ca3af' } },
-      color: '#9ca3af',
-      gridcolor: '#374151',
-      zeroline: false
-    },
-    plot_bgcolor: '#1f2937',
-    paper_bgcolor: '#1f2937',
-    font: { color: '#ffffff' },
-    showlegend: true,
-    legend: {
-      x: 0,
-      y: 1,
-      bgcolor: 'rgba(31, 41, 55, 0.8)',
-      bordercolor: '#4b5563',
-      borderwidth: 1,
-      font: { color: '#ffffff', size: 12 }
-    },
-    margin: { t: 50, r: 30, b: 60, l: 60 },
-    height: height,
-    hovermode: 'x unified'
+    
+    return path;
   };
 
-  const config = {
-    displayModeBar: true,
-    modeBarButtonsToRemove: [
-      'pan2d', 'lasso2d', 'select2d', 'autoScale2d', 'resetScale2d'
-    ],
-    displaylogo: false,
-    responsive: true
-  };
+  const svgPath = createPathFromData(chartData.x, chartData.y);
 
   return (
     <div className="bg-gray-800 rounded-lg border border-gray-600 overflow-hidden">
-      <Plot
-        data={plotData}
-        layout={layout}
-        config={config}
-        useResizeHandler={true}
-        style={{ width: '100%', height: `${height}px` }}
-        className="plotly-chart"
-      />
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h5 className="text-white font-semibold">{strategyName} - Profit & Loss</h5>
+          <div className="flex items-center space-x-2 text-xs text-gray-400">
+            <span>At Expiration</span>
+          </div>
+        </div>
+        
+        <div className="bg-gray-900 rounded border border-gray-700 relative overflow-hidden" style={{height: `${height - 100}px`}}>
+          
+          {/* Professional Grid Lines */}
+          <div className="absolute inset-0 opacity-30">
+            {/* Horizontal grid lines */}
+            {Array.from({length: 6}).map((_, i) => (
+              <div 
+                key={`h-${i}`} 
+                className="absolute w-full border-t border-gray-600" 
+                style={{top: `${i * 20}%`}}
+              ></div>
+            ))}
+            {/* Vertical grid lines */}
+            {Array.from({length: 8}).map((_, i) => (
+              <div 
+                key={`v-${i}`} 
+                className="absolute h-full border-l border-gray-600" 
+                style={{left: `${i * 14.28}%`}}
+              ></div>
+            ))}
+          </div>
+          
+          {/* SVG Chart */}
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 280 200">
+            {/* P&L Curve */}
+            <path
+              d={svgPath}
+              stroke="#3b82f6"
+              strokeWidth="2.5"
+              fill="none"
+              className="drop-shadow-lg"
+            />
+            
+            {/* Breakeven lines */}
+            {breakevenPoints.map((breakeven, index) => {
+              const xPos = ((breakeven - Math.min(...chartData.x)) / (Math.max(...chartData.x) - Math.min(...chartData.x))) * 280;
+              return (
+                <line 
+                  key={`breakeven-${index}`} 
+                  x1={xPos} 
+                  y1="0" 
+                  x2={xPos} 
+                  y2="200" 
+                  stroke="#fbbf24" 
+                  strokeWidth="1.5" 
+                  strokeDasharray="3,3" 
+                  opacity="0.8" 
+                />
+              );
+            })}
+            
+            {/* Current price line */}
+            {showCurrentPrice && stockPrice && (
+              <line 
+                x1={((stockPrice - Math.min(...chartData.x)) / (Math.max(...chartData.x) - Math.min(...chartData.x))) * 280} 
+                y1="0" 
+                x2={((stockPrice - Math.min(...chartData.x)) / (Math.max(...chartData.x) - Math.min(...chartData.x))) * 280} 
+                y2="200" 
+                stroke="#f97316" 
+                strokeWidth="1.5" 
+                strokeDasharray="3,3" 
+                opacity="0.8" 
+              />
+            )}
+            
+            {/* Zero line */}
+            <line 
+              x1="0" 
+              y1={200 - ((0 - Math.min(...chartData.y)) / (Math.max(...chartData.y) - Math.min(...chartData.y))) * 200} 
+              x2="280" 
+              y2={200 - ((0 - Math.min(...chartData.y)) / (Math.max(...chartData.y) - Math.min(...chartData.y))) * 200} 
+              stroke="#6b7280" 
+              strokeWidth="1" 
+              strokeDasharray="3,3" 
+              opacity="0.6" 
+            />
+          </svg>
+          
+          {/* Price Labels */}
+          <div className="absolute bottom-2 left-2 text-xs text-gray-400 font-mono">
+            ${Math.min(...chartData.x).toFixed(0)}
+          </div>
+          <div className="absolute bottom-2 right-2 text-xs text-gray-400 font-mono">
+            ${Math.max(...chartData.x).toFixed(0)}
+          </div>
+          {showCurrentPrice && stockPrice && (
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-xs text-orange-400 font-semibold bg-gray-800 px-1 rounded">
+              ${stockPrice.toFixed(0)}
+            </div>
+          )}
+          
+          {/* P&L Labels */}
+          <div className="absolute top-2 left-2 text-xs text-green-400 font-semibold bg-gray-800 px-1 rounded">
+            ${maxProfit.toFixed(0)}
+          </div>
+          <div className="absolute top-2 right-2 text-xs text-red-400 font-semibold bg-gray-800 px-1 rounded">
+            ${Math.abs(maxLoss).toFixed(0)}
+          </div>
+        </div>
+        
+        {/* Chart Legend */}
+        <div className="mt-3 flex items-center justify-center space-x-6 text-xs">
+          <div className="flex items-center space-x-2">
+            <div className="w-3 h-0.5 bg-blue-500"></div>
+            <span className="text-gray-400">P&L Curve</span>
+          </div>
+          {breakevenPoints.length > 0 && (
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-0.5 bg-yellow-500 opacity-80" style={{borderTop: '1px dashed'}}></div>
+              <span className="text-gray-400">Breakeven: ${breakevenPoints[0].toFixed(2)}</span>
+            </div>
+          )}
+          {showCurrentPrice && stockPrice && (
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-0.5 bg-orange-500 opacity-80" style={{borderTop: '1px dotted'}}></div>
+              <span className="text-gray-400">Current Price</span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
