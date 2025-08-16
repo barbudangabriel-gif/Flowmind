@@ -120,9 +120,6 @@ const StockAnalysisPage = () => {
       if (technicalRes.status === 'rejected') {
         console.error('Technical analysis error:', technicalRes.reason);
       }
-      if (stockDataRes.status === 'rejected') {
-        console.error('Stock data error:', stockDataRes.reason);
-      }
       
       setAnalysis(analysisData);
       
