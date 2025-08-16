@@ -330,41 +330,41 @@ const OptionsModule = () => {
 
               {/* Strategy Analysis */}
               {calculationData && (
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <BarChart3 className="mr-2" size={20} />
+                <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                    <BarChart3 className="mr-2 text-blue-400" size={20} />
                     Analysis
                   </h3>
                   
                   <div className="space-y-4">
                     {/* Strategy Info */}
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <h4 className="font-semibold text-blue-800 mb-2">
+                    <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4">
+                      <h4 className="font-semibold text-blue-300 mb-2">
                         {calculationData.strategy_config.name}
                       </h4>
-                      <p className="text-sm text-blue-600">
+                      <p className="text-sm text-blue-200">
                         {calculationData.strategy_config.description}
                       </p>
                     </div>
                     
                     {/* Legs */}
                     {calculationData.strategy_config.legs.map((leg, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-4">
+                      <div key={index} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
                         <div className="flex justify-between items-center">
                           <div>
-                            <span className="font-medium">
+                            <span className="font-medium text-white">
                               {leg.action.toUpperCase()} {leg.option_type.toUpperCase()}
                             </span>
                             <br />
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-gray-300">
                               Strike: ${leg.strike} × {leg.quantity}
                             </span>
                           </div>
                           <div className="text-right">
-                            <div className="text-lg font-bold text-green-600">
+                            <div className="text-lg font-bold text-green-400">
                               ${leg.premium.toFixed(2)}
                             </div>
-                            <div className="text-sm text-gray-500">Premium</div>
+                            <div className="text-sm text-gray-400">Premium</div>
                           </div>
                         </div>
                       </div>
@@ -372,27 +372,27 @@ const OptionsModule = () => {
                     
                     {/* P&L Summary */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-green-50 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-green-600">
+                      <div className="bg-green-900/30 border border-green-700 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-green-400">
                           ${calculationData.analysis.max_profit.toFixed(0)}
                         </div>
-                        <div className="text-sm text-green-700">Max Profit</div>
+                        <div className="text-sm text-green-300">Max Profit</div>
                       </div>
                       
-                      <div className="bg-red-50 rounded-lg p-4 text-center">
-                        <div className="text-2xl font-bold text-red-600">
+                      <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 text-center">
+                        <div className="text-2xl font-bold text-red-400">
                           ${Math.abs(calculationData.analysis.max_loss).toFixed(0)}
                         </div>
-                        <div className="text-sm text-red-700">Max Loss</div>
+                        <div className="text-sm text-red-300">Max Loss</div>
                       </div>
                     </div>
                     
                     {/* Breakeven */}
                     {calculationData.analysis.breakeven_points.length > 0 && (
-                      <div className="bg-yellow-50 rounded-lg p-4">
-                        <div className="font-medium text-yellow-800 mb-2">Breakeven Points</div>
+                      <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4">
+                        <div className="font-medium text-yellow-300 mb-2">Breakeven Points</div>
                         {calculationData.analysis.breakeven_points.map((point, index) => (
-                          <div key={index} className="text-yellow-700">
+                          <div key={index} className="text-yellow-200">
                             ${point.toFixed(2)}
                           </div>
                         ))}
@@ -400,11 +400,11 @@ const OptionsModule = () => {
                     )}
                     
                     {/* Probability */}
-                    <div className="bg-blue-50 rounded-lg p-4 text-center">
-                      <div className="text-xl font-bold text-blue-600">
+                    <div className="bg-blue-900/30 border border-blue-700 rounded-lg p-4 text-center">
+                      <div className="text-xl font-bold text-blue-400">
                         {calculationData.analysis.probability_of_profit.toFixed(1)}%
                       </div>
-                      <div className="text-sm text-blue-700">Probability of Profit</div>
+                      <div className="text-sm text-blue-300">Probability of Profit</div>
                     </div>
                   </div>
                 </div>
@@ -415,37 +415,37 @@ const OptionsModule = () => {
             <div className="lg:col-span-2 space-y-6">
               
               {/* P&L Chart */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                  <TrendingUp className="mr-2" size={20} />
+              <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                  <TrendingUp className="mr-2 text-blue-400" size={20} />
                   Profit & Loss Chart
                 </h3>
                 
                 {loading && (
                   <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <span className="ml-2 text-gray-600">Calculating...</span>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    <span className="ml-2 text-gray-300">Calculating...</span>
                   </div>
                 )}
                 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="bg-red-900/30 border border-red-700 rounded-lg p-4">
                     <div className="flex items-center">
-                      <div className="text-red-600 mr-2">⚠️</div>
-                      <div className="text-red-800">{error}</div>
+                      <div className="text-red-400 mr-2">⚠️</div>
+                      <div className="text-red-300">{error}</div>
                     </div>
                   </div>
                 )}
                 
                 {calculationData && !loading && !error && (
-                  <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                  <div className="h-64 bg-gray-900 rounded-lg flex items-center justify-center border border-gray-600">
                     <div className="text-center">
-                      <BarChart3 className="mx-auto mb-2 text-blue-500" size={48} />
-                      <p className="text-gray-600 mb-2">Interactive P&L Chart</p>
-                      <p className="text-sm text-gray-500">
+                      <BarChart3 className="mx-auto mb-2 text-blue-400" size={48} />
+                      <p className="text-gray-300 mb-2">Interactive P&L Chart</p>
+                      <p className="text-sm text-gray-400">
                         Plotly.js integration coming în next phase
                       </p>
-                      <div className="mt-4 text-xs text-gray-400">
+                      <div className="mt-4 text-xs text-gray-500">
                         Data ready: {calculationData.chart_data.x.length} price points
                       </div>
                     </div>
@@ -455,26 +455,26 @@ const OptionsModule = () => {
               
               {/* Greeks */}
               {calculationData && (
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <Calculator className="mr-2" size={20} />
+                <div className="bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+                    <Calculator className="mr-2 text-blue-400" size={20} />
                     Greeks Analysis
                   </h3>
                   
                   <div className="grid grid-cols-5 gap-4">
                     {Object.entries(calculationData.analysis.greeks).map(([greek, value]) => (
-                      <div key={greek} className="bg-gray-50 rounded-lg p-4 text-center">
-                        <div className="text-lg font-bold text-gray-800">
+                      <div key={greek} className="bg-gray-700 rounded-lg p-4 text-center border border-gray-600">
+                        <div className="text-lg font-bold text-white">
                           {typeof value === 'number' ? value.toFixed(3) : value}
                         </div>
-                        <div className="text-sm text-gray-600 capitalize">
+                        <div className="text-sm text-gray-300 capitalize">
                           {greek}
                         </div>
                       </div>
                     ))}
                   </div>
                   
-                  <div className="mt-4 text-sm text-gray-500">
+                  <div className="mt-4 text-sm text-gray-400 flex items-center">
                     <Info className="inline mr-1" size={14} />
                     Greeks calculated using Black-Scholes model în real-time
                   </div>
@@ -486,16 +486,16 @@ const OptionsModule = () => {
 
         {/* Other tabs placeholder */}
         {activeTab !== 'builder' && (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <div className="bg-gray-800 rounded-lg shadow-lg p-8 text-center border border-gray-700">
             <div className="mb-6">
-              {activeTab === 'optimizer' && <Target className="mx-auto mb-4 text-blue-500" size={64} />}
-              {activeTab === 'flow' && <Activity className="mx-auto mb-4 text-blue-500" size={64} />}
-              {activeTab === 'portfolio' && <PieChart className="mx-auto mb-4 text-blue-500" size={64} />}
+              {activeTab === 'optimizer' && <Target className="mx-auto mb-4 text-blue-400" size={64} />}
+              {activeTab === 'flow' && <Activity className="mx-auto mb-4 text-blue-400" size={64} />}
+              {activeTab === 'portfolio' && <PieChart className="mx-auto mb-4 text-blue-400" size={64} />}
               
-              <h4 className="text-2xl font-bold text-gray-800 mb-2 capitalize">
+              <h4 className="text-2xl font-bold text-white mb-2 capitalize">
                 {activeTab} Module
               </h4>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-400 mb-6">
                 This section will be implemented în next development phases
               </p>
             </div>
