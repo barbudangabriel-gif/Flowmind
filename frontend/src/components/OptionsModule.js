@@ -179,9 +179,44 @@ const OptionsModule = () => {
   // Auto-calculate when parameters change
   useEffect(() => {
     if (selectedStrategy && symbol && stockPrice && strike) {
-      // calculateStrategy(); // Commented out for now
+      calculateStrategy();
     }
   }, [selectedStrategy, symbol, stockPrice, strike, daysToExpiry, volatility, riskFreeRate]);
+
+  const calculateStrategy = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(`${API}/options/calculate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          strategy_name: selectedStrategy,
+          symbol: symbol,
+          stock_price: stockPrice,
+          strike: strike,
+          days_to_expiry: daysToExpiry,
+          volatility: volatility,
+          risk_free_rate: riskFreeRate
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to calculate strategy: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setCalculationData(data);
+    } catch (error) {
+      setError(error.message);
+      console.error('Strategy calculation error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900">
