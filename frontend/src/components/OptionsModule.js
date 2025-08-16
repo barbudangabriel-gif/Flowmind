@@ -52,85 +52,136 @@ function generatePnLData(strategy) {
   return data;
 }
 
-// Strategy Card Component
+// Strategy Card Component - Pixel-Perfect OptionStrat.com Replica
 function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, riskLabel, strategyType }) {
   const data = generatePnLData(strategyType);
   
   return (
-    <div className="bg-[#2c3e50] p-4 border border-[#34495e]" style={{minHeight: '400px'}}>
-      {/* Header */}
-      <div className="mb-4">
-        <h3 className="text-white text-lg font-bold mb-1">{title}</h3>
-        <p className="text-gray-400 text-xs">{subtitle}</p>
+    <div className="bg-[#2c3e50] border border-[#34495e] rounded-none" style={{minHeight: '420px'}}>
+      {/* Header Section */}
+      <div className="px-4 pt-4 pb-3 border-b border-[#34495e]">
+        <h3 className="text-white text-base font-bold leading-tight mb-1">{title}</h3>
+        <p className="text-[#7f8c8d] text-xs leading-tight">{subtitle}</p>
       </div>
       
-      {/* Metrics */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <div className="text-yellow-400 text-lg font-bold">{returnOnRisk}</div>
-          <div className="text-gray-400 text-xs">Return on Risk</div>
+      {/* Metrics Section */}
+      <div className="px-4 py-3">
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="text-left">
+            <div className="text-[#f39c12] text-xl font-bold leading-none">{returnOnRisk}</div>
+            <div className="text-[#7f8c8d] text-xs mt-1">Return on Risk</div>
+          </div>
+          <div className="text-left">
+            <div className="text-[#27ae60] text-xl font-bold leading-none">{chance}</div>
+            <div className="text-[#7f8c8d] text-xs mt-1">Chance</div>
+          </div>
         </div>
-        <div>
-          <div className="text-green-400 text-lg font-bold">{chance}</div>
-          <div className="text-gray-400 text-xs">Chance</div>
-        </div>
-      </div>
-      
-      {/* Profit/Risk */}
-      <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-        <div>
-          <span className="text-green-400 font-semibold">{profit}</span>
-          <span className="text-gray-400"> Profit</span>
-        </div>
-        <div>
-          <span className="text-red-400 font-semibold">{risk}</span>
-          <span className="text-gray-400"> {riskLabel}</span>
+        
+        {/* Profit/Risk Row */}
+        <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+          <div className="text-left">
+            <span className="text-[#27ae60] font-semibold">{profit}</span>
+            <span className="text-[#7f8c8d]"> Profit</span>
+          </div>
+          <div className="text-left">
+            <span className="text-[#e74c3c] font-semibold">{risk}</span>
+            <span className="text-[#7f8c8d]"> {riskLabel}</span>
+          </div>
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="h-40 mb-4">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-            <defs>
-              <linearGradient id={`green-${strategyType}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22c55e" stopOpacity={0.8} />
-                <stop offset="100%" stopColor="#22c55e" stopOpacity={0.3} />
-              </linearGradient>
-              <linearGradient id={`red-${strategyType}`} x1="0" y1="1" x2="0" y2="0">
-                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.8} />
-                <stop offset="100%" stopColor="#ef4444" stopOpacity={0.3} />
-              </linearGradient>
-            </defs>
-            
-            <CartesianGrid stroke="#34495e" strokeDasharray="2 2" />
-            <XAxis dataKey="price" axisLine={false} tickLine={false} tick={{ fill: "#7f8c8d", fontSize: 10 }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#7f8c8d", fontSize: 10 }} />
-            
-            {/* White faded zero line */}
-            <ReferenceLine y={0} stroke="#ffffff" strokeDasharray="2 2" strokeOpacity={0.4} />
-            
-            {/* Current price line */}
-            <ReferenceLine x={149.53} stroke="#3498db" strokeDasharray="2 2" strokeOpacity={0.6} />
-            
-            {/* Target price line */}
-            <ReferenceLine x={263.91} stroke="#f39c12" strokeDasharray="2 2" strokeOpacity={0.6} />
-            
-            {/* Fill areas */}
-            <Area dataKey="profit" fill={`url(#green-${strategyType})`} stroke="none" />
-            <Area dataKey="loss" fill={`url(#red-${strategyType})`} stroke="none" />
-            
-            {/* P&L Lines in gradient colors */}
-            <Line dataKey="profit" stroke="#22c55e" strokeWidth={2} dot={false} connectNulls={false} />
-            <Line dataKey="loss" stroke="#ef4444" strokeWidth={2} dot={false} connectNulls={false} />
-          </ComposedChart>
-        </ResponsiveContainer>
+      {/* Chart Section */}
+      <div className="px-3 pb-3">
+        <div className="h-36 bg-[#34495e] rounded-none border border-[#4a5f7a]">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+              <defs>
+                <linearGradient id={`profit-gradient-${strategyType}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#27ae60" stopOpacity={0.6} />
+                  <stop offset="100%" stopColor="#27ae60" stopOpacity={0.2} />
+                </linearGradient>
+                <linearGradient id={`loss-gradient-${strategyType}`} x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#e74c3c" stopOpacity={0.6} />
+                  <stop offset="100%" stopColor="#e74c3c" stopOpacity={0.2} />
+                </linearGradient>
+              </defs>
+              
+              {/* Grid */}
+              <CartesianGrid stroke="#4a5f7a" strokeDasharray="1 1" strokeOpacity={0.3} />
+              
+              {/* Axes */}
+              <XAxis 
+                dataKey="price" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: "#7f8c8d", fontSize: 9 }}
+                tickCount={6}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fill: "#7f8c8d", fontSize: 9 }}
+                tickCount={5}
+              />
+              
+              {/* Faded white zero line - CRITICAL FEATURE */}
+              <ReferenceLine 
+                y={0} 
+                stroke="#ffffff" 
+                strokeDasharray="3 3" 
+                strokeOpacity={0.4} 
+                strokeWidth={1}
+              />
+              
+              {/* Current price line */}
+              <ReferenceLine 
+                x={149.53} 
+                stroke="#3498db" 
+                strokeDasharray="2 2" 
+                strokeOpacity={0.7} 
+                strokeWidth={1}
+              />
+              
+              {/* Gradient fill areas */}
+              <Area 
+                dataKey="profit" 
+                fill={`url(#profit-gradient-${strategyType})`} 
+                stroke="none" 
+                fillOpacity={1}
+              />
+              <Area 
+                dataKey="loss" 
+                fill={`url(#loss-gradient-${strategyType})`} 
+                stroke="none" 
+                fillOpacity={1}
+              />
+              
+              {/* P&L Lines matching gradient colors */}
+              <Line 
+                dataKey="profit" 
+                stroke="#27ae60" 
+                strokeWidth={1.5} 
+                dot={false} 
+                connectNulls={false} 
+              />
+              <Line 
+                dataKey="loss" 
+                stroke="#e74c3c" 
+                strokeWidth={1.5} 
+                dot={false} 
+                connectNulls={false} 
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      {/* Button */}
-      <button className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white py-2 px-4 font-semibold transition-colors">
-        Open in Builder
-      </button>
+      {/* Button Section */}
+      <div className="px-4 pb-4">
+        <button className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white py-2.5 px-4 text-sm font-semibold transition-colors rounded-none border-0">
+          Open in Builder
+        </button>
+      </div>
     </div>
   );
 }
