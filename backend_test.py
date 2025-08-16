@@ -4180,9 +4180,8 @@ class StockMarketAPITester:
         success_invalid, invalid_result = self.run_test(
             "Investment Scoring (Invalid Symbol)", 
             "POST", 
-            "agents/investment-scoring", 
-            200,  # Should return 200 with error handling
-            params={"symbol": "INVALID123"}
+            "agents/investment-scoring?symbol=INVALID123", 
+            200  # Should return 200 with error handling
         )
         
         if success_invalid:
