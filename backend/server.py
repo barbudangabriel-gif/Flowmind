@@ -2591,6 +2591,143 @@ async def get_trading_strategies_from_unusual_whales():
         logger.error(f"Error generating trading strategies: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error generating trading strategies: {str(e)}")
 
+# ==================== AI INVESTMENT SCORING AGENT ====================
+
+@api_router.post("/agents/investment-scoring")
+async def generate_investment_score(
+    symbol: str = Query(..., description="Stock symbol to analyze"),
+    include_personalization: Optional[bool] = Query(False, description="Include user personalization if available")
+):
+    """
+    AI-Powered Investment Scoring Agent
+    
+    Generates comprehensive investment score using Unusual Whales data sources:
+    - Options flow sentiment analysis
+    - Dark pool institutional activity
+    - Congressional trading insights  
+    - AI-generated trading strategies
+    - Market momentum indicators
+    - Risk-adjusted scoring
+    
+    Returns score (0-100), recommendation, confidence level, and key signals.
+    """
+    try:
+        logger.info(f"Investment Scoring Agent: Analyzing {symbol.upper()}")
+        
+        # Generate comprehensive investment score
+        analysis = await investment_scoring_agent.generate_investment_score(
+            symbol=symbol.upper(),
+            user_context={'include_personalization': include_personalization}
+        )
+        
+        # Add response metadata
+        analysis.update({
+            'agent_type': 'investment_scoring',
+            'data_sources_count': len(analysis.get('data_sources', [])),
+            'processing_time_ms': 'N/A',  # Could add timing if needed
+            'api_version': '1.0'
+        })
+        
+        logger.info(f"Investment Scoring Agent: Generated score {analysis.get('investment_score')} "
+                   f"for {symbol.upper()} with {analysis.get('confidence_level')} confidence")
+        
+        return analysis
+        
+    except Exception as e:
+        logger.error(f"Investment Scoring Agent error for {symbol}: {str(e)}")
+        return {
+            'symbol': symbol.upper(),
+            'error': f"Failed to generate investment score: {str(e)}",
+            'investment_score': 50.0,  # Neutral score on error
+            'recommendation': 'HOLD',
+            'confidence_level': 'low',
+            'key_signals': [],
+            'risk_analysis': {'overall_risk': 'unknown', 'risk_factors': ['Analysis unavailable']},
+            'timestamp': datetime.now().isoformat(),
+            'agent_type': 'investment_scoring'
+        }
+
+@api_router.get("/agents/investment-scoring/batch")
+async def get_batch_investment_scores(
+    symbols: str = Query(..., description="Comma-separated list of stock symbols"),
+    limit: Optional[int] = Query(10, description="Maximum number of symbols to analyze")
+):
+    """
+    Batch Investment Scoring for multiple symbols
+    
+    Efficiently generates investment scores for multiple stocks simultaneously.
+    Useful for screening and portfolio analysis.
+    """
+    try:
+        symbol_list = [s.strip().upper() for s in symbols.split(',')][:limit]
+        
+        logger.info(f"Investment Scoring Agent: Batch analysis for {len(symbol_list)} symbols")
+        
+        # Generate scores for all symbols
+        batch_results = await investment_scoring_agent.get_batch_scores(symbol_list)
+        
+        return {
+            'symbols_analyzed': len(batch_results),
+            'successful_analyses': sum(1 for result in batch_results.values() if 'error' not in result),
+            'results': batch_results,
+            'timestamp': datetime.now().isoformat(),
+            'agent_type': 'investment_scoring_batch'
+        }
+        
+    except Exception as e:
+        logger.error(f"Batch investment scoring error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error in batch investment scoring: {str(e)}")
+
+@api_router.get("/agents/investment-scoring/methodology")
+async def get_scoring_methodology():
+    """
+    Get detailed explanation of Investment Scoring methodology
+    
+    Returns transparency information about how scores are calculated,
+    what data sources are used, and how weighting works.
+    """
+    try:
+        methodology = investment_scoring_agent.get_scoring_explanation()
+        
+        return {
+            'agent_name': 'Investment Scoring Agent',
+            'version': '1.0',
+            'scoring_methodology': methodology,
+            'signal_weights': {
+                'options_flow': '25% - Options sentiment and premium volume analysis',
+                'dark_pool': '20% - Institutional activity through dark pool trading', 
+                'congressional': '15% - Congressional insider trading activity',
+                'ai_strategies': '20% - AI-generated trading strategy confidence',
+                'market_momentum': '10% - Short-term momentum indicators',
+                'risk_assessment': '10% - Risk-adjusted scoring factors'
+            },
+            'score_ranges': {
+                '75-100': 'STRONG BUY / BUY',
+                '55-74': 'HOLD+ / BUY',  
+                '45-54': 'HOLD',
+                '25-44': 'HOLD- / SELL',
+                '0-24': 'STRONG SELL'
+            },
+            'confidence_levels': {
+                'high': 'Consistent signals across multiple data sources',
+                'medium': 'Some signal consistency with moderate agreement', 
+                'low': 'Mixed or inconsistent signals across sources'
+            },
+            'data_sources': [
+                'Unusual Whales Options Flow (real-time)',
+                'Unusual Whales Dark Pool Activity',
+                'Congressional Trading Data', 
+                'AI-Generated Trading Strategies',
+                'Technical Momentum Indicators'
+            ],
+            'update_frequency': 'Real-time analysis on request',
+            'timestamp': datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting scoring methodology: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving methodology: {str(e)}")
+
 # ==================== END UNUSUAL WHALES API ENDPOINTS ====================
 
 # ==================== EXPERT OPTIONS TRADING ENDPOINTS ====================
