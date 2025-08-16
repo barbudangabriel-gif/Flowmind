@@ -100,8 +100,8 @@ function StrategyCard({
               tickFormatter={(v) => v >= 0 ? `$${Math.abs(v)}` : `-$${Math.abs(v)}`}
             />
             
-            {/* Zero line */}
-            <ReferenceLine y={0} stroke="#7f8c8d" strokeDasharray="2 2" />
+            {/* Zero line - white faded */}
+            <ReferenceLine y={0} stroke="#ffffff" strokeDasharray="2 2" strokeOpacity={0.3} />
             
             {/* Spot price line */}
             <ReferenceLine x={spotPrice} stroke="#3498db" strokeDasharray="2 2" strokeWidth={1} />
