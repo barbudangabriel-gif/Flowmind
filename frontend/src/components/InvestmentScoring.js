@@ -250,6 +250,56 @@ const InvestmentScoring = React.memo(() => {
     }
   }, [aiAnalysisSymbol]);
 
+  // Top Picks expansion function
+  const expandTopPicks = useCallback(() => {
+    setDisplayLimit(Math.min(1000, topPicks.length));
+  }, [topPicks.length]);
+
+  // Handle ticker click for detailed analysis
+  const handleTickerClick = useCallback(async (symbol) => {
+    if (!symbol) return;
+    
+    setSelectedTickerModal(symbol);
+    setModalLoading(true);
+    setModalAnalysis(null);
+    
+    try {
+      console.log(`Loading detailed analysis for ${symbol}`);
+      
+      // Fetch both Investment Scoring and Technical Analysis in parallel
+      const [investmentRes, technicalRes] = await Promise.all([
+        axios.post(`${API}/agents/investment-scoring`, {}, {
+          params: { symbol: symbol.toUpperCase() }
+        }),
+        axios.post(`${API}/agents/technical-analysis`, {}, {
+          params: { symbol: symbol.toUpperCase(), include_smc: true }
+        })
+      ]);
+      
+      setModalAnalysis({
+        investment: investmentRes.data,
+        technical: technicalRes.data,
+        symbol: symbol.toUpperCase()
+      });
+      
+    } catch (error) {
+      console.error('Error loading detailed analysis:', error);
+      setModalAnalysis({
+        error: `Failed to load analysis for ${symbol}: ${error.response?.data?.detail || error.message}`,
+        symbol: symbol.toUpperCase()
+      });
+    } finally {
+      setModalLoading(false);
+    }
+  }, []);
+
+  // Close modal function
+  const closeModal = useCallback(() => {
+    setSelectedTickerModal(null);
+    setModalAnalysis(null);
+    setModalLoading(false);
+  }, []);
+
   // useEffect hooks - MUST be declared after useCallback functions
   useEffect(() => {
     loadTopPicks();
