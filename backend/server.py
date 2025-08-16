@@ -982,6 +982,31 @@ async def test_data_sources(symbol: str):
     except Exception as e:
         results["tradestation"] = {"status": "error", "message": str(e)}
     
+    # Test Unusual Whales
+    try:
+        uw_stocks = await uw_service.get_stock_screener_data(limit=500, exchange="all")
+        uw_stock_data = None
+        
+        for stock in uw_stocks:
+            if stock.get('symbol', '').upper() == symbol.upper():
+                uw_stock_data = stock
+                break
+        
+        if uw_stock_data:
+            results["unusual_whales"] = {
+                "status": "success",
+                "price": float(uw_stock_data.get("price", 0)),
+                "change": float(uw_stock_data.get("change", 0)),
+                "change_percent": float(uw_stock_data.get("change_percent", 0)),
+                "volume": int(uw_stock_data.get("volume", 0)),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        else:
+            results["unusual_whales"] = {"status": "symbol_not_found", "message": f"Symbol {symbol} not found in UW data"}
+            
+    except Exception as e:
+        results["unusual_whales"] = {"status": "error", "message": str(e)}
+    
     # Test Yahoo Finance
     try:
         enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
@@ -996,8 +1021,13 @@ async def test_data_sources(symbol: str):
     except Exception as e:
         results["yahoo_finance"] = {"status": "error", "message": str(e)}
     
-    # Show which source would be used
-    primary_source = "tradestation" if ts_auth.is_authenticated() and results.get("tradestation", {}).get("status") == "success" else "yahoo_finance"
+    # Show which source would be used (updated priority)
+    if ts_auth.is_authenticated() and results.get("tradestation", {}).get("status") == "success":
+        primary_source = "tradestation"
+    elif results.get("unusual_whales", {}).get("status") == "success":
+        primary_source = "unusual_whales"
+    else:
+        primary_source = "yahoo_finance"
     
     return {
         "symbol": symbol.upper(),
@@ -1005,8 +1035,11 @@ async def test_data_sources(symbol: str):
         "primary_source_used": primary_source,
         "price_comparison": {
             "tradestation_price": results.get("tradestation", {}).get("price"),
+            "unusual_whales_price": results.get("unusual_whales", {}).get("price"),
             "yahoo_price": results.get("yahoo_finance", {}).get("price"),
-            "difference": None if not (results.get("tradestation", {}).get("price") and results.get("yahoo_finance", {}).get("price")) 
+            "ts_vs_uw_difference": None if not (results.get("tradestation", {}).get("price") and results.get("unusual_whales", {}).get("price")) 
+                        else round(results["tradestation"]["price"] - results["unusual_whales"]["price"], 2),
+            "ts_vs_yahoo_difference": None if not (results.get("tradestation", {}).get("price") and results.get("yahoo_finance", {}).get("price")) 
                         else round(results["tradestation"]["price"] - results["yahoo_finance"]["price"], 2)
         },
         "timestamp": datetime.utcnow().isoformat()
