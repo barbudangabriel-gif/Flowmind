@@ -371,7 +371,10 @@ async def root():
             "enhanced_stock": "/stocks/{symbol}/enhanced",
             "extended_hours": "/stocks/{symbol}/extended-hours",
             "screener": "/screener/data",
-            "filter": "/screener/filter"
+            "filter": "/screener/filter",
+            "data_sources_status": "/data-sources/status",
+            "test_data_source": "/data-sources/test/{symbol}",
+            "tradestation_quotes": "/tradestation/quotes/{symbols}"
         }
     }
 
