@@ -491,11 +491,11 @@ const StockAnalysisPage = () => {
               </div>
 
               {/* Multi-timeframe Analysis */}
-              {analysis.technical.multi_timeframe_analysis && (
+              {analysis.technical.timeframe_analysis && (
                 <div className="mb-6">
                   <h4 className="text-lg font-semibold text-indigo-700 mb-3">Multi-Timeframe Analysis</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {Object.entries(analysis.technical.multi_timeframe_analysis).map(([timeframe, data]) => (
+                    {Object.entries(analysis.technical.timeframe_analysis).map(([timeframe, data]) => (
                       <div key={timeframe} className="bg-gray-50 p-4 rounded-lg border">
                         <div className="text-sm font-medium text-gray-700 capitalize mb-2">
                           {timeframe}
