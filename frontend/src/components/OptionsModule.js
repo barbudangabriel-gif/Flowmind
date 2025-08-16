@@ -789,132 +789,15 @@ const OptionsModule = () => {
                       {/* Strategy Content - Chart & Details Grid */}
                       <div className="grid grid-cols-12 gap-6 p-6">
                         
-                        {/* Left: P&L Chart - OptionStrat identical style */}
+                        {/* Left: Interactive P&L Chart */}
                         <div className="col-span-8">
-                          <div className="bg-gray-900 rounded-lg p-4 h-64 border border-gray-600 relative overflow-hidden">
-                            
-                            {/* Chart Header */}
-                            <div className="flex items-center justify-between mb-4">
-                              <h5 className="text-white font-semibold">Profit & Loss</h5>
-                              <div className="flex items-center space-x-2 text-xs text-gray-400">
-                                <span>At Expiration</span>
-                                <span>•</span>
-                                <span>{selectedExpiry}</span>
-                              </div>
-                            </div>
-                            
-                            {/* Chart Area with Grid */}
-                            <div className="flex-1 relative bg-gray-800 rounded border border-gray-700 h-48">
-                              
-                              {/* Professional Grid Lines */}
-                              <div className="absolute inset-0 opacity-30">
-                                {/* Horizontal grid lines */}
-                                {Array.from({length: 6}).map((_, i) => (
-                                  <div 
-                                    key={`h-${i}`} 
-                                    className="absolute w-full border-t border-gray-600" 
-                                    style={{top: `${i * 20}%`}}
-                                  ></div>
-                                ))}
-                                {/* Vertical grid lines */}
-                                {Array.from({length: 8}).map((_, i) => (
-                                  <div 
-                                    key={`v-${i}`} 
-                                    className="absolute h-full border-l border-gray-600" 
-                                    style={{left: `${i * 14.28}%`}}
-                                  ></div>
-                                ))}
-                              </div>
-                              
-                              {/* P&L Curves - Strategy Specific */}
-                              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 280 200">
-                                {/* Strategy-specific P&L curves */}
-                                {strategy.name === 'Long Call' && (
-                                  <path
-                                    d="M 20 160 L 80 160 L 100 150 L 120 140 L 140 120 L 160 100 L 180 80 L 200 60 L 220 40 L 240 20 L 260 10"
-                                    stroke="#10b981"
-                                    strokeWidth="2.5"
-                                    fill="none"
-                                    className="drop-shadow-lg"
-                                  />
-                                )}
-                                
-                                {strategy.name === 'Bull Call Spread' && (
-                                  <path
-                                    d="M 20 160 L 80 160 L 100 150 L 120 140 L 140 120 L 160 100 L 180 80 L 200 80 L 220 80 L 240 80 L 260 80"
-                                    stroke="#3b82f6"
-                                    strokeWidth="2.5"
-                                    fill="none"
-                                    className="drop-shadow-lg"
-                                  />
-                                )}
-                                
-                                {strategy.name === 'Bull Put Spread' && (
-                                  <path
-                                    d="M 20 60 L 80 60 L 100 60 L 120 70 L 140 90 L 160 120 L 180 160 L 200 160 L 220 160 L 240 160 L 260 160"
-                                    stroke="#f59e0b"
-                                    strokeWidth="2.5"
-                                    fill="none"
-                                    className="drop-shadow-lg"
-                                  />
-                                )}
-                                
-                                {strategy.name === 'Short Put' && (
-                                  <path
-                                    d="M 20 60 L 60 60 L 80 60 L 100 70 L 120 90 L 140 130 L 160 180 L 180 180 L 200 180 L 220 180 L 240 180 L 260 180"
-                                    stroke="#ef4444"
-                                    strokeWidth="2.5"
-                                    fill="none"
-                                    className="drop-shadow-lg"
-                                  />
-                                )}
-                                
-                                {strategy.name === 'Covered Call' && (
-                                  <path
-                                    d="M 20 90 L 60 80 L 100 70 L 140 60 L 160 50 L 180 40 L 200 40 L 220 40 L 240 40 L 260 40"
-                                    stroke="#8b5cf6"
-                                    strokeWidth="2.5"
-                                    fill="none"
-                                    className="drop-shadow-lg"
-                                  />
-                                )}
-                                
-                                {strategy.name === 'Cash-Secured Put' && (
-                                  <path
-                                    d="M 20 40 L 60 40 L 100 40 L 120 50 L 140 70 L 160 100 L 180 140 L 200 160 L 220 160 L 240 160 L 260 160"
-                                    stroke="#06b6d4"
-                                    strokeWidth="2.5"
-                                    fill="none"
-                                    className="drop-shadow-lg"
-                                  />
-                                )}
-                                
-                                {/* Zero line (breakeven) */}
-                                <line x1="0" y1="100" x2="280" y2="100" stroke="#6b7280" strokeWidth="1" strokeDasharray="3,3" opacity="0.6"/>
-                                
-                                {/* Current price line */}
-                                <line x1="140" y1="0" x2="140" y2="200" stroke="#f97316" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.8"/>
-                              </svg>
-                              
-                              {/* Price Labels - OptionStrat style */}
-                              <div className="absolute bottom-1 left-2 text-xs text-gray-400 font-mono">
-                                ${(stockPrice * 0.88).toFixed(0)}
-                              </div>
-                              <div className="absolute bottom-1 right-2 text-xs text-gray-400 font-mono">
-                                ${(stockPrice * 1.12).toFixed(0)}
-                              </div>
-                              <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 text-xs text-orange-400 font-semibold bg-gray-800 px-1 rounded">
-                                ${stockPrice}
-                              </div>
-                              
-                              {/* P&L Labels */}
-                              <div className="absolute top-2 left-2 text-xs text-green-400 font-semibold bg-gray-800 px-1 rounded">
-                                {strategy.profit}
-                              </div>
-                              <div className="absolute top-2 right-2 text-xs text-red-400 font-semibold bg-gray-800 px-1 rounded">
-                                -{strategy.risk}
-                              </div>
-                            </div>
+                          <div className="h-64">
+                            <InteractiveOptionsChart
+                              chartData={strategy.chartData}
+                              strategyName={strategy.name}
+                              stockPrice={stockPrice}
+                              height={250}
+                            />
                           </div>
                         </div>
 
