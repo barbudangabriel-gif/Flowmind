@@ -428,43 +428,13 @@ const InvestmentScoring = React.memo(() => {
     await generateMorePicks();
   }, [generateMorePicks, loadingMore, topPicks.length]);
 
-  // Handle ticker click for detailed analysis
-  const handleTickerClick = useCallback(async (symbol) => {
+  // Handle ticker click for detailed analysis - navigate to dedicated page
+  const handleTickerClick = useCallback((symbol) => {
     if (!symbol) return;
     
-    setSelectedTickerModal(symbol);
-    setModalLoading(true);
-    setModalAnalysis(null);
-    
-    try {
-      console.log(`Loading detailed analysis for ${symbol}`);
-      
-      // Fetch both Investment Scoring and Technical Analysis in parallel
-      const [investmentRes, technicalRes] = await Promise.all([
-        axios.post(`${API}/agents/investment-scoring`, {}, {
-          params: { symbol: symbol.toUpperCase() }
-        }),
-        axios.post(`${API}/agents/technical-analysis`, {}, {
-          params: { symbol: symbol.toUpperCase(), include_smc: true }
-        })
-      ]);
-      
-      setModalAnalysis({
-        investment: investmentRes.data,
-        technical: technicalRes.data,
-        symbol: symbol.toUpperCase()
-      });
-      
-    } catch (error) {
-      console.error('Error loading detailed analysis:', error);
-      setModalAnalysis({
-        error: `Failed to load analysis for ${symbol}: ${error.response?.data?.detail || error.message}`,
-        symbol: symbol.toUpperCase()
-      });
-    } finally {
-      setModalLoading(false);
-    }
-  }, []);
+    console.log(`Navigating to detailed analysis page for ${symbol}`);
+    navigate(`/stock-analysis/${symbol.toUpperCase()}`);
+  }, [navigate]);
 
   // Close modal function
   const closeModal = useCallback(() => {
