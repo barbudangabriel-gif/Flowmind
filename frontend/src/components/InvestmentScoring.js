@@ -278,6 +278,7 @@ const InvestmentScoring = React.memo(() => {
       <div className="bg-white p-1 rounded-lg shadow-sm">
         <div className="flex space-x-1">
           {[
+            { id: 'ai-agent', label: '🤖 AI Agent', icon: Zap },
             { id: 'top-picks', label: 'Top Picks', icon: Award },
             { id: 'search', label: 'Stock Analysis', icon: Search },
             { id: 'sectors', label: 'Sector Leaders', icon: PieChart },
