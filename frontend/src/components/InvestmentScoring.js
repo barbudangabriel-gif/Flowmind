@@ -727,20 +727,25 @@ const InvestmentScoring = React.memo(() => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full bg-white rounded-lg shadow-md">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+              <table className="w-full bg-gray-900 rounded-lg shadow-md border border-gray-700">
+                <thead className="bg-gradient-to-r from-gray-800 to-gray-700">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Symbol</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rank</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Symbol</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Price</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Score</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rating</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Risk</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Description</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {topPicks.slice(0, 12).map((pick, index) => (
-                    <tr key={pick?.symbol || index} className="hover:bg-gray-50 transition-colors">
+                <tbody className="divide-y divide-gray-700">
+                  {topPicks.slice(0, displayLimit).map((pick, index) => (
+                    <tr 
+                      key={pick?.symbol || index} 
+                      className="hover:bg-gray-800 transition-colors cursor-pointer"
+                      onClick={() => handleTickerClick(pick?.symbol)}
+                    >
                       <td className="px-4 py-4">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
                           index < 3 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900' :
@@ -751,7 +756,14 @@ const InvestmentScoring = React.memo(() => {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="font-bold text-lg text-gray-800">{pick?.symbol || 'N/A'}</div>
+                        <div className="font-bold text-lg text-blue-300 hover:text-blue-200 transition-colors">
+                          {pick?.symbol || 'N/A'}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="text-green-400 font-semibold">
+                          ${pick?.current_price?.toFixed(2) || 'Loading...'}
+                        </div>
                       </td>
                       <td className="px-4 py-4">
                         <div className={`text-2xl font-bold ${getScoreColor(pick?.total_score || 50)}`}>
@@ -773,20 +785,20 @@ const InvestmentScoring = React.memo(() => {
                       </td>
                       <td className="px-4 py-4">
                         <div className="max-w-md">
-                          <p className="text-sm text-gray-600 mb-2">{pick?.explanation || 'Investment analysis pending...'}</p>
+                          <p className="text-sm text-gray-300 mb-2">{pick?.explanation || 'Investment analysis pending...'}</p>
                           <div className="flex flex-wrap gap-1 mb-2">
-                            <div className="text-xs text-green-600 font-medium">Strengths:</div>
+                            <div className="text-xs text-green-400 font-medium">Strengths:</div>
                             {(pick?.key_strengths || []).slice(0, 3).map((strength, idx) => (
-                              <span key={idx} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                              <span key={idx} className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">
                                 {strength}
                               </span>
                             ))}
                           </div>
                           {(pick?.key_risks || []).length > 0 && (
                             <div className="flex flex-wrap gap-1">
-                              <div className="text-xs text-red-600 font-medium">Risks:</div>
+                              <div className="text-xs text-red-400 font-medium">Risks:</div>
                               {(pick?.key_risks || []).slice(0, 2).map((risk, idx) => (
-                                <span key={idx} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">
+                                <span key={idx} className="text-xs bg-red-900 text-red-300 px-2 py-1 rounded">
                                   {risk}
                                 </span>
                               ))}
@@ -798,6 +810,19 @@ const InvestmentScoring = React.memo(() => {
                   ))}
                 </tbody>
               </table>
+              
+              {/* Expansion Button */}
+              {displayLimit < 1000 && topPicks.length >= displayLimit && (
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={expandTopPicks}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2 mx-auto"
+                  >
+                    <span>Load More Results</span>
+                    <span className="text-blue-200">({Math.min(1000, topPicks.length)} total available)</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
