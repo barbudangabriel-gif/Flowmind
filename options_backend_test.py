@@ -145,13 +145,13 @@ class OptionsCalculatorTester:
                     premium_valid = expected_min <= premium <= expected_max
                     
                     # Verify Greeks calculations
-                    strategy_greeks = analysis.get('strategy_greeks', {})
+                    strategy_greeks = analysis.get('greeks', {})  # Changed from 'strategy_greeks' to 'greeks'
                     required_greeks = ['delta', 'gamma', 'theta', 'vega', 'rho']
                     greeks_present = all(greek in strategy_greeks for greek in required_greeks)
                     
                     # Verify P&L arrays for charting
-                    price_array = analysis.get('price_array', [])
-                    pnl_array = analysis.get('pnl_array', [])
+                    price_array = chart_data.get('x', [])  # Changed from analysis to chart_data
+                    pnl_array = chart_data.get('y', [])    # Changed from analysis to chart_data
                     
                     # Verify breakeven points
                     breakeven_points = analysis.get('breakeven_points', [])
