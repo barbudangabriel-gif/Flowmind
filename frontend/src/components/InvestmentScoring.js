@@ -1044,6 +1044,175 @@ const InvestmentScoring = React.memo(() => {
           </div>
         </div>
       )}
+      
+      {/* Detailed Analysis Modal */}
+      {selectedTickerModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto border border-gray-700">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-900 to-purple-900 px-6 py-4 rounded-t-xl">
+              <div className="flex justify-between items-center">
+                <h3 className="text-2xl font-bold text-white flex items-center">
+                  <Target className="mr-3 text-blue-400" size={28} />
+                  Detailed Analysis: {selectedTickerModal}
+                </h3>
+                <button 
+                  onClick={closeModal}
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  <XCircle size={24} />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              {modalLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-center">
+                    <RefreshCw className="animate-spin mx-auto mb-4 text-blue-500" size={32} />
+                    <p className="text-gray-300">Loading comprehensive analysis...</p>
+                  </div>
+                </div>
+              ) : modalAnalysis?.error ? (
+                <div className="bg-red-900 border border-red-600 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <XCircle className="text-red-400 mr-2" size={20} />
+                    <span className="text-red-300 font-medium">Analysis Error</span>
+                  </div>
+                  <p className="text-red-400 text-sm mt-2">{modalAnalysis.error}</p>
+                </div>
+              ) : modalAnalysis && (
+                <div className="space-y-8">
+                  {/* Investment Scoring Results */}
+                  {modalAnalysis.investment && (
+                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                      <h4 className="text-xl font-bold text-blue-400 mb-4 flex items-center">
+                        <Award className="mr-2" size={20} />
+                        🎯 Investment Scoring Analysis
+                      </h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div className="text-center bg-gray-700 rounded-lg p-4">
+                          <div className={`text-4xl font-bold ${getScoreColor(modalAnalysis.investment.investment_score || 0)}`}>
+                            {modalAnalysis.investment.investment_score || 0}
+                          </div>
+                          <div className="text-gray-300 text-sm mt-1">Investment Score</div>
+                        </div>
+                        <div className="text-center bg-gray-700 rounded-lg p-4">
+                          <div className={`text-lg font-bold px-3 py-1 rounded-full ${
+                            modalAnalysis.investment.recommendation?.includes('BUY') ? 'bg-green-900 text-green-300' :
+                            modalAnalysis.investment.recommendation?.includes('HOLD') ? 'bg-gray-600 text-gray-200' :
+                            'bg-red-900 text-red-300'
+                          }`}>
+                            {modalAnalysis.investment.recommendation || 'HOLD'}
+                          </div>
+                          <div className="text-gray-300 text-sm mt-1">Recommendation</div>
+                        </div>
+                        <div className="text-center bg-gray-700 rounded-lg p-4">
+                          <div className={`text-lg font-bold px-3 py-1 rounded-full ${
+                            modalAnalysis.investment.confidence_level === 'high' ? 'bg-green-900 text-green-300' :
+                            modalAnalysis.investment.confidence_level === 'medium' ? 'bg-yellow-900 text-yellow-300' :
+                            'bg-red-900 text-red-300'
+                          }`}>
+                            {(modalAnalysis.investment.confidence_level || 'low').toUpperCase()}
+                          </div>
+                          <div className="text-gray-300 text-sm mt-1">Confidence</div>
+                        </div>
+                      </div>
+
+                      {/* Key Signals */}
+                      {modalAnalysis.investment.key_signals && modalAnalysis.investment.key_signals.length > 0 && (
+                        <div className="mb-4">
+                          <h5 className="text-lg font-semibold text-purple-400 mb-3">Key Signals</h5>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {modalAnalysis.investment.key_signals.map((signal, index) => (
+                              <div key={index} className="bg-gray-700 p-4 rounded-lg">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-gray-300 capitalize">
+                                    {signal.type?.replace('_', ' ') || 'Unknown Signal'}
+                                  </span>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    signal.strength === 'strong' ? 'bg-red-900 text-red-300' :
+                                    signal.strength === 'moderate' ? 'bg-yellow-900 text-yellow-300' :
+                                    'bg-gray-600 text-gray-300'
+                                  }`}>
+                                    {signal.strength || 'weak'}
+                                  </span>
+                                </div>
+                                <div className={`text-sm font-bold ${
+                                  signal.direction === 'bullish' ? 'text-green-400' :
+                                  signal.direction === 'bearish' ? 'text-red-400' :
+                                  'text-gray-400'
+                                }`}>
+                                  {signal.score} - {signal.direction || 'neutral'}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Technical Analysis Results */}
+                  {modalAnalysis.technical && (
+                    <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                      <h4 className="text-xl font-bold text-indigo-400 mb-4 flex items-center">
+                        <BarChart3 className="mr-2" size={20} />
+                        📊 Technical Analysis Expert
+                      </h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div className="text-center bg-gray-700 rounded-lg p-4">
+                          <div className={`text-4xl font-bold ${getScoreColor(modalAnalysis.technical.technical_score || 0)}`}>
+                            {modalAnalysis.technical.technical_score || 0}
+                          </div>
+                          <div className="text-gray-300 text-sm mt-1">Technical Score</div>
+                        </div>
+                        <div className="text-center bg-gray-700 rounded-lg p-4">
+                          <div className={`text-lg font-bold px-3 py-1 rounded-full ${getVerdictColor(modalAnalysis.technical.overall_verdict || 'NEUTRAL')}`}>
+                            {modalAnalysis.technical.overall_verdict || 'NEUTRAL'}
+                          </div>
+                          <div className="text-gray-300 text-sm mt-1">Overall Verdict</div>
+                        </div>
+                        <div className="text-center bg-gray-700 rounded-lg p-4">
+                          <div className="text-lg font-bold text-blue-400">
+                            {modalAnalysis.technical.risk_reward_ratio || 'N/A'}
+                          </div>
+                          <div className="text-gray-300 text-sm mt-1">Risk/Reward</div>
+                        </div>
+                      </div>
+
+                      {/* Multi-timeframe Analysis */}
+                      {modalAnalysis.technical.multi_timeframe_analysis && (
+                        <div className="mb-4">
+                          <h5 className="text-lg font-semibold text-indigo-400 mb-3">Multi-Timeframe Analysis</h5>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {Object.entries(modalAnalysis.technical.multi_timeframe_analysis).map(([timeframe, data]) => (
+                              <div key={timeframe} className="bg-gray-700 p-3 rounded-lg">
+                                <div className="text-sm font-medium text-gray-300 capitalize mb-1">
+                                  {timeframe}
+                                </div>
+                                <div className={`text-lg font-bold ${getScoreColor(data.score)}`}>
+                                  {data.score}
+                                </div>
+                                <div className={`text-xs ${getSignalColor(data.signal).split(' ')[0]}`}>
+                                  {data.signal}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });
