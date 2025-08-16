@@ -388,6 +388,111 @@ async def get_stock(symbol: str):
     data = await get_stock_quote(symbol)
     return StockData(**data)
 
+@api_router.get("/stocks/{symbol}/historical")
+async def get_stock_historical_data(
+    symbol: str, 
+    interval: str = "1D",  # 1m, 5m, 15m, 30m, 1H, 1D
+    bars_back: int = 100
+):
+    """Get historical OHLC data for charts"""
+    try:
+        # Try TradeStation first if authenticated
+        if ts_auth.is_authenticated():
+            try:
+                async with ts_client:
+                    # Map interval to TradeStation format
+                    interval_map = {
+                        "1m": (1, "Minute"),
+                        "5m": (5, "Minute"), 
+                        "15m": (15, "Minute"),
+                        "30m": (30, "Minute"),
+                        "1H": (1, "Hour"),
+                        "1D": (1, "Daily")
+                    }
+                    
+                    if interval in interval_map:
+                        interval_val, unit = interval_map[interval]
+                        bars = await ts_client.get_historical_bars(
+                            symbol=symbol.upper(),
+                            interval=interval_val,
+                            unit=unit,
+                            bars_back=bars_back
+                        )
+                        
+                        # Format for lightweight-charts
+                        chart_data = []
+                        for bar in bars:
+                            chart_data.append({
+                                "time": bar.get("TimeStamp", "").split("T")[0],  # YYYY-MM-DD format
+                                "open": float(bar.get("Open", 0)),
+                                "high": float(bar.get("High", 0)),
+                                "low": float(bar.get("Low", 0)),
+                                "close": float(bar.get("Close", 0)),
+                                "volume": int(bar.get("TotalVolume", 0))
+                            })
+                        
+                        return {
+                            "status": "success",
+                            "symbol": symbol.upper(),
+                            "interval": interval,
+                            "data": sorted(chart_data, key=lambda x: x["time"]),
+                            "count": len(chart_data),
+                            "data_source": "TradeStation API",
+                            "timestamp": datetime.utcnow().isoformat()
+                        }
+                        
+            except Exception as e:
+                logger.warning(f"TradeStation historical data failed for {symbol}: {str(e)}")
+        
+        # Fallback to mock data for demo
+        logger.info(f"Using mock historical data for {symbol}")
+        
+        # Generate realistic mock OHLC data
+        from datetime import timedelta
+        import random
+        
+        mock_data = []
+        base_price = 100.0
+        current_date = datetime.utcnow() - timedelta(days=bars_back)
+        
+        for i in range(bars_back):
+            # Simulate price movement
+            price_change = random.uniform(-0.03, 0.03)  # ±3% daily change
+            base_price *= (1 + price_change)
+            
+            # Generate OHLC
+            open_price = base_price
+            close_price = base_price * (1 + random.uniform(-0.02, 0.02))
+            high_price = max(open_price, close_price) * (1 + random.uniform(0, 0.015))
+            low_price = min(open_price, close_price) * (1 - random.uniform(0, 0.015))
+            volume = random.randint(100000, 10000000)
+            
+            mock_data.append({
+                "time": current_date.strftime("%Y-%m-%d"),
+                "open": round(open_price, 2),
+                "high": round(high_price, 2),
+                "low": round(low_price, 2),
+                "close": round(close_price, 2),
+                "volume": volume
+            })
+            
+            base_price = close_price
+            current_date += timedelta(days=1)
+        
+        return {
+            "status": "success",
+            "symbol": symbol.upper(),
+            "interval": interval,
+            "data": mock_data,
+            "count": len(mock_data),
+            "data_source": "Mock Data (Demo)",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching historical data for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch historical data: {str(e)}")
+
 @api_router.get("/stocks/{symbol}/enhanced", response_model=EnhancedStockData)
 async def get_stock_enhanced(symbol: str):
     """Get enhanced stock data with TradeStation primary, Unusual Whales fallback"""
