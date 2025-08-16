@@ -7193,7 +7193,9 @@ export default function AppWithTheme() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </ThemeProvider>
     </ErrorBoundary>
   );
