@@ -318,7 +318,7 @@ export default function OptionsModule() {
               type="number"
               value={targetPrice}
               onChange={(e) => setTargetPrice(parseFloat(e.target.value))}
-              className="bg-[#34495e] border border-[#4a5f7a] rounded px-2 py-1 text-white w-24"
+              className="bg-[#34495e] border border-[#4a5f7a] rounded-none px-2 py-1 text-white w-24"
             />
             <span className="text-gray-400">(+76%)</span>
           </div>
