@@ -255,26 +255,26 @@ export default function OptionsModule() {
         
         {/* Symbol and Price */}
         <div className="flex items-center justify-center space-x-4 mb-6">
-          <span className="text-gray-400">Symbol:</span>
+          <span className="text-[#7f8c8d]">Symbol:</span>
           <input 
             value={symbol}
             readOnly
-            className="bg-[#34495e] border border-[#4a5f7a] px-2 py-1 text-white w-20 text-center"
+            className="bg-[#34495e] border border-[#4a5f7a] px-2 py-1 text-white w-20 text-center rounded-none focus:outline-none focus:border-[#3498db]"
           />
           <span className="text-2xl font-bold">${spotPrice.toFixed(2)}</span>
-          <span className="text-green-400">+7.40%</span>
-          <span className="text-green-400">+$10.30</span>
-          <span className="text-gray-400 text-sm">🔄 Real-time</span>
+          <span className="text-[#27ae60]">+7.40%</span>
+          <span className="text-[#27ae60]">+$10.30</span>
+          <span className="text-[#7f8c8d] text-sm">🔄 Real-time</span>
         </div>
 
         {/* News Banner */}
-        <div className="bg-[#3498db] p-4 mb-6 text-center">
+        <div className="bg-[#3498db] p-4 mb-6 text-center rounded-none">
           <span className="text-white">
             📊 Circle Internet Group shares are trading higher. The company announced a 
             public offering of 10 million shares at $130 per share. 
-            <em className="text-blue-200 ml-2">updated 8/15/25, 8:06 PM</em>
+            <em className="text-[#ecf0f1] ml-2">updated 8/15/25, 8:06 PM</em>
           </span>
-          <button className="ml-4 text-blue-200 hover:text-white">✕</button>
+          <button className="ml-4 text-[#ecf0f1] hover:text-white transition-colors">✕</button>
         </div>
 
         {/* Sentiment Buttons */}
