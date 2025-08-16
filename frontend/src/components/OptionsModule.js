@@ -138,37 +138,50 @@ const OptionsModule = () => {
 
   const expirationDates = ['Dec 20', 'Dec 27', 'Jan 3', 'Jan 10', 'Jan 17', 'Jan 24'];
 
-  // Optimizer function - OptionStrat style
+  // Optimizer function - Real API integration
   const runOptimizer = async () => {
     setOptimizing(true);
     setError(null);
     
     try {
-      // Simulate API call pentru optimization
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Filter și rank strategies based on sentiment și parameters
-      let filteredStrategies = [...mockOptimizedStrategies];
-      
-      // Apply sentiment filter
-      if (optimizerSentiment === 'Very Bullish' || optimizerSentiment === 'Bullish') {
-        filteredStrategies = filteredStrategies.filter(s => 
-          s.name.includes('Call') || s.name.includes('Bull')
-        );
-      } else if (optimizerSentiment === 'Very Bearish' || optimizerSentiment === 'Bearish') {
-        filteredStrategies = filteredStrategies.filter(s => 
-          s.name.includes('Put') || s.name.includes('Bear')
-        );
+      const response = await fetch(`${API}/options/optimize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          symbol: symbol,
+          stock_price: stockPrice,
+          target_price: targetPrice,
+          sentiment: optimizerSentiment,
+          budget: budget,
+          days_to_expiry: daysToExpiry,
+          volatility: volatility,
+          risk_free_rate: riskFreeRate
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Optimization failed: ${response.statusText}`);
       }
+
+      const data = await response.json();
       
-      // Sort by ranking mode
-      if (rankingMode === 'Max Return') {
-        filteredStrategies.sort((a, b) => 
-          parseFloat(b.returnOnRisk) - parseFloat(a.returnOnRisk)
-        );
-      }
+      // Convert API response to frontend format
+      const convertedStrategies = data.strategies.map(strategy => ({
+        name: strategy.name,
+        strikes: strategy.strikes,
+        returnOnRisk: `${strategy.return_on_risk.toFixed(1)}%`,
+        chance: '--',
+        profit: `$${strategy.max_profit.toFixed(2)}`,
+        risk: `$${Math.abs(strategy.max_loss).toFixed(2)}`,
+        category: strategy.category,
+        breakeven: `$${strategy.breakeven.toFixed(2)}`,
+        probProfit: `${strategy.prob_profit.toFixed(0)}%`,
+        chartData: strategy.chart_data
+      }));
       
-      setOptimizedStrategies(filteredStrategies);
+      setOptimizedStrategies(convertedStrategies);
     } catch (error) {
       setError('Optimization failed: ' + error.message);
     } finally {
