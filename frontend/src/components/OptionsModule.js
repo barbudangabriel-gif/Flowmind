@@ -340,8 +340,8 @@ export default function OptionsModule() {
           />
         </div>
 
-        {/* Strategy Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Strategy Cards Grid - 3x2 Layout */}
+        <div className="grid grid-cols-3 gap-4 max-w-6xl mx-auto">
           <StrategyCard
             title="Long Call"
             subtitle="Buy 95C"
