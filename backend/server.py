@@ -33,6 +33,9 @@ from portfolio_service import PortfolioService
 from trading_service import TradingService, OrderRequest, OrderModification, RiskLimits
 from token_manager import get_token_manager
 
+# AI Agents
+from investment_scoring_agent import InvestmentScoringAgent
+
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
