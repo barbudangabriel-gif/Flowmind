@@ -47,15 +47,16 @@ const StockAnalysisPage = () => {
     try {
       console.log(`Loading comprehensive analysis for ${symbol}`);
       
-      // Fetch multiple types of analysis in parallel
+      // Fetch multiple types of analysis in parallel with cache-busting timestamp
+      const timestamp = Date.now();
       const [investmentRes, technicalRes, stockDataRes] = await Promise.allSettled([
         axios.post(`${API}/agents/investment-scoring`, {}, {
-          params: { symbol: symbol.toUpperCase() }
+          params: { symbol: symbol.toUpperCase(), _t: timestamp }
         }),
         axios.post(`${API}/agents/technical-analysis`, {}, {
-          params: { symbol: symbol.toUpperCase(), include_smc: true }
+          params: { symbol: symbol.toUpperCase(), include_smc: true, _t: timestamp }
         }),
-        axios.get(`${API}/stocks/${symbol.toUpperCase()}/enhanced`)
+        axios.get(`${API}/stocks/${symbol.toUpperCase()}/enhanced?_t=${timestamp}`)
       ]);
       
       // Process results
