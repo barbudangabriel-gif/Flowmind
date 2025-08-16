@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, useMemo, useCallback, createContext, useContext } from "react";
-import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   LineChart,
