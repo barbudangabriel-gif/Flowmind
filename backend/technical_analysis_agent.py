@@ -325,25 +325,36 @@ class TechnicalAnalysisAgent:
         
         indicator_scores = {}
         
-        # 1. Momentum Oscillators
-        indicator_scores['rsi'] = self._calculate_rsi_score(daily_data)
-        indicator_scores['stochastic'] = self._calculate_stochastic_score(daily_data)
-        indicator_scores['williams_r'] = self._calculate_williams_r_score(daily_data)
-        
-        # 2. Trend Indicators
-        indicator_scores['macd'] = self._calculate_macd_score(daily_data)
-        indicator_scores['ema_crossover'] = self._calculate_ema_crossover_score(daily_data)
-        indicator_scores['adx'] = self._calculate_adx_score(daily_data)
-        indicator_scores['ichimoku'] = self._calculate_ichimoku_score(daily_data)
-        
-        # 3. Volume Indicators
-        indicator_scores['obv'] = self._calculate_obv_score(daily_data)
-        indicator_scores['volume_trend'] = self._calculate_volume_trend_score(daily_data)
-        indicator_scores['vwap'] = self._calculate_vwap_score(daily_data)
-        
-        # 4. Volatility Indicators
-        indicator_scores['bollinger_bands'] = self._calculate_bollinger_score(daily_data)
-        indicator_scores['atr'] = self._calculate_atr_score(daily_data)
+        try:
+            # 1. Momentum Oscillators
+            indicator_scores['rsi'] = self._calculate_rsi_score(daily_data)
+            indicator_scores['stochastic'] = self._calculate_stochastic_score(daily_data)
+            indicator_scores['williams_r'] = self._calculate_williams_r_score(daily_data)
+            
+            # 2. Trend Indicators
+            indicator_scores['macd'] = self._calculate_macd_score(daily_data)
+            indicator_scores['ema_crossover'] = self._calculate_ema_crossover_score(daily_data)
+            indicator_scores['adx'] = self._calculate_adx_score(daily_data)
+            indicator_scores['ichimoku'] = self._calculate_ichimoku_score(daily_data)
+            
+            # 3. Volume Indicators
+            indicator_scores['obv'] = self._calculate_obv_score(daily_data)
+            indicator_scores['volume_trend'] = self._calculate_volume_trend_score(daily_data)
+            indicator_scores['vwap'] = self._calculate_vwap_score(daily_data)
+            
+            # 4. Volatility Indicators
+            indicator_scores['bollinger_bands'] = self._calculate_bollinger_score(daily_data)
+            indicator_scores['atr'] = self._calculate_atr_score(daily_data)
+            
+        except Exception as e:
+            logger.error(f"Error in technical indicators analysis: {str(e)}")
+            # Return default scores if calculation fails
+            indicator_scores = {
+                'rsi': 50.0, 'stochastic': 50.0, 'williams_r': 50.0,
+                'macd': 50.0, 'ema_crossover': 50.0, 'adx': 50.0, 'ichimoku': 50.0,
+                'obv': 50.0, 'volume_trend': 50.0, 'vwap': 50.0,
+                'bollinger_bands': 50.0, 'atr': 50.0
+            }
         
         return indicator_scores
     
