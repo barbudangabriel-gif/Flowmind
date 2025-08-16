@@ -717,7 +717,7 @@ const OptionsModule = () => {
                 </div>
               )}
 
-              {/* Results List - Using New OptionStrategyCard */}
+              {/* Results List - OptionStrat.com EXACT Grid Layout 3x2 */}
               {optimizedStrategies.length > 0 && !optimizing && (
                 <div className="space-y-4">
                   
@@ -737,35 +737,164 @@ const OptionsModule = () => {
                     </div>
                   </div>
 
-                  {/* Strategy Cards using the new component */}
-                  {optimizedStrategies.map((strategy, index) => {
-                    // Convert strategy data to new card format
-                    const cardStrategy = {
-                      name: strategy.name,
-                      strikes: strategy.strikes,
-                      returnOnRisk: strategy.returnOnRisk,
-                      chance: strategy.chance || '--',
-                      profit: strategy.profit,
-                      risk: strategy.risk,
-                      category: strategy.category,
-                      breakeven: strategy.breakeven,
-                      probProfit: strategy.probProfit,
-                      expiration: selectedExpiry,
-                      chartData: strategy.chartData
-                    };
+                  {/* EXACT OptionStrat.com 3x2 Grid Layout */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {optimizedStrategies.slice(0, 6).map((strategy, index) => (
+                      <div key={index} className="bg-gray-800 rounded-lg border border-gray-700 hover:border-blue-500 transition-all duration-200 p-4">
+                        
+                        {/* Strategy Header - Compact OptionStrat Style */}
+                        <div className="mb-3">
+                          <h4 className="text-lg font-bold text-white mb-1">{strategy.name}</h4>
+                          <div className="text-sm text-gray-400 mb-2">
+                            {strategy.strikes}
+                          </div>
+                          
+                          {/* Return on Risk & Chance - OptionStrat Style */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-center">
+                              <div className={`text-xl font-bold ${
+                                parseFloat(strategy.returnOnRisk) >= 100 ? 'text-green-400' :
+                                parseFloat(strategy.returnOnRisk) >= 50 ? 'text-yellow-400' : 'text-red-400'
+                              }`}>
+                                {strategy.returnOnRisk}
+                              </div>
+                              <div className="text-xs text-gray-400">Return on Risk</div>
+                            </div>
+                            <div className="text-center">
+                              <div className={`text-xl font-bold ${
+                                strategy.chance === '--' ? 'text-gray-400' : 'text-green-400'
+                              }`}>
+                                {strategy.chance}
+                              </div>
+                              <div className="text-xs text-gray-400">Chance</div>
+                            </div>
+                          </div>
+                          
+                          {/* Profit & Risk - OptionStrat Compact */}
+                          <div className="flex justify-between text-sm mb-3">
+                            <div>
+                              <span className="text-green-400 font-semibold">{strategy.profit}</span>
+                              <span className="text-gray-400 text-xs"> Profit</span>
+                            </div>
+                            <div>
+                              <span className="text-red-400 font-semibold">{strategy.risk}</span>
+                              <span className="text-gray-400 text-xs"> Risk</span>
+                            </div>
+                          </div>
+                        </div>
 
-                    return (
-                      <OptionStrategyCard
-                        key={index}
-                        strategy={cardStrategy}
-                        onOpenInBuilder={() => {
-                          setSelectedStrategy(strategy.name);
-                          setActiveTab('builder');
-                        }}
-                      />
-                    );
-                  })}
+                        {/* Mini P&L Chart - OptionStrat Style */}
+                        <div className="bg-gray-900 rounded border border-gray-600 h-32 mb-3 relative overflow-hidden">
+                          
+                          {/* Mini Grid */}
+                          <div className="absolute inset-0 opacity-20">
+                            {/* Horizontal lines */}
+                            {Array.from({length: 4}).map((_, i) => (
+                              <div key={`h-${i}`} className="absolute w-full border-t border-gray-600" style={{top: `${i * 33.33}%`}}></div>
+                            ))}
+                            {/* Vertical lines */}
+                            {Array.from({length: 5}).map((_, i) => (
+                              <div key={`v-${i}`} className="absolute h-full border-l border-gray-600" style={{left: `${i * 25}%`}}></div>
+                            ))}
+                          </div>
+                          
+                          {/* P&L Curve - Mini SVG */}
+                          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 200 120">
+                            
+                            {/* Strategy-specific mini curves */}
+                            {strategy.name === 'Long Call' && (
+                              <path
+                                d="M 10 100 L 40 100 L 60 95 L 80 85 L 100 70 L 120 50 L 140 30 L 160 15 L 180 5"
+                                stroke="#10b981"
+                                strokeWidth="2"
+                                fill="none"
+                              />
+                            )}
+                            
+                            {strategy.name === 'Bull Call Spread' && (
+                              <path
+                                d="M 10 100 L 40 100 L 60 95 L 80 85 L 100 70 L 120 50 L 140 35 L 160 35 L 180 35"
+                                stroke="#3b82f6"
+                                strokeWidth="2" 
+                                fill="none"
+                              />
+                            )}
+                            
+                            {strategy.name === 'Bear Put Spread' && (
+                              <path
+                                d="M 10 35 L 40 35 L 60 35 L 80 45 L 100 60 L 120 80 L 140 100 L 160 100 L 180 100"
+                                stroke="#f59e0b"
+                                strokeWidth="2"
+                                fill="none"
+                              />
+                            )}
+                            
+                            {strategy.name === 'Covered Call' && (
+                              <path
+                                d="M 10 70 L 40 65 L 60 55 L 80 45 L 100 35 L 120 25 L 140 25 L 160 25 L 180 25"
+                                stroke="#8b5cf6"
+                                strokeWidth="2"
+                                fill="none"
+                              />
+                            )}
+                            
+                            {strategy.name === 'Iron Condor' && (
+                              <path
+                                d="M 10 80 L 30 70 L 50 50 L 70 35 L 100 35 L 130 35 L 150 50 L 170 70 L 190 80"
+                                stroke="#06b6d4"
+                                strokeWidth="2"
+                                fill="none"
+                              />
+                            )}
+                            
+                            {strategy.name === 'Long Straddle' && (
+                              <path
+                                d="M 10 80 L 30 60 L 50 40 L 70 25 L 100 10 L 130 25 L 150 40 L 170 60 L 190 80"
+                                stroke="#ef4444"
+                                strokeWidth="2"
+                                fill="none"
+                              />
+                            )}
+                            
+                            {/* Zero line */}
+                            <line x1="0" y1="60" x2="200" y2="60" stroke="#6b7280" strokeWidth="1" strokeDasharray="2,2" opacity="0.5"/>
+                            
+                            {/* Current price line */}
+                            <line x1="100" y1="0" x2="100" y2="120" stroke="#f97316" strokeWidth="1" strokeDasharray="2,2" opacity="0.7"/>
+                            
+                            {/* Breakeven line */}
+                            <line x1="80" y1="0" x2="80" y2="120" stroke="#fbbf24" strokeWidth="1" strokeDasharray="2,2" opacity="0.7"/>
+                          </svg>
+                          
+                          {/* Mini Price Labels */}
+                          <div className="absolute bottom-1 left-1 text-xs text-gray-500 font-mono">$0</div>
+                          <div className="absolute bottom-1 right-1 text-xs text-gray-500 font-mono">$400</div>
+                          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 text-xs text-orange-400 font-semibold">
+                            ${stockPrice.toFixed(0)}
+                          </div>
+                          
+                          {/* Mini P&L Labels */}
+                          <div className="absolute top-1 left-1 text-xs text-green-400 font-semibold">
+                            {strategy.profit}
+                          </div>
+                          <div className="absolute top-1 right-1 text-xs text-red-400 font-semibold">
+                            -{strategy.risk}
+                          </div>
+                        </div>
 
+                        {/* Open in Builder Button - OptionStrat Style */}
+                        <button 
+                          onClick={() => {
+                            setSelectedStrategy(strategy.name);
+                            setActiveTab('builder');
+                          }}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded font-semibold transition-colors text-sm"
+                        >
+                          Open in Builder
+                        </button>
+                      </div>
+                    ))}
+                  </div>
 
                   {/* Pagination Footer */}
                   <div className="flex items-center justify-center pt-6">
