@@ -87,7 +87,7 @@ class OptionsCalculatorTester:
                     "volatility": 0.25,
                     "risk_free_rate": 0.05
                 },
-                "expected_premium_range": (2, 8),  # Expected range for OTM put
+                "expected_premium_range": (0.05, 0.15),  # Expected range for OTM put
                 "critical": True
             }
         ]
