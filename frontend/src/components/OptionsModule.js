@@ -295,14 +295,254 @@ const OptionsModule = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
         
-        {/* BUILDER Tab (Simplified) */}
+        {/* BUILDER Tab - Real Strategy Builder */}
         {activeTab === 'builder' && (
-          <div className="bg-gray-800 rounded-lg p-8 text-center border border-gray-700">
-            <Calculator className="mx-auto mb-4 text-blue-400" size={64} />
-            <h4 className="text-2xl font-bold text-white mb-2">Strategy Builder</h4>
-            <p className="text-gray-400 mb-6">
-              Complete strategy builder with real-time calculations coming soon
-            </p>
+          <div className="grid grid-cols-12 gap-6">
+            
+            {/* Left Panel - Strategy Controls */}
+            <div className="col-span-12 lg:col-span-4 space-y-4">
+              
+              {/* Strategy Selection */}
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <label className="block text-sm font-medium text-gray-300 mb-3">Strategy</label>
+                <select
+                  value={selectedStrategy}
+                  onChange={(e) => setSelectedStrategy(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded text-white px-3 py-2 focus:border-blue-500"
+                >
+                  <option value="Long Call">Long Call</option>
+                  <option value="Long Put">Long Put</option>
+                  <option value="Bull Call Spread">Bull Call Spread</option>
+                  <option value="Bear Put Spread">Bear Put Spread</option>
+                  <option value="Iron Condor">Iron Condor</option>
+                  <option value="Long Straddle">Long Straddle</option>
+                  <option value="Covered Call">Covered Call</option>
+                </select>
+              </div>
+
+              {/* Symbol and Price */}
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={symbol}
+                        onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                        className="bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 w-20 text-center font-bold"
+                        placeholder="SPY"
+                      />
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-white">${stockPrice}</div>
+                      <div className="text-sm text-green-400">+0.23% +$1.47</div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400">Live</div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Stock Price</label>
+                  <input
+                    type="number"
+                    value={stockPrice}
+                    onChange={(e) => setStockPrice(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded text-white px-3 py-2 focus:border-blue-500"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+
+              {/* Strike Price */}
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <label className="block text-sm font-medium text-gray-300 mb-3">
+                  Strike Price: <span className="text-white">${strike}</span>
+                </label>
+                <input
+                  type="range"
+                  min={stockPrice * 0.8}
+                  max={stockPrice * 1.2}
+                  step="1"
+                  value={strike}
+                  onChange={(e) => setStrike(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="flex justify-between text-xs text-gray-400 mt-2">
+                  <span>${(stockPrice * 0.8).toFixed(0)}</span>
+                  <span>${(stockPrice * 1.2).toFixed(0)}</span>
+                </div>
+              </div>
+
+              {/* Days to Expiry */}
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <label className="block text-sm font-medium text-gray-300 mb-3">Days to Expiry</label>
+                <input
+                  type="number"
+                  value={daysToExpiry}
+                  onChange={(e) => setDaysToExpiry(parseInt(e.target.value) || 30)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded text-white px-3 py-2 focus:border-blue-500"
+                  min="1"
+                  max="365"
+                />
+              </div>
+
+              {/* Advanced Parameters */}
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <h4 className="text-sm font-medium text-gray-300 mb-3">Advanced Parameters</h4>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">
+                      Implied Volatility: {(volatility * 100).toFixed(0)}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1.0"
+                      step="0.01"
+                      value={volatility}
+                      onChange={(e) => setVolatility(parseFloat(e.target.value))}
+                      className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">
+                      Risk-Free Rate: {(riskFreeRate * 100).toFixed(1)}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0.01"
+                      max="0.10"
+                      step="0.001"
+                      value={riskFreeRate}
+                      onChange={(e) => setRiskFreeRate(parseFloat(e.target.value))}
+                      className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Calculate Button */}
+              <button
+                onClick={calculateStrategy}
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Calculating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Calculator size={20} />
+                    <span>Calculate Strategy</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Right Panel - Chart and Analysis */}
+            <div className="col-span-12 lg:col-span-8 space-y-4">
+              
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-900/50 border border-red-700 rounded-lg p-4 flex items-center space-x-3">
+                  <AlertCircle className="text-red-400" size={20} />
+                  <div className="text-red-300">{error}</div>
+                </div>
+              )}
+
+              {/* Interactive P&L Chart */}
+              {calculationData ? (
+                <div className="space-y-4">
+                  <InteractiveOptionsChart
+                    chartData={calculationData.chart_data}
+                    strategyName={calculationData.strategy_config.name}
+                    stockPrice={stockPrice}
+                    height={400}
+                  />
+                  
+                  {/* Strategy Analysis */}
+                  <div className="grid grid-cols-2 gap-4">
+                    
+                    {/* Key Metrics */}
+                    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                      <h4 className="text-white font-semibold mb-4">Key Metrics</h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Max Profit</span>
+                          <span className="text-green-400 font-semibold">
+                            ${calculationData.analysis.max_profit.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Max Loss</span>
+                          <span className="text-red-400 font-semibold">
+                            ${Math.abs(calculationData.analysis.max_loss).toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Breakeven</span>
+                          <span className="text-yellow-400 font-semibold">
+                            ${calculationData.analysis.breakeven_points[0]?.toFixed(2) || 'N/A'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Prob. of Profit</span>
+                          <span className="text-blue-400 font-semibold">
+                            {calculationData.analysis.probability_of_profit.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Greeks */}
+                    <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                      <h4 className="text-white font-semibold mb-4">Greeks</h4>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Delta</span>
+                          <span className="text-white font-mono">
+                            {calculationData.analysis.greeks.delta.toFixed(3)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Gamma</span>
+                          <span className="text-white font-mono">
+                            {calculationData.analysis.greeks.gamma.toFixed(3)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Theta</span>
+                          <span className="text-white font-mono">
+                            {calculationData.analysis.greeks.theta.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Vega</span>
+                          <span className="text-white font-mono">
+                            {calculationData.analysis.greeks.vega.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-800 rounded-lg p-8 text-center border border-gray-700">
+                  <Calculator className="mx-auto mb-4 text-blue-400" size={64} />
+                  <h4 className="text-2xl font-bold text-white mb-2">Strategy Builder</h4>
+                  <p className="text-gray-400 mb-6">
+                    Select your strategy parameters and click "Calculate Strategy" to see interactive P&L analysis
+                  </p>
+                  <div className="text-sm text-gray-500">
+                    Current: {selectedStrategy} for {symbol} at ${stockPrice}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
