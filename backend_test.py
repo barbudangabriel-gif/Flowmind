@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import json
 
 class StockMarketAPITester:
-    def __init__(self, base_url="https://flowmind-live.preview.emergentagent.com"):
+    def __init__(self, base_url="https://tradedash-11.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
@@ -4000,7 +4000,7 @@ def main():
     print("🏛️  TRADESTATION LIVE PORTFOLIO BACKEND TESTING")
     print("=" * 80)
     print("🔑 Testing TradeStation authentication, accounts, and portfolio summary")
-    print("🌐 Backend URL: https://flowmind-live.preview.emergentagent.com")
+    print("🌐 Backend URL: https://tradedash-11.preview.emergentagent.com")
     
     tester = StockMarketAPITester()
     
@@ -4026,7 +4026,7 @@ def main_unusual_whales():
     print("🐋 UNUSUAL WHALES API FINAL VERIFICATION TEST")
     print("=" * 80)
     print("🔑 Using API Key: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50")
-    print("🌐 Backend URL: https://flowmind-live.preview.emergentagent.com")
+    print("🌐 Backend URL: https://tradedash-11.preview.emergentagent.com")
     
     tester = StockMarketAPITester()
     
