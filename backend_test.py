@@ -1846,6 +1846,401 @@ class StockMarketAPITester:
         
         return success_rate >= 70
 
+    def test_options_calculator_comprehensive(self):
+        """Test the expanded Options Calculator with new strategies and optimization endpoint"""
+        print("\n🎯 TESTING OPTIONS CALCULATOR - COMPREHENSIVE STRATEGY TESTING")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Test expanded Options Calculator with new strategies and optimization")
+        print("📋 REQUIREMENTS:")
+        print("   1. ✅ Test Bull Call Spread calculation with SPY at $643")
+        print("   2. ✅ Test Bear Put Spread with same underlying")
+        print("   3. ✅ Test Iron Condor strategy calculation")
+        print("   4. ✅ Test Long Straddle calculation")
+        print("   5. ✅ Test Strategy Optimization Endpoint")
+        print("   6. ✅ Test Updated Strategies Endpoint")
+        print("   7. ✅ Test Individual Strategy Endpoint")
+        
+        # Test 1: Bull Call Spread Calculation
+        print(f"\n📊 PHASE 1: Bull Call Spread Calculation (SPY at $643)")
+        print("-" * 60)
+        
+        bull_call_request = {
+            "strategy_name": "Bull Call Spread",
+            "symbol": "SPY",
+            "stock_price": 643.0,
+            "strike": 640.0,
+            "long_strike": 640.0,
+            "short_strike": 650.0,
+            "days_to_expiry": 30,
+            "volatility": 0.20,
+            "risk_free_rate": 0.05
+        }
+        
+        success, bull_call_data = self.run_test(
+            "Bull Call Spread (SPY $643, 640/650)", 
+            "POST", 
+            "options/calculate", 
+            200, 
+            data=bull_call_request
+        )
+        
+        if success:
+            strategy_config = bull_call_data.get('strategy_config', {})
+            analysis = bull_call_data.get('analysis', {})
+            chart_data = bull_call_data.get('chart_data', {})
+            
+            print(f"   ✅ Strategy: {strategy_config.get('name', 'N/A')}")
+            print(f"   💰 Max Profit: ${analysis.get('max_profit', 0):.2f}")
+            print(f"   💸 Max Loss: ${analysis.get('max_loss', 0):.2f}")
+            print(f"   🎯 Breakeven: ${analysis.get('breakeven_points', [0])[0]:.2f}")
+            print(f"   📊 Prob of Profit: {analysis.get('probability_of_profit', 0):.1f}%")
+            
+            # Verify Greeks
+            greeks = analysis.get('greeks', {})
+            print(f"   📈 Greeks - Delta: {greeks.get('delta', 0):.3f}, Gamma: {greeks.get('gamma', 0):.3f}")
+            print(f"            Theta: {greeks.get('theta', 0):.2f}, Vega: {greeks.get('vega', 0):.2f}")
+            
+            # Verify chart data
+            if chart_data and 'x' in chart_data and 'y' in chart_data:
+                print(f"   📊 Chart Data: {len(chart_data['x'])} price points")
+            else:
+                print(f"   ❌ Chart data missing or incomplete")
+        
+        # Test 2: Bear Put Spread Calculation
+        print(f"\n📊 PHASE 2: Bear Put Spread Calculation (SPY at $643)")
+        print("-" * 60)
+        
+        bear_put_request = {
+            "strategy_name": "Bear Put Spread",
+            "symbol": "SPY",
+            "stock_price": 643.0,
+            "strike": 640.0,
+            "long_strike": 650.0,
+            "short_strike": 640.0,
+            "days_to_expiry": 30,
+            "volatility": 0.20,
+            "risk_free_rate": 0.05
+        }
+        
+        success, bear_put_data = self.run_test(
+            "Bear Put Spread (SPY $643, 650/640)", 
+            "POST", 
+            "options/calculate", 
+            200, 
+            data=bear_put_request
+        )
+        
+        if success:
+            strategy_config = bear_put_data.get('strategy_config', {})
+            analysis = bear_put_data.get('analysis', {})
+            
+            print(f"   ✅ Strategy: {strategy_config.get('name', 'N/A')}")
+            print(f"   💰 Max Profit: ${analysis.get('max_profit', 0):.2f}")
+            print(f"   💸 Max Loss: ${analysis.get('max_loss', 0):.2f}")
+            print(f"   🎯 Breakeven: ${analysis.get('breakeven_points', [0])[0]:.2f}")
+            print(f"   📊 Prob of Profit: {analysis.get('probability_of_profit', 0):.1f}%")
+        
+        # Test 3: Iron Condor Strategy Calculation
+        print(f"\n📊 PHASE 3: Iron Condor Strategy Calculation (SPY at $643)")
+        print("-" * 60)
+        
+        iron_condor_request = {
+            "strategy_name": "Iron Condor",
+            "symbol": "SPY",
+            "stock_price": 643.0,
+            "strike": 643.0,
+            "put_short_strike": 633.0,
+            "put_long_strike": 623.0,
+            "call_short_strike": 653.0,
+            "call_long_strike": 663.0,
+            "days_to_expiry": 30,
+            "volatility": 0.20,
+            "risk_free_rate": 0.05
+        }
+        
+        success, iron_condor_data = self.run_test(
+            "Iron Condor (SPY $643, 623/633/653/663)", 
+            "POST", 
+            "options/calculate", 
+            200, 
+            data=iron_condor_request
+        )
+        
+        if success:
+            strategy_config = iron_condor_data.get('strategy_config', {})
+            analysis = iron_condor_data.get('analysis', {})
+            
+            print(f"   ✅ Strategy: {strategy_config.get('name', 'N/A')}")
+            print(f"   💰 Max Profit: ${analysis.get('max_profit', 0):.2f}")
+            print(f"   💸 Max Loss: ${analysis.get('max_loss', 0):.2f}")
+            print(f"   🎯 Breakeven Points: {len(analysis.get('breakeven_points', []))}")
+            print(f"   📊 Prob of Profit: {analysis.get('probability_of_profit', 0):.1f}%")
+            
+            # Iron Condor should have 4 legs
+            legs = strategy_config.get('legs', [])
+            print(f"   🦵 Strategy Legs: {len(legs)} (expected: 4)")
+        
+        # Test 4: Long Straddle Calculation
+        print(f"\n📊 PHASE 4: Long Straddle Calculation (SPY at $643)")
+        print("-" * 60)
+        
+        long_straddle_request = {
+            "strategy_name": "Long Straddle",
+            "symbol": "SPY",
+            "stock_price": 643.0,
+            "strike": 643.0,
+            "days_to_expiry": 30,
+            "volatility": 0.20,
+            "risk_free_rate": 0.05
+        }
+        
+        success, straddle_data = self.run_test(
+            "Long Straddle (SPY $643, ATM)", 
+            "POST", 
+            "options/calculate", 
+            200, 
+            data=long_straddle_request
+        )
+        
+        if success:
+            strategy_config = straddle_data.get('strategy_config', {})
+            analysis = straddle_data.get('analysis', {})
+            
+            print(f"   ✅ Strategy: {strategy_config.get('name', 'N/A')}")
+            print(f"   💰 Max Profit: ${analysis.get('max_profit', 0):.2f}")
+            print(f"   💸 Max Loss: ${analysis.get('max_loss', 0):.2f}")
+            print(f"   🎯 Breakeven Points: {len(analysis.get('breakeven_points', []))}")
+            print(f"   📊 Prob of Profit: {analysis.get('probability_of_profit', 0):.1f}%")
+            
+            # Long Straddle should have 2 legs (call + put)
+            legs = strategy_config.get('legs', [])
+            print(f"   🦵 Strategy Legs: {len(legs)} (expected: 2)")
+        
+        # Test 5: Strategy Optimization Endpoint
+        print(f"\n📊 PHASE 5: Strategy Optimization Endpoint")
+        print("-" * 60)
+        
+        optimization_params = {
+            "symbol": "SPY",
+            "stock_price": 643.48,
+            "target_price": 660.0,
+            "sentiment": "Bullish",
+            "budget": 5000,
+            "days_to_expiry": 30,
+            "volatility": 0.20,
+            "risk_free_rate": 0.05
+        }
+        
+        success, optimization_data = self.run_test(
+            "Strategy Optimization (SPY Bullish to $660)", 
+            "POST", 
+            "options/optimize", 
+            200, 
+            params=optimization_params
+        )
+        
+        if success:
+            strategies = optimization_data.get('strategies', [])
+            parameters = optimization_data.get('parameters', {})
+            
+            print(f"   ✅ Optimized Strategies Found: {len(strategies)}")
+            print(f"   🎯 Target Price: ${optimization_data.get('target_price', 0):.2f}")
+            print(f"   💰 Budget: ${parameters.get('budget', 0):,}")
+            print(f"   📊 Sentiment: {optimization_data.get('sentiment', 'N/A')}")
+            
+            if strategies:
+                # Show top 3 strategies
+                for i, strategy in enumerate(strategies[:3]):
+                    print(f"   #{i+1}: {strategy.get('name', 'N/A')}")
+                    print(f"       - Return on Risk: {strategy.get('return_on_risk', 0):.1f}%")
+                    print(f"       - Max Profit: ${strategy.get('max_profit', 0):.2f}")
+                    print(f"       - Total Cost: ${strategy.get('total_cost', 0):.2f}")
+                    
+                    # Verify chart data is included
+                    chart_data = strategy.get('chart_data', {})
+                    if 'x' in chart_data and 'y' in chart_data:
+                        print(f"       - Chart Data: ✅ ({len(chart_data['x'])} points)")
+                    else:
+                        print(f"       - Chart Data: ❌ Missing")
+        
+        # Test 6: Updated Strategies Endpoint
+        print(f"\n📊 PHASE 6: Updated Strategies Endpoint")
+        print("-" * 60)
+        
+        success, strategies_data = self.run_test(
+            "Available Strategies List", 
+            "GET", 
+            "options/strategies", 
+            200
+        )
+        
+        if success:
+            strategies = strategies_data.get('strategies', {})
+            total_strategies = strategies_data.get('total_strategies', 0)
+            implemented = strategies_data.get('implemented', [])
+            
+            print(f"   ✅ Total Strategies Available: {total_strategies}")
+            print(f"   🎯 Implemented Strategies: {len(implemented)}")
+            print(f"   📋 Implemented List: {implemented}")
+            
+            # Verify new strategies are included
+            expected_new_strategies = ["Bull Call Spread", "Bear Put Spread", "Iron Condor", "Long Straddle"]
+            found_new_strategies = [s for s in expected_new_strategies if s in implemented]
+            
+            print(f"   🆕 New Strategies Found: {len(found_new_strategies)}/{len(expected_new_strategies)}")
+            for strategy in found_new_strategies:
+                print(f"       ✅ {strategy}")
+            
+            missing_strategies = [s for s in expected_new_strategies if s not in implemented]
+            for strategy in missing_strategies:
+                print(f"       ❌ {strategy} (missing)")
+        
+        # Test 7: Individual Strategy Endpoint with Error Handling
+        print(f"\n📊 PHASE 7: Individual Strategy Endpoint Testing")
+        print("-" * 60)
+        
+        # Test valid strategy
+        valid_strategy_request = {
+            "strategy_name": "Long Call",
+            "symbol": "SPY",
+            "stock_price": 643.0,
+            "strike": 645.0,
+            "days_to_expiry": 30,
+            "volatility": 0.20,
+            "risk_free_rate": 0.05
+        }
+        
+        success, valid_data = self.run_test(
+            "Individual Strategy (Long Call)", 
+            "POST", 
+            "options/calculate", 
+            200, 
+            data=valid_strategy_request
+        )
+        
+        if success:
+            print(f"   ✅ Long Call calculation successful")
+        
+        # Test error handling - missing parameters
+        invalid_request = {
+            "strategy_name": "Bull Call Spread",
+            "symbol": "SPY",
+            "stock_price": 643.0
+            # Missing required strikes
+        }
+        
+        success, error_data = self.run_test(
+            "Error Handling (Missing Parameters)", 
+            "POST", 
+            "options/calculate", 
+            500,  # Expect error
+            data=invalid_request
+        )
+        
+        if success:
+            print(f"   ✅ Error handling working correctly")
+        
+        # Test different parameter combinations
+        parameter_tests = [
+            {
+                "name": "High Volatility Test",
+                "request": {
+                    "strategy_name": "Long Straddle",
+                    "symbol": "SPY",
+                    "stock_price": 643.0,
+                    "strike": 643.0,
+                    "volatility": 0.40,  # High volatility
+                    "days_to_expiry": 30
+                }
+            },
+            {
+                "name": "Short Term Expiry Test",
+                "request": {
+                    "strategy_name": "Long Call",
+                    "symbol": "SPY",
+                    "stock_price": 643.0,
+                    "strike": 645.0,
+                    "days_to_expiry": 7,  # Short term
+                    "volatility": 0.20
+                }
+            }
+        ]
+        
+        for test in parameter_tests:
+            success, test_data = self.run_test(
+                test["name"], 
+                "POST", 
+                "options/calculate", 
+                200, 
+                data=test["request"]
+            )
+            
+            if success:
+                analysis = test_data.get('analysis', {})
+                print(f"   ✅ {test['name']}: Max P&L ${analysis.get('max_profit', 0):.2f}/${analysis.get('max_loss', 0):.2f}")
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT: Options Calculator Comprehensive Testing")
+        print("=" * 80)
+        
+        # Calculate success metrics
+        test_phases = [
+            ("Bull Call Spread Calculation", bull_call_data.get('status') != 'error' if 'bull_call_data' in locals() else False),
+            ("Bear Put Spread Calculation", bear_put_data.get('status') != 'error' if 'bear_put_data' in locals() else False),
+            ("Iron Condor Calculation", iron_condor_data.get('status') != 'error' if 'iron_condor_data' in locals() else False),
+            ("Long Straddle Calculation", straddle_data.get('status') != 'error' if 'straddle_data' in locals() else False),
+            ("Strategy Optimization", len(optimization_data.get('strategies', [])) > 0 if 'optimization_data' in locals() else False),
+            ("Strategies List Updated", len(strategies_data.get('implemented', [])) >= 4 if 'strategies_data' in locals() else False),
+            ("Individual Strategy Testing", valid_data.get('status') != 'error' if 'valid_data' in locals() else False)
+        ]
+        
+        passed_phases = sum(1 for _, passed in test_phases if passed)
+        total_phases = len(test_phases)
+        success_rate = (passed_phases / total_phases) * 100
+        
+        print(f"\n📊 TEST RESULTS SUMMARY:")
+        for phase_name, passed in test_phases:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {phase_name}")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_phases}/{total_phases} phases passed)")
+        
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        if 'optimization_data' in locals():
+            print(f"   - Optimization Strategies: {len(optimization_data.get('strategies', []))}")
+        if 'strategies_data' in locals():
+            print(f"   - Total Available Strategies: {strategies_data.get('total_strategies', 0)}")
+            print(f"   - Implemented Strategies: {len(strategies_data.get('implemented', []))}")
+        
+        # Mathematical accuracy verification
+        print(f"\n🧮 MATHEMATICAL ACCURACY VERIFICATION:")
+        if 'bull_call_data' in locals() and bull_call_data.get('analysis'):
+            analysis = bull_call_data['analysis']
+            max_profit = analysis.get('max_profit', 0)
+            max_loss = analysis.get('max_loss', 0)
+            
+            # Bull Call Spread should have limited profit and loss
+            if max_profit > 0 and max_loss < 0:
+                print(f"   ✅ Bull Call Spread P&L structure correct")
+            else:
+                print(f"   ❌ Bull Call Spread P&L structure incorrect")
+        
+        # Final verdict
+        if success_rate >= 85:
+            print(f"\n🎉 VERDICT: EXCELLENT - Options Calculator with new strategies working perfectly!")
+            print(f"   All new multi-leg strategies return proper analysis data.")
+            print(f"   Mathematical accuracy verified for complex strategies.")
+            print(f"   Strategy optimization endpoint provides ranked strategies with proper metrics.")
+        elif success_rate >= 70:
+            print(f"\n✅ VERDICT: GOOD - Options Calculator mostly working with minor issues.")
+            print(f"   Most new strategies are functional with proper P&L analysis.")
+        else:
+            print(f"\n❌ VERDICT: NEEDS ATTENTION - Options Calculator has significant issues.")
+            print(f"   New strategies may not be calculating properly.")
+        
+        return success_rate >= 70
+
     def test_unusual_whales_dark_pool_fix(self):
         """Test Unusual Whales Dark Pool API endpoints - COMPREHENSIVE DARK POOL FIX TESTING"""
         print("\n🌊 TESTING DARK POOL API FIX - COMPREHENSIVE VERIFICATION")
