@@ -767,7 +767,7 @@ const OptionsModule = () => {
                   })}
 
 
-                  {/* Pagination Footer - OptionStrat style */}
+                  {/* Pagination Footer */}
                   <div className="flex items-center justify-center pt-6">
                     <div className="flex items-center space-x-4">
                       <button className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded text-sm transition-colors disabled:opacity-50" disabled>
