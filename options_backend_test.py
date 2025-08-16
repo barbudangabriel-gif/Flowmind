@@ -351,7 +351,7 @@ class OptionsCalculatorTester:
             if response.status_code == 200:
                 data = response.json()
                 analysis = data.get('analysis', {})
-                strategy_greeks = analysis.get('strategy_greeks', {})
+                strategy_greeks = analysis.get('greeks', {})  # Changed from 'strategy_greeks' to 'greeks'
                 
                 # Extract Greeks
                 delta = strategy_greeks.get('delta', 0)
