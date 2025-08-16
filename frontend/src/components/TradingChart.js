@@ -12,7 +12,6 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
   const [error, setError] = useState(null);
   const [selectedInterval, setSelectedInterval] = useState(interval);
   const [selectedIndicators, setSelectedIndicators] = useState(['volume']); // Default volume
-  const [chartInstance, setChartInstance] = useState(null);
 
   const intervals = [
     { label: '1D', value: '1D' },
@@ -23,15 +22,38 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
   ];
 
   const availableIndicators = [
-    { id: 'volume', label: 'Volume', type: 'histogram' },
-    { id: 'sma20', label: 'SMA 20', type: 'line' },
-    { id: 'sma50', label: 'SMA 50', type: 'line' },
-    { id: 'ema12', label: 'EMA 12', type: 'line' },
-    { id: 'ema26', label: 'EMA 26', type: 'line' },
-    { id: 'bollinger', label: 'Bollinger Bands', type: 'bands' },
-    { id: 'rsi', label: 'RSI (14)', type: 'oscillator' },
-    { id: 'macd', label: 'MACD', type: 'oscillator' }
+    { id: 'volume', label: 'Volume', color: '#26a69a' },
+    { id: 'sma20', label: 'SMA 20', color: '#FF9500' },
+    { id: 'sma50', label: 'SMA 50', color: '#9013FE' },
+    { id: 'ema12', label: 'EMA 12', color: '#2196F3' },
+    { id: 'rsi', label: 'RSI (14)', color: '#E91E63' },
+    { id: 'bollinger', label: 'Bollinger Bands', color: '#795548' }
   ];
+
+  // Simple indicator calculations
+  const calculateSMA = (data, period) => {
+    return data.map((item, index) => {
+      if (index < period - 1) return null;
+      const sum = data.slice(index - period + 1, index + 1).reduce((acc, d) => acc + d.close, 0);
+      return { time: item.time, value: sum / period };
+    }).filter(item => item !== null);
+  };
+
+  // Handle indicator selection
+  const toggleIndicator = (indicatorId) => {
+    setSelectedIndicators(prev => {
+      const newSelection = prev.includes(indicatorId)
+        ? prev.filter(id => id !== indicatorId)
+        : [...prev, indicatorId];
+      console.log('Updated indicators:', newSelection);
+      return newSelection;
+    });
+  };
+
+  const handleIntervalChange = (newInterval) => {
+    console.log(`Changing interval to ${newInterval}`);
+    setSelectedInterval(newInterval);
+  };
 
   // Load and render chart
   useEffect(() => {
