@@ -303,6 +303,286 @@ const InvestmentScoring = React.memo(() => {
         </div>
       </div>
 
+      {/* AI Investment Scoring Agent Tab */}
+      {activeTab === 'ai-agent' && (
+        <div className="space-y-6">
+          {/* AI Agent Header */}
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border border-purple-200">
+            <h3 className="text-xl font-bold text-purple-800 mb-3 flex items-center">
+              <Zap className="mr-3 text-purple-600" size={24} />
+              🤖 AI Investment Scoring Agent
+            </h3>
+            <p className="text-purple-600 text-sm mb-4">
+              Advanced AI agent that combines multiple data sources from Unusual Whales to generate comprehensive investment scores:
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div className="flex items-center text-purple-600">
+                <Activity className="mr-1" size={12} />
+                <span>Options Flow Analysis</span>
+              </div>
+              <div className="flex items-center text-purple-600">
+                <Shield className="mr-1" size={12} />
+                <span>Dark Pool Activity</span>
+              </div>
+              <div className="flex items-center text-purple-600">
+                <Target className="mr-1" size={12} />
+                <span>Congressional Trades</span>
+              </div>
+              <div className="flex items-center text-purple-600">
+                <BarChart3 className="mr-1" size={12} />
+                <span>Risk Assessment</span>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Analysis Input */}
+          <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+            <h4 className="text-lg font-semibold mb-4 flex items-center">
+              <Search className="mr-2 text-blue-600" size={20} />
+              AI-Powered Stock Analysis
+            </h4>
+            <div className="flex space-x-4">
+              <input
+                type="text"
+                value={aiAnalysisSymbol}
+                onChange={(e) => setAiAnalysisSymbol(e.target.value.toUpperCase())}
+                placeholder="Enter stock symbol (e.g., AAPL, MSFT, NVDA)"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                onKeyPress={(e) => e.key === 'Enter' && analyzeWithAI()}
+              />
+              <button
+                onClick={analyzeWithAI}
+                disabled={aiLoading || !aiAnalysisSymbol.trim()}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                {aiLoading ? (
+                  <RefreshCw className="animate-spin" size={20} />
+                ) : (
+                  <Zap size={20} />
+                )}
+                <span>Analyze with AI</span>
+              </button>
+            </div>
+          </div>
+
+          {/* AI Analysis Results */}
+          {aiAnalysis && (
+            <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+              {/* Analysis Header */}
+              <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-lg font-bold text-gray-800 flex items-center">
+                    <Target className="mr-2 text-blue-600" size={20} />
+                    AI Analysis: {aiAnalysis.symbol}
+                  </h4>
+                  <div className="text-xs text-gray-500">
+                    {aiAnalysis.timestamp && new Date(aiAnalysis.timestamp).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              {aiAnalysis.error ? (
+                <div className="p-6">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <XCircle className="text-red-500 mr-2" size={20} />
+                      <span className="text-red-700 font-medium">Analysis Error</span>
+                    </div>
+                    <p className="text-red-600 text-sm mt-2">{aiAnalysis.error}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 space-y-6">
+                  {/* Investment Score and Recommendation */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Investment Score */}
+                    <div className="text-center">
+                      <div className="relative">
+                        <div className={`text-4xl font-bold ${getScoreColor(aiAnalysis.investment_score || 0)}`}>
+                          {aiAnalysis.investment_score || 0}
+                        </div>
+                        <div className="text-sm text-gray-500">Investment Score</div>
+                        <div className="mt-2">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full transition-all duration-500 ${
+                                (aiAnalysis.investment_score || 0) >= 75 ? 'bg-green-500' :
+                                (aiAnalysis.investment_score || 0) >= 55 ? 'bg-blue-500' :
+                                (aiAnalysis.investment_score || 0) >= 45 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${aiAnalysis.investment_score || 0}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Recommendation */}
+                    <div className="text-center">
+                      <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${
+                        aiAnalysis.recommendation === 'STRONG BUY' ? 'bg-green-100 text-green-800' :
+                        aiAnalysis.recommendation === 'BUY' ? 'bg-green-50 text-green-700' :
+                        aiAnalysis.recommendation?.includes('HOLD') ? 'bg-gray-100 text-gray-700' :
+                        aiAnalysis.recommendation?.includes('SELL') ? 'bg-red-100 text-red-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {aiAnalysis.recommendation === 'STRONG BUY' && <TrendingUp className="mr-1" size={16} />}
+                        {aiAnalysis.recommendation === 'BUY' && <TrendingUp className="mr-1" size={16} />}
+                        {aiAnalysis.recommendation?.includes('SELL') && <TrendingDown className="mr-1" size={16} />}
+                        {aiAnalysis.recommendation || 'HOLD'}
+                      </div>
+                      <div className="text-sm text-gray-500 mt-2">AI Recommendation</div>
+                    </div>
+
+                    {/* Confidence Level */}
+                    <div className="text-center">
+                      <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${
+                        aiAnalysis.confidence_level === 'high' ? 'bg-green-100 text-green-800' :
+                        aiAnalysis.confidence_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {aiAnalysis.confidence_level === 'high' && <CheckCircle className="mr-1" size={16} />}
+                        {aiAnalysis.confidence_level === 'medium' && <AlertTriangle className="mr-1" size={16} />}
+                        {aiAnalysis.confidence_level === 'low' && <XCircle className="mr-1" size={16} />}
+                        {(aiAnalysis.confidence_level || 'low').toUpperCase()} CONFIDENCE
+                      </div>
+                      <div className="text-sm text-gray-500 mt-2">Analysis Confidence</div>
+                    </div>
+                  </div>
+
+                  {/* Key Signals */}
+                  {aiAnalysis.key_signals && aiAnalysis.key_signals.length > 0 && (
+                    <div>
+                      <h5 className="text-lg font-semibold mb-3 flex items-center">
+                        <Activity className="mr-2 text-purple-600" size={18} />
+                        Key Signals
+                      </h5>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {aiAnalysis.key_signals.map((signal, index) => (
+                          <div key={index} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-medium text-gray-700 capitalize">
+                                {signal.type?.replace('_', ' ') || 'Unknown Signal'}
+                              </span>
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                signal.strength === 'strong' ? 'bg-red-100 text-red-700' :
+                                signal.strength === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                {signal.strength || 'weak'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className={`text-sm font-bold ${
+                                signal.direction === 'bullish' ? 'text-green-600' :
+                                signal.direction === 'bearish' ? 'text-red-600' :
+                                'text-gray-600'
+                              }`}>
+                                {signal.score} - {signal.direction || 'neutral'}
+                              </span>
+                            </div>
+                            {signal.details && (
+                              <div className="text-xs text-gray-500 mt-1">
+                                {signal.details}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Risk Analysis */}
+                  {aiAnalysis.risk_analysis && (
+                    <div>
+                      <h5 className="text-lg font-semibold mb-3 flex items-center">
+                        <Shield className="mr-2 text-blue-600" size={18} />
+                        Risk Analysis
+                      </h5>
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="text-sm font-medium text-gray-700">Overall Risk Level</span>
+                          <span className={`px-3 py-1 rounded-full text-sm font-bold ${getRiskColor(aiAnalysis.risk_analysis.overall_risk?.toUpperCase())}`}>
+                            {(aiAnalysis.risk_analysis.overall_risk || 'unknown').toUpperCase()}
+                          </span>
+                        </div>
+                        {aiAnalysis.risk_analysis.risk_factors && aiAnalysis.risk_analysis.risk_factors.length > 0 && (
+                          <div>
+                            <div className="text-sm font-medium text-gray-700 mb-2">Risk Factors:</div>
+                            <ul className="text-sm text-gray-600 space-y-1">
+                              {aiAnalysis.risk_analysis.risk_factors.map((factor, index) => (
+                                <li key={index} className="flex items-start">
+                                  <AlertTriangle className="mr-1 mt-0.5 flex-shrink-0" size={12} />
+                                  {factor}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Signal Breakdown */}
+                  {aiAnalysis.signal_breakdown && (
+                    <div>
+                      <h5 className="text-lg font-semibold mb-3 flex items-center">
+                        <BarChart3 className="mr-2 text-indigo-600" size={18} />
+                        Signal Breakdown
+                      </h5>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {Object.entries(aiAnalysis.signal_breakdown).map(([signalType, score]) => (
+                          <div key={signalType} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                            <div className="text-sm font-medium text-gray-700 capitalize mb-1">
+                              {signalType.replace('_', ' ')}
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className={`text-lg font-bold ${getScoreColor(score)}`}>
+                                {typeof score === 'number' ? score.toFixed(1) : score}
+                              </span>
+                              <div className="w-16 bg-gray-200 rounded-full h-1.5">
+                                <div 
+                                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                                    score >= 75 ? 'bg-green-500' :
+                                    score >= 55 ? 'bg-blue-500' :
+                                    score >= 45 ? 'bg-yellow-500' : 'bg-red-500'
+                                  }`}
+                                  style={{ width: `${typeof score === 'number' ? score : 0}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Data Sources */}
+                  {aiAnalysis.data_sources && (
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h6 className="text-sm font-semibold text-blue-800 mb-2 flex items-center">
+                        <Activity className="mr-1" size={14} />
+                        Data Sources Used
+                      </h6>
+                      <div className="flex flex-wrap gap-2">
+                        {aiAnalysis.data_sources.map((source, index) => (
+                          <span key={index} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
+                            {source.replace('_', ' ').replace('unusual whales', 'UW')}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="text-xs text-blue-600 mt-2">
+                        Analysis powered by Unusual Whales real-time data • Agent v{aiAnalysis.agent_version || '1.0'}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Top Picks Tab */}
       {activeTab === 'top-picks' && (
         <div className="space-y-4">
