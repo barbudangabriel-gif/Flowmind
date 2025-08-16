@@ -186,24 +186,24 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
   );
 }
 
-// Sentiment Button Component  
+// Sentiment Button Component - Sharp Corners OptionStrat Style
 function SentimentButton({ icon, label, active, onClick }) {
   const getColor = () => {
-    if (label.includes('Bearish')) return active ? 'bg-red-500' : 'bg-gray-700 border-red-500';
-    if (label.includes('Bullish')) return active ? 'bg-green-500' : 'bg-gray-700 border-green-500';
-    if (label === 'Directional') return active ? 'bg-purple-500' : 'bg-gray-700 border-purple-500';
-    return active ? 'bg-blue-500' : 'bg-gray-700 border-blue-500';
+    if (label.includes('Bearish')) return active ? 'bg-[#e74c3c] border-[#e74c3c]' : 'bg-[#2c3e50] border-[#e74c3c]';
+    if (label.includes('Bullish')) return active ? 'bg-[#27ae60] border-[#27ae60]' : 'bg-[#2c3e50] border-[#27ae60]';
+    if (label === 'Directional') return active ? 'bg-[#9b59b6] border-[#9b59b6]' : 'bg-[#2c3e50] border-[#9b59b6]';
+    return active ? 'bg-[#3498db] border-[#3498db]' : 'bg-[#2c3e50] border-[#3498db]';
   };
 
   return (
     <div className="flex flex-col items-center">
       <button
         onClick={onClick}
-        className={`w-16 h-16 border-2 flex items-center justify-center text-2xl transition-all ${getColor()}`}
+        className={`w-16 h-16 border-2 flex items-center justify-center text-2xl transition-all rounded-none ${getColor()}`}
       >
         {icon}
       </button>
-      <span className="text-white text-xs mt-2 text-center">{label}</span>
+      <span className="text-white text-xs mt-2 text-center leading-tight">{label}</span>
     </div>
   );
 }
