@@ -1442,6 +1442,14 @@ const TechnicalAnalysis = () => {
     }
   };
 
+  // Helper function to get score-based color classes
+  const getScoreColor = (score) => {
+    if (score >= 75) return 'text-green-600';
+    if (score >= 55) return 'text-blue-600';
+    if (score >= 45) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
   const getSignalColor = (signal) => {
     // Defensive programming - ensure signal is valid
     if (!signal || typeof signal !== 'string') {
