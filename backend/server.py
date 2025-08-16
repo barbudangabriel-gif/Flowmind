@@ -931,13 +931,20 @@ async def get_data_sources_status():
                 },
                 {
                     "rank": 2, 
+                    "source": "Unusual Whales",
+                    "status": "Available",
+                    "usage": "Primary fallback source",
+                    "reliability": "High (Professional Market Data)"
+                },
+                {
+                    "rank": 3, 
                     "source": "Yahoo Finance",
                     "status": "Available",
-                    "usage": "Fallback source",
+                    "usage": "Final fallback source",
                     "reliability": "Medium (Free Market Data)"
                 }
             ],
-            "current_primary_source": "TradeStation API" if ts_authenticated else "Yahoo Finance",
+            "current_primary_source": "TradeStation API" if ts_authenticated else "Unusual Whales",
             "recommendation": "Authenticate with TradeStation for most accurate pricing data" if not ts_authenticated else "Using TradeStation for accurate pricing ✅",
             "timestamp": datetime.utcnow().isoformat()
         }
