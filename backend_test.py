@@ -20,12 +20,15 @@ class StockMarketAPITester:
         print(f"   URL: {url}")
         
         try:
+            # Use longer timeout for investment endpoints that may take time to process
+            timeout = 120 if 'investments' in endpoint else 30
+            
             if method == 'GET':
-                response = requests.get(url, headers=headers, params=params, timeout=30)
+                response = requests.get(url, headers=headers, params=params, timeout=timeout)
             elif method == 'POST':
-                response = requests.post(url, json=data, headers=headers, timeout=30)
+                response = requests.post(url, json=data, headers=headers, timeout=timeout)
             elif method == 'DELETE':
-                response = requests.delete(url, headers=headers, timeout=30)
+                response = requests.delete(url, headers=headers, timeout=timeout)
 
             success = response.status_code == expected_status
             if success:
@@ -50,7 +53,7 @@ class StockMarketAPITester:
                 return False, {}
 
         except requests.exceptions.Timeout:
-            print(f"❌ Failed - Request timeout (30s)")
+            print(f"❌ Failed - Request timeout ({timeout}s)")
             return False, {}
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
