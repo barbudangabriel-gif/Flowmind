@@ -50,6 +50,8 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
 
         // Create chart
         console.log('Creating chart...');
+        console.log('createChart function:', typeof createChart);
+        
         const chart = createChart(chartContainerRef.current, {
           width: chartContainerRef.current.clientWidth || 800,
           height: height,
@@ -68,6 +70,10 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
             borderColor: '#555',
           },
         });
+
+        console.log('Chart created:', chart);
+        console.log('Chart methods:', Object.keys(chart));
+        console.log('addCandlestickSeries function:', typeof chart.addCandlestickSeries);
 
         console.log('Chart created, adding series...');
         
