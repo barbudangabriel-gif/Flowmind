@@ -167,9 +167,201 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
     loadAndRenderChart();
   }, [symbol, selectedInterval, height]);
 
-  const handleIntervalChange = (newInterval) => {
-    console.log(`Changing interval to ${newInterval}`);
-    setSelectedInterval(newInterval);
+  // Calculate technical indicators
+  const calculateIndicators = (data) => {
+    const indicators = {};
+
+    // Simple Moving Average
+    const calculateSMA = (period) => {
+      return data.map((item, index) => {
+        if (index < period - 1) return { time: item.time, value: null };
+        const sum = data.slice(index - period + 1, index + 1).reduce((acc, d) => acc + d.close, 0);
+        return { time: item.time, value: sum / period };
+      }).filter(item => item.value !== null);
+    };
+
+    // Exponential Moving Average
+    const calculateEMA = (period) => {
+      const multiplier = 2 / (period + 1);
+      const ema = [];
+      let emaValue = data[0].close; // Start with first close price
+      
+      data.forEach((item, index) => {
+        if (index === 0) {
+          emaValue = item.close;
+        } else {
+          emaValue = (item.close * multiplier) + (emaValue * (1 - multiplier));
+        }
+        ema.push({ time: item.time, value: emaValue });
+      });
+      
+      return ema;
+    };
+
+    // RSI Calculation
+    const calculateRSI = (period = 14) => {
+      if (data.length < period + 1) return [];
+      
+      const rsiData = [];
+      let gains = 0;
+      let losses = 0;
+      
+      // Calculate initial average gain/loss
+      for (let i = 1; i <= period; i++) {
+        const change = data[i].close - data[i - 1].close;
+        if (change > 0) gains += change;
+        else losses += Math.abs(change);
+      }
+      
+      let avgGain = gains / period;
+      let avgLoss = losses / period;
+      
+      for (let i = period; i < data.length; i++) {
+        const change = data[i].close - data[i - 1].close;
+        const gain = change > 0 ? change : 0;
+        const loss = change < 0 ? Math.abs(change) : 0;
+        
+        avgGain = ((avgGain * (period - 1)) + gain) / period;
+        avgLoss = ((avgLoss * (period - 1)) + loss) / period;
+        
+        const rs = avgGain / avgLoss;
+        const rsi = 100 - (100 / (1 + rs));
+        
+        rsiData.push({ time: data[i].time, value: rsi });
+      }
+      
+      return rsiData;
+    };
+
+    // Calculate Bollinger Bands
+    const calculateBollingerBands = (period = 20, stdDev = 2) => {
+      const sma = calculateSMA(period);
+      const bands = { upper: [], middle: [], lower: [] };
+      
+      sma.forEach((smaPoint, index) => {
+        const dataIndex = index + period - 1;
+        if (dataIndex >= data.length) return;
+        
+        const slice = data.slice(dataIndex - period + 1, dataIndex + 1);
+        const variance = slice.reduce((acc, d) => acc + Math.pow(d.close - smaPoint.value, 2), 0) / period;
+        const standardDeviation = Math.sqrt(variance);
+        
+        bands.upper.push({ time: smaPoint.time, value: smaPoint.value + (stdDev * standardDeviation) });
+        bands.middle.push({ time: smaPoint.time, value: smaPoint.value });
+        bands.lower.push({ time: smaPoint.time, value: smaPoint.value - (stdDev * standardDeviation) });
+      });
+      
+      return bands;
+    };
+
+    // Calculate volume data for histogram
+    const volumeData = data.map(item => ({
+      time: item.time,
+      value: item.volume,
+      color: item.close >= item.open ? '#00D4AA33' : '#FF6B6B33'
+    }));
+
+    // Store calculated indicators
+    indicators.sma20 = calculateSMA(20);
+    indicators.sma50 = calculateSMA(50);
+    indicators.ema12 = calculateEMA(12);
+    indicators.ema26 = calculateEMA(26);
+    indicators.rsi = calculateRSI(14);
+    indicators.bollinger = calculateBollingerBands(20, 2);
+    indicators.volume = volumeData;
+
+    return indicators;
+  };
+
+  // Add indicators to chart
+  const addIndicators = (chart, chartData, mainSeries) => {
+    if (!selectedIndicators.length) return;
+
+    const indicators = calculateIndicators(chartData);
+
+    selectedIndicators.forEach(indicatorId => {
+      switch (indicatorId) {
+        case 'volume':
+          const volumeSeries = chart.addHistogramSeries({
+            color: '#26a69a',
+            priceFormat: { type: 'volume' },
+            priceScaleId: '',
+            scaleMargins: { top: 0.7, bottom: 0 },
+          });
+          volumeSeries.setData(indicators.volume);
+          break;
+
+        case 'sma20':
+          const sma20Series = chart.addLineSeries({
+            color: '#FF9500',
+            lineWidth: 2,
+            title: 'SMA 20',
+          });
+          sma20Series.setData(indicators.sma20);
+          break;
+
+        case 'sma50':
+          const sma50Series = chart.addLineSeries({
+            color: '#9013FE',
+            lineWidth: 2,
+            title: 'SMA 50',
+          });
+          sma50Series.setData(indicators.sma50);
+          break;
+
+        case 'ema12':
+          const ema12Series = chart.addLineSeries({
+            color: '#2196F3',
+            lineWidth: 1,
+            title: 'EMA 12',
+          });
+          ema12Series.setData(indicators.ema12);
+          break;
+
+        case 'ema26':
+          const ema26Series = chart.addLineSeries({
+            color: '#FF5722',
+            lineWidth: 1,
+            title: 'EMA 26',
+          });
+          ema26Series.setData(indicators.ema26);
+          break;
+
+        case 'bollinger':
+          const upperSeries = chart.addLineSeries({
+            color: '#E91E63',
+            lineWidth: 1,
+            title: 'BB Upper',
+          });
+          const middleSeries = chart.addLineSeries({
+            color: '#795548',
+            lineWidth: 1,
+            title: 'BB Middle',
+          });
+          const lowerSeries = chart.addLineSeries({
+            color: '#E91E63',
+            lineWidth: 1,
+            title: 'BB Lower',
+          });
+          upperSeries.setData(indicators.bollinger.upper);
+          middleSeries.setData(indicators.bollinger.middle);
+          lowerSeries.setData(indicators.bollinger.lower);
+          break;
+
+        default:
+          break;
+      }
+    });
+  };
+
+  // Handle indicator selection
+  const toggleIndicator = (indicatorId) => {
+    setSelectedIndicators(prev => {
+      const newSelection = prev.includes(indicatorId)
+        ? prev.filter(id => id !== indicatorId)
+        : [...prev, indicatorId];
+      return newSelection;
+    });
   };
 
   if (error) {
