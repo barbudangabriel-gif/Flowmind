@@ -37,6 +37,9 @@ from token_manager import get_token_manager
 from investment_scoring_agent import InvestmentScoringAgent
 from technical_analysis_agent import TechnicalAnalysisAgent
 
+# Options Calculator
+from options_calculator import options_engine, StrategyConfig, StrategyAnalysis
+
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
