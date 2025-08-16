@@ -290,6 +290,21 @@ backend:
         - working: true
         - agent: "testing"
         - comment: "✅ WORKING: Comprehensive re-testing confirms enhanced stock data API excellent performance. Real-time prices: AAPL ($229.20), MSFT ($528.97), GOOGL ($203.92), TSLA ($341.24) with proper change calculations and extended hours data. Response times 0.35-0.54s. Screener API working with all exchanges (sp500/nasdaq/all). Historical data working for all periods (1mo/3mo/6mo). API ready for production use."
+        - working: true
+        - agent: "testing"
+        - comment: "🎯 STOCK ANALYSIS ROUTING REVIEW TESTING - ENHANCED STOCK DATA VERIFIED: Tested Enhanced Stock Data API with UNH symbol as requested in review. ✅ ENDPOINT WORKING: GET /api/stocks/UNH/enhanced returns 200 OK with complete stock data. ✅ REQUIRED FIELDS PRESENT: price ($88.28), change (-$0.96), change_percent (-1.08%), all required fields for StockAnalysisPage component. ✅ COMPREHENSIVE DATA: Response includes symbol, name, sector (Healthcare), industry, volume, market_cap, pe_ratio, dividend_yield, 52-week high/low, beta, avg_volume, exchange, market_state, extended_hours, timestamp, data_source. ✅ REALISTIC PRICING: UNH price $88.28 appears realistic for healthcare stock, within expected range for UNH trading. ✅ STOCK FUNDAMENTALS: Complete fundamental data available including sector (Healthcare), market cap, P/E ratio, and other key metrics needed for analysis. Enhanced Stock Data API working perfectly for stock analysis routing functionality."
+
+  - task: "Stock Analysis Routing Functionality"
+    implemented: true
+    working: false
+    file: "server.py,investment_scoring_agent.py,technical_analysis_agent.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ PARTIAL FAILURE - STOCK ANALYSIS ROUTING FUNCTIONALITY: Comprehensive testing of newly implemented stock analysis routing functionality as requested in review shows mixed results. ✅ INVESTMENT SCORING AGENT WORKING: POST /api/agents/investment-scoring?symbol=UNH returns 200 OK with complete analysis (investment_score: 46.4, recommendation: 'HOLD - WAIT FOR BETTER ENTRY', confidence_level: 'medium', 3 key_signals, risk_analysis, signal_breakdown). All required fields present and score in valid range (0-100). ✅ ENHANCED STOCK DATA WORKING: GET /api/stocks/UNH/enhanced returns 200 OK with complete stock data (price: $88.28, change: -$0.96, change_percent: -1.08%, sector: Healthcare, market_cap, pe_ratio, all fundamentals). ❌ TECHNICAL ANALYSIS AGENT FIELD MISMATCH: POST /api/agents/technical-analysis?symbol=UNH&include_smc=true returns 200 OK but missing expected fields 'overall_verdict' and 'multi_timeframe_analysis'. Response contains 'recommendation' instead of 'overall_verdict' and 'timeframe_analysis' instead of 'multi_timeframe_analysis'. ✅ SMC INTEGRATION CONFIRMED: include_smc=true parameter working correctly with smart_money_analysis (45.0 score, 4 SMC signals, order blocks, market structure analysis). ✅ COMPREHENSIVE TECHNICAL DATA: Technical analysis includes technical_score (48.6), recommendation ('HOLD - Neutral Technical Picture'), confidence_level ('low'), 5 key_signals, complete timeframe analysis, support_resistance levels, risk_entry_analysis. ❌ FRONTEND COMPATIBILITY ISSUE: StockAnalysisPage component expects specific field names that don't match actual API response structure. Frontend needs to use actual field names: 'recommendation' not 'overall_verdict', 'timeframe_analysis' not 'multi_timeframe_analysis'. SUCCESS RATE: 66.7% (4/6 phases passed). CONCLUSION: Core functionality working but field name mismatch prevents full integration. Frontend component needs field name updates to match actual API response structure."
 
   - task: "Options Flow API Implementation - Real Data Integration"
     implemented: true
