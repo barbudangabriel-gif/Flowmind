@@ -468,9 +468,65 @@ async def get_stock_enhanced(symbol: str):
             except Exception as e:
                 logger.warning(f"TradeStation enhanced quote failed for {symbol}: {str(e)}")
         
-        # Fallback to standard enhanced data
+        # Fallback to Unusual Whales first
+        try:
+            logger.info(f"Using Unusual Whales for enhanced {symbol} (fallback)")
+            
+            # Get stock data from Unusual Whales
+            uw_stocks = await uw_service.get_stock_screener_data(limit=500, exchange="all")
+            
+            # Find the specific symbol
+            uw_stock_data = None
+            for stock in uw_stocks:
+                if stock.get('symbol', '').upper() == symbol.upper():
+                    uw_stock_data = stock
+                    break
+            
+            if uw_stock_data:
+                # Try to get supplementary data from enhanced ticker manager
+                try:
+                    enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
+                    
+                    # Merge UW pricing with enhanced supplementary data
+                    enhanced_data.update({
+                        "price": float(uw_stock_data.get("price", 0)),
+                        "change": float(uw_stock_data.get("change", 0)),
+                        "change_percent": float(uw_stock_data.get("change_percent", 0)),
+                        "volume": int(uw_stock_data.get("volume", 0)),
+                        "data_source": "Unusual Whales + Enhanced Data",
+                        "timestamp": datetime.utcnow().isoformat()
+                    })
+                    
+                    return EnhancedStockData(**enhanced_data)
+                    
+                except Exception as e:
+                    logger.warning(f"Enhanced data failed for {symbol}, using UW data only: {str(e)}")
+                    
+                    # Use UW data with enhanced structure
+                    return EnhancedStockData(
+                        symbol=uw_stock_data.get("symbol", symbol),
+                        name=uw_stock_data.get("name", symbol),
+                        sector=uw_stock_data.get("sector", "Unknown"),
+                        industry="Unknown",
+                        price=float(uw_stock_data.get("price", 0)),
+                        change=float(uw_stock_data.get("change", 0)),
+                        change_percent=float(uw_stock_data.get("change_percent", 0)),
+                        volume=int(uw_stock_data.get("volume", 0)),
+                        market_cap=uw_stock_data.get("market_cap"),
+                        pe_ratio=uw_stock_data.get("pe_ratio"),
+                        exchange=uw_stock_data.get("exchange", "Unknown"),
+                        timestamp=datetime.utcnow().isoformat(),
+                        data_source="Unusual Whales (Fallback)"
+                    )
+            else:
+                logger.warning(f"Symbol {symbol} not found in Unusual Whales data")
+                
+        except Exception as e:
+            logger.warning(f"Unusual Whales enhanced fallback failed for {symbol}: {str(e)}")
+        
+        # Final fallback to standard enhanced data (Yahoo Finance)
         enhanced_data = await enhanced_ticker_manager.get_real_time_quote(symbol)
-        enhanced_data["data_source"] = "Yahoo Finance Enhanced (Fallback)"
+        enhanced_data["data_source"] = "Yahoo Finance Enhanced (Final Fallback)"
         return EnhancedStockData(**enhanced_data)
         
     except Exception as e:
