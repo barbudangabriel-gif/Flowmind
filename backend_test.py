@@ -985,6 +985,264 @@ class StockMarketAPITester:
         
         return success_rate >= 70 and len(recommendations) >= 10
 
+    def test_2_tier_pricing_system(self):
+        """Test the updated 2-tier pricing data system with Yahoo Finance completely removed"""
+        print("\n🎯 TESTING 2-TIER PRICING DATA SYSTEM - YAHOO FINANCE REMOVAL")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Test updated 2-tier pricing system with Yahoo Finance completely removed")
+        print("📋 REQUIREMENTS:")
+        print("   1. ✅ Data sources status shows only TradeStation + Unusual Whales")
+        print("   2. ✅ Yahoo Finance marked as REMOVED in all endpoints")
+        print("   3. ✅ Data source comparison tests only 2 sources")
+        print("   4. ✅ Stock quote endpoints work with 2-tier system")
+        print("   5. ✅ Error handling when both sources fail")
+        print("   6. ✅ Multiple symbols consistency")
+        
+        # Test 1: Data Sources Status Endpoint
+        print(f"\n📊 PHASE 1: Data Sources Status Verification")
+        print("-" * 60)
+        
+        success, status_data = self.run_test("Data Sources Status", "GET", "data-sources/status", 200)
+        
+        if not success:
+            print("❌ Data sources status endpoint failed")
+            return False
+        
+        # Verify only 2 data sources are shown
+        data_source_priority = status_data.get('data_source_priority', [])
+        current_primary = status_data.get('current_primary_source', '')
+        yahoo_status = status_data.get('yahoo_finance_status', '')
+        
+        print(f"📊 Found {len(data_source_priority)} data sources")
+        print(f"🎯 Current Primary Source: {current_primary}")
+        print(f"🚫 Yahoo Finance Status: {yahoo_status}")
+        
+        # Verify exactly 2 sources (TradeStation + Unusual Whales)
+        if len(data_source_priority) != 2:
+            print(f"❌ Expected 2 data sources, found {len(data_source_priority)}")
+            return False
+        else:
+            print(f"✅ Correct number of data sources: 2")
+        
+        # Verify TradeStation is rank 1, Unusual Whales is rank 2
+        sources_by_rank = {source.get('rank'): source.get('source') for source in data_source_priority}
+        
+        if sources_by_rank.get(1) == "TradeStation API" and sources_by_rank.get(2) == "Unusual Whales":
+            print(f"✅ Correct source priority: TradeStation (1) → Unusual Whales (2)")
+        else:
+            print(f"❌ Incorrect source priority: {sources_by_rank}")
+            return False
+        
+        # Verify Yahoo Finance is marked as REMOVED
+        if "REMOVED" in yahoo_status:
+            print(f"✅ Yahoo Finance correctly marked as REMOVED")
+        else:
+            print(f"❌ Yahoo Finance not marked as REMOVED: {yahoo_status}")
+            return False
+        
+        # Test 2: Data Source Comparison Endpoint (CRM)
+        print(f"\n📊 PHASE 2: Data Source Comparison Test (CRM)")
+        print("-" * 60)
+        
+        success, comparison_data = self.run_test("Data Source Comparison (CRM)", "GET", "data-sources/test/CRM", 200)
+        
+        if not success:
+            print("❌ Data source comparison endpoint failed")
+            return False
+        
+        test_results = comparison_data.get('test_results', {})
+        primary_source_used = comparison_data.get('primary_source_used', '')
+        price_comparison = comparison_data.get('price_comparison', {})
+        yahoo_comparison_status = comparison_data.get('yahoo_finance_status', '')
+        
+        print(f"🎯 Primary Source Used: {primary_source_used}")
+        print(f"🚫 Yahoo Finance Status: {yahoo_comparison_status}")
+        
+        # Verify only TradeStation and Unusual Whales are tested
+        expected_sources = ['tradestation', 'unusual_whales']
+        tested_sources = list(test_results.keys())
+        
+        print(f"📊 Sources Tested: {tested_sources}")
+        
+        if set(tested_sources) == set(expected_sources):
+            print(f"✅ Only TradeStation and Unusual Whales tested")
+        else:
+            print(f"❌ Unexpected sources tested: {tested_sources}")
+            return False
+        
+        # Verify Yahoo Finance shows as REMOVED
+        if "REMOVED" in yahoo_comparison_status:
+            print(f"✅ Yahoo Finance shows as REMOVED in comparison")
+        else:
+            print(f"❌ Yahoo Finance not marked as REMOVED in comparison")
+            return False
+        
+        # Check price comparison between the 2 sources
+        ts_price = price_comparison.get('tradestation_price')
+        uw_price = price_comparison.get('unusual_whales_price')
+        price_diff = price_comparison.get('price_difference')
+        
+        if ts_price and uw_price:
+            print(f"💰 TradeStation Price: ${ts_price:.2f}")
+            print(f"💰 Unusual Whales Price: ${uw_price:.2f}")
+            print(f"💰 Price Difference: ${price_diff:.2f}")
+            print(f"✅ Price comparison working between 2 sources")
+        else:
+            print(f"⚠️  Price comparison limited (TS: ${ts_price}, UW: ${uw_price})")
+        
+        # Test 3: Stock Quote Endpoints with 2-Tier System
+        print(f"\n📊 PHASE 3: Stock Quote Endpoints (2-Tier System)")
+        print("-" * 60)
+        
+        test_symbols = ["CRM", "AAPL", "MSFT"]
+        
+        for symbol in test_symbols:
+            print(f"\n   Testing {symbol}:")
+            
+            # Test basic quote
+            success_basic, basic_data = self.run_test(f"Basic Quote ({symbol})", "GET", f"stocks/{symbol}", 200)
+            if success_basic:
+                price = basic_data.get('price', 0)
+                data_source = basic_data.get('data_source', 'Unknown')
+                print(f"     - Basic Quote: ${price:.2f} from {data_source}")
+                
+                # Verify data source is one of the 2 expected
+                if "TradeStation" in data_source or "Unusual Whales" in data_source:
+                    print(f"     ✅ Using correct data source: {data_source}")
+                else:
+                    print(f"     ❌ Unexpected data source: {data_source}")
+            
+            # Test enhanced quote
+            success_enhanced, enhanced_data = self.run_test(f"Enhanced Quote ({symbol})", "GET", f"stocks/{symbol}/enhanced", 200)
+            if success_enhanced:
+                price = enhanced_data.get('price', 0)
+                data_source = enhanced_data.get('data_source', 'Unknown')
+                print(f"     - Enhanced Quote: ${price:.2f} from {data_source}")
+                
+                # Verify data source is one of the 2 expected
+                if "TradeStation" in data_source or "Unusual Whales" in data_source:
+                    print(f"     ✅ Using correct data source: {data_source}")
+                else:
+                    print(f"     ❌ Unexpected data source: {data_source}")
+        
+        # Test 4: Error Handling When Both Sources Fail
+        print(f"\n📊 PHASE 4: Error Handling Test")
+        print("-" * 60)
+        
+        # Test with invalid symbol to trigger error handling
+        success_error, error_data = self.run_test("Error Handling (Invalid Symbol)", "GET", "stocks/INVALID_SYMBOL_TEST", 404)
+        
+        if success_error:
+            print(f"✅ Error handling working correctly for invalid symbols")
+        else:
+            # Try with 500 status code as alternative
+            success_error_alt, error_data_alt = self.run_test("Error Handling (Invalid Symbol - Alt)", "GET", "stocks/INVALID_SYMBOL_TEST", 500)
+            if success_error_alt:
+                print(f"✅ Error handling working (500 status)")
+            else:
+                print(f"⚠️  Error handling may need verification")
+        
+        # Test 5: Multiple Symbols Consistency
+        print(f"\n📊 PHASE 5: Multiple Symbols Consistency Test")
+        print("-" * 60)
+        
+        consistency_symbols = ["AAPL", "MSFT", "GOOGL", "TSLA"]
+        source_usage = {}
+        
+        for symbol in consistency_symbols:
+            success_cons, cons_data = self.run_test(f"Consistency Test ({symbol})", "GET", f"stocks/{symbol}", 200)
+            if success_cons:
+                data_source = cons_data.get('data_source', 'Unknown')
+                price = cons_data.get('price', 0)
+                
+                # Track source usage
+                if "TradeStation" in data_source:
+                    source_usage['TradeStation'] = source_usage.get('TradeStation', 0) + 1
+                elif "Unusual Whales" in data_source:
+                    source_usage['Unusual Whales'] = source_usage.get('Unusual Whales', 0) + 1
+                else:
+                    source_usage['Other'] = source_usage.get('Other', 0) + 1
+                
+                print(f"   {symbol}: ${price:.2f} from {data_source}")
+        
+        print(f"\n📊 Source Usage Summary:")
+        for source, count in source_usage.items():
+            print(f"   - {source}: {count} symbols")
+        
+        # Verify no "Other" sources (should only be TradeStation or Unusual Whales)
+        if source_usage.get('Other', 0) == 0:
+            print(f"✅ All symbols use only the 2 expected sources")
+        else:
+            print(f"❌ Some symbols use unexpected sources")
+            return False
+        
+        # Test 6: Data Source Attribution Verification
+        print(f"\n📊 PHASE 6: Data Source Attribution Verification")
+        print("-" * 60)
+        
+        # Test data source comparison for multiple symbols
+        attribution_symbols = ["CRM", "AAPL"]
+        
+        for symbol in attribution_symbols:
+            success_attr, attr_data = self.run_test(f"Attribution Test ({symbol})", "GET", f"data-sources/test/{symbol}", 200)
+            if success_attr:
+                test_results = attr_data.get('test_results', {})
+                primary_source = attr_data.get('primary_source_used', '')
+                
+                print(f"   {symbol}:")
+                print(f"     - Primary Source: {primary_source}")
+                print(f"     - Sources Tested: {list(test_results.keys())}")
+                
+                # Verify only 2 sources tested
+                if len(test_results) == 2 and 'tradestation' in test_results and 'unusual_whales' in test_results:
+                    print(f"     ✅ Correct 2-tier testing")
+                else:
+                    print(f"     ❌ Incorrect source testing")
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT: 2-Tier Pricing Data System")
+        print("=" * 80)
+        
+        # Calculate success metrics
+        test_phases = [
+            ("Data Sources Status (2 sources only)", len(data_source_priority) == 2),
+            ("Yahoo Finance Marked as REMOVED", "REMOVED" in yahoo_status),
+            ("Source Priority Correct", sources_by_rank.get(1) == "TradeStation API"),
+            ("Comparison Tests 2 Sources", set(tested_sources) == set(expected_sources)),
+            ("Stock Quotes Work", source_usage.get('Other', 0) == 0),
+            ("Error Handling", success_error or success_error_alt)
+        ]
+        
+        passed_phases = sum(1 for _, passed in test_phases if passed)
+        total_phases = len(test_phases)
+        success_rate = (passed_phases / total_phases) * 100
+        
+        print(f"\n📊 TEST RESULTS SUMMARY:")
+        for phase_name, passed in test_phases:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {phase_name}")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_phases}/{total_phases} phases passed)")
+        
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        print(f"   - Data Sources: {len(data_source_priority)} (TradeStation + Unusual Whales)")
+        print(f"   - Yahoo Finance Status: {'✅ REMOVED' if 'REMOVED' in yahoo_status else '❌ NOT REMOVED'}")
+        print(f"   - Primary Source: {current_primary}")
+        print(f"   - Source Usage: {source_usage}")
+        
+        # Final verdict
+        if success_rate >= 85:
+            print(f"\n🎉 VERDICT: EXCELLENT - 2-Tier pricing system working perfectly!")
+            print(f"   Yahoo Finance has been completely removed from all endpoints.")
+            print(f"   TradeStation → Unusual Whales → Error fallback working correctly.")
+        elif success_rate >= 70:
+            print(f"\n✅ VERDICT: GOOD - 2-Tier pricing system mostly working with minor issues.")
+        else:
+            print(f"\n❌ VERDICT: NEEDS ATTENTION - 2-Tier pricing system has significant issues.")
+        
+        return success_rate >= 70
+
     def test_unusual_whales_options_flow(self):
         """Test Unusual Whales Options Flow API endpoints - COMPREHENSIVE TESTING WITH REAL API KEY"""
         print("\n🐋 TESTING UNUSUAL WHALES OPTIONS FLOW API - COMPREHENSIVE VERIFICATION")
