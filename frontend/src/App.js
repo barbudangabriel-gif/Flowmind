@@ -7199,7 +7199,17 @@ function AppContent() {
               path="/options" 
               element={
                 <Suspense fallback={<LoadingFallback componentName="Options Module" />}>
-                  <OptionsModule />
+                  <CardTest />
+                </Suspense>
+              } 
+            />
+            
+            {/* Test Card Route */}
+            <Route 
+              path="/test-card" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Card Test" />}>
+                  <CardTest />
                 </Suspense>
               } 
             />
