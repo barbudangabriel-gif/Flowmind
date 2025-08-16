@@ -123,13 +123,22 @@ function StrategyCard({
               fill={`url(#redGrad-${idSuffix})`} 
             />
             
-            {/* P&L Line */}
+            {/* P&L Lines - Green for profit, Red for loss */}
             <Line 
               type="monotone" 
-              dataKey="y" 
-              stroke="#ecf0f1" 
-              strokeWidth={2} 
+              dataKey="pos" 
+              stroke="#2ecc71" 
+              strokeWidth={2.5} 
               dot={false} 
+              connectNulls={false}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="neg" 
+              stroke="#e74c3c" 
+              strokeWidth={2.5} 
+              dot={false} 
+              connectNulls={false}
             />
             
             <Tooltip
