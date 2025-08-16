@@ -677,6 +677,40 @@ const InvestmentScoring = React.memo(() => {
             <p className="text-purple-600 text-sm mb-4">
               Advanced AI agent that combines multiple data sources from Unusual Whales to generate comprehensive investment scores:
             </p>
+            
+            {/* Premium Penalty Explanation */}
+            <div className="bg-white p-4 rounded-lg border border-purple-100 mb-4">
+              <h4 className="text-sm font-bold text-purple-800 mb-2 flex items-center">
+                <AlertTriangle className="mr-2 text-orange-500" size={14} />
+                💡 Premium Penalty & Discount Scoring System
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="bg-red-50 p-3 rounded border-l-4 border-red-400">
+                  <div className="font-semibold text-red-700 mb-1">🚨 Premium Penalty</div>
+                  <div className="text-red-600">
+                    • Applied when stocks are at HIGH prices<br/>
+                    • Overbought conditions (RSI > 70)<br/>
+                    • Near resistance levels<br/>
+                    • Overvalued relative to fundamentals<br/>
+                    • <strong>Result:</strong> Lower investment score
+                  </div>
+                </div>
+                <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
+                  <div className="font-semibold text-green-700 mb-1">💰 Discount Opportunity</div>
+                  <div className="text-green-600">
+                    • Applied when stocks are at LOW prices<br/>
+                    • Oversold conditions (RSI < 30)<br/>
+                    • Near support levels<br/>
+                    • Undervalued relative to fundamentals<br/>
+                    • <strong>Result:</strong> Higher investment score
+                  </div>
+                </div>
+              </div>
+              <div className="text-xs text-purple-600 mt-2 italic">
+                💡 The agent prioritizes "buying low" opportunities and penalizes "buying high" situations to maximize potential returns.
+              </div>
+            </div>
+            
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
               <div className="flex items-center text-purple-600">
                 <Activity className="mr-1" size={12} />
