@@ -38,6 +38,12 @@ const InvestmentScoring = React.memo(() => {
   const [aiAnalysisSymbol, setAiAnalysisSymbol] = useState('');
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
+  
+  // Top Picks expansion and modal states
+  const [displayLimit, setDisplayLimit] = useState(12);
+  const [selectedTickerModal, setSelectedTickerModal] = useState(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalAnalysis, setModalAnalysis] = useState(null);
 
   const sectors = [
     'Technology', 'Healthcare', 'Financial Services', 'Consumer Cyclical',
