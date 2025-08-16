@@ -62,49 +62,84 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
         // Clear container
         chartContainerRef.current.innerHTML = '';
 
-        // Create chart
-        console.log('Creating chart...');
+        // Create chart with black grid
+        console.log('Creating chart with enhanced settings...');
         console.log('createChart function:', typeof createChart);
         
         const chart = createChart(chartContainerRef.current, {
           width: chartContainerRef.current.clientWidth || 800,
           height: height,
           layout: {
-            background: { color: '#1a1a1a' },
-            textColor: '#DDD',
+            background: { color: '#000000' }, // Pure black background
+            textColor: '#FFFFFF',
           },
           grid: {
-            vertLines: { color: '#333' },
-            horzLines: { color: '#333' },
+            vertLines: { 
+              color: '#000000',  // Black vertical grid lines
+              style: 1,
+              visible: false  // Hide vertical lines completely
+            },
+            horzLines: { 
+              color: '#1a1a1a',  // Very dark horizontal lines
+              style: 1,
+              visible: true
+            },
+          },
+          crosshair: {
+            mode: 1, // Normal crosshair
+            vertLine: {
+              color: '#758694',
+              width: 1,
+              style: 3, // Dashed
+            },
+            horzLine: {
+              color: '#758694', 
+              width: 1,
+              style: 3, // Dashed
+            },
           },
           rightPriceScale: {
-            borderColor: '#555',
+            borderColor: '#2B2B43',
+            textColor: '#FFFFFF',
           },
           timeScale: {
-            borderColor: '#555',
+            borderColor: '#2B2B43',
+            textColor: '#FFFFFF',
+            timeVisible: true,
+            secondsVisible: false,
           },
         });
 
         console.log('Chart created:', chart);
-        console.log('Chart methods:', Object.keys(chart));
         console.log('addCandlestickSeries function:', typeof chart.addCandlestickSeries);
 
         console.log('Chart created, adding series...');
         
-        // Add candlestick series
-        const series = chart.addCandlestickSeries({
-          upColor: '#00D4AA',
-          downColor: '#FF6B6B',
+        // Add main candlestick series
+        const candlestickSeries = chart.addCandlestickSeries({
+          upColor: '#00D4AA',      // Green for up candles
+          downColor: '#FF6B6B',    // Red for down candles  
           borderVisible: false,
           wickUpColor: '#00D4AA',
           wickDownColor: '#FF6B6B',
+          priceFormat: {
+            type: 'price',
+            precision: 2,
+            minMove: 0.01,
+          },
         });
 
-        console.log('Series created, setting data...');
-        series.setData(chartData);
-        chart.timeScale().fitContent();
+        console.log('Candlestick series created, setting data...');
+        candlestickSeries.setData(chartData);
 
-        console.log('Chart rendered successfully!');
+        // Store chart instance for indicators
+        setChartInstance(chart);
+
+        // Add selected indicators
+        addIndicators(chart, chartData, candlestickSeries);
+
+        chart.timeScale().fitContent();
+        console.log('Chart rendered successfully with indicators!');
         setLoading(false);
 
         // Handle resize
