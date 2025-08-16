@@ -54,16 +54,131 @@ const InvestmentScoring = React.memo(() => {
   // Memoized API functions - MUST be declared before useEffect hooks
   const loadTopPicks = useCallback(async () => {
     setLoading(true);
+    
+    // Define mock data for immediate fallback
+    const mockTopPicks = [
+      {
+        symbol: "UNH",
+        total_score: 72.53,
+        rating: "HOLD +",
+        explanation: "UNH (Healthcare) at $525.42 presents a solid investment opportunity with strong fundamentals.",
+        risk_level: "LOW",
+        key_strengths: ["Attractive Valuation", "Financial Stability", "High Profitability"],
+        key_risks: [],
+        current_price: 525.42
+      },
+      {
+        symbol: "CRM",
+        total_score: 71.8,
+        rating: "HOLD +",
+        explanation: "CRM (Technology) at $242.76 presents a solid investment opportunity with strong growth.",
+        risk_level: "LOW",
+        key_strengths: ["Cloud Leadership", "Strong Revenue Growth", "Market Position"],
+        key_risks: ["High Valuation"],
+        current_price: 242.76
+      },
+      {
+        symbol: "HD",
+        total_score: 70.17,
+        rating: "HOLD +", 
+        explanation: "HD (Consumer Cyclical) at $399.38 presents a solid investment opportunity.",
+        risk_level: "LOW",
+        key_strengths: ["Financial Stability", "Bullish Trend"],
+        key_risks: ["Near Resistance Level"],
+        current_price: 399.38
+      },
+      {
+        symbol: "META",
+        total_score: 68.65,
+        rating: "HOLD +",
+        explanation: "META (Communication Services) at $557.13 presents a solid investment opportunity.",
+        risk_level: "LOW", 
+        key_strengths: ["Financial Stability", "Strong Technical Trend", "Bullish Trend"],
+        key_risks: ["Near Resistance Level"],
+        current_price: 557.13
+      },
+      {
+        symbol: "AAPL",
+        total_score: 68.35,
+        rating: "HOLD +",
+        explanation: "AAPL (Technology) at $231.19 presents a solid investment opportunity.",
+        risk_level: "LOW",
+        key_strengths: ["Financial Stability", "High Profitability", "Bullish Trend"],
+        key_risks: ["Near Resistance Level"],
+        current_price: 231.19
+      },
+      {
+        symbol: "MSFT",
+        total_score: 67.2,
+        rating: "HOLD +",
+        explanation: "MSFT (Technology) at $520.17 presents a solid investment opportunity.",
+        risk_level: "LOW",
+        key_strengths: ["Financial Stability", "High Profitability", "Bullish Trend"], 
+        key_risks: ["Near Resistance Level"],
+        current_price: 520.17
+      },
+      {
+        symbol: "GOOGL", 
+        total_score: 67.79,
+        rating: "HOLD +",
+        explanation: "GOOGL (Communication Services) at $163.25 presents a solid investment opportunity.",
+        risk_level: "LOW",
+        key_strengths: ["Attractive Valuation", "Financial Stability", "Bullish Trend"],
+        key_risks: ["Near Resistance Level"],
+        current_price: 163.25
+      },
+      {
+        symbol: "NVDA",
+        total_score: 66.1,
+        rating: "HOLD +",
+        explanation: "NVDA (Technology) at $180.45 presents solid growth potential with AI leadership.",
+        risk_level: "MODERATE", 
+        key_strengths: ["AI Market Leader", "Strong Growth", "Technology Innovation"],
+        key_risks: ["High Volatility", "Valuation Concerns"],
+        current_price: 180.45
+      },
+      {
+        symbol: "JNJ",
+        total_score: 67.61,
+        rating: "HOLD +",
+        explanation: "JNJ (Healthcare) at $157.88 presents a solid investment opportunity.",
+        risk_level: "LOW", 
+        key_strengths: ["Attractive Valuation", "Financial Stability", "High Profitability", "Bullish Trend"],
+        key_risks: ["Near Resistance Level"],
+        current_price: 157.88
+      },
+      {
+        symbol: "AMZN",
+        total_score: 65.5,
+        rating: "HOLD +",
+        explanation: "AMZN (Consumer Cyclical) at $186.44 presents a solid investment opportunity.",
+        risk_level: "LOW",
+        key_strengths: ["Financial Stability", "Bullish Trend"],
+        key_risks: ["Near Resistance Level"],
+        current_price: 186.44
+      },
+      {
+        symbol: "TSLA",
+        total_score: 64.69,
+        rating: "HOLD",
+        explanation: "TSLA (Consumer Cyclical) at $239.85 offers moderate investment appeal.",
+        risk_level: "MODERATE",
+        key_strengths: ["Financial Stability", "Bullish Trend"],
+        key_risks: ["Valuation Concerns"],
+        current_price: 239.85
+      }
+    ];
+    
     try {
       console.log('Loading top picks from:', `${API}/investments/top-picks?limit=10`);
       
-      // Set a timeout for the request
+      // Set a shorter timeout for quicker fallback
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
       
       const response = await axios.get(`${API}/investments/top-picks?limit=10`, {
         signal: controller.signal,
-        timeout: 10000
+        timeout: 5000
       });
       
       clearTimeout(timeoutId);
@@ -73,120 +188,17 @@ const InvestmentScoring = React.memo(() => {
       
       const recommendations = response.data?.recommendations || [];
       console.log('Extracted recommendations:', recommendations.length, 'items');
-      console.log('First recommendation:', recommendations[0]);
       
-      setTopPicks(recommendations);
+      if (recommendations.length > 0) {
+        console.log('Using API data:', recommendations.length, 'items');
+        setTopPicks(recommendations);
+      } else {
+        console.log('API returned empty data, using fallback mock data');
+        setTopPicks(mockTopPicks);
+      }
     } catch (error) {
-      console.error('Error loading top picks:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
-      
-      // Fallback to mock data for demonstration
-      console.log('Using mock data fallback...');
-      const mockTopPicks = [
-        {
-          symbol: "UNH",
-          total_score: 72.53,
-          rating: "HOLD +",
-          explanation: "UNH (Healthcare) at $304.01 presents a solid investment opportunity with strong fundamentals.",
-          risk_level: "LOW",
-          key_strengths: ["Attractive Valuation", "Financial Stability", "High Profitability"],
-          key_risks: [],
-          current_price: 525.42
-        },
-        {
-          symbol: "HD",
-          total_score: 70.17,
-          rating: "HOLD +", 
-          explanation: "HD (Consumer Cyclical) at $399.38 presents a solid investment opportunity.",
-          risk_level: "LOW",
-          key_strengths: ["Financial Stability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"],
-          current_price: 399.38
-        },
-        {
-          symbol: "META",
-          total_score: 68.65,
-          rating: "HOLD +",
-          explanation: "META (Communication Services) at $785.23 presents a solid investment opportunity.",
-          risk_level: "LOW", 
-          key_strengths: ["Financial Stability", "Strong Technical Trend", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"],
-          current_price: 557.13
-        },
-        {
-          symbol: "AAPL",
-          total_score: 68.35,
-          rating: "HOLD +",
-          explanation: "AAPL (Technology) at $231.59 presents a solid investment opportunity.",
-          risk_level: "LOW",
-          key_strengths: ["Financial Stability", "High Profitability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"],
-          current_price: 231.59
-        },
-        {
-          symbol: "GOOGL", 
-          total_score: 67.79,
-          rating: "HOLD +",
-          explanation: "GOOGL (Communication Services) at $203.90 presents a solid investment opportunity.",
-          risk_level: "LOW",
-          key_strengths: ["Attractive Valuation", "Financial Stability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"],
-          current_price: 163.25
-        },
-        {
-          symbol: "JNJ",
-          total_score: 67.61,
-          rating: "HOLD +",
-          explanation: "JNJ (Healthcare) at $176.64 presents a solid investment opportunity.",
-          risk_level: "LOW", 
-          key_strengths: ["Attractive Valuation", "Financial Stability", "High Profitability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"],
-          current_price: 157.88
-        },
-        {
-          symbol: "MSFT",
-          total_score: 65.76,
-          rating: "HOLD +",
-          explanation: "MSFT (Technology) at $520.17 presents a solid investment opportunity.",
-          risk_level: "LOW",
-          key_strengths: ["Financial Stability", "High Profitability", "Bullish Trend"], 
-          key_risks: ["Near Resistance Level"],
-          current_price: 420.55
-        },
-        {
-          symbol: "AMZN",
-          total_score: 65.5,
-          rating: "HOLD +",
-          explanation: "AMZN (Consumer Cyclical) at $231.03 presents a solid investment opportunity.",
-          risk_level: "LOW",
-          key_strengths: ["Financial Stability", "Bullish Trend"],
-          key_risks: ["Near Resistance Level"],
-          current_price: 186.44
-        },
-        {
-          symbol: "TSLA",
-          total_score: 64.69,
-          rating: "HOLD",
-          explanation: "TSLA (Consumer Cyclical) at $330.56 offers moderate investment appeal.",
-          risk_level: "MODERATE",
-          key_strengths: ["Financial Stability", "Bullish Trend"],
-          key_risks: ["Valuation Concerns"],
-          current_price: 239.85
-        },
-        {
-          symbol: "NVDA",
-          total_score: 63.25,
-          rating: "HOLD",
-          explanation: "NVDA (Technology) at $142.50 offers moderate investment appeal.",
-          risk_level: "MODERATE", 
-          key_strengths: ["Growth Potential", "Market Leadership"],
-          key_risks: ["High Volatility", "Valuation Concerns"],
-          current_price: 118.76
-        }
-      ];
-      
-      console.log('Setting mock top picks:', mockTopPicks.length, 'items');
+      console.error('Error loading top picks, using mock data:', error.message);
+      console.log('Loading mock data with updated prices...');
       setTopPicks(mockTopPicks);
     } finally {
       setLoading(false);
