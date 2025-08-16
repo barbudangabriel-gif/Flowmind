@@ -1407,6 +1407,32 @@ const TechnicalAnalysis = () => {
     fetchSmartMoneyAnalysis();
   };
 
+  // Technical Analysis Expert Agent Analysis
+  const analyzeWithTechnicalAgent = useCallback(async () => {
+    if (!techAnalysisSymbol.trim()) return;
+    
+    setTechLoading(true);
+    try {
+      console.log('Technical Analysis Expert Agent for:', techAnalysisSymbol);
+      const response = await axios.post(`${API}/agents/technical-analysis`, {}, {
+        params: {
+          symbol: techAnalysisSymbol.toUpperCase(),
+          include_smc: true
+        }
+      });
+      console.log('Technical Analysis Expert response:', response.data);
+      setTechAnalysis(response.data);
+    } catch (error) {
+      console.error('Error in Technical Analysis Expert:', error);
+      setTechAnalysis({
+        error: `Failed to analyze ${techAnalysisSymbol}: ${error.response?.data?.detail || error.message}`,
+        symbol: techAnalysisSymbol.toUpperCase()
+      });
+    } finally {
+      setTechLoading(false);
+    }
+  }, [techAnalysisSymbol]);
+
   const getVerdictColor = (verdict) => {
     switch (verdict) {
       case 'BULLISH': return 'text-green-700 bg-green-100';
