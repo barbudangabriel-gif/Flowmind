@@ -6,7 +6,7 @@ from datetime import datetime
 
 def test_unusual_whales_endpoints():
     """Test all Unusual Whales API endpoints"""
-    base_url = "https://tradeoptions-1.preview.emergentagent.com/api"
+    base_url = "https://options-builder.preview.emergentagent.com/api"
     
     print("🐋 Testing Unusual Whales API Integration")
     print("=" * 50)
