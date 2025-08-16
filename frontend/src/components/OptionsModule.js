@@ -39,7 +39,7 @@ function StrategyCard({
   targetPrice = 263.91 
 }) {
   return (
-    <div className="bg-[#2c3e50] rounded-2xl p-4 border border-[#34495e] shadow-lg">
+    <div className="bg-[#2c3e50] rounded-none p-4 border border-[#34495e] shadow-lg">
       {/* Header */}
       <div className="mb-3">
         <h3 className="text-white text-lg font-bold">{title}</h3>
