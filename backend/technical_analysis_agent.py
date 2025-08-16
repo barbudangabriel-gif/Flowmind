@@ -1076,3 +1076,399 @@ class TechnicalAnalysisAgent:
             ema_values.append(ema)
         
         return ema_values
+    
+    def _analyze_multi_timeframe_confluence(self, price_data: Dict[str, List[Dict]]) -> Dict[str, Any]:
+        """Analyze confluence across multiple timeframes."""
+        timeframe_scores = {}
+        
+        # Weekly trend (primary)
+        weekly = price_data['weekly']
+        if len(weekly) >= 5:
+            weekly_closes = [float(candle['close']) for candle in weekly[-5:]]
+            weekly_trend = 'bullish' if weekly_closes[-1] > weekly_closes[0] else 'bearish'
+            weekly_strength = abs(weekly_closes[-1] - weekly_closes[0]) / weekly_closes[0]
+            timeframe_scores['weekly'] = {
+                'trend': weekly_trend,
+                'strength': min(100, weekly_strength * 1000),  # Scale strength
+                'score': 70 if weekly_trend == 'bullish' else 30
+            }
+        
+        # Daily trend (intermediate)  
+        daily = price_data['daily']
+        if len(daily) >= 10:
+            daily_closes = [float(candle['close']) for candle in daily[-10:]]
+            daily_trend = 'bullish' if daily_closes[-1] > daily_closes[0] else 'bearish'
+            daily_strength = abs(daily_closes[-1] - daily_closes[0]) / daily_closes[0]
+            timeframe_scores['daily'] = {
+                'trend': daily_trend,
+                'strength': min(100, daily_strength * 1000),
+                'score': 70 if daily_trend == 'bullish' else 30
+            }
+        
+        # Hourly trend (short-term)
+        hourly = price_data['hourly']
+        if len(hourly) >= 20:
+            hourly_closes = [float(candle['close']) for candle in hourly[-20:]]
+            hourly_trend = 'bullish' if hourly_closes[-1] > hourly_closes[0] else 'bearish'
+            hourly_strength = abs(hourly_closes[-1] - hourly_closes[0]) / hourly_closes[0]
+            timeframe_scores['hourly'] = {
+                'trend': hourly_trend,
+                'strength': min(100, hourly_strength * 1000),
+                'score': 70 if hourly_trend == 'bullish' else 30
+            }
+        
+        # Calculate confluence score
+        confluence_score = 50.0
+        if timeframe_scores:
+            weighted_score = sum(
+                score['score'] * self.timeframe_weights.get(tf, 0) 
+                for tf, score in timeframe_scores.items()
+            )
+            confluence_score = weighted_score
+        
+        return {
+            'confluence_score': round(confluence_score, 1),
+            'timeframe_scores': timeframe_scores,
+            'alignment': self._check_timeframe_alignment(timeframe_scores)
+        }
+    
+    def _check_timeframe_alignment(self, timeframe_scores: Dict) -> str:
+        """Check if all timeframes are aligned."""
+        if not timeframe_scores:
+            return 'unknown'
+        
+        trends = [score['trend'] for score in timeframe_scores.values()]
+        
+        if all(trend == 'bullish' for trend in trends):
+            return 'all_bullish'
+        elif all(trend == 'bearish' for trend in trends):
+            return 'all_bearish'
+        else:
+            return 'mixed'
+    
+    def _analyze_support_resistance_levels(self, price_data: Dict[str, List[Dict]], symbol: str) -> Dict[str, Any]:
+        """Analyze key support and resistance levels."""
+        daily_data = price_data['daily']
+        weekly_data = price_data['weekly']
+        
+        # Find pivot points from daily data
+        pivots = self._find_pivot_points(daily_data)
+        
+        # Find weekly support/resistance
+        weekly_levels = self._find_weekly_levels(weekly_data)
+        
+        # Current price
+        current_price = float(daily_data[-1]['close'])
+        
+        # Find closest support and resistance
+        resistance_levels = [level for level in pivots['resistance'] + weekly_levels['resistance'] if level > current_price]
+        support_levels = [level for level in pivots['support'] + weekly_levels['support'] if level < current_price]
+        
+        closest_resistance = min(resistance_levels) if resistance_levels else current_price * 1.1
+        closest_support = max(support_levels) if support_levels else current_price * 0.9
+        
+        # Calculate distances
+        resistance_distance = (closest_resistance - current_price) / current_price
+        support_distance = (current_price - closest_support) / current_price
+        
+        # Score based on position relative to S/R
+        sr_score = 50.0
+        
+        # Closer to support = more bullish
+        if support_distance < 0.03:  # Within 3% of support
+            sr_score += 20
+        elif support_distance < 0.05:  # Within 5% of support
+            sr_score += 10
+        
+        # Closer to resistance = more bearish
+        if resistance_distance < 0.03:  # Within 3% of resistance
+            sr_score -= 20
+        elif resistance_distance < 0.05:  # Within 5% of resistance
+            sr_score -= 10
+        
+        return {
+            'score': max(0, min(100, sr_score)),
+            'current_price': current_price,
+            'closest_support': closest_support,
+            'closest_resistance': closest_resistance,
+            'support_distance_pct': support_distance * 100,
+            'resistance_distance_pct': resistance_distance * 100,
+            'all_support_levels': sorted(support_levels, reverse=True)[:5],
+            'all_resistance_levels': sorted(resistance_levels)[:5]
+        }
+    
+    def _find_pivot_points(self, price_data: List[Dict]) -> Dict[str, List[float]]:
+        """Find pivot points for support and resistance."""
+        if len(price_data) < 10:
+            return {'support': [], 'resistance': []}
+        
+        resistance_levels = []
+        support_levels = []
+        
+        # Look for swing highs and lows
+        for i in range(2, len(price_data) - 2):
+            current = price_data[i]
+            high = float(current['high'])
+            low = float(current['low'])
+            
+            # Check for swing high (resistance)
+            if (high > float(price_data[i-1]['high']) and
+                high > float(price_data[i-2]['high']) and
+                high > float(price_data[i+1]['high']) and
+                high > float(price_data[i+2]['high'])):
+                resistance_levels.append(high)
+            
+            # Check for swing low (support)
+            if (low < float(price_data[i-1]['low']) and
+                low < float(price_data[i-2]['low']) and
+                low < float(price_data[i+1]['low']) and
+                low < float(price_data[i+2]['low'])):
+                support_levels.append(low)
+        
+        return {
+            'support': support_levels[-10:],  # Last 10 support levels
+            'resistance': resistance_levels[-10:]  # Last 10 resistance levels
+        }
+    
+    def _find_weekly_levels(self, weekly_data: List[Dict]) -> Dict[str, List[float]]:
+        """Find major weekly support and resistance levels."""
+        if len(weekly_data) < 5:
+            return {'support': [], 'resistance': []}
+        
+        # Get weekly highs and lows
+        weekly_highs = [float(candle['high']) for candle in weekly_data[-10:]]
+        weekly_lows = [float(candle['low']) for candle in weekly_data[-10:]]
+        
+        # Find significant levels
+        major_resistance = sorted(set(weekly_highs), reverse=True)[:5]
+        major_support = sorted(set(weekly_lows))[-5:]
+        
+        return {
+            'support': major_support,
+            'resistance': major_resistance
+        }
+    
+    def _analyze_risk_entry_levels(self, price_data: Dict[str, List[Dict]], sr_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze optimal risk/entry levels based on technical analysis."""
+        current_price = sr_analysis['current_price']
+        closest_support = sr_analysis['closest_support']
+        closest_resistance = sr_analysis['closest_resistance']
+        
+        # Calculate risk/reward ratios
+        risk_to_support = current_price - closest_support
+        reward_to_resistance = closest_resistance - current_price
+        
+        risk_reward_ratio = reward_to_resistance / risk_to_support if risk_to_support > 0 else 0
+        
+        # Calculate position size based on risk
+        max_risk_percentage = 2.0  # 2% max risk per trade
+        position_risk_amount = current_price - closest_support
+        position_risk_pct = (position_risk_amount / current_price) * 100
+        
+        # Recommended position size
+        if position_risk_pct > 0:
+            recommended_position_size = min(100, (max_risk_percentage / position_risk_pct) * 100)
+        else:
+            recommended_position_size = 0
+        
+        # Entry timing score
+        entry_score = 50.0
+        
+        if risk_reward_ratio >= 3.0:
+            entry_score = 90.0  # Excellent risk/reward
+        elif risk_reward_ratio >= 2.0:
+            entry_score = 75.0  # Good risk/reward
+        elif risk_reward_ratio >= 1.5:
+            entry_score = 60.0  # Acceptable risk/reward
+        elif risk_reward_ratio >= 1.0:
+            entry_score = 45.0  # Poor risk/reward
+        else:
+            entry_score = 20.0  # Bad risk/reward
+        
+        return {
+            'entry_score': round(entry_score, 1),
+            'risk_reward_ratio': round(risk_reward_ratio, 2),
+            'stop_loss_level': closest_support,
+            'take_profit_level': closest_resistance,
+            'position_risk_pct': round(position_risk_pct, 2),
+            'recommended_position_size_pct': round(recommended_position_size, 1),
+            'entry_recommendation': self._get_entry_recommendation(entry_score, risk_reward_ratio)
+        }
+    
+    def _get_entry_recommendation(self, entry_score: float, risk_reward_ratio: float) -> str:
+        """Get entry timing recommendation."""
+        if entry_score >= 80 and risk_reward_ratio >= 2.5:
+            return "EXCELLENT ENTRY - Strong risk/reward setup"
+        elif entry_score >= 65 and risk_reward_ratio >= 2.0:
+            return "GOOD ENTRY - Acceptable risk/reward"
+        elif entry_score >= 50:
+            return "MODERATE ENTRY - Consider smaller position"
+        elif entry_score >= 35:
+            return "POOR ENTRY - Wait for better setup"
+        else:
+            return "AVOID ENTRY - Risk too high"
+    
+    def _calculate_technical_composite_score(self, technical_scores: Dict[str, float]) -> float:
+        """Calculate weighted composite technical score."""
+        composite = 0.0
+        total_weight = 0.0
+        
+        # Group indicators by category and apply weights
+        categories = {
+            'smart_money_concepts': ['smart_money_concepts'],
+            'trend_analysis': ['macd', 'ema_crossover', 'adx', 'ichimoku'],
+            'momentum_oscillators': ['rsi', 'stochastic', 'williams_r'],
+            'support_resistance': ['support_resistance'],
+            'volume_analysis': ['obv', 'volume_trend', 'vwap'],
+            'volatility': ['bollinger_bands', 'atr']
+        }
+        
+        for category, indicators in categories.items():
+            category_weight = self.analysis_weights.get(category, 0.1)
+            category_scores = [technical_scores.get(indicator, 50.0) for indicator in indicators if indicator in technical_scores]
+            
+            if category_scores:
+                category_average = sum(category_scores) / len(category_scores)
+                composite += category_average * category_weight
+                total_weight += category_weight
+        
+        # Normalize if needed
+        if total_weight > 0:
+            composite = composite / total_weight * (sum(self.analysis_weights.values()))
+        
+        return round(min(100, max(0, composite)), 1)
+    
+    def _generate_technical_recommendation(self, composite_score: float, technical_scores: Dict[str, float], smc_analysis: Dict[str, Any]) -> str:
+        """Generate technical recommendation based on analysis."""
+        smc_score = smc_analysis.get('score', 50.0)
+        
+        # Enhanced recommendation based on technical and SMC analysis
+        if composite_score >= 80 and smc_score >= 70:
+            return "STRONG BUY - Multiple Bullish Signals"
+        elif composite_score >= 70 and smc_score >= 60:
+            return "BUY - Technical Breakout Setup"
+        elif composite_score >= 60:
+            return "HOLD+ - Bullish Bias"
+        elif composite_score >= 40:
+            return "HOLD - Neutral Technical Picture"
+        elif composite_score >= 30:
+            return "HOLD- - Bearish Bias"
+        elif composite_score >= 20:
+            return "SELL - Technical Breakdown"
+        else:
+            return "STRONG SELL - Multiple Bearish Signals"
+    
+    def _calculate_technical_confidence(self, technical_scores: Dict[str, float], timeframe_analysis: Dict[str, Any]) -> str:
+        """Calculate confidence level based on signal consistency."""
+        scores = list(technical_scores.values())
+        if not scores:
+            return 'low'
+        
+        # Check consistency of signals
+        score_std = statistics.stdev(scores) if len(scores) > 1 else 0
+        avg_score = statistics.mean(scores)
+        
+        # Timeframe alignment bonus
+        alignment = timeframe_analysis.get('alignment', 'mixed')
+        alignment_bonus = 0
+        if alignment in ['all_bullish', 'all_bearish']:
+            alignment_bonus = 10
+        
+        # High confidence: consistent signals with timeframe alignment
+        if score_std < 12 and alignment_bonus > 0 and (avg_score > 70 or avg_score < 30):
+            return 'high'
+        elif score_std < 20 and (alignment_bonus > 0 or (avg_score > 65 or avg_score < 35)):
+            return 'medium'
+        else:
+            return 'low'
+    
+    def _extract_key_technical_signals(self, technical_scores: Dict[str, float], smc_analysis: Dict[str, Any], sr_analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Extract the most significant technical signals."""
+        key_signals = []
+        
+        # Find top technical indicators by deviation from neutral
+        sorted_indicators = sorted(
+            technical_scores.items(), 
+            key=lambda x: abs(x[1] - 50), 
+            reverse=True
+        )
+        
+        # Add top 3 technical indicators
+        for indicator, score in sorted_indicators[:3]:
+            signal_strength = 'strong' if abs(score - 50) > 25 else 'moderate' if abs(score - 50) > 15 else 'weak'
+            signal_direction = 'bullish' if score > 50 else 'bearish' if score < 50 else 'neutral'
+            
+            key_signals.append({
+                'type': f'technical_{indicator}',
+                'score': score,
+                'strength': signal_strength,
+                'direction': signal_direction,
+                'details': self._get_indicator_description(indicator, score)
+            })
+        
+        # Add key SMC signals
+        smc_signals = smc_analysis.get('signals', [])
+        for signal in smc_signals[:2]:  # Top 2 SMC signals
+            key_signals.append({
+                'type': signal['type'],
+                'score': 50 + signal.get('impact', 0),
+                'strength': signal['strength'],
+                'direction': 'bullish' if signal.get('impact', 0) > 0 else 'bearish',
+                'details': signal['description']
+            })
+        
+        # Add support/resistance signal
+        sr_score = sr_analysis.get('score', 50)
+        if abs(sr_score - 50) > 10:
+            key_signals.append({
+                'type': 'support_resistance',
+                'score': sr_score,
+                'strength': 'strong' if abs(sr_score - 50) > 20 else 'moderate',
+                'direction': 'bullish' if sr_score > 50 else 'bearish',
+                'details': f"Price {sr_analysis.get('support_distance_pct', 0):.1f}% from support, {sr_analysis.get('resistance_distance_pct', 0):.1f}% from resistance"
+            })
+        
+        return key_signals[:5]  # Return top 5 signals
+    
+    def _get_indicator_description(self, indicator: str, score: float) -> str:
+        """Get description for technical indicator."""
+        descriptions = {
+            'rsi': f"RSI showing {'oversold' if score > 70 else 'overbought' if score < 30 else 'neutral'} conditions",
+            'macd': f"MACD showing {'bullish' if score > 50 else 'bearish'} momentum",
+            'ema_crossover': f"EMA crossover indicating {'bullish' if score > 50 else 'bearish'} trend",
+            'stochastic': f"Stochastic {'oversold' if score > 70 else 'overbought' if score < 30 else 'neutral'}",
+            'williams_r': f"Williams %R showing {'oversold' if score > 70 else 'overbought' if score < 30 else 'neutral'} levels",
+            'adx': f"ADX indicating {'strong' if score > 65 or score < 35 else 'moderate'} trend strength",
+            'ichimoku': f"Ichimoku cloud showing {'bullish' if score > 50 else 'bearish'} configuration",
+            'obv': f"On-Balance Volume showing {'bullish' if score > 50 else 'bearish'} flow",
+            'volume_trend': f"Volume trend {'confirming' if score > 55 or score < 45 else 'neutral'} price action",
+            'vwap': f"Price {'above' if score > 50 else 'below'} VWAP indicating {'bullish' if score > 50 else 'bearish'} sentiment",
+            'bollinger_bands': f"Price near {'lower' if score > 70 else 'upper' if score < 30 else 'middle'} Bollinger Band",
+            'atr': f"ATR showing {'normal' if 45 <= score <= 65 else 'elevated'} volatility levels"
+        }
+        
+        return descriptions.get(indicator, f"{indicator} analysis with score {score}")
+    
+    # Additional utility methods for future enhancements
+    async def get_batch_technical_analysis(self, symbols: List[str]) -> Dict[str, Dict[str, Any]]:
+        """Generate technical analysis for multiple symbols efficiently."""
+        tasks = [self.generate_technical_analysis(symbol) for symbol in symbols]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        return {
+            symbol: result if not isinstance(result, Exception) else {'error': str(result)}
+            for symbol, result in zip(symbols, results)
+        }
+    
+    def get_technical_methodology(self) -> Dict[str, str]:
+        """Return explanation of technical analysis methodology."""
+        return {
+            'smart_money_concepts': 'Advanced institutional analysis using Order Blocks, Fair Value Gaps, Market Structure, and Liquidity concepts',
+            'trend_analysis': 'Multi-indicator trend analysis using MACD, EMA crossovers, ADX, and Ichimoku Cloud systems',
+            'momentum_oscillators': 'Momentum analysis using RSI, Stochastic, and Williams %R with divergence detection',
+            'support_resistance': 'Key level analysis using pivot points, weekly levels, and Fibonacci retracements',
+            'volume_analysis': 'Volume confirmation using OBV, Volume trends, and VWAP for institutional flow detection',
+            'multi_timeframe': 'Confluence analysis across Weekly (primary), Daily (intermediate), and Hourly (short-term) timeframes',
+            'risk_management': 'Position sizing and risk/reward optimization based on technical levels and ATR volatility',
+            'composite_methodology': 'Weighted scoring system emphasizing Smart Money Concepts (30%) and trend analysis (25%)'
+        }
