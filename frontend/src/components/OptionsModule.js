@@ -288,7 +288,7 @@ export default function OptionsModule() {
         </div>
 
         {/* News Banner */}
-        <div className="bg-[#3498db] rounded-none p-4 mb-6 text-center">
+        <div className="bg-[#3498db] p-4 mb-6 text-center">
           <span className="text-white">
             📊 Circle Internet Group shares are trading higher. The company announced a 
             public offering of 10 million shares at $130 per share. 
