@@ -307,7 +307,7 @@ const StockAnalysisPage = () => {
                       {analysis?.technical?.technical_score || 'N/A'}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {analysis?.technical?.overall_verdict || 'No Verdict'}
+                      {analysis?.technical?.recommendation || 'No Verdict'}
                     </p>
                   </div>
                   <BarChart3 className="text-green-500" size={24} />
