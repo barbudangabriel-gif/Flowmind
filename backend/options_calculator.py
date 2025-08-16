@@ -570,7 +570,7 @@ class OptionsStrategyEngine:
                 "credit_spreads": ["Bull Put Spread", "Bear Call Spread"],
                 "debit_spreads": ["Bull Call Spread", "Bear Put Spread"],
                 "neutral": ["Iron Butterfly", "Iron Condor", "Long Put Butterfly", "Long Call Butterfly"],
-                "directional": ["Straddle", "Strangle", "Short Put Butterfly", "Short Call Butterfly"]
+                "directional": ["Long Straddle", "Long Strangle", "Short Put Butterfly", "Short Call Butterfly"]
             },
             "advanced": {
                 "naked": ["Short Put", "Short Call"],
@@ -583,6 +583,64 @@ class OptionsStrategyEngine:
                 "complex": ["Strip", "Strap", "Double Diagonal"]
             }
         }
+    
+    def create_strategy_by_name(
+        self,
+        strategy_name: str,
+        symbol: str,
+        stock_price: float,
+        parameters: Dict,
+        days_to_expiry: int = 30,
+        volatility: float = 0.25,
+        risk_free_rate: float = 0.05
+    ) -> StrategyConfig:
+        """Create strategy by name with parameters"""
+        
+        if strategy_name == "Long Call":
+            return self.create_long_call_strategy(
+                symbol, stock_price, parameters.get('strike', stock_price),
+                days_to_expiry, volatility, risk_free_rate
+            )
+        elif strategy_name == "Long Put":
+            return self.create_long_put_strategy(
+                symbol, stock_price, parameters.get('strike', stock_price),
+                days_to_expiry, volatility, risk_free_rate
+            )
+        elif strategy_name == "Bull Call Spread":
+            return self.create_bull_call_spread_strategy(
+                symbol, stock_price, 
+                parameters.get('long_strike', stock_price - 5),
+                parameters.get('short_strike', stock_price + 5),
+                days_to_expiry, volatility, risk_free_rate
+            )
+        elif strategy_name == "Bear Put Spread":
+            return self.create_bear_put_spread_strategy(
+                symbol, stock_price,
+                parameters.get('long_strike', stock_price + 5),
+                parameters.get('short_strike', stock_price - 5),
+                days_to_expiry, volatility, risk_free_rate
+            )
+        elif strategy_name == "Iron Condor":
+            return self.create_iron_condor_strategy(
+                symbol, stock_price,
+                parameters.get('put_short_strike', stock_price - 10),
+                parameters.get('put_long_strike', stock_price - 20),
+                parameters.get('call_short_strike', stock_price + 10),
+                parameters.get('call_long_strike', stock_price + 20),
+                days_to_expiry, volatility, risk_free_rate
+            )
+        elif strategy_name == "Long Straddle":
+            return self.create_long_straddle_strategy(
+                symbol, stock_price, parameters.get('strike', stock_price),
+                days_to_expiry, volatility, risk_free_rate
+            )
+        elif strategy_name == "Covered Call":
+            return self.create_covered_call_strategy(
+                symbol, stock_price, parameters.get('call_strike', stock_price + 5),
+                days_to_expiry, volatility, risk_free_rate
+            )
+        else:
+            raise ValueError(f"Strategy '{strategy_name}' not implemented yet")
 
 # Singleton instance
 options_engine = OptionsStrategyEngine()
