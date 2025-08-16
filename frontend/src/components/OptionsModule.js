@@ -110,9 +110,9 @@ function StrategyCard({ title, subtitle, dataset, S, target }) {
               <ReferenceLine x={target} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: `Target`, position: "insideTopRight", fill: "#fbbf24", fontSize: 10 }} />
               {be && <ReferenceLine x={be} stroke="#10b981" strokeDasharray="2 2" label={{ value: `BE`, position: "insideTopRight", fill: "#10b981", fontSize: 10 }} />}
 
-              {/* Profit (verde) / Pierdere (roșu) ca trepte */}
-              <Area type="stepAfter" dataKey="pos" stroke="#22c55e" fill={`url(#gradPos-${idKey})`} baseValue={0} connectNulls />
-              <Area type="stepAfter" dataKey="neg" stroke="#ef4444" fill={`url(#gradNeg-${idKey})`} baseValue={0} connectNulls />
+              {/* Profit (verde) / Pierdere (roșu) ca trepte cu fill solid */}
+              <Area type="stepAfter" dataKey="pos" stroke="#22c55e" fill="#22c55e" fillOpacity={0.6} baseValue={0} connectNulls />
+              <Area type="stepAfter" dataKey="neg" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} baseValue={0} connectNulls />
               <Line type="stepAfter" dataKey="pos" stroke="#22c55e" dot={false} strokeWidth={2} connectNulls />
               <Line type="stepAfter" dataKey="neg" stroke="#ef4444" dot={false} strokeWidth={2} connectNulls />
             </LineChart>
