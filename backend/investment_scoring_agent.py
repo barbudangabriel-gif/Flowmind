@@ -118,14 +118,14 @@ class InvestmentScoringAgent:
                 )
             ]
             
-            options_flow, dark_pool, congressional, strategies = await asyncio.gather(*tasks, return_exceptions=True)
+            options_flow, dark_pool, congressional = await asyncio.gather(*tasks, return_exceptions=True)
             
             # Filter data for the specific symbol
             filtered_data = {
                 'options_flow': self._filter_options_for_symbol(options_flow, symbol),
                 'dark_pool': self._filter_dark_pool_for_symbol(dark_pool, symbol), 
                 'congressional': self._filter_congressional_for_symbol(congressional, symbol),
-                'strategies': self._filter_strategies_for_symbol(strategies, symbol)
+                'strategies': []
             }
             
             logger.info(f"Fetched UW data for {symbol}: Options={len(filtered_data['options_flow'])}, "
