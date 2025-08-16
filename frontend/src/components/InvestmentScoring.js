@@ -104,6 +104,32 @@ const InvestmentScoring = React.memo(() => {
     }
   }, [selectedStock]);
 
+  // AI Investment Scoring Agent Analysis
+  const analyzeWithAI = useCallback(async () => {
+    if (!aiAnalysisSymbol.trim()) return;
+    
+    setAiLoading(true);
+    try {
+      console.log('AI Analysis for:', aiAnalysisSymbol);
+      const response = await axios.post(`${API}/agents/investment-scoring`, {}, {
+        params: {
+          symbol: aiAnalysisSymbol.toUpperCase(),
+          include_personalization: false
+        }
+      });
+      console.log('AI Analysis response:', response.data);
+      setAiAnalysis(response.data);
+    } catch (error) {
+      console.error('Error in AI analysis:', error);
+      setAiAnalysis({
+        error: `Failed to analyze ${aiAnalysisSymbol}: ${error.response?.data?.detail || error.message}`,
+        symbol: aiAnalysisSymbol.toUpperCase()
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  }, [aiAnalysisSymbol]);
+
   // useEffect hooks - MUST be declared after useCallback functions
   useEffect(() => {
     loadTopPicks();
