@@ -194,23 +194,26 @@ class InvestmentScoringAgent:
         
         signal_scores = {}
         
-        # 1. Options Flow Analysis
+        # 1. NEW: Discount Opportunity Analysis (most important)
+        signal_scores['discount_opportunity'] = await self._analyze_discount_opportunity(uw_data, symbol)
+        
+        # 2. Options Flow Analysis (reduced weight)
         signal_scores['options_flow'] = self._analyze_options_sentiment(uw_data['options_flow'])
         
-        # 2. Dark Pool Analysis  
+        # 3. Dark Pool Analysis  
         signal_scores['dark_pool'] = self._analyze_dark_pool_sentiment(uw_data['dark_pool'])
         
-        # 3. Congressional Activity Analysis
+        # 4. Congressional Activity Analysis
         signal_scores['congressional'] = self._analyze_congressional_sentiment(uw_data['congressional'])
         
-        # 4. AI Strategies Analysis (placeholder for now)
-        signal_scores['ai_strategies'] = 50.0  # Neutral since no strategies available yet
+        # 5. NEW: Risk/Reward Ratio Analysis
+        signal_scores['risk_reward_ratio'] = await self._calculate_risk_reward_score(uw_data, symbol)
         
-        # 5. Market Momentum (derived from options flow patterns)
+        # 6. Market Momentum (reduced weight)
         signal_scores['market_momentum'] = self._analyze_market_momentum(uw_data['options_flow'])
         
-        # 6. Risk Assessment
-        signal_scores['risk_assessment'] = self._calculate_risk_score(uw_data)
+        # 7. NEW: Premium Penalty (negative scoring for overextended stocks)
+        signal_scores['premium_penalty'] = await self._calculate_premium_penalty(uw_data, symbol)
         
         return signal_scores
     
