@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart } from 'lightweight-charts';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+// Get backend URL from environment
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
   const chartContainerRef = useRef();
