@@ -721,7 +721,7 @@ const OptionsModule = () => {
               {optimizedStrategies.length > 0 && !optimizing && (
                 <div className="space-y-4">
                   
-                  {/* Strategies per page counter - OptionStrat style */}
+                  {/* Strategies per page counter */}
                   <div className="flex items-center justify-between mb-6">
                     <div className="text-sm text-gray-400">
                       Showing {optimizedStrategies.length} strategies sorted by {rankingMode.toLowerCase()}
