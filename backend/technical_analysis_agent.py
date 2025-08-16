@@ -578,8 +578,6 @@ class TechnicalAnalysisAgent:
     
     def _get_enhanced_mock_price_data(self, symbol: str) -> Dict[str, List[Dict]]:
         """Generate enhanced mock OHLCV data for all required timeframes."""
-    def _get_enhanced_mock_price_data(self, symbol: str) -> Dict[str, List[Dict]]:
-        """Generate enhanced mock OHLCV data for all required timeframes."""
         # Mock data for different market conditions
         base_price = {
             'AAPL': 231.59,
