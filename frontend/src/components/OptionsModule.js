@@ -717,7 +717,7 @@ const OptionsModule = () => {
                 </div>
               )}
 
-              {/* Results List - OptionStrat Style Cards with Charts - 6 Strategies */}
+              {/* Results List - Using New OptionStrategyCard */}
               {optimizedStrategies.length > 0 && !optimizing && (
                 <div className="space-y-4">
                   
