@@ -37,51 +37,6 @@ const StockAnalysisPage = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   
-  // Load options strategies for the ticker
-  const loadOptionsStrategies = useCallback(async () => {
-    if (!symbol) return;
-    
-    setOptionsLoading(true);
-    
-    try {
-      console.log(`Loading options strategies for ${symbol}`);
-      
-      // Fetch options strategies specific to this stock
-      const response = await axios.get(`${API}/unusual-whales/trading-strategies`, {
-        params: { symbol: symbol.toUpperCase() }
-      });
-      
-      if (response.data?.strategies) {
-        // Filter strategies specific to this symbol
-        const symbolStrategies = response.data.strategies.filter(
-          strategy => strategy.ticker?.toUpperCase() === symbol.toUpperCase()
-        );
-        setOptionsStrategies({
-          strategies: symbolStrategies,
-          total: symbolStrategies.length,
-          symbol: symbol.toUpperCase()
-        });
-      } else {
-        setOptionsStrategies({
-          strategies: [],
-          total: 0,
-          symbol: symbol.toUpperCase()
-        });
-      }
-      
-    } catch (error) {
-      console.error('Error loading options strategies:', error);
-      setOptionsStrategies({
-        strategies: [],
-        total: 0,
-        error: `Failed to load options strategies: ${error.message}`,
-        symbol: symbol.toUpperCase()
-      });
-    } finally {
-      setOptionsLoading(false);
-    }
-  }, [symbol]);
-
   // Load comprehensive analysis for the ticker
   const loadAnalysis = useCallback(async () => {
     if (!symbol) return;
