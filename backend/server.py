@@ -2730,6 +2730,155 @@ async def get_scoring_methodology():
         logger.error(f"Error getting scoring methodology: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error retrieving methodology: {str(e)}")
 
+# ==================== TECHNICAL ANALYSIS EXPERT AGENT ====================
+
+@api_router.post("/agents/technical-analysis")
+async def generate_technical_analysis(
+    symbol: str = Query(..., description="Stock symbol to analyze"),
+    include_smc: Optional[bool] = Query(True, description="Include Smart Money Concepts analysis")
+):
+    """
+    Technical Analysis Expert Agent
+    
+    Advanced technical analysis using Smart Money Concepts and multiple indicators:
+    - Smart Money Concepts (Order Blocks, Fair Value Gaps, Market Structure, Liquidity)
+    - Multi-timeframe confluence analysis (Weekly, Daily, Hourly)
+    - Technical indicators (RSI, MACD, EMA, Stochastic, Williams %R, ADX, Ichimoku)
+    - Volume analysis (OBV, Volume trends, VWAP)
+    - Support/Resistance levels with risk/reward calculations
+    - Position sizing and entry timing recommendations
+    
+    Returns comprehensive technical score, signals, and professional trading recommendations.
+    """
+    try:
+        logger.info(f"Technical Analysis Agent: Analyzing {symbol.upper()}")
+        
+        # Generate comprehensive technical analysis
+        analysis = await technical_analysis_agent.generate_technical_analysis(
+            symbol=symbol.upper(),
+            include_smc=include_smc
+        )
+        
+        # Add response metadata
+        analysis.update({
+            'agent_type': 'technical_analysis',
+            'smc_included': include_smc,
+            'timeframes_analyzed': ['weekly', 'daily', 'hourly'],
+            'api_version': '1.0'
+        })
+        
+        logger.info(f"Technical Analysis Agent: Generated score {analysis.get('technical_score')} "
+                   f"for {symbol.upper()} with {analysis.get('confidence_level')} confidence")
+        
+        return analysis
+        
+    except Exception as e:
+        logger.error(f"Technical Analysis Agent error for {symbol}: {str(e)}")
+        return {
+            'symbol': symbol.upper(),
+            'error': f"Failed to generate technical analysis: {str(e)}",
+            'technical_score': 50.0,  # Neutral score on error
+            'recommendation': 'HOLD',
+            'confidence_level': 'low',
+            'key_signals': [],
+            'timestamp': datetime.now().isoformat(),
+            'agent_type': 'technical_analysis'
+        }
+
+@api_router.get("/agents/technical-analysis/batch")
+async def get_batch_technical_analysis(
+    symbols: str = Query(..., description="Comma-separated list of stock symbols"),
+    limit: Optional[int] = Query(10, description="Maximum number of symbols to analyze"),
+    include_smc: Optional[bool] = Query(True, description="Include Smart Money Concepts analysis")
+):
+    """
+    Batch Technical Analysis for multiple symbols
+    
+    Efficiently generates technical analysis for multiple stocks simultaneously.
+    Includes Smart Money Concepts, multi-timeframe analysis, and risk management.
+    """
+    try:
+        symbol_list = [s.strip().upper() for s in symbols.split(',')][:limit]
+        
+        logger.info(f"Technical Analysis Agent: Batch analysis for {len(symbol_list)} symbols")
+        
+        # Generate technical analysis for all symbols
+        batch_results = await technical_analysis_agent.get_batch_technical_analysis(symbol_list)
+        
+        return {
+            'symbols_analyzed': len(batch_results),
+            'successful_analyses': sum(1 for result in batch_results.values() if 'error' not in result),
+            'results': batch_results,
+            'smc_included': include_smc,
+            'timestamp': datetime.now().isoformat(),
+            'agent_type': 'technical_analysis_batch'
+        }
+        
+    except Exception as e:
+        logger.error(f"Batch technical analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error in batch technical analysis: {str(e)}")
+
+@api_router.get("/agents/technical-analysis/methodology")
+async def get_technical_analysis_methodology():
+    """
+    Get detailed explanation of Technical Analysis methodology
+    
+    Returns transparency information about Smart Money Concepts, technical indicators,
+    multi-timeframe analysis, and risk management approach.
+    """
+    try:
+        methodology = technical_analysis_agent.get_technical_methodology()
+        
+        return {
+            'agent_name': 'Technical Analysis Expert Agent',
+            'version': '1.0',
+            'technical_methodology': methodology,
+            'analysis_weights': {
+                'smart_money_concepts': '30% - Order Blocks, Fair Value Gaps, Market Structure, Liquidity analysis',
+                'trend_analysis': '25% - MACD, EMA crossovers, ADX, Ichimoku Cloud systems',
+                'momentum_oscillators': '20% - RSI, Stochastic, Williams %R with divergence detection',
+                'support_resistance': '15% - Pivot points, weekly levels, Fibonacci retracements',
+                'volume_analysis': '10% - OBV, Volume trends, VWAP for institutional flow detection'
+            },
+            'smart_money_concepts': {
+                'order_blocks': 'Institutional accumulation/distribution zones with strong rejection',
+                'fair_value_gaps': 'Price imbalances indicating institutional activity',
+                'market_structure': 'Higher highs/lows analysis for trend determination',
+                'liquidity_zones': 'Areas where stops are likely to be swept',
+                'premium_discount': 'Price position analysis using Fibonacci levels'
+            },
+            'timeframe_analysis': {
+                'weekly': '40% weight - Primary trend identification',
+                'daily': '35% weight - Intermediate trend and structure',
+                'hourly': '25% weight - Short-term confirmation signals'
+            },
+            'risk_management': {
+                'position_sizing': 'Based on distance to support/resistance levels',
+                'risk_reward_ratios': 'Minimum 2:1 reward-to-risk for entry recommendations',
+                'stop_loss_placement': 'Based on technical support levels and ATR',
+                'max_risk_per_trade': '2% of account per position'
+            },
+            'confidence_levels': {
+                'high': 'Multiple timeframes aligned with consistent technical signals',
+                'medium': 'Some confluence with moderate signal agreement',
+                'low': 'Mixed signals or conflicting timeframe analysis'
+            },
+            'signal_categories': [
+                'Smart Money Concepts (Order Blocks, FVG, Market Structure)',
+                'Technical Indicators (RSI, MACD, EMA, Stochastic, etc.)',
+                'Multi-timeframe Confluence',
+                'Support/Resistance Analysis',
+                'Volume Analysis and Confirmation',
+                'Risk/Reward Entry Timing'
+            ],
+            'update_frequency': 'Real-time analysis on request with multi-timeframe data',
+            'timestamp': datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting technical analysis methodology: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving technical methodology: {str(e)}")
+
 # ==================== END UNUSUAL WHALES API ENDPOINTS ====================
 
 # ==================== EXPERT OPTIONS TRADING ENDPOINTS ====================
