@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Integrate TradeStation API for portfolio and trading functionality into the existing FlowMind Analytics application. Implement OAuth authentication, portfolio data retrieval, order management, and risk controls. Use LIVE environment for real trading capabilities."
+user_problem_statement: "Enhanced FlowMind Analytics with UI/UX improvements: 1) Move 'Automated Trading' section to bottom of navigation (like 'Auto Options' in user photo), 2) Add dropdown functionality to 'Unusual Whales' section for better organization of multiple data sources. Maintain all existing TradeStation integration and Unusual Whales API functionality while improving navigation structure."
 
 backend:
   - task: "TradeStation OAuth Authentication System"
