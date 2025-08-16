@@ -196,7 +196,7 @@ export default function OptionsModule() {
       {/* Months row */}
       <div className="px-5 mt-3">
         <div className="flex flex-wrap gap-2 items-center text-sm">
-          {['Sep','Oct','Nov','Dec','Jan '26','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan '27'].map((m,i)=> (
+          {["Sep","Oct","Nov","Dec","Jan 26","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan 27"].map((m,i)=> (
             <button key={i} className={`px-3 py-1 rounded-xl border ${i===3?"bg-[#213352] border-[#2f4772] text-white":"bg-[#0f1626] border-[#263143] text-[#c4ccda]"}`}>{m}</button>
           ))}
         </div>
