@@ -1605,6 +1605,7 @@ const TechnicalAnalysis = () => {
           <div className="bg-white p-1 rounded-lg shadow-sm">
             <div className="flex space-x-1">
               {[
+                { id: 'tech-agent', label: '🤖 Technical Expert Agent', icon: Zap },
                 { id: 'overview', label: 'Overview', icon: Target },
                 { id: 'order-blocks', label: 'Order Blocks', icon: Award },
                 { id: 'fvg', label: 'Fair Value Gaps', icon: BarChart3 },
