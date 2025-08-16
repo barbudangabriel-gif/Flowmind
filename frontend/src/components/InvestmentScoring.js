@@ -51,12 +51,18 @@ const InvestmentScoring = React.memo(() => {
     try {
       console.log('Loading top picks from:', `${API}/investments/top-picks?limit=10`);
       const response = await axios.get(`${API}/investments/top-picks?limit=10`);
-      console.log('Top picks response:', response.data);
-      const recommendations = response.data.recommendations || [];
-      console.log('Setting topPicks to:', recommendations.length, 'items');
+      console.log('Top picks response status:', response.status);
+      console.log('Top picks response data:', response.data);
+      
+      const recommendations = response.data?.recommendations || [];
+      console.log('Extracted recommendations:', recommendations.length, 'items');
+      console.log('First recommendation:', recommendations[0]);
+      
       setTopPicks(recommendations);
     } catch (error) {
       console.error('Error loading top picks:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       setTopPicks([]); // Ensure it's always an array
     } finally {
       setLoading(false);
