@@ -106,7 +106,7 @@ class InvestmentScoringAgent:
                 'signal_breakdown': signal_scores,
                 'timestamp': datetime.now().isoformat(),
                 'agent_version': '1.0',
-                'data_sources': ['unusual_whales_options_flow', 'dark_pool', 'congressional_trades']
+                'data_sources': ['unusual_whales_options_flow', 'dark_pool', 'congressional_trades', 'discount_premium_analysis', 'risk_reward_optimization']
             }
             
         except Exception as e:
