@@ -246,7 +246,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     {
       title: "Automated Trading 🤖",
       items: [
-        { id: 'auto-trading', label: 'Auto Options Trading', icon: Bot, color: 'from-purple-500 to-indigo-600', badge: '🤖', shortLabel: 'Auto' },
+        { id: 'auto-trading', label: 'Auto Options Trading', icon: Bot, color: 'from-purple-500 to-indigo-600', badge: '🤖', shortLabel: 'Auto', systemActive: true },
         { id: 'trading-history', label: 'Trading History', icon: History, color: 'from-blue-500 to-cyan-600', badge: '📊', shortLabel: 'History' },
         { id: 'performance', label: 'Performance Analytics', icon: BarChart3, color: 'from-green-500 to-teal-600', badge: '📈', shortLabel: 'Analytics' }
       ]
