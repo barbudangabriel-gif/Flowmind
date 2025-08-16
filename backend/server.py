@@ -2413,6 +2413,171 @@ async def update_risk_limits(new_limits: RiskLimits):
         logger.error(f"Failed to update risk limits: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to update risk limits: {str(e)}")
 
+# ==================== OPTIONS MODULE ENDPOINTS ====================
+
+class OptionsStrategyRequest(BaseModel):
+    symbol: str
+    strategy_name: str
+    stock_price: float
+    strike: float
+    days_to_expiry: int = 30
+    volatility: Optional[float] = 0.25
+    risk_free_rate: Optional[float] = 0.05
+
+class OptionsCalculationResponse(BaseModel):
+    strategy_config: Dict[str, Any]
+    analysis: Dict[str, Any]
+    chart_data: Dict[str, Any]
+
+@api_router.post("/options/calculate", response_model=OptionsCalculationResponse)
+async def calculate_options_strategy(request: OptionsStrategyRequest):
+    """Calculate options strategy with P&L analysis și Greeks"""
+    try:
+        # Validate strategy name
+        if request.strategy_name.lower() not in ["long call", "long put"]:
+            raise HTTPException(status_code=400, detail=f"Strategy '{request.strategy_name}' not yet implemented")
+        
+        # Create strategy configuration
+        if request.strategy_name.lower() == "long call":
+            strategy = options_engine.create_long_call_strategy(
+                symbol=request.symbol.upper(),
+                stock_price=request.stock_price,
+                strike=request.strike,
+                days_to_expiry=request.days_to_expiry,
+                volatility=request.volatility,
+                risk_free_rate=request.risk_free_rate
+            )
+        else:  # long put
+            strategy = options_engine.create_long_put_strategy(
+                symbol=request.symbol.upper(),
+                stock_price=request.stock_price,
+                strike=request.strike,
+                days_to_expiry=request.days_to_expiry,
+                volatility=request.volatility,
+                risk_free_rate=request.risk_free_rate
+            )
+        
+        # Analyze strategy
+        analysis = options_engine.analyze_strategy(strategy)
+        
+        # Convert strategy config pentru JSON response
+        strategy_data = {
+            "name": strategy.name,
+            "description": strategy.description,
+            "stock_price": strategy.stock_price,
+            "days_to_expiry": strategy.days_to_expiry,
+            "volatility": strategy.volatility,
+            "risk_free_rate": strategy.risk_free_rate,
+            "legs": [
+                {
+                    "option_type": leg.option_type.value,
+                    "action": leg.action.value,
+                    "strike": leg.strike,
+                    "quantity": leg.quantity,
+                    "premium": round(leg.premium, 2)
+                }
+                for leg in strategy.legs
+            ]
+        }
+        
+        # Convert analysis pentru JSON response
+        analysis_data = {
+            "max_profit": round(analysis.max_profit, 2),
+            "max_loss": round(analysis.max_loss, 2),
+            "breakeven_points": analysis.breakeven_points,
+            "probability_of_profit": round(analysis.probability_of_profit * 100, 1),  # Percentage
+            "greeks": {
+                "delta": round(analysis.strategy_greeks.delta, 3),
+                "gamma": round(analysis.strategy_greeks.gamma, 3),
+                "theta": round(analysis.strategy_greeks.theta, 2),
+                "vega": round(analysis.strategy_greeks.vega, 2),
+                "rho": round(analysis.strategy_greeks.rho, 2)
+            }
+        }
+        
+        # Chart data pentru Plotly.js
+        chart_data = {
+            "x": analysis.price_array,
+            "y": analysis.pnl_array,
+            "type": "scatter",
+            "mode": "lines",
+            "name": f"{strategy.name} P&L",
+            "line": {"color": "blue", "width": 3}
+        }
+        
+        return OptionsCalculationResponse(
+            strategy_config=strategy_data,
+            analysis=analysis_data,
+            chart_data=chart_data
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to calculate options strategy: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to calculate options strategy: {str(e)}")
+
+@api_router.get("/options/strategies")
+async def get_available_options_strategies():
+    """Get all available options strategies organized by proficiency level"""
+    try:
+        strategies = options_engine.get_available_strategies()
+        
+        return {
+            "status": "success",
+            "strategies": strategies,
+            "total_strategies": sum(
+                len(strategies) for category in strategies.values()
+                for strategies in category.values()
+            ),
+            "implemented": ["Long Call", "Long Put"],
+            "coming_soon": [
+                "Bull Call Spread", "Bear Put Spread", "Iron Condor", 
+                "Iron Butterfly", "Straddle", "Strangle"
+            ],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get strategies: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get strategies: {str(e)}")
+
+@api_router.get("/options/quote/{symbol}")
+async def get_options_chain_data(symbol: str):
+    """Get options chain data from TradeStation API (placeholder pentru development)"""
+    try:
+        # For now, return mock data until TradeStation options API is fully integrated
+        # In production, this would call TradeStation options chain API
+        
+        mock_options_data = {
+            "symbol": symbol.upper(),
+            "stock_price": 150.00,  # Mock current price
+            "options_chain": {
+                "calls": [
+                    {"strike": 145, "bid": 7.20, "ask": 7.40, "last": 7.30, "volume": 1250, "open_interest": 5600},
+                    {"strike": 150, "bid": 4.80, "ask": 5.00, "last": 4.90, "volume": 2100, "open_interest": 8900},
+                    {"strike": 155, "bid": 2.90, "ask": 3.10, "last": 3.00, "volume": 1800, "open_interest": 4200}
+                ],
+                "puts": [
+                    {"strike": 145, "bid": 2.10, "ask": 2.30, "last": 2.20, "volume": 900, "open_interest": 3400},
+                    {"strike": 150, "bid": 4.20, "ask": 4.40, "last": 4.30, "volume": 1600, "open_interest": 6700},
+                    {"strike": 155, "bid": 7.50, "ask": 7.70, "last": 7.60, "volume": 800, "open_interest": 2100}
+                ]
+            },
+            "expiration_date": "2024-12-20",
+            "days_to_expirt": 30,
+            "implied_volatility": 0.25
+        }
+        
+        return {
+            "status": "success",
+            "data": mock_options_data,
+            "note": "Mock data - TradeStation options API integration în development",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get options data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get options data: {str(e)}")
+
 # Add new imports to the root response
 
 @api_router.get("/unusual-whales/congressional/trades")
