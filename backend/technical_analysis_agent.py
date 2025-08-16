@@ -1473,12 +1473,46 @@ class TechnicalAnalysisAgent:
             }
         }
     
-    def _check_timeframe_alignment(self, timeframe_scores: Dict) -> str:
-        """Check if all timeframes are aligned."""
-        if not timeframe_scores:
+    def _check_enhanced_timeframe_alignment(self, primary_analysis: Dict, secondary_analysis: Dict) -> str:
+        """Check alignment across both primary and secondary timeframes."""
+        primary_scores = primary_analysis.get('timeframe_scores', {})
+        secondary_scores = secondary_analysis.get('timeframe_scores', {})
+        
+        # Extract trends from all timeframes
+        all_trends = []
+        
+        # Primary trends
+        for tf_data in primary_scores.values():
+            all_trends.append(tf_data.get('trend', 'neutral'))
+        
+        # Secondary trends  
+        for tf_data in secondary_scores.values():
+            all_trends.append(tf_data.get('trend', 'neutral'))
+        
+        if not all_trends:
             return 'unknown'
         
-        trends = [score['trend'] for score in timeframe_scores.values()]
+        bullish_count = sum(1 for trend in all_trends if trend == 'bullish')
+        bearish_count = sum(1 for trend in all_trends if trend == 'bearish')
+        total_count = len(all_trends)
+        
+        if bullish_count >= total_count * 0.75:
+            return 'strongly_bullish'
+        elif bullish_count >= total_count * 0.6:
+            return 'bullish'
+        elif bearish_count >= total_count * 0.75:
+            return 'strongly_bearish'
+        elif bearish_count >= total_count * 0.6:
+            return 'bearish'
+        else:
+            return 'mixed'
+    
+    def _check_primary_trend_alignment(self, primary_scores: Dict) -> str:
+        """Check alignment within primary timeframes."""
+        if not primary_scores:
+            return 'unknown'
+        
+        trends = [score['trend'] for score in primary_scores.values()]
         
         if all(trend == 'bullish' for trend in trends):
             return 'all_bullish'
@@ -1486,6 +1520,44 @@ class TechnicalAnalysisAgent:
             return 'all_bearish'
         else:
             return 'mixed'
+    
+    def _extract_vwap_signals(self, secondary_scores: Dict) -> List[Dict]:
+        """Extract VWAP signals from 15M and 1M analysis."""
+        vwap_signals = []
+        
+        for timeframe in ['m15', 'm1']:
+            if timeframe in secondary_scores:
+                tf_data = secondary_scores[timeframe]
+                vwap_analysis = tf_data.get('vwap_analysis', {})
+                
+                if vwap_analysis:
+                    vwap_signals.append({
+                        'timeframe': timeframe,
+                        'signal': vwap_analysis['trend'],
+                        'strength': 'strong' if abs(vwap_analysis['score'] - 50) > 25 else 'moderate',
+                        'price_vs_vwap_pct': vwap_analysis.get('price_vs_vwap_pct', 0),
+                        'vwap_slope': vwap_analysis.get('vwap_slope', 0)
+                    })
+        
+        return vwap_signals
+    
+    def _interpret_gap_pattern(self, gaps_detected: List[Dict]) -> str:
+        """Interpret the pattern of gaps for trading insights."""
+        if not gaps_detected:
+            return 'no_gaps_detected'
+        
+        unfilled_gaps = [gap for gap in gaps_detected if not gap['gap_filled']]
+        gap_ups = [gap for gap in gaps_detected if gap['gap_type'] == 'gap_up']
+        gap_downs = [gap for gap in gaps_detected if gap['gap_type'] == 'gap_down']
+        
+        if len(unfilled_gaps) > 3:
+            return 'multiple_unfilled_gaps_resistance'
+        elif len(gap_ups) > len(gap_downs) * 2:
+            return 'bullish_gap_pattern'
+        elif len(gap_downs) > len(gap_ups) * 2:
+            return 'bearish_gap_pattern'
+        else:
+            return 'mixed_gap_pattern'
     
     def _analyze_support_resistance_levels(self, price_data: Dict[str, List[Dict]], symbol: str) -> Dict[str, Any]:
         """Analyze key support and resistance levels."""
