@@ -367,45 +367,238 @@ class InvestmentScoringAgent:
         
         return round(min(100, momentum_score), 1)
     
-    def _calculate_risk_score(self, uw_data: Dict[str, Any]) -> float:
-        """Calculate risk-adjusted score (higher = lower risk)."""
-        risk_factors = 0
-        total_checks = 0
+    async def _analyze_discount_opportunity(self, uw_data: Dict[str, Any], symbol: str) -> float:
+        """
+        Analyze if stock is in discount phase vs premium phase.
+        Higher score = better discount opportunity (near support, oversold, etc.)
+        """
+        discount_score = 50.0  # Start neutral
         
-        # Check options data for risk indicators
+        # Get mock technical data (in real implementation, fetch from API)
+        technical_data = self._get_mock_technical_data(symbol)
+        
+        discount_factors = []
+        
+        # 1. RSI Analysis (30% weight)
+        rsi = technical_data.get('rsi', 50)
+        if rsi <= self.discount_thresholds['rsi_oversold']:
+            rsi_score = 100 - rsi  # Lower RSI = higher discount score
+            discount_factors.append(('rsi_oversold', rsi_score, 0.3))
+        elif rsi >= self.premium_thresholds['rsi_overbought']:
+            rsi_score = max(0, 100 - rsi)  # Heavily penalize overbought
+            discount_factors.append(('rsi_overbought', rsi_score, 0.3))
+        else:
+            # Neutral zone - slight preference for lower RSI
+            rsi_score = 50 + (50 - rsi) * 0.5  
+            discount_factors.append(('rsi_neutral', rsi_score, 0.3))
+        
+        # 2. Support/Resistance Distance Analysis (25% weight)
+        support_distance = technical_data.get('support_distance_pct', 10)
+        resistance_distance = technical_data.get('resistance_distance_pct', 10)
+        
+        if support_distance <= self.discount_thresholds['support_distance']:
+            # Near support = discount opportunity
+            support_score = 100 - (support_distance * 10)  # Closer = higher score
+            discount_factors.append(('near_support', support_score, 0.25))
+        elif resistance_distance <= self.premium_thresholds['resistance_distance']:
+            # Near resistance = premium/risky
+            resistance_score = max(0, 30 - resistance_distance * 5)  # Penalty for near resistance
+            discount_factors.append(('near_resistance', resistance_score, 0.25))
+        else:
+            # Middle range - neutral
+            mid_score = 50
+            discount_factors.append(('mid_range', mid_score, 0.25))
+        
+        # 3. Recent Price Action Analysis (25% weight)
+        recent_change = technical_data.get('recent_30d_change_pct', 0)
+        if recent_change <= self.discount_thresholds['pullback_threshold']:
+            # Significant pullback = discount opportunity
+            pullback_score = min(100, 70 + abs(recent_change) * 2)  # Bigger pullback = better discount
+            discount_factors.append(('pullback_discount', pullback_score, 0.25))
+        elif recent_change >= self.premium_thresholds['rally_threshold']:
+            # Strong rally = premium/extended
+            rally_score = max(0, 50 - recent_change * 1.5)  # Penalty for extended rallies
+            discount_factors.append(('rally_premium', rally_score, 0.25))
+        else:
+            # Moderate movement - neutral to positive
+            moderate_score = 55
+            discount_factors.append(('moderate_move', moderate_score, 0.25))
+        
+        # 4. Options Flow Confirmation (20% weight)
         options_data = uw_data['options_flow']
         if options_data:
-            total_checks += 3
-            
-            # High volume/OI ratio suggests higher risk
-            high_vol_oi = sum(1 for opt in options_data if opt.get('volume_oi_ratio', 0) > 3)
-            if high_vol_oi < len(options_data) * 0.3:  # Less than 30% high vol/OI is good
-                risk_factors += 1
-            
-            # Diverse expiration dates reduce risk
-            unique_dtes = len(set(opt.get('dte', 0) for opt in options_data))
-            if unique_dtes > 3:  # Good diversification
-                risk_factors += 1
-            
-            # Mix of call/put activity reduces directional risk
-            calls = sum(1 for opt in options_data if 'call' in opt.get('option_type', '').lower())
-            puts = sum(1 for opt in options_data if 'put' in opt.get('option_type', '').lower())
-            if calls > 0 and puts > 0:  # Both directions represented
-                risk_factors += 1
+            # Look for contrarian opportunities
+            put_call_ratio = self._calculate_put_call_ratio(options_data)
+            if put_call_ratio > 1.5:  # High fear = discount opportunity
+                fear_score = min(100, 60 + put_call_ratio * 15)
+                discount_factors.append(('fear_discount', fear_score, 0.2))
+            elif put_call_ratio < 0.5:  # Excessive optimism = premium warning
+                greed_score = max(0, 40 - (1 - put_call_ratio) * 30)
+                discount_factors.append(('greed_premium', greed_score, 0.2))
+            else:
+                balanced_score = 50
+                discount_factors.append(('balanced_sentiment', balanced_score, 0.2))
         
-        # Dark pool consistency reduces risk
-        dark_pool_data = uw_data['dark_pool']
-        if dark_pool_data:
-            total_checks += 1
-            consistent_percentages = [dp.get('dark_percentage', 0) for dp in dark_pool_data]
-            if consistent_percentages and max(consistent_percentages) - min(consistent_percentages) < 20:
-                risk_factors += 1  # Consistent dark pool activity
+        # Calculate weighted discount score
+        if discount_factors:
+            weighted_score = sum(score * weight for _, score, weight in discount_factors)
+            discount_score = weighted_score
         
-        if total_checks == 0:
-            return 50.0  # Neutral risk score
+        # Log the analysis for transparency
+        logger.info(f"Discount analysis for {symbol}: Score={discount_score:.1f}, Factors={len(discount_factors)}")
         
-        risk_score = (risk_factors / total_checks) * 100
-        return round(risk_score, 1)
+        return round(min(100, max(0, discount_score)), 1)
+    
+    async def _calculate_risk_reward_score(self, uw_data: Dict[str, Any], symbol: str) -> float:
+        """
+        Calculate risk/reward ratio score for optimal entries.
+        Higher score = better risk/reward setup.
+        """
+        technical_data = self._get_mock_technical_data(symbol)
+        
+        current_price = technical_data.get('current_price', 100)
+        support_level = technical_data.get('support_level', current_price * 0.9)
+        resistance_level = technical_data.get('resistance_level', current_price * 1.1)
+        
+        # Calculate risk and reward
+        risk = max(0.01, current_price - support_level)  # Risk to support
+        reward = max(0.01, resistance_level - current_price)  # Reward to resistance
+        
+        risk_reward_ratio = reward / risk
+        
+        # Score based on risk/reward ratio
+        if risk_reward_ratio >= self.risk_reward_params['min_reward_ratio']:
+            # Good risk/reward ratio
+            ratio_score = min(100, 50 + (risk_reward_ratio - 2) * 15)
+        else:
+            # Poor risk/reward ratio
+            ratio_score = max(0, 50 - (2 - risk_reward_ratio) * 20)
+        
+        # Penalty for excessive risk percentage
+        risk_percentage = (risk / current_price) * 100
+        if risk_percentage > self.risk_reward_params['max_risk_percentage']:
+            risk_penalty = (risk_percentage - 8) * 5
+            ratio_score = max(0, ratio_score - risk_penalty)
+        
+        logger.info(f"Risk/Reward for {symbol}: Ratio={risk_reward_ratio:.2f}, Score={ratio_score:.1f}")
+        
+        return round(ratio_score, 1)
+    
+    async def _calculate_premium_penalty(self, uw_data: Dict[str, Any], symbol: str) -> float:
+        """
+        Calculate penalty score for premium/overextended stocks.
+        Lower score = higher penalty for premium stocks.
+        """
+        technical_data = self._get_mock_technical_data(symbol)
+        
+        penalty_score = 100.0  # Start with no penalty
+        
+        penalties = []
+        
+        # 1. Overbought RSI penalty
+        rsi = technical_data.get('rsi', 50)
+        if rsi >= self.premium_thresholds['rsi_overbought']:
+            overbought_penalty = (rsi - 70) * 2  # Escalating penalty
+            penalties.append(('overbought_rsi', overbought_penalty))
+        
+        # 2. Near resistance penalty
+        resistance_distance = technical_data.get('resistance_distance_pct', 10)
+        if resistance_distance <= self.premium_thresholds['resistance_distance']:
+            resistance_penalty = (3 - resistance_distance) * 10
+            penalties.append(('near_resistance', resistance_penalty))
+        
+        # 3. Extended rally penalty
+        recent_change = technical_data.get('recent_30d_change_pct', 0)
+        if recent_change >= self.premium_thresholds['rally_threshold']:
+            rally_penalty = (recent_change - 20) * 1.5
+            penalties.append(('extended_rally', rally_penalty))
+        
+        # 4. High volume at resistance penalty (distribution signs)
+        if technical_data.get('volume_at_resistance', False):
+            volume_penalty = 15
+            penalties.append(('distribution_volume', volume_penalty))
+        
+        # Apply penalties
+        total_penalty = sum(penalty for _, penalty in penalties)
+        penalty_score = max(0, 100 - total_penalty)
+        
+        logger.info(f"Premium penalty for {symbol}: Penalties={len(penalties)}, Score={penalty_score:.1f}")
+        
+        return round(penalty_score, 1)
+    
+    def _get_mock_technical_data(self, symbol: str) -> Dict[str, Any]:
+        """
+        Mock technical data for different symbols.
+        In production, this would fetch real technical analysis data.
+        """
+        # Mock data simulating different market conditions
+        mock_data = {
+            'AAPL': {
+                'current_price': 231.59,
+                'rsi': 71.1,  # Overbought
+                'support_level': 196.64,
+                'resistance_level': 234.28,
+                'support_distance_pct': 15.1,
+                'resistance_distance_pct': 1.2,  # Near resistance - premium
+                'recent_30d_change_pct': 12.5,
+                'volume_at_resistance': True
+            },
+            'MSFT': {
+                'current_price': 520.17,
+                'rsi': 55.0,  # Neutral
+                'support_level': 469.66,
+                'resistance_level': 532.70,
+                'support_distance_pct': 9.7,
+                'resistance_distance_pct': 2.4,
+                'recent_30d_change_pct': 8.2,
+                'volume_at_resistance': False
+            },
+            'NVDA': {
+                'current_price': 142.50,
+                'rsi': 28.5,  # Oversold - discount opportunity
+                'support_level': 135.00,
+                'resistance_level': 165.00,
+                'support_distance_pct': 5.3,  # Near support - discount
+                'resistance_distance_pct': 15.8,
+                'recent_30d_change_pct': -18.5,  # Pullback - discount
+                'volume_at_resistance': False
+            },
+            'TSLA': {
+                'current_price': 330.56,
+                'rsi': 54.2,  # Neutral
+                'support_level': 293.21,
+                'resistance_level': 345.26,
+                'support_distance_pct': 11.3,
+                'resistance_distance_pct': 4.4,
+                'recent_30d_change_pct': 5.8,
+                'volume_at_resistance': False
+            }
+        }
+        
+        # Return specific data or default neutral data
+        return mock_data.get(symbol, {
+            'current_price': 100,
+            'rsi': 50,
+            'support_level': 90,
+            'resistance_level': 110,
+            'support_distance_pct': 10,
+            'resistance_distance_pct': 10,
+            'recent_30d_change_pct': 0,
+            'volume_at_resistance': False
+        })
+    
+    def _calculate_put_call_ratio(self, options_data: List[Dict]) -> float:
+        """Calculate put/call ratio from options flow data."""
+        if not options_data:
+            return 1.0  # Neutral
+        
+        puts = sum(1 for opt in options_data if 'put' in opt.get('option_type', '').lower())
+        calls = sum(1 for opt in options_data if 'call' in opt.get('option_type', '').lower())
+        
+        if calls == 0:
+            return 2.0  # High fear
+        
+        return puts / calls
     
     def _calculate_composite_score(self, signal_scores: Dict[str, float]) -> float:
         """Calculate weighted composite investment score."""
