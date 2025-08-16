@@ -433,13 +433,6 @@ const InvestmentScoring = React.memo(() => {
     navigate(`/stock-analysis/${symbol.toUpperCase()}`);
   }, [navigate]);
 
-  // Close modal function
-  const closeModal = useCallback(() => {
-    setSelectedTickerModal(null);
-    setModalAnalysis(null);
-    setModalLoading(false);
-  }, []);
-
   // useEffect hooks - MUST be declared after useCallback functions
   useEffect(() => {
     console.log('Component mounted, loading initial data...');
