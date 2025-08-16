@@ -123,7 +123,7 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
         <div className="text-red-400 mb-2">Chart Error</div>
         <div className="text-gray-400 text-sm">{error}</div>
         <button 
-          onClick={() => loadChartData(selectedInterval)}
+          onClick={() => setSelectedInterval(selectedInterval)} // Trigger reload
           className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
         >
           Retry
