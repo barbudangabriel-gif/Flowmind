@@ -288,7 +288,42 @@ const InvestmentScoring = React.memo(() => {
       
       if (recommendations.length > 0) {
         console.log('Using API data:', recommendations.length, 'items');
-        setTopPicks(recommendations);
+        
+        // Update API recommendations with real-time prices
+        try {
+          console.log('Updating API recommendations with real-time prices...');
+          const updatedRecommendations = await Promise.allSettled(
+            recommendations.slice(0, 5).map(async (pick) => {
+              try {
+                const priceResponse = await axios.get(`${API}/stocks/${pick.symbol}/enhanced`, {
+                  timeout: 3000
+                });
+                
+                if (priceResponse.data && priceResponse.data.price) {
+                  return {
+                    ...pick,
+                    current_price: priceResponse.data.price
+                  };
+                }
+                return pick;
+              } catch (priceError) {
+                console.warn(`Could not update price for ${pick.symbol}:`, priceError.message);
+                return pick;
+              }
+            })
+          );
+          
+          const finalRecommendations = updatedRecommendations
+            .filter(result => result.status === 'fulfilled')
+            .map(result => result.value)
+            .concat(recommendations.slice(5)); // Add remaining items unchanged
+          
+          console.log('Updated API recommendations with real prices');
+          setTopPicks(finalRecommendations);
+        } catch (priceUpdateError) {
+          console.error('Error updating API recommendation prices:', priceUpdateError.message);
+          setTopPicks(recommendations);
+        }
       } else {
         console.log('API returned empty data, using fallback mock data');
         setTopPicks(mockTopPicks);
