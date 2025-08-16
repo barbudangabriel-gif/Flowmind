@@ -76,6 +76,11 @@ class TechnicalAnalysisAgent:
             # 1. Fetch multi-timeframe price data
             price_data = await self._fetch_multi_timeframe_data(symbol)
             
+            # Validate data
+            if not price_data or not price_data.get('daily') or len(price_data['daily']) < 20:
+                logger.warning(f"Insufficient data for {symbol}, using fallback analysis")
+                return self._generate_fallback_analysis(symbol)
+            
             # 2. Smart Money Concepts Analysis
             if include_smc:
                 smc_analysis = await self._analyze_smart_money_concepts(price_data, symbol)
