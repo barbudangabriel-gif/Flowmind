@@ -331,7 +331,7 @@ class OptionsCalculatorTester:
         
         # Test with known parameters for mathematical verification
         test_data = {
-            "strategy": "Long Call",
+            "strategy_name": "Long Call",
             "symbol": "TEST",
             "stock_price": 100.0,  # Simple round number for easier verification
             "strike": 100.0,       # At-the-money
