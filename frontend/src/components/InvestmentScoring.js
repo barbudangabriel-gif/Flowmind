@@ -30,6 +30,7 @@ const API = `${BACKEND_URL}/api`;
 
 // Memoized Investment Scoring Component
 const InvestmentScoring = React.memo(() => {
+  const navigate = useNavigate();
   const [topPicks, setTopPicks] = useState([]);
   const [riskAnalysis, setRiskAnalysis] = useState(null);
   const [sectorLeaders, setSectorLeaders] = useState([]);
