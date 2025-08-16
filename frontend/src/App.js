@@ -366,7 +366,13 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                         <div className="relative group">
                           <button
                             onClick={() => {
-                              setActiveTab(item.id);
+                              if (item.route) {
+                                // Navigate to specific route
+                                navigate(item.route);
+                              } else {
+                                // Set active tab for in-app sections
+                                setActiveTab(item.id);
+                              }
                               if (isMobile) setIsCollapsed(true);
                             }}
                             className={`w-full group flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-3'} py-3 rounded-xl transition-all duration-200 relative ${
