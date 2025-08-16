@@ -452,8 +452,7 @@ class InvestmentScoringAgent:
                 cong_count = len(uw_data['congressional'])
                 signal_info['details'] = f"{cong_count} congressional trades analyzed"
             elif signal_type == 'ai_strategies':
-                strat_count = len(uw_data['strategies'])
-                signal_info['details'] = f"{strat_count} AI strategies analyzed"
+                signal_info['details'] = "AI strategies analysis (placeholder)"
             
             key_signals.append(signal_info)
         
