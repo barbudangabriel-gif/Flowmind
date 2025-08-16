@@ -1632,6 +1632,546 @@ const TechnicalAnalysis = () => {
             </div>
           </div>
 
+          {/* Technical Analysis Expert Agent Tab */}
+          {activeTab === 'tech-agent' && (
+            <div className="space-y-6">
+              {/* Technical Expert Agent Header */}
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-lg border border-purple-200">
+                <h3 className="text-xl font-bold text-purple-800 mb-3 flex items-center">
+                  <Zap className="mr-3 text-purple-600" size={24} />
+                  🤖 Technical Analysis Expert Agent
+                </h3>
+                <p className="text-purple-600 text-sm mb-4">
+                  Advanced technical analysis with Smart Money Concepts and dual-tier multi-timeframe analysis:
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                  <div className="flex items-center text-purple-600">
+                    <Target className="mr-1" size={12} />
+                    <span>Smart Money Concepts</span>
+                  </div>
+                  <div className="flex items-center text-purple-600">
+                    <BarChart3 className="mr-1" size={12} />
+                    <span>Multi-Timeframe Analysis</span>
+                  </div>
+                  <div className="flex items-center text-purple-600">
+                    <Activity className="mr-1" size={12} />
+                    <span>VWAP Analysis (15M/1M)</span>
+                  </div>
+                  <div className="flex items-center text-purple-600">
+                    <TrendingUp className="mr-1" size={12} />
+                    <span>Gap & Session Analysis</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Technical Analysis Input */}
+              <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                <h4 className="text-lg font-semibold mb-4 flex items-center">
+                  <Search className="mr-2 text-indigo-600" size={20} />
+                  Professional Technical Analysis
+                </h4>
+                <div className="flex space-x-4">
+                  <input
+                    type="text"
+                    value={techAnalysisSymbol}
+                    onChange={(e) => setTechAnalysisSymbol(e.target.value.toUpperCase())}
+                    placeholder="Enter stock symbol (e.g., AAPL, NVDA, TSLA)"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    onKeyPress={(e) => e.key === 'Enter' && analyzeWithTechnicalAgent()}
+                  />
+                  <button
+                    onClick={analyzeWithTechnicalAgent}
+                    disabled={techLoading || !techAnalysisSymbol.trim()}
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-lg hover:from-purple-700 hover:to-indigo-700 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {techLoading ? (
+                      <RefreshCw className="animate-spin" size={20} />
+                    ) : (
+                      <Zap size={20} />
+                    )}
+                    <span>Analyze Technical</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Technical Analysis Results */}
+              {techAnalysis && (
+                <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+                  {/* Analysis Header */}
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-lg font-bold text-gray-800 flex items-center">
+                        <BarChart3 className="mr-2 text-indigo-600" size={20} />
+                        Technical Analysis: {techAnalysis.symbol}
+                      </h4>
+                      <div className="text-xs text-gray-500">
+                        {techAnalysis.timestamp && new Date(techAnalysis.timestamp).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {techAnalysis.error ? (
+                    <div className="p-6">
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="flex items-center">
+                          <XCircle className="text-red-500 mr-2" size={20} />
+                          <span className="text-red-700 font-medium">Analysis Error</span>
+                        </div>
+                        <p className="text-red-600 text-sm mt-2">{techAnalysis.error}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-6 space-y-6">
+                      {/* Technical Score and Recommendation */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Technical Score */}
+                        <div className="text-center">
+                          <div className="relative">
+                            <div className={`text-4xl font-bold ${getScoreColor(techAnalysis.technical_score || 0)}`}>
+                              {techAnalysis.technical_score || 0}
+                            </div>
+                            <div className="text-sm text-gray-500">Technical Score</div>
+                            <div className="mt-2">
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className={`h-2 rounded-full transition-all duration-500 ${
+                                    (techAnalysis.technical_score || 0) >= 75 ? 'bg-green-500' :
+                                    (techAnalysis.technical_score || 0) >= 55 ? 'bg-blue-500' :
+                                    (techAnalysis.technical_score || 0) >= 45 ? 'bg-yellow-500' : 'bg-red-500'
+                                  }`}
+                                  style={{ width: `${techAnalysis.technical_score || 0}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Technical Recommendation */}
+                        <div className="text-center">
+                          <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${
+                            techAnalysis.recommendation?.includes('STRONG BUY') ? 'bg-green-100 text-green-800' :
+                            techAnalysis.recommendation?.includes('BUY') ? 'bg-green-50 text-green-700' :
+                            techAnalysis.recommendation?.includes('HOLD') ? 'bg-gray-100 text-gray-700' :
+                            techAnalysis.recommendation?.includes('SELL') ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>
+                            {techAnalysis.recommendation?.includes('BUY') && <TrendingUp className="mr-1" size={16} />}
+                            {techAnalysis.recommendation?.includes('SELL') && <TrendingDown className="mr-1" size={16} />}
+                            {techAnalysis.recommendation || 'HOLD'}
+                          </div>
+                          <div className="text-sm text-gray-500 mt-2">Technical Recommendation</div>
+                        </div>
+
+                        {/* Confidence Level */}
+                        <div className="text-center">
+                          <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${
+                            techAnalysis.confidence_level === 'high' ? 'bg-green-100 text-green-800' :
+                            techAnalysis.confidence_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {techAnalysis.confidence_level === 'high' && <CheckCircle className="mr-1" size={16} />}
+                            {techAnalysis.confidence_level === 'medium' && <AlertTriangle className="mr-1" size={16} />}
+                            {techAnalysis.confidence_level === 'low' && <XCircle className="mr-1" size={16} />}
+                            {(techAnalysis.confidence_level || 'low').toUpperCase()} CONFIDENCE
+                          </div>
+                          <div className="text-sm text-gray-500 mt-2">Analysis Confidence</div>
+                        </div>
+                      </div>
+
+                      {/* Multi-Timeframe Analysis */}
+                      {techAnalysis.timeframe_analysis && (
+                        <div>
+                          <h5 className="text-lg font-semibold mb-3 flex items-center">
+                            <Clock className="mr-2 text-indigo-600" size={18} />
+                            Dual-Tier Multi-Timeframe Analysis
+                          </h5>
+                          
+                          {/* Primary Timeframes */}
+                          {techAnalysis.timeframe_analysis.primary_timeframes && (
+                            <div className="mb-4">
+                              <h6 className="text-md font-medium mb-2 text-gray-700">Primary Check (60% Weight)</h6>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                {Object.entries(techAnalysis.timeframe_analysis.primary_timeframes.timeframe_scores || {}).map(([timeframe, data]) => (
+                                  <div key={timeframe} className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-sm font-medium text-blue-800 capitalize">{timeframe}</span>
+                                      <span className={`text-xs px-2 py-1 rounded-full ${
+                                        data.trend === 'bullish' ? 'bg-green-100 text-green-700' :
+                                        data.trend === 'bearish' ? 'bg-red-100 text-red-700' :
+                                        'bg-gray-100 text-gray-700'
+                                      }`}>
+                                        {data.trend}
+                                      </span>
+                                    </div>
+                                    <div className="text-sm">
+                                      <span className={`font-bold ${getScoreColor(data.score)}`}>
+                                        {data.score}
+                                      </span>
+                                      <span className="text-gray-500 ml-1">({(data.weight * 100).toFixed(0)}% weight)</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Secondary Timeframes */}
+                          {techAnalysis.timeframe_analysis.secondary_timeframes && (
+                            <div className="mb-4">
+                              <h6 className="text-md font-medium mb-2 text-gray-700">Secondary Check (40% Weight)</h6>
+                              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                {Object.entries(techAnalysis.timeframe_analysis.secondary_timeframes.timeframe_scores || {}).map(([timeframe, data]) => (
+                                  <div key={timeframe} className={`p-3 rounded-lg border ${
+                                    data.vwap_analysis ? 'bg-purple-50 border-purple-200' : 'bg-orange-50 border-orange-200'
+                                  }`}>
+                                    <div className="flex justify-between items-center mb-2">
+                                      <span className="text-sm font-medium capitalize">
+                                        {timeframe}
+                                        {data.vwap_analysis && <span className="ml-1 text-purple-600">📊</span>}
+                                      </span>
+                                      <span className={`text-xs px-2 py-1 rounded-full ${
+                                        data.trend === 'bullish' ? 'bg-green-100 text-green-700' :
+                                        data.trend === 'bearish' ? 'bg-red-100 text-red-700' :
+                                        'bg-gray-100 text-gray-700'
+                                      }`}>
+                                        {data.trend}
+                                      </span>
+                                    </div>
+                                    <div className="text-sm">
+                                      <span className={`font-bold ${getScoreColor(data.score)}`}>
+                                        {data.score}
+                                      </span>
+                                    </div>
+                                    {data.vwap_analysis && (
+                                      <div className="text-xs text-purple-600 mt-1">
+                                        VWAP: {data.vwap_analysis.price_vs_vwap_pct?.toFixed(2)}%
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Overall Confluence */}
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium text-gray-700">Overall Confluence Score:</span>
+                              <span className={`text-lg font-bold ${getScoreColor(techAnalysis.timeframe_analysis.overall_confluence_score || 50)}`}>
+                                {techAnalysis.timeframe_analysis.overall_confluence_score || 50}
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              Alignment: {techAnalysis.timeframe_analysis.timeframe_alignment?.replace('_', ' ').toUpperCase() || 'MIXED'}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* VWAP Signals */}
+                      {techAnalysis.timeframe_analysis?.secondary_timeframes?.vwap_signals && techAnalysis.timeframe_analysis.secondary_timeframes.vwap_signals.length > 0 && (
+                        <div>
+                          <h5 className="text-lg font-semibold mb-3 flex items-center">
+                            <Activity className="mr-2 text-purple-600" size={18} />
+                            VWAP Analysis (15M & 1M)
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {techAnalysis.timeframe_analysis.secondary_timeframes.vwap_signals.map((vwap, index) => (
+                              <div key={index} className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-bold text-purple-800">{vwap.timeframe.toUpperCase()} VWAP</span>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    vwap.strength === 'strong' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {vwap.strength}
+                                  </span>
+                                </div>
+                                <div className="text-sm">
+                                  <div className={`font-bold ${
+                                    vwap.signal === 'bullish' ? 'text-green-600' :
+                                    vwap.signal === 'bearish' ? 'text-red-600' : 'text-gray-600'
+                                  }`}>
+                                    Signal: {vwap.signal.toUpperCase()}
+                                  </div>
+                                  <div className="text-gray-600 mt-1">
+                                    Price vs VWAP: {vwap.price_vs_vwap_pct?.toFixed(2)}%
+                                  </div>
+                                  <div className="text-gray-600">
+                                    VWAP Slope: {vwap.vwap_slope?.toFixed(4)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Gap Analysis */}
+                      {techAnalysis.timeframe_analysis?.gap_analysis && (
+                        <div>
+                          <h5 className="text-lg font-semibold mb-3 flex items-center">
+                            <TrendingUp className="mr-2 text-orange-600" size={18} />
+                            Gap Analysis (Market Hours Only)
+                          </h5>
+                          <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <span className="text-sm font-medium text-orange-800">Gaps Detected (Last 10 Days):</span>
+                                <div className="text-lg font-bold text-orange-600">
+                                  {techAnalysis.timeframe_analysis.gap_analysis.gap_count_last_10_days || 0}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-sm font-medium text-orange-800">Gap Pattern:</span>
+                                <div className="text-sm text-orange-600 capitalize">
+                                  {techAnalysis.timeframe_analysis.gap_analysis.gap_analysis?.replace(/_/g, ' ') || 'No pattern'}
+                                </div>
+                              </div>
+                            </div>
+                            {techAnalysis.timeframe_analysis.gap_analysis.unfilled_gaps && techAnalysis.timeframe_analysis.gap_analysis.unfilled_gaps.length > 0 && (
+                              <div className="mt-3">
+                                <span className="text-sm font-medium text-orange-800">Unfilled Gaps:</span>
+                                <div className="text-sm text-orange-600">
+                                  {techAnalysis.timeframe_analysis.gap_analysis.unfilled_gaps.length} unfilled gap(s) detected
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Smart Money Concepts */}
+                      {techAnalysis.smart_money_analysis && (
+                        <div>
+                          <h5 className="text-lg font-semibold mb-3 flex items-center">
+                            <Target className="mr-2 text-green-600" size={18} />
+                            Smart Money Concepts
+                          </h5>
+                          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="text-center">
+                                <div className="text-sm text-green-700 font-medium mb-1">SMC Score</div>
+                                <div className={`text-2xl font-bold ${getScoreColor(techAnalysis.smart_money_analysis.score || 0)}`}>
+                                  {techAnalysis.smart_money_analysis.score || 0}
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-sm text-green-700 font-medium mb-1">Order Blocks</div>
+                                <div className="text-lg font-bold text-green-600">
+                                  {(techAnalysis.smart_money_analysis.order_blocks?.bullish_ob?.length || 0)} Bullish / {(techAnalysis.smart_money_analysis.order_blocks?.bearish_ob?.length || 0)} Bearish
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-sm text-green-700 font-medium mb-1">FVG Analysis</div>
+                                <div className="text-lg font-bold text-green-600">
+                                  {(techAnalysis.smart_money_analysis.fair_value_gaps?.unfilled_bullish?.length || 0)} Bullish / {(techAnalysis.smart_money_analysis.fair_value_gaps?.unfilled_bearish?.length || 0)} Bearish
+                                </div>
+                              </div>
+                            </div>
+                            {techAnalysis.smart_money_analysis.signals && techAnalysis.smart_money_analysis.signals.length > 0 && (
+                              <div className="mt-4">
+                                <div className="text-sm font-medium text-green-800 mb-2">Key SMC Signals:</div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                  {techAnalysis.smart_money_analysis.signals.map((signal, index) => (
+                                    <div key={index} className="bg-white p-2 rounded border border-green-300">
+                                      <span className={`text-xs px-2 py-1 rounded ${
+                                        signal.strength === 'strong' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                      }`}>
+                                        {signal.type?.replace(/_/g, ' ')}
+                                      </span>
+                                      <div className="text-xs text-gray-600 mt-1">{signal.description}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Technical Indicators Breakdown */}
+                      {techAnalysis.technical_breakdown && (
+                        <div>
+                          <h5 className="text-lg font-semibold mb-3 flex items-center">
+                            <BarChart3 className="mr-2 text-blue-600" size={18} />
+                            Technical Indicators Breakdown
+                          </h5>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {Object.entries(techAnalysis.technical_breakdown).map(([indicator, score]) => (
+                              <div key={indicator} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                <div className="text-sm font-medium text-gray-700 capitalize mb-1">
+                                  {indicator.replace(/_/g, ' ')}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className={`text-lg font-bold ${getScoreColor(score)}`}>
+                                    {typeof score === 'number' ? score.toFixed(1) : score}
+                                  </span>
+                                  <div className="w-12 bg-gray-200 rounded-full h-1.5">
+                                    <div 
+                                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                                        score >= 75 ? 'bg-green-500' :
+                                        score >= 55 ? 'bg-blue-500' :
+                                        score >= 45 ? 'bg-yellow-500' : 'bg-red-500'
+                                      }`}
+                                      style={{ width: `${typeof score === 'number' ? score : 0}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Support & Resistance */}
+                      {techAnalysis.support_resistance && (
+                        <div>
+                          <h5 className="text-lg font-semibold mb-3 flex items-center">
+                            <Target className="mr-2 text-red-600" size={18} />
+                            Support & Resistance Analysis
+                          </h5>
+                          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="text-center">
+                                <div className="text-sm text-red-700 font-medium mb-1">Current Price</div>
+                                <div className="text-lg font-bold text-gray-800">
+                                  ${techAnalysis.support_resistance.current_price?.toFixed(2)}
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-sm text-green-700 font-medium mb-1">Support Level</div>
+                                <div className="text-lg font-bold text-green-600">
+                                  ${techAnalysis.support_resistance.closest_support?.toFixed(2)}
+                                </div>
+                                <div className="text-xs text-green-600">
+                                  {techAnalysis.support_resistance.support_distance_pct?.toFixed(1)}% away
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-sm text-red-700 font-medium mb-1">Resistance Level</div>
+                                <div className="text-lg font-bold text-red-600">
+                                  ${techAnalysis.support_resistance.closest_resistance?.toFixed(2)}
+                                </div>
+                                <div className="text-xs text-red-600">
+                                  {techAnalysis.support_resistance.resistance_distance_pct?.toFixed(1)}% away
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Risk & Entry Analysis */}
+                      {techAnalysis.risk_entry_analysis && (
+                        <div>
+                          <h5 className="text-lg font-semibold mb-3 flex items-center">
+                            <Shield className="mr-2 text-yellow-600" size={18} />
+                            Risk & Entry Analysis
+                          </h5>
+                          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div className="text-center">
+                                <div className="text-sm text-yellow-700 font-medium mb-1">Risk/Reward Ratio</div>
+                                <div className={`text-2xl font-bold ${
+                                  (techAnalysis.risk_entry_analysis.risk_reward_ratio || 0) >= 2.0 ? 'text-green-600' : 'text-red-600'
+                                }`}>
+                                  {techAnalysis.risk_entry_analysis.risk_reward_ratio || 0}:1
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-sm text-yellow-700 font-medium mb-1">Position Risk</div>
+                                <div className="text-lg font-bold text-yellow-600">
+                                  {techAnalysis.risk_entry_analysis.position_risk_pct?.toFixed(1)}%
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-sm text-yellow-700 font-medium mb-1">Entry Score</div>
+                                <div className={`text-lg font-bold ${getScoreColor(techAnalysis.risk_entry_analysis.entry_score || 0)}`}>
+                                  {techAnalysis.risk_entry_analysis.entry_score || 0}
+                                </div>
+                              </div>
+                            </div>
+                            {techAnalysis.risk_entry_analysis.entry_recommendation && (
+                              <div className="mt-3 text-center">
+                                <div className="text-sm font-medium text-yellow-800">Entry Recommendation:</div>
+                                <div className="text-sm text-yellow-700 italic">
+                                  {techAnalysis.risk_entry_analysis.entry_recommendation}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Key Technical Signals */}
+                      {techAnalysis.key_signals && techAnalysis.key_signals.length > 0 && (
+                        <div>
+                          <h5 className="text-lg font-semibold mb-3 flex items-center">
+                            <Activity className="mr-2 text-teal-600" size={18} />
+                            Key Technical Signals
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {techAnalysis.key_signals.map((signal, index) => (
+                              <div key={index} className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-teal-700 capitalize">
+                                    {signal.type?.replace(/^technical_/, '').replace(/_/g, ' ') || 'Signal'}
+                                  </span>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    signal.strength === 'strong' ? 'bg-teal-100 text-teal-800' :
+                                    signal.strength === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {signal.strength || 'weak'}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className={`text-sm font-bold ${
+                                    signal.direction === 'bullish' ? 'text-green-600' :
+                                    signal.direction === 'bearish' ? 'text-red-600' :
+                                    'text-gray-600'
+                                  }`}>
+                                    {signal.score} - {signal.direction || 'neutral'}
+                                  </span>
+                                </div>
+                                {signal.details && (
+                                  <div className="text-xs text-teal-600 mt-1">
+                                    {signal.details}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Analysis Components */}
+                      {techAnalysis.analysis_components && (
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <h6 className="text-sm font-semibold text-gray-800 mb-2 flex items-center">
+                            <CheckCircle className="mr-1" size={14} />
+                            Analysis Components Used
+                          </h6>
+                          <div className="flex flex-wrap gap-2">
+                            {techAnalysis.analysis_components.map((component, index) => (
+                              <span key={index} className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                                {component.replace(/_/g, ' ')}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="text-xs text-gray-600 mt-2">
+                            Analysis powered by Technical Analysis Expert Agent v{techAnalysis.agent_version || '1.0'} • 
+                            Dual-tier multi-timeframe system with Smart Money Concepts
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
