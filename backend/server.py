@@ -56,6 +56,7 @@ uw_service = UnusualWhalesService()
 
 # Initialize AI Agents
 investment_scoring_agent = InvestmentScoringAgent()
+technical_analysis_agent = TechnicalAnalysisAgent()
 
 # Initialize TradeStation Services
 ts_client = TradeStationClient(ts_auth)
