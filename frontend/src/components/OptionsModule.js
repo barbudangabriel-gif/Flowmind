@@ -279,7 +279,7 @@ export default function OptionsModule() {
           <input 
             value={symbol}
             onChange={(e) => setSymbol(e.target.value)}
-            className="bg-[#34495e] border border-[#4a5f7a] rounded px-2 py-1 text-white w-20"
+            className="bg-[#34495e] border border-[#4a5f7a] rounded-none px-2 py-1 text-white w-20"
           />
           <span className="text-2xl font-bold">${spotPrice.toFixed(2)}</span>
           <span className="text-green-400">+7.40%</span>
