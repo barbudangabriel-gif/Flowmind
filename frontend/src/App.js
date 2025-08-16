@@ -7181,6 +7181,16 @@ function AppContent() {
               } 
             />
             
+            {/* Options Module Route */}
+            <Route 
+              path="/options" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Options Module" />}>
+                  <OptionsModule />
+                </Suspense>
+              } 
+            />
+            
             {/* Default Route - renders based on activeTab */}
             <Route path="/*" element={renderContent()} />
           </Routes>
