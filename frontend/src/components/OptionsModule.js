@@ -176,7 +176,7 @@ function SentimentCircle({ icon, label, active, onClick }) {
     <div className="flex flex-col items-center">
       <button
         onClick={onClick}
-        className={`w-16 h-16 rounded-full border-2 flex items-center justify-center text-2xl transition-all ${getColors()}`}
+        className={`w-16 h-16 border-2 flex items-center justify-center text-2xl transition-all ${getColors()}`}
       >
         {icon}
       </button>
