@@ -405,6 +405,18 @@ backend:
         - agent: "testing"
         - comment: "🎉 EXCELLENT - TOP PICKS ENDPOINT FULLY OPERATIONAL: Comprehensive testing confirms user requirement 'am nevoie de top picks minim 10' is FULLY SATISFIED. ✅ PRIMARY REQUIREMENT MET: GET /api/investments/top-picks?limit=10 returns exactly 10 investment recommendations with proper scores and ratings. ✅ DIFFERENT PARAMETERS WORKING: limit=5 returns 5 picks, limit=15 returns 15 picks, limit=20 tested successfully. ✅ DATA QUALITY EXCELLENT: All recommendations include proper investment scores (range 72.5-59.5), valid ratings (HOLD+), risk levels (LOW), and all required fields (symbol, total_score, rating, risk_level, key_strengths, key_risks). ✅ STOCK INFORMATION COMPLETE: Includes high-quality stocks (UNH, HD, META, AAPL, GOOGL) with proper symbol, price, change data available via separate endpoints. ✅ RESPONSE STRUCTURE PERFECT: Contains recommendations, total_analyzed (15), criteria, last_updated fields. ✅ PROPER SORTING: Recommendations sorted by score (highest to lowest). ✅ PERFORMANCE ACCEPTABLE: Response times under 2 minutes with 120s timeout. SUCCESS RATE: 100% (6/6 test phases passed). The Investment Scoring page Top Picks functionality is working perfectly and will display at least 10 recommendations as requested by the user."
 
+  - task: "Investment Scoring Scanner Engine"
+    implemented: true
+    working: false
+    file: "server.py,investment_scoring.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "🔍 COMPREHENSIVE SCANNER ENDPOINTS TESTING COMPLETE - MIXED RESULTS: Tested new Investment Scoring Scanner endpoints as requested in Romanian review. ✅ ENDPOINTS RESPONDING: All 3 scanner endpoints operational - GET /api/scanner/status (200 OK), POST /api/scanner/start-scan (200 OK), GET /api/scanner/top-stocks (200 OK). ✅ SCANNER LOGIC WORKING: Scanner successfully starts processing stocks, logs show individual stock scoring (AAPL: 68.3, MSFT: 65.8, GOOGL: 67.8, AMZN: 65.5, TSLA: 64.7, META: 68.7). ✅ MONGODB CONNECTION: MongoDB connection verified working, can insert/delete test documents successfully. ❌ CRITICAL ISSUE: Scanner processes stocks but results not persisting to MongoDB collection 'scanned_stocks'. Status always shows 'no_scans' and top-stocks returns empty array. ❌ REQUIREMENTS NOT MET: Romanian requirements partially satisfied - endpoints respond correctly but 'Scanner-ul procesează tickerele' and 'Scorurile se calculează și se salvează' failing due to persistence issues. ❌ TEST SCENARIO INCOMPLETE: Can verify status (empty), start scan (starts processing), but cannot verify results (no stocks returned). SUCCESS RATE: 37.5% (3/8 phases passed). Scanner engine logic working but MongoDB persistence layer has issues preventing data storage."
+
   - task: "AI Investment Scoring Agent Implementation"
     implemented: true
     working: true
