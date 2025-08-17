@@ -172,7 +172,12 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
   const data = generatePnLData(strategyType);
   
   return (
-    <div className="bg-[#2c3e50] border border-[#34495e] rounded-none" style={{minHeight: '280px'}}>
+    <div className="bg-[#2c3e50] border border-[#34495e] rounded-lg shadow-xl" 
+         style={{
+           minHeight: '280px',
+           boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3)',
+           background: 'linear-gradient(145deg, #34495e, #2c3e50)'
+         }}>
       {/* Header Section - Ultra compact */}
       <div className="px-4 pt-1 pb-1 border-b border-[#34495e]">
         <h3 className="text-white text-sm font-bold leading-tight mb-0">{title}</h3>
@@ -201,9 +206,10 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
         </div>
       </div>
 
-      {/* Chart Section - Mare în card ultra comprimat */}
+      {/* Chart Section - Mare în card ultra comprimat cu colțuri rotunjite */}
       <div className="px-1 pb-1">
-        <div className="h-40 bg-[#34495e] rounded-none border border-[#4a5f7a]">
+        <div className="h-40 bg-[#34495e] rounded-md border border-[#4a5f7a]" 
+             style={{boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.3)'}}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
               <defs>
