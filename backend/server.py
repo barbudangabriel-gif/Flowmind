@@ -825,6 +825,115 @@ def _generate_comprehensive_rating(investment_score: Dict, smart_money: Dict, se
             "supporting_analyses": {},
             "summary": "Unable to generate comprehensive rating due to analysis errors."
         }
+# ===========================================
+# STOCK SCANNER ENDPOINTS 🔍
+# ===========================================
+
+# Instanță globală de scanner
+global_scanner = None
+
+@api_router.post("/scanner/start-scan")
+async def start_stock_scan():
+    """Pornește scanarea completă a tuturor tickerelor"""
+    try:
+        global global_scanner
+        
+        # Inițializează scanner-ul dacă nu există
+        if global_scanner is None:
+            global_scanner = StockScanner(investment_scorer)
+            
+        logger.info("🚀 Pornire scanare completă...")
+        
+        # Pornește scanarea (asincron)
+        scan_task = asyncio.create_task(global_scanner.scan_all_stocks())
+        
+        return {
+            "status": "started",
+            "message": "Scanarea a început. Verifică progresul cu /scanner/status",
+            "estimated_duration": "15-30 minute pentru ~100 tickere"
+        }
+        
+    except Exception as e:
+        logger.error(f"Eroare la pornirea scanării: {e}")
+        raise HTTPException(status_code=500, detail=f"Eroare la pornirea scanării: {str(e)}")
+
+@api_router.get("/scanner/top-stocks")
+async def get_scanner_top_stocks(limit: int = Query(50, description="Numărul de acțiuni top")):
+    """Obține top acțiuni din ultimul scan"""
+    try:
+        global global_scanner
+        
+        if global_scanner is None:
+            global_scanner = StockScanner(investment_scorer)
+            
+        top_stocks = await global_scanner.get_top_stocks(limit)
+        
+        return {
+            "total_found": len(top_stocks),
+            "limit": limit,
+            "scan_date": top_stocks[0].get('scanned_at') if top_stocks else None,
+            "top_stocks": [
+                {
+                    "ticker": stock.get('ticker'),
+                    "score": round(stock.get('total_score', 0), 1),
+                    "rating": stock.get('rating'),
+                    "price": stock.get('stock_data', {}).get('price', 'N/A'),
+                    "sector": stock.get('stock_data', {}).get('sector', 'N/A'),
+                    "explanation": stock.get('explanation', '')[:100] + "..." if len(stock.get('explanation', '')) > 100 else stock.get('explanation', '')
+                }
+                for stock in top_stocks
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Eroare la obținerea top acțiuni: {e}")
+        raise HTTPException(status_code=500, detail=f"Eroare la obținerea top acțiuni: {str(e)}")
+
+@api_router.get("/scanner/status")
+async def get_scanner_status():
+    """Obține statusul scanărilor și statistici"""
+    try:
+        # Verifică dacă există rezultate în MongoDB
+        from investment_scoring import scanned_stocks_collection
+        
+        total_stocks = await scanned_stocks_collection.count_documents({})
+        
+        if total_stocks > 0:
+            # Găsește cel mai recent scan
+            latest_scan = await scanned_stocks_collection.find_one(
+                {}, sort=[('scanned_at', -1)]
+            )
+            
+            # Top 5 acțiuni
+            top_5 = []
+            async for stock in scanned_stocks_collection.find({}).sort('total_score', -1).limit(5):
+                top_5.append({
+                    'ticker': stock.get('ticker'),
+                    'score': round(stock.get('total_score', 0), 1),
+                    'rating': stock.get('rating')
+                })
+            
+            return {
+                "status": "completed" if total_stocks > 0 else "no_scans",
+                "total_stocks_scanned": total_stocks,
+                "last_scan_date": latest_scan.get('scanned_at') if latest_scan else None,
+                "scan_id": latest_scan.get('scan_id') if latest_scan else None,
+                "top_5_stocks": top_5,
+                "database_status": "active"
+            }
+        else:
+            return {
+                "status": "no_scans",
+                "message": "Nu există scanări în baza de date. Pornește o scanare cu /scanner/start-scan",
+                "total_stocks_scanned": 0,
+                "database_status": "empty"
+            }
+            
+    except Exception as e:
+        logger.error(f"Eroare la obținerea statusului: {e}")
+        raise HTTPException(status_code=500, detail=f"Eroare la obținerea statusului: {str(e)}")
+
+# ===========================================
 
 @api_router.get("/investments/top-picks", response_model=TopInvestments)
 async def get_top_investment_picks(
