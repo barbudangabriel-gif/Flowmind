@@ -7125,17 +7125,23 @@ function AppContent() {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     
+    console.log('Toggling mode from', isDarkMode, 'to', newMode);
+    
     // Apply to document for global theme
     if (newMode) {
       // Switching TO dark mode
       document.documentElement.classList.add('dark');
-      document.body.className = 'bg-[#1a252f] text-white';
-      console.log('Switched to DARK mode');
+      document.documentElement.style.backgroundColor = '#1a252f';
+      document.body.style.backgroundColor = '#1a252f';
+      document.body.style.color = 'white';
+      console.log('✅ Switched to DARK mode');
     } else {
       // Switching TO light mode
       document.documentElement.classList.remove('dark');
-      document.body.className = 'bg-gray-50 text-gray-900';
-      console.log('Switched to LIGHT mode');
+      document.documentElement.style.backgroundColor = '#f9fafb';
+      document.body.style.backgroundColor = '#f9fafb';
+      document.body.style.color = '#111827';
+      console.log('✅ Switched to LIGHT mode');
     }
   };
 
