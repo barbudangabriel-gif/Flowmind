@@ -130,38 +130,7 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 tickCount={5}
               />
               
-              {/* WHITE FADED ZERO LINE - EXACT OPTIONSTRAT STYLE */}
-              <ReferenceLine 
-                y={0} 
-                stroke="#ffffff" 
-                strokeOpacity={0.8} 
-                strokeWidth={2}
-              />
-              
-              {/* VERTICAL BLUE LINES - Current Price (Always Visible) */}
-              <ReferenceLine 
-                x={150} 
-                stroke="#3498db" 
-                strokeDasharray="2 2" 
-                strokeOpacity={0.9} 
-                strokeWidth={1}
-              />
-              
-              {/* VERTICAL ORANGE LINES - Strike Price (Strategy Specific) */}
-              <ReferenceLine 
-                x={strategyType === 'longCall' ? 95 : 
-                   strategyType === 'coveredCall' ? 210 :
-                   strategyType === 'cashSecuredPut' ? 125 :
-                   strategyType === 'shortPut' ? 115 :
-                   strategyType === 'bullCallSpread' ? 180 :
-                   strategyType === 'bullPutSpread' ? 185 : 200} 
-                stroke="#f39c12" 
-                strokeDasharray="2 2" 
-                strokeOpacity={0.9} 
-                strokeWidth={1}
-              />
-              
-              {/* Gradient fill areas */}
+              {/* Gradient fill areas - PRIMUL LAYER */}
               <Area 
                 dataKey="profit" 
                 fill={`url(#profit-gradient-${strategyType})`} 
@@ -175,7 +144,7 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 fillOpacity={1}
               />
               
-              {/* P&L Lines matching gradient colors */}
+              {/* P&L Lines in gradient colors - AL DOILEA LAYER */}
               <Line 
                 dataKey="profit" 
                 stroke="#27ae60" 
@@ -189,6 +158,36 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 strokeWidth={1.5} 
                 dot={false} 
                 connectNulls={false} 
+              />
+              
+              {/* WHITE ZERO LINE - ULTIMUL LAYER (DEASUPRA TUTUROR) */}
+              <ReferenceLine 
+                y={0} 
+                stroke="#ffffff" 
+                strokeOpacity={0.8} 
+                strokeWidth={2}
+              />
+              
+              {/* VERTICAL LINES - ULTIMUL LAYER */}
+              <ReferenceLine 
+                x={150} 
+                stroke="#3498db" 
+                strokeDasharray="2 2" 
+                strokeOpacity={0.9} 
+                strokeWidth={1}
+              />
+              
+              <ReferenceLine 
+                x={strategyType === 'longCall' ? 95 : 
+                   strategyType === 'coveredCall' ? 210 :
+                   strategyType === 'cashSecuredPut' ? 125 :
+                   strategyType === 'shortPut' ? 115 :
+                   strategyType === 'bullCallSpread' ? 180 :
+                   strategyType === 'bullPutSpread' ? 185 : 200} 
+                stroke="#f39c12" 
+                strokeDasharray="2 2" 
+                strokeOpacity={0.9} 
+                strokeWidth={1}
               />
             </ComposedChart>
           </ResponsiveContainer>
