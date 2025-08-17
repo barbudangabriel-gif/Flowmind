@@ -207,18 +207,26 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const menuGroups = [
     {
-      title: "Overview",
+      title: "Dashboard 🏠",
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: Home, color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' }
+        { id: 'dashboard', label: 'Overview', icon: Home, color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' },
+        { id: 'light-mode', label: 'Light Mode', icon: Sun, color: 'from-yellow-500 to-amber-500', shortLabel: 'Light' }
       ]
     },
     {
-      title: "Analysis & Trading",
+      title: "Advanced Screener 🔍",
       items: [
-        { id: 'investments', label: 'Investment Scoring', icon: Award, color: 'from-amber-500 to-orange-500', badge: '🎯', shortLabel: 'Score' },
         { id: 'screener', label: 'Advanced Screener', icon: Database, color: 'from-violet-500 to-purple-500', shortLabel: 'Screen' },
         { id: 'simple-screener', label: 'Stock Search', icon: Search, color: 'from-pink-500 to-rose-500', shortLabel: 'Search' },
-        { id: 'technical', label: 'Technical Analysis', icon: BarChart3, color: 'from-indigo-500 to-purple-500', shortLabel: 'Tech' }
+        { id: 'technical', label: 'Technical Analysis', icon: BarChart3, color: 'from-indigo-500 to-purple-500', shortLabel: 'Tech' },
+        { id: 'watchlist', label: 'Watchlist', icon: Star, color: 'from-yellow-500 to-amber-500', shortLabel: 'Watch' },
+        { id: 'news', label: 'Market News', icon: Newspaper, color: 'from-slate-500 to-gray-500', shortLabel: 'News' }
+      ]
+    },
+    {
+      title: "Investment Scoring 🎯",
+      items: [
+        { id: 'investments', label: 'Investment Scoring', icon: Award, color: 'from-amber-500 to-orange-500', badge: '🎯', shortLabel: 'Score' }
       ]
     },
     {
@@ -241,22 +249,15 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       ]
     },
     {
-      title: "Advanced Trading 🎯",
+      title: "Options Module ⚡",
       items: [
-        { id: 'options-module', label: 'Options Module', icon: Zap, color: 'from-purple-500 to-indigo-600', badge: '⚡', shortLabel: 'Options', route: '/options' }
+        { id: 'options-module', label: 'Options Strategy Builder', icon: Zap, color: 'from-purple-500 to-indigo-600', badge: '⚡', shortLabel: 'Options', route: '/options' }
       ]
     },
     {
-      title: "Tools & Alerts",
+      title: "Auto Options Trading 🤖",
       items: [
-        { id: 'watchlist', label: 'Watchlist', icon: Star, color: 'from-yellow-500 to-amber-500', shortLabel: 'Watch' },
-        { id: 'news', label: 'Market News', icon: Newspaper, color: 'from-slate-500 to-gray-500', shortLabel: 'News' }
-      ]
-    },
-    {
-      title: "Automated Trading 🤖",
-      items: [
-        { id: 'auto-trading', label: 'Auto Options Trading', icon: Bot, color: 'from-purple-500 to-indigo-600', badge: '🤖', shortLabel: 'Auto', systemActive: true },
+        { id: 'auto-trading', label: 'Auto Trading Engine', icon: Bot, color: 'from-purple-500 to-indigo-600', badge: '🤖', shortLabel: 'Auto', systemActive: true },
         { id: 'trading-history', label: 'Trading History', icon: History, color: 'from-blue-500 to-cyan-600', badge: '📊', shortLabel: 'History' },
         { id: 'performance', label: 'Performance Analytics', icon: BarChart3, color: 'from-green-500 to-teal-600', badge: '📈', shortLabel: 'Analytics' }
       ]
