@@ -1276,8 +1276,14 @@ class StockMarketAPITester:
         print(f"   - Total Stocks Scanned: {total_found}")
         print(f"   - Top Stocks Available: {len(top_stocks)}")
         print(f"   - Expected Tickers: {'✅ Found' if expected_tickers_found else '❌ Not Found'}")
-        print(f"   - Score Range: {min_score:.1f} - {max_score:.1f}" if scores else "No scores")
-        print(f"   - Ratings: {unique_ratings}" if ratings else "No ratings")
+        if top_stocks and scores:
+            print(f"   - Score Range: {min_score:.1f} - {max_score:.1f}")
+        else:
+            print(f"   - Score Range: No scores available")
+        if top_stocks and ratings:
+            print(f"   - Ratings: {unique_ratings}")
+        else:
+            print(f"   - Ratings: No ratings available")
         print(f"   - MongoDB Status: {'✅ Working' if mongodb_working else '⚠️  Unclear'}")
         
         # Romanian requirements verification
