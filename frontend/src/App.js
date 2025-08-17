@@ -7109,61 +7109,22 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Set initial theme
-  useEffect(() => {
-    // Force initial dark theme
-    document.documentElement.classList.add('dark');
-    document.documentElement.style.backgroundColor = '#1a252f';
-    document.body.style.backgroundColor = '#1a252f';
-    document.body.style.color = 'white';
-    
-    // Apply to main container
-    const mainElement = document.querySelector('main') || document.querySelector('#root');
-    if (mainElement) {
-      mainElement.style.backgroundColor = '#1a252f';
-      mainElement.style.color = 'white';
-    }
-  }, []);
-
-  // Toggle dark/light mode - FORCE STYLES
+  // Simple dark/light toggle - WORKING VERSION
   const toggleDarkMode = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
+    console.log('🌙 Moon clicked! Current mode:', isDarkMode);
     
-    console.log('🌙 Toggling mode from', isDarkMode, 'to', newMode);
-    
-    if (newMode) {
-      // FORCE DARK MODE
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.backgroundColor = '#1a252f';
-      document.documentElement.style.color = 'white';
-      document.body.style.backgroundColor = '#1a252f';
-      document.body.style.color = 'white';
-      
-      // Force main containers
-      const containers = document.querySelectorAll('main, #root, .min-h-screen');
-      containers.forEach(el => {
-        el.style.backgroundColor = '#1a252f';
-        el.style.color = 'white';
-      });
-      
-      console.log('✅ FORCED DARK mode');
-    } else {
-      // FORCE LIGHT MODE  
-      document.documentElement.classList.remove('dark');
-      document.documentElement.style.backgroundColor = '#ffffff';
-      document.documentElement.style.color = '#111827';
+    if (isDarkMode) {
+      // Switch to LIGHT mode
+      setIsDarkMode(false);
       document.body.style.backgroundColor = '#ffffff';
-      document.body.style.color = '#111827';
-      
-      // Force main containers
-      const containers = document.querySelectorAll('main, #root, .min-h-screen');
-      containers.forEach(el => {
-        el.style.backgroundColor = '#ffffff';
-        el.style.color = '#111827';
-      });
-      
-      console.log('✅ FORCED LIGHT mode');
+      document.body.style.color = '#000000';
+      console.log('✅ SWITCHED TO LIGHT MODE');
+    } else {
+      // Switch to DARK mode  
+      setIsDarkMode(true);
+      document.body.style.backgroundColor = '#1a252f';
+      document.body.style.color = '#ffffff';
+      console.log('✅ SWITCHED TO DARK MODE');
     }
   };
 
