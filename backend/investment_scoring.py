@@ -74,7 +74,7 @@ class StockScanner:
             try:
                 logger.info(f"Scanez {ticker} ({processed + 1}/{len(tickers)})")
                 
-                # Obține scoring pentru ticker
+                # Obține scoring pentru ticker folosind metoda corectă
                 # First get stock data
                 stock_data = await enhanced_ticker_manager.get_real_time_quote(ticker)
                 if not stock_data:
