@@ -178,7 +178,9 @@ class InvestmentScore(BaseModel):
     investment_horizon: str
     key_strengths: List[str]
     key_risks: List[str]
+    stock_data: Optional[Dict[str, Any]] = None  # FIXED: Add stock_data field
     technical_analysis: Optional[Dict[str, Any]] = None
+    sentiment_analysis: Optional[Dict[str, Any]] = None  # FIXED: Add sentiment_analysis field
     analysis_type: Optional[str] = None
     last_updated: str
 
