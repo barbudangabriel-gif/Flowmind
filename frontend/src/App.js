@@ -352,24 +352,28 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                           <div className="flex items-center justify-between w-full">
                             <button
                               onClick={() => toggleSection(group.title)}
-                              className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                              className="flex items-center gap-2 hover:text-slate-200 transition-colors flex-1"
                             >
                               <span>{group.title}</span>
                               <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                             </button>
                             
-                            {/* Luna subțire în marginea dreaptă */}
+                            {/* Luna subțire în marginea EXTREMĂ dreaptă */}
                             {isDashboard && (
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleDarkMode();
-                                }}
-                                className="p-1 hover:bg-gray-700 rounded transition-colors ml-auto"
-                                title="Toggle Dark/Light Mode"
-                              >
-                                <Moon strokeWidth={1} className="w-4 h-4 text-blue-400 hover:text-blue-300" />
-                              </button>
+                              <div className="flex-shrink-0 ml-4">
+                                <button 
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    console.log('Moon clicked! Current mode:', isDarkMode);
+                                    toggleDarkMode();
+                                  }}
+                                  className="p-1 hover:bg-gray-600 rounded transition-colors"
+                                  title="Toggle Dark/Light Mode"
+                                >
+                                  <Moon strokeWidth={1} className="w-4 h-4 text-blue-400 hover:text-blue-300" />
+                                </button>
+                              </div>
                             )}
                           </div>
                         )}
