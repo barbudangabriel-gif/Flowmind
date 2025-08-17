@@ -141,9 +141,9 @@ blueprint_reference: "/app/FlowMind_Options_Module_Blueprint.md"
 ##   test_all: false
 ##   test_priority: "high_first"  # or "sequential" or "stuck_first"
 ##
-## agent_communication:
-##     -agent: "main"  # or "testing" or "user"
-##     -message: "Communication message between agents"
+agent_communication:
+    - agent: "testing"
+    - message: "🎉 INVESTMENT SCORING SCANNER ISSUE RESOLVED - COMPREHENSIVE TESTING COMPLETE: Successfully identified and fixed the critical database mismatch issue in Investment Scoring Scanner. ROOT CAUSE: Scanner was saving to 'flowmind_db' database while API endpoints were reading from 'test_database' database. SOLUTION: Updated investment_scoring.py line 21 to use same database as server.py. RESULTS: 100% success rate (7/7 tests passed), all Romanian requirements met, scanner now processes ~100 tickere majore and saves results to MongoDB correctly. Scanner status changed from 'no_scans' to 'completed', top-stocks endpoint now returns 10 stocks with valid scores (META: 68.7, AAPL: 68.3, GOOGL: 67.8, etc.). MongoDB persistence fully operational, complete workflow working (scan → save → retrieve). Investment Scoring Scanner ready for production use."
 
 # Protocol Guidelines for Main agent
 #
