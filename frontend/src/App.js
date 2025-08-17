@@ -7102,10 +7102,9 @@ const TradeStationCallback = () => {
 // Main App Component with Routing
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isDarkMode, setIsDarkMode] = useState(true); // Default dark mode
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedSections, setExpandedSections] = useState(new Set([])); // TOATE PARENT-II RETRAȘI INIȚIAL
-  const { isDarkMode: themeDarkMode } = useTheme();
+  const { isDarkMode, toggleDarkMode } = useTheme(); // FOLOSESC GLOBAL THEME
   const location = useLocation();
   const navigate = useNavigate();
 
