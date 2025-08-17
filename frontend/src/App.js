@@ -351,10 +351,13 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                         ) : (
                           <button
                             onClick={() => toggleSection(group.title)}
-                            className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                            className="flex items-center justify-between w-full hover:text-slate-200 transition-colors"
                           >
                             <span>{group.title}</span>
-                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                            <div className="flex items-center gap-2">
+                              {isDashboard && <Sun className="w-4 h-4 text-yellow-400" />}
+                              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                            </div>
                           </button>
                         )}
                       </h3>
