@@ -7103,6 +7103,17 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Set initial theme
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      document.body.className = 'bg-[#1a252f] text-white';
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.className = 'bg-gray-50 text-gray-900';
+    }
+  }, []);
+
   // Toggle dark/light mode
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
