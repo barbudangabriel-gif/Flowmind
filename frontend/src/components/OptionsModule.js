@@ -344,9 +344,9 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
         </div>
       </div>
 
-      {/* Button Section - Foarte mic */}
-      <div className="px-4 pb-2">
-        <button className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white py-0.5 px-2 text-xs font-medium transition-colors rounded-md border-0">
+      {/* Button Section - Mic ca dreptunghiul roșu */}
+      <div className="px-4 pb-2 flex justify-center">
+        <button className="bg-[#3498db] hover:bg-[#2980b9] text-white py-0.5 px-3 text-xs font-medium transition-colors rounded-md border-0">
           Open in Builder
         </button>
       </div>
