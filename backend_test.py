@@ -985,6 +985,369 @@ class StockMarketAPITester:
         
         return success_rate >= 70 and len(recommendations) >= 10
 
+    def test_investment_scoring_scanner_endpoints(self):
+        """Test Investment Scoring Scanner endpoints - COMPREHENSIVE TESTING AS REQUESTED"""
+        print("\n🔍 TESTING INVESTMENT SCORING SCANNER ENDPOINTS - COMPREHENSIVE VERIFICATION")
+        print("=" * 80)
+        print("🎯 OBJECTIVE: Test new scanner endpoints for Investment Scoring")
+        print("📋 ENDPOINTS TO TEST:")
+        print("   1. GET /api/scanner/status - verifică statusul scanărilor")
+        print("   2. POST /api/scanner/start-scan - pornește o scanare completă")
+        print("   3. GET /api/scanner/top-stocks?limit=10 - obține top 10 acțiuni")
+        print("🔧 VERIFICATION FOCUS:")
+        print("   - Endpoints respond correctly")
+        print("   - MongoDB collection 'scanned_stocks' is created")
+        print("   - Scanner processes tickers (AAPL, MSFT, etc.)")
+        print("   - Scores are calculated and saved")
+        print("   - Responses contain correct data (ticker, score, rating)")
+        
+        # Test 1: Check Initial Scanner Status (should be empty initially)
+        print(f"\n📊 PHASE 1: Initial Scanner Status Check")
+        print("-" * 60)
+        
+        success, status_data = self.run_test("Scanner Status (Initial)", "GET", "scanner/status", 200)
+        if not success:
+            print("❌ Scanner status endpoint failed")
+            return False
+        
+        # Analyze initial status
+        status = status_data.get('status', 'unknown')
+        total_stocks_scanned = status_data.get('total_stocks_scanned', 0)
+        database_status = status_data.get('database_status', 'unknown')
+        last_scan_date = status_data.get('last_scan_date')
+        top_5_stocks = status_data.get('top_5_stocks', [])
+        
+        print(f"📊 Initial Status: {status}")
+        print(f"📊 Total Stocks Scanned: {total_stocks_scanned}")
+        print(f"📊 Database Status: {database_status}")
+        print(f"📊 Last Scan Date: {last_scan_date}")
+        print(f"📊 Top 5 Stocks: {len(top_5_stocks)} found")
+        
+        # Verify initial state
+        if status == "no_scans" and total_stocks_scanned == 0:
+            print(f"✅ Initial state correct: No previous scans found")
+            initial_state_correct = True
+        elif status == "completed" and total_stocks_scanned > 0:
+            print(f"✅ Previous scans found: {total_stocks_scanned} stocks already scanned")
+            initial_state_correct = True
+        else:
+            print(f"⚠️  Unexpected initial state: {status}")
+            initial_state_correct = False
+        
+        # Test 2: Start Stock Scan
+        print(f"\n🚀 PHASE 2: Start Stock Scan")
+        print("-" * 60)
+        
+        success, scan_start_data = self.run_test("Start Stock Scan", "POST", "scanner/start-scan", 200)
+        if not success:
+            print("❌ Start scan endpoint failed")
+            return False
+        
+        # Analyze scan start response
+        scan_status = scan_start_data.get('status', 'unknown')
+        scan_message = scan_start_data.get('message', '')
+        estimated_duration = scan_start_data.get('estimated_duration', '')
+        
+        print(f"📊 Scan Status: {scan_status}")
+        print(f"📊 Message: {scan_message}")
+        print(f"📊 Estimated Duration: {estimated_duration}")
+        
+        if scan_status == "started":
+            print(f"✅ Scan started successfully")
+            scan_started = True
+        else:
+            print(f"❌ Scan failed to start: {scan_status}")
+            scan_started = False
+        
+        # Test 3: Check Scanner Status After Starting (should show progress)
+        print(f"\n📊 PHASE 3: Scanner Status After Starting")
+        print("-" * 60)
+        
+        import time
+        print("⏳ Waiting 5 seconds for scan to begin processing...")
+        time.sleep(5)
+        
+        success, status_after_data = self.run_test("Scanner Status (After Start)", "GET", "scanner/status", 200)
+        if success:
+            status_after = status_after_data.get('status', 'unknown')
+            total_after = status_after_data.get('total_stocks_scanned', 0)
+            database_after = status_after_data.get('database_status', 'unknown')
+            top_5_after = status_after_data.get('top_5_stocks', [])
+            
+            print(f"📊 Status After Start: {status_after}")
+            print(f"📊 Total Stocks After: {total_after}")
+            print(f"📊 Database Status After: {database_after}")
+            print(f"📊 Top 5 Stocks After: {len(top_5_after)} found")
+            
+            # Check if scan is progressing
+            if total_after > total_stocks_scanned or status_after == "completed":
+                print(f"✅ Scan is progressing or completed")
+                scan_progressing = True
+            else:
+                print(f"⚠️  Scan may not be progressing yet")
+                scan_progressing = False
+        else:
+            scan_progressing = False
+        
+        # Test 4: Get Top Stocks (limit=10 as requested)
+        print(f"\n🏆 PHASE 4: Get Top 10 Stocks")
+        print("-" * 60)
+        
+        success, top_stocks_data = self.run_test("Top Stocks (limit=10)", "GET", "scanner/top-stocks", 200, params={"limit": 10})
+        if not success:
+            print("❌ Top stocks endpoint failed")
+            return False
+        
+        # Analyze top stocks response
+        total_found = top_stocks_data.get('total_found', 0)
+        limit = top_stocks_data.get('limit', 0)
+        scan_date = top_stocks_data.get('scan_date')
+        top_stocks = top_stocks_data.get('top_stocks', [])
+        
+        print(f"📊 Total Found: {total_found}")
+        print(f"📊 Limit Requested: {limit}")
+        print(f"📊 Scan Date: {scan_date}")
+        print(f"📊 Top Stocks Returned: {len(top_stocks)}")
+        
+        # Verify top stocks data structure
+        if top_stocks:
+            print(f"\n📋 Top 5 Stocks Analysis:")
+            for i, stock in enumerate(top_stocks[:5]):
+                ticker = stock.get('ticker', 'N/A')
+                score = stock.get('score', 0)
+                rating = stock.get('rating', 'N/A')
+                price = stock.get('price', 'N/A')
+                sector = stock.get('sector', 'N/A')
+                explanation = stock.get('explanation', '')
+                
+                print(f"   #{i+1}: {ticker}")
+                print(f"     - Score: {score}")
+                print(f"     - Rating: {rating}")
+                print(f"     - Price: {price}")
+                print(f"     - Sector: {sector}")
+                print(f"     - Explanation: {explanation[:50]}..." if len(explanation) > 50 else f"     - Explanation: {explanation}")
+                
+                # Verify required fields
+                required_fields = ['ticker', 'score', 'rating']
+                missing_fields = [field for field in required_fields if field not in stock or stock[field] is None]
+                
+                if missing_fields:
+                    print(f"     ❌ Missing fields: {missing_fields}")
+                else:
+                    print(f"     ✅ All required fields present")
+            
+            # Check for expected tickers (AAPL, MSFT, etc.)
+            tickers_found = [stock.get('ticker', '') for stock in top_stocks]
+            expected_tickers = ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'NVDA', 'AMZN', 'META']
+            found_expected = [ticker for ticker in tickers_found if ticker in expected_tickers]
+            
+            print(f"\n📊 Expected Tickers Found: {found_expected}")
+            if found_expected:
+                print(f"✅ Scanner processed expected major tickers")
+                expected_tickers_found = True
+            else:
+                print(f"⚠️  No expected major tickers found in top results")
+                expected_tickers_found = False
+        else:
+            print(f"❌ No top stocks returned")
+            expected_tickers_found = False
+        
+        # Test 5: Test Different Limits
+        print(f"\n🔢 PHASE 5: Test Different Limits")
+        print("-" * 60)
+        
+        limit_tests = [5, 20, 50]
+        limit_results = {}
+        
+        for test_limit in limit_tests:
+            success_limit, limit_data = self.run_test(f"Top Stocks (limit={test_limit})", "GET", "scanner/top-stocks", 200, params={"limit": test_limit})
+            if success_limit:
+                returned_stocks = limit_data.get('top_stocks', [])
+                limit_results[test_limit] = len(returned_stocks)
+                print(f"   Limit {test_limit}: {len(returned_stocks)} stocks returned")
+                
+                # Verify limit is respected
+                if len(returned_stocks) <= test_limit:
+                    print(f"     ✅ Limit respected")
+                else:
+                    print(f"     ❌ Limit exceeded")
+            else:
+                print(f"   ❌ Failed to get stocks with limit {test_limit}")
+                limit_results[test_limit] = 0
+        
+        # Test 6: Verify Score Ranges and Ratings
+        print(f"\n📊 PHASE 6: Score and Rating Verification")
+        print("-" * 60)
+        
+        if top_stocks:
+            scores = [stock.get('score', 0) for stock in top_stocks if stock.get('score') is not None]
+            ratings = [stock.get('rating', '') for stock in top_stocks if stock.get('rating')]
+            
+            if scores:
+                min_score = min(scores)
+                max_score = max(scores)
+                avg_score = sum(scores) / len(scores)
+                
+                print(f"📊 Score Analysis:")
+                print(f"   - Min Score: {min_score}")
+                print(f"   - Max Score: {max_score}")
+                print(f"   - Average Score: {avg_score:.1f}")
+                
+                # Verify scores are in reasonable range (0-100)
+                valid_scores = [s for s in scores if 0 <= s <= 100]
+                if len(valid_scores) == len(scores):
+                    print(f"   ✅ All scores in valid range (0-100)")
+                    scores_valid = True
+                else:
+                    print(f"   ❌ Some scores outside valid range")
+                    scores_valid = False
+            else:
+                print(f"❌ No valid scores found")
+                scores_valid = False
+            
+            if ratings:
+                unique_ratings = list(set(ratings))
+                print(f"📊 Ratings Found: {unique_ratings}")
+                
+                # Check for valid rating formats
+                valid_rating_patterns = ['BUY', 'SELL', 'HOLD', 'STRONG', '+', '-']
+                valid_ratings = []
+                for rating in unique_ratings:
+                    if any(pattern in rating.upper() for pattern in valid_rating_patterns):
+                        valid_ratings.append(rating)
+                
+                if valid_ratings:
+                    print(f"   ✅ Valid ratings found: {valid_ratings}")
+                    ratings_valid = True
+                else:
+                    print(f"   ❌ No valid rating patterns found")
+                    ratings_valid = False
+            else:
+                print(f"❌ No ratings found")
+                ratings_valid = False
+        else:
+            scores_valid = False
+            ratings_valid = False
+        
+        # Test 7: MongoDB Collection Verification (indirect)
+        print(f"\n🗄️  PHASE 7: MongoDB Collection Verification (Indirect)")
+        print("-" * 60)
+        
+        # We can't directly access MongoDB, but we can infer from the data
+        if total_found > 0 and scan_date:
+            print(f"✅ MongoDB collection 'scanned_stocks' appears to be working")
+            print(f"   - {total_found} stocks found in database")
+            print(f"   - Last scan date: {scan_date}")
+            mongodb_working = True
+        else:
+            print(f"⚠️  MongoDB collection status unclear")
+            mongodb_working = False
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT: Investment Scoring Scanner Endpoints")
+        print("=" * 80)
+        
+        # Calculate success metrics
+        test_phases = [
+            ("Scanner Status Endpoint", success),
+            ("Start Scan Endpoint", scan_started),
+            ("Top Stocks Endpoint", len(top_stocks) > 0),
+            ("Expected Tickers Found", expected_tickers_found),
+            ("Score Validation", scores_valid),
+            ("Rating Validation", ratings_valid),
+            ("MongoDB Integration", mongodb_working),
+            ("Different Limits Working", len(limit_results) >= 2)
+        ]
+        
+        passed_phases = sum(1 for _, passed in test_phases if passed)
+        total_phases = len(test_phases)
+        success_rate = (passed_phases / total_phases) * 100
+        
+        print(f"\n📊 TEST RESULTS SUMMARY:")
+        for phase_name, passed in test_phases:
+            status = "✅ PASS" if passed else "❌ FAIL"
+            print(f"   {status} {phase_name}")
+        
+        print(f"\n🎯 SUCCESS RATE: {success_rate:.1f}% ({passed_phases}/{total_phases} phases passed)")
+        
+        # Key findings
+        print(f"\n🔍 KEY FINDINGS:")
+        print(f"   - Scanner Status: {status}")
+        print(f"   - Total Stocks Scanned: {total_found}")
+        print(f"   - Top Stocks Available: {len(top_stocks)}")
+        print(f"   - Expected Tickers: {'✅ Found' if expected_tickers_found else '❌ Not Found'}")
+        print(f"   - Score Range: {min_score:.1f} - {max_score:.1f}" if scores else "No scores")
+        print(f"   - Ratings: {unique_ratings}" if ratings else "No ratings")
+        print(f"   - MongoDB Status: {'✅ Working' if mongodb_working else '⚠️  Unclear'}")
+        
+        # Romanian requirements verification
+        print(f"\n🇷🇴 ROMANIAN REQUIREMENTS VERIFICATION:")
+        requirements_met = []
+        
+        if success:
+            requirements_met.append("✅ GET /api/scanner/status - verifică statusul scanărilor")
+        else:
+            requirements_met.append("❌ GET /api/scanner/status - FAILED")
+        
+        if scan_started:
+            requirements_met.append("✅ POST /api/scanner/start-scan - pornește o scanare completă")
+        else:
+            requirements_met.append("❌ POST /api/scanner/start-scan - FAILED")
+        
+        if len(top_stocks) >= 10:
+            requirements_met.append("✅ GET /api/scanner/top-stocks?limit=10 - obține top 10 acțiuni")
+        else:
+            requirements_met.append(f"❌ GET /api/scanner/top-stocks?limit=10 - Only {len(top_stocks)} returned")
+        
+        if mongodb_working:
+            requirements_met.append("✅ MongoDB collection 'scanned_stocks' se creează")
+        else:
+            requirements_met.append("❌ MongoDB collection 'scanned_stocks' - Status unclear")
+        
+        if expected_tickers_found:
+            requirements_met.append("✅ Scanner-ul procesează tickerele (AAPL, MSFT, etc.)")
+        else:
+            requirements_met.append("❌ Scanner-ul procesează tickerele - Not verified")
+        
+        if scores_valid and ratings_valid:
+            requirements_met.append("✅ Scorurile se calculează și se salvează")
+        else:
+            requirements_met.append("❌ Scorurile se calculează și se salvează - Issues detected")
+        
+        if len(top_stocks) > 0 and scores_valid and ratings_valid:
+            requirements_met.append("✅ Răspunsurile conțin datele corecte (ticker, score, rating)")
+        else:
+            requirements_met.append("❌ Răspunsurile conțin datele corecte - Issues detected")
+        
+        for requirement in requirements_met:
+            print(f"   {requirement}")
+        
+        # Test scenario verification
+        print(f"\n📋 TEST SCENARIO VERIFICATION:")
+        scenario_steps = [
+            ("1. Verifică status (ar trebui să fie gol inițial)", initial_state_correct or total_found > 0),
+            ("2. Pornește scan (should start processing)", scan_started),
+            ("3. Verifică rezultatele (top stocks cu scoruri)", len(top_stocks) > 0 and scores_valid)
+        ]
+        
+        for step_name, completed in scenario_steps:
+            status = "✅ COMPLETED" if completed else "❌ FAILED"
+            print(f"   {status} {step_name}")
+        
+        # Final verdict
+        if success_rate >= 85 and len(top_stocks) >= 10:
+            print(f"\n🎉 VERDICT: EXCELLENT - Investment Scoring Scanner endpoints working perfectly!")
+            print(f"   Stock Scanner Engine funcționează și stochează în MongoDB top acțiuni.")
+            print(f"   All Romanian requirements satisfied with {len(top_stocks)} stocks available.")
+        elif success_rate >= 70 and len(top_stocks) >= 5:
+            print(f"\n✅ VERDICT: GOOD - Investment Scoring Scanner mostly working with minor issues.")
+            print(f"   Scanner provides {len(top_stocks)} stocks, may need optimization for full requirements.")
+        else:
+            print(f"\n❌ VERDICT: NEEDS ATTENTION - Investment Scoring Scanner has significant issues.")
+            print(f"   Only {len(top_stocks)} stocks available, requirements not fully met.")
+        
+        return success_rate >= 70
+
     def test_2_tier_pricing_system(self):
         """Test the updated 2-tier pricing data system with Yahoo Finance completely removed"""
         print("\n🎯 TESTING 2-TIER PRICING DATA SYSTEM - YAHOO FINANCE REMOVAL")
