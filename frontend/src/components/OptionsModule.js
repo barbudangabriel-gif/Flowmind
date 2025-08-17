@@ -182,11 +182,13 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
   const data = generatePnLData(strategyType);
   
   return (
-    <div className="bg-[#2c3e50] border border-[#34495e] rounded-lg shadow-xl" 
+    <div className="bg-[#2c3e50] border-2 border-[#5a6c7d] rounded-lg shadow-xl" 
          style={{
            minHeight: '280px',
            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3)',
-           background: 'linear-gradient(145deg, #34495e, #2c3e50)'
+           background: 'linear-gradient(145deg, #34495e, #2c3e50)',
+           outline: '1px solid #7f8c8d',
+           outlineOffset: '2px'
          }}>
       {/* Header Section - Ultra compact */}
       <div className="px-4 pt-1 pb-1 border-b border-[#34495e]">
