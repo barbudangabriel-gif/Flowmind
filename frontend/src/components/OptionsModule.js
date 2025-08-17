@@ -1,7 +1,30 @@
 import React, { useState } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Tooltip } from 'recharts';
 
-// Generate P&L data for each strategy
+// Custom Tooltip Component - OptionStrat Style
+function CustomTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const stockPrice = label;
+    const pnlValue = data.pnl;
+    const isProfitable = pnlValue > 0;
+    
+    return (
+      <div className="bg-[#2c3e50] border border-[#34495e] p-3 rounded-none shadow-lg">
+        <div className="text-white text-sm font-semibold mb-2">
+          Stock Price: ${stockPrice}
+        </div>
+        <div className={`text-sm font-bold ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`}>
+          P&L: {isProfitable ? '+' : ''}${pnlValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </div>
+        <div className="text-[#7f8c8d] text-xs mt-1">
+          {isProfitable ? 'Profit Zone' : 'Loss Zone'}
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
 function generatePnLData(strategy) {
   const prices = [];
   for (let i = 50; i <= 350; i += 10) {
