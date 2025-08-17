@@ -303,6 +303,20 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 strokeOpacity={0.9} 
                 strokeWidth={1}
               />
+              
+              {/* BREAKEVEN PRICE LINE - GALBEN */}
+              <ReferenceLine 
+                x={strategyType === 'longCall' ? 159.55 : 
+                   strategyType === 'coveredCall' ? 136.68 :
+                   strategyType === 'cashSecuredPut' ? 98.85 :
+                   strategyType === 'shortPut' ? 90.95 :
+                   strategyType === 'bullCallSpread' ? 145.25 :
+                   strategyType === 'bullPutSpread' ? 166.95 : 150} 
+                stroke="#f1c40f" 
+                strokeDasharray="3 3" 
+                strokeOpacity={0.9} 
+                strokeWidth={2}
+              />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
