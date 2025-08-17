@@ -106,8 +106,14 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 </linearGradient>
               </defs>
               
-              {/* Grid */}
-              <CartesianGrid stroke="#4a5f7a" strokeDasharray="1 1" strokeOpacity={0.3} />
+              {/* Grid - Exact OptionStrat Style */}
+              <CartesianGrid 
+                stroke="#4a5f7a" 
+                strokeDasharray="1 1" 
+                strokeOpacity={0.6}
+                horizontal={true}
+                vertical={true}
+              />
               
               {/* Axes */}
               <XAxis 
@@ -124,21 +130,29 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 tickCount={5}
               />
               
-              {/* Faded white zero line - CRITICAL FEATURE */}
+              {/* WHITE FADED ZERO LINE - EXACT OPTIONSTRAT STYLE */}
               <ReferenceLine 
                 y={0} 
                 stroke="#ffffff" 
-                strokeDasharray="3 3" 
-                strokeOpacity={0.4} 
-                strokeWidth={1}
+                strokeOpacity={0.8} 
+                strokeWidth={2}
               />
               
-              {/* Current price line */}
+              {/* VERTICAL BLUE LINES - Current Price */}
               <ReferenceLine 
                 x={149.53} 
                 stroke="#3498db" 
-                strokeDasharray="2 2" 
-                strokeOpacity={0.7} 
+                strokeDasharray="3 3" 
+                strokeOpacity={0.8} 
+                strokeWidth={1}
+              />
+              
+              {/* VERTICAL BLUE LINES - Target Price */}
+              <ReferenceLine 
+                x={263.91} 
+                stroke="#3498db" 
+                strokeDasharray="3 3" 
+                strokeOpacity={0.8} 
                 strokeWidth={1}
               />
               
