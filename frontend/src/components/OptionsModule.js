@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid } from 'recharts';
+import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Tooltip } from 'recharts';
 
 // Generate P&L data for each strategy
 function generatePnLData(strategy) {
