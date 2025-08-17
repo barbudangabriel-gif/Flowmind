@@ -238,10 +238,10 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 tickCount={5}
               />
               
-              {/* Interactive Tooltip - Simplu OptionStrat Style */}
+              {/* Interactive Tooltip - Fără chenar */}
               <Tooltip 
                 content={<CustomTooltip />}
-                cursor={{ stroke: '#3498db', strokeWidth: 1, strokeDasharray: '2 2' }}
+                cursor={false}
               />
               
               {/* Gradient fill areas - PRIMUL LAYER */}
