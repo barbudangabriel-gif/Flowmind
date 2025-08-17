@@ -173,15 +173,15 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
   
   return (
     <div className="bg-[#2c3e50] border border-[#34495e] rounded-none" style={{minHeight: '420px'}}>
-      {/* Header Section */}
-      <div className="px-4 pt-4 pb-3 border-b border-[#34495e]">
+      {/* Header Section - Redus padding */}
+      <div className="px-4 pt-3 pb-2 border-b border-[#34495e]">
         <h3 className="text-white text-base font-bold leading-tight mb-1">{title}</h3>
         <p className="text-[#7f8c8d] text-xs leading-tight">{subtitle}</p>
       </div>
       
-      {/* Metrics Section */}
-      <div className="px-4 py-3">
-        <div className="grid grid-cols-2 gap-3 mb-3">
+      {/* Metrics Section - Redus padding */}
+      <div className="px-4 py-2">
+        <div className="grid grid-cols-2 gap-3 mb-2">
           <div className="text-left">
             <div className="text-[#f39c12] text-xl font-bold leading-none">{returnOnRisk}</div>
             <div className="text-[#7f8c8d] text-xs mt-1">Return on Risk</div>
@@ -193,7 +193,7 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
         </div>
         
         {/* Profit/Risk Row */}
-        <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+        <div className="grid grid-cols-2 gap-3 mb-2 text-sm">
           <div className="text-left">
             <span className="text-[#27ae60] font-semibold">{profit}</span>
             <span className="text-[#7f8c8d]"> Profit</span>
@@ -205,9 +205,9 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
         </div>
       </div>
 
-      {/* Chart Section - Mai lat, nu mai înalt */}
-      <div className="px-1 pb-3">
-        <div className="h-36 bg-[#34495e] rounded-none border border-[#4a5f7a]">
+      {/* Chart Section - Ridicat cu 20% fără să măresc cardul */}
+      <div className="px-1 pb-2">
+        <div className="h-44 bg-[#34495e] rounded-none border border-[#4a5f7a]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
               <defs>
