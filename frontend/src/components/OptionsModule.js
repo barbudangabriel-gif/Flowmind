@@ -168,8 +168,10 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
     <div className="bg-[#2c3e50] border-2 border-[#5a6c7d] rounded-lg shadow-xl" 
          style={{
            minHeight: '280px',
-           boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3)',
-           background: 'linear-gradient(145deg, #34495e, #2c3e50)'
+           boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.3)',
+           background: 'linear-gradient(145deg, #34495e, #2c3e50)',
+           borderImage: 'linear-gradient(145deg, #7f8c8d, #34495e) 1',
+           filter: 'drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3))'
          }}>
       {/* Header Section - Ultra compact */}
       <div className="px-4 pt-1 pb-1 border-b border-[#34495e]">
