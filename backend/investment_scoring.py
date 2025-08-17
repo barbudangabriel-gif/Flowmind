@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 # MongoDB Connection pentru stocare rezultate scanner
 mongo_client = AsyncIOMotorClient(os.environ.get('MONGO_URL', 'mongodb://localhost:27017'))
-db = mongo_client['flowmind_db']
+db = mongo_client[os.environ.get('DB_NAME', 'test_database')]
 scanned_stocks_collection = db['scanned_stocks']
 
 class StockScanner:
