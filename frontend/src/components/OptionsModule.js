@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Tooltip } from 'recharts';
 
-// Custom Tooltip Component - Refăcut simplu și centrat
+// Custom Tooltip Component - Fără rotunjiri
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -11,7 +11,7 @@ function CustomTooltip({ active, payload, label }) {
     const isProfitable = pnlValue > 0;
     
     return (
-      <div className="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-center">
+      <div className="bg-gray-800 border border-gray-600 px-2 py-1 text-center">
         <div className={`text-sm font-bold ${isProfitable ? 'text-green-400' : 'text-red-400'}`}>
           {isProfitable ? '+' : ''}${pnlValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </div>
