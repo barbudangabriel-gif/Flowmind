@@ -19,7 +19,7 @@ import pandas as pd
 import numpy as np
 from collections import Counter
 from enhanced_ticker_data import enhanced_ticker_manager
-from investment_scoring import investment_scorer
+from investment_scoring import investment_scorer, StockScanner
 from smart_money_analysis import smart_money_analyzer
 from market_sentiment_analyzer import market_sentiment_analyzer
 from unusual_whales_service import UnusualWhalesService
