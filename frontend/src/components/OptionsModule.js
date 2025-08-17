@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Tooltip } from 'recharts';
 
-// Custom Tooltip Component - Profit sus, preț jos, mai mare
+// Custom Tooltip Component - Ridicat 20%, breakeven în loc de preț
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const stockPrice = label;
     const pnlValue = data.pnl;
+    const breakeven = data.breakeven;
     const isProfitable = pnlValue > 0;
     
     return (
-      <div className="p-2">
+      <div className="p-2 transform -translate-y-2">
         <div className={`text-sm font-bold mb-1 ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`}>
           {isProfitable ? '+' : ''}${pnlValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </div>
         <div className="text-white text-sm">
-          ${stockPrice}
+          {breakeven ? `BE: $${breakeven.toFixed(0)}` : `$${stockPrice}`}
         </div>
       </div>
     );
