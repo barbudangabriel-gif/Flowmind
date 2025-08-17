@@ -75,7 +75,13 @@ class StockScanner:
                 logger.info(f"Scanez {ticker} ({processed + 1}/{len(tickers)})")
                 
                 # Obține scoring pentru ticker
-                result = await self.scorer.get_investment_score(ticker)
+                # First get stock data
+                stock_data = await enhanced_ticker_manager.get_real_time_quote(ticker)
+                if not stock_data:
+                    logger.warning(f"⚠️ {ticker}: Nu s-au putut obține datele stock")
+                    continue
+                
+                result = await self.scorer.calculate_investment_score(stock_data)
                 
                 if result and 'total_score' in result:
                     # Adaugă informații suplimentare
