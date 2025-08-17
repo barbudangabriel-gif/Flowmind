@@ -287,7 +287,7 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
               
               {/* Interactive Tooltip - OptionStrat Style */}
               <Tooltip 
-                content={<CustomTooltip />}
+                content={<CustomTooltip strategyType={strategyType} />}
                 cursor={{ stroke: '#3498db', strokeWidth: 1, strokeDasharray: '2 2' }}
               />
               
