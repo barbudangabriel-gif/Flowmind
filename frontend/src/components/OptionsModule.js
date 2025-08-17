@@ -350,9 +350,13 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
         </div>
       </div>
 
-      {/* Button Section - Ultra compact */}
+      {/* Button Section - Ultra compact cu efect 3D */}
       <div className="px-4 pb-1 flex justify-center">
-        <button className="bg-[#3498db] hover:bg-[#2980b9] text-white py-0.5 px-3 text-xs font-medium transition-colors rounded-md border-0">
+        <button className="bg-[#3498db] hover:bg-[#2980b9] text-white py-0.5 px-3 text-xs font-medium transition-colors rounded-md border-0"
+                style={{
+                  boxShadow: '0 4px 8px rgba(52, 152, 219, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2)',
+                  background: 'linear-gradient(145deg, #3498db, #2980b9)'
+                }}>
           Open in Builder
         </button>
       </div>
