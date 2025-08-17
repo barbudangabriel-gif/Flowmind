@@ -1,17 +1,25 @@
 """
 Investment Scoring System - Algoritm pentru cele mai bune oportunități de investiții
 Enhanced with Technical Analysis: Overall Trend, Indicators, Price Action
+SCANNER ENGINE pentru toate tickerele din TradeStation
 """
 import asyncio
 from typing import List, Dict, Any, Optional
 import numpy as np
 from datetime import datetime, timedelta
 import logging
+import os
+from motor.motor_asyncio import AsyncIOMotorClient
 from enhanced_ticker_data import enhanced_ticker_manager
 from technical_analysis_enhanced import technical_analyzer
 from market_sentiment_analyzer import market_sentiment_analyzer, sentiment_to_investment_score
 
 logger = logging.getLogger(__name__)
+
+# MongoDB Connection pentru stocare rezultate scanner
+mongo_client = AsyncIOMotorClient(os.environ.get('MONGO_URL', 'mongodb://localhost:27017'))
+db = mongo_client['flowmind_db']
+scanned_stocks_collection = db['scanned_stocks']
 
 class InvestmentScorer:
     def __init__(self):
