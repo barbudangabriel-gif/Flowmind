@@ -325,10 +325,10 @@ class InvestmentScorer:
     def _calculate_pb_score(self, stock_data: Dict[str, Any]) -> float:
         """Score based on estimated Price-to-Book ratio"""
         # Since we don't have direct P/B, estimate based on market cap and other factors
-        market_cap = stock_data.get('market_cap', 0)
-        price = stock_data.get('price', 0)
+        market_cap = stock_data.get('market_cap')
+        price = stock_data.get('price')
         
-        if market_cap == 0 or price == 0:
+        if market_cap is None or price is None or market_cap <= 0 or price <= 0:
             return 50
         
         # Estimate P/B score based on market cap size and sector
