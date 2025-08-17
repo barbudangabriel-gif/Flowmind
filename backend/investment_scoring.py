@@ -273,6 +273,7 @@ class InvestmentScorer:
                 'investment_horizon': self._recommend_enhanced_investment_horizon(scores, technical_data, sentiment_data),
                 'key_strengths': self._identify_enhanced_key_strengths(scores, technical_data, sentiment_data),
                 'key_risks': self._identify_enhanced_key_risks(scores, technical_data, sentiment_data),
+                'stock_data': stock_data,  # FIXED: Include original stock data with price
                 'technical_analysis': {
                     'trend_direction': technical_data.get('trend_analysis', {}).get('direction', 'NEUTRAL'),
                     'trend_strength': technical_data.get('trend_analysis', {}).get('strength', 50),
