@@ -350,7 +350,13 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </button>
                         ) : (
-                          group.title
+                          <button
+                            onClick={() => toggleSection(group.title)}
+                            className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                          >
+                            <span>{group.title}</span>
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
                         )}
                       </h3>
                     </div>
