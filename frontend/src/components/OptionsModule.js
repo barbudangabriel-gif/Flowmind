@@ -225,18 +225,18 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 vertical={true}
               />
               
-              {/* Axes */}
+              {/* Axes - Linii albe la scală */}
               <XAxis 
                 dataKey="price" 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: "#ffffff", fontSize: 9, opacity: 0.8 }}
+                axisLine={{ stroke: "#ffffff", strokeWidth: 1 }}
+                tickLine={{ stroke: "#ffffff", strokeWidth: 1 }}
+                tick={{ fill: "#ffffff", fontSize: 9 }}
                 tickCount={6}
               />
               <YAxis 
-                axisLine={false} 
-                tickLine={false} 
-                tick={{ fill: "#ffffff", fontSize: 9, opacity: 0.8 }}
+                axisLine={{ stroke: "#ffffff", strokeWidth: 1 }}
+                tickLine={{ stroke: "#ffffff", strokeWidth: 1 }}
+                tick={{ fill: "#ffffff", fontSize: 9 }}
                 tickCount={5}
               />
               
