@@ -245,13 +245,29 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 tickCount={5}
               />
               
-              {/* Interactive Tooltip - Complet fără background */}
+              {/* Interactive Tooltip - Forțat transparent cu CSS override */}
               <Tooltip 
                 content={<CustomTooltip />}
                 cursor={false}
-                wrapperStyle={{ background: 'transparent', border: 'none', outline: 'none' }}
-                contentStyle={{ background: 'transparent', border: 'none', outline: 'none' }}
-                labelStyle={{ background: 'transparent' }}
+                wrapperStyle={{ 
+                  background: 'none !important', 
+                  backgroundColor: 'transparent !important',
+                  border: 'none !important', 
+                  outline: 'none !important',
+                  boxShadow: 'none !important'
+                }}
+                contentStyle={{ 
+                  background: 'none !important', 
+                  backgroundColor: 'transparent !important',
+                  border: 'none !important', 
+                  outline: 'none !important',
+                  boxShadow: 'none !important',
+                  padding: '0 !important'
+                }}
+                labelStyle={{ 
+                  background: 'none !important',
+                  backgroundColor: 'transparent !important'
+                }}
               />
               
               {/* Gradient fill areas - PRIMUL LAYER */}
