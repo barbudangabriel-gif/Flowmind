@@ -41,6 +41,7 @@ import {
   RefreshCw,
   Moon,
   Sun,
+  Moon,
   Bot,
   History,
   Users,
