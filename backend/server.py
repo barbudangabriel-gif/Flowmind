@@ -879,8 +879,16 @@ async def get_scanner_top_stocks(limit: int = Query(50, description="Numărul de
                     "ticker": stock.get('ticker'),
                     "score": round(stock.get('total_score', 0), 1),
                     "rating": stock.get('rating'),
-                    "price": stock.get('stock_data', {}).get('price', 'N/A'),
-                    "sector": stock.get('stock_data', {}).get('sector', 'N/A'),
+                    "price": (
+                        stock.get('stock_data', {}).get('price') or 
+                        stock.get('price') or 
+                        'N/A'
+                    ),
+                    "sector": (
+                        stock.get('stock_data', {}).get('sector') or
+                        stock.get('sector') or
+                        'N/A'
+                    ),
                     "explanation": stock.get('explanation', '')[:100] + "..." if len(stock.get('explanation', '')) > 100 else stock.get('explanation', '')
                 }
                 for stock in top_stocks
