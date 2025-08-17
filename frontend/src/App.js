@@ -175,7 +175,7 @@ const LoadingFallback = ({ componentName }) => (
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(new Set(['TradeStation 🏛️', 'Unusual Whales 🐋'])); // TradeStation and Unusual Whales expanded by default
+  const [expandedSections, setExpandedSections] = useState(new Set([])); // TOATE RETRAȘI INIȚIAL
   const { isDarkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
 
