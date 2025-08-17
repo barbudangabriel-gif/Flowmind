@@ -205,12 +205,12 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
             <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
               <defs>
                 <linearGradient id={`profit-gradient-${strategyType}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#27ae60" stopOpacity={0.6} />
-                  <stop offset="100%" stopColor="#27ae60" stopOpacity={0.2} />
+                  <stop offset="0%" stopColor="#27ae60" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#27ae60" stopOpacity={0.4} />
                 </linearGradient>
                 <linearGradient id={`loss-gradient-${strategyType}`} x1="0" y1="1" x2="0" y2="0">
-                  <stop offset="0%" stopColor="#e74c3c" stopOpacity={0.6} />
-                  <stop offset="100%" stopColor="#e74c3c" stopOpacity={0.2} />
+                  <stop offset="0%" stopColor="#e74c3c" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#e74c3c" stopOpacity={0.4} />
                 </linearGradient>
               </defs>
               
