@@ -7085,11 +7085,25 @@ const TradeStationCallback = () => {
 // Main App Component with Routing
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isDarkMode, setIsDarkMode] = useState(true); // Default dark mode
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [expandedSections, setExpandedSections] = useState(new Set([])); // TOATE PARENT-II RETRAȘI INIȚIAL
-  const { isDarkMode } = useTheme();
+  const { isDarkMode: themeDarkMode } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Toggle dark/light mode
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    // Apply to document for global theme
+    if (isDarkMode) {
+      document.documentElement.classList.remove('dark');
+      document.body.className = 'bg-gray-50 text-gray-900';
+    } else {
+      document.documentElement.classList.add('dark');
+      document.body.className = 'bg-[#1a252f] text-white';
+    }
+  };
 
   // Update activeTab based on current route
   useEffect(() => {
