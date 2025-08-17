@@ -436,7 +436,11 @@ class InvestmentScorer:
     
     def _calculate_financial_health_score(self, stock_data: Dict[str, Any]) -> float:
         """Assess financial health"""
-        market_cap = stock_data.get('market_cap', 0)
+        market_cap = stock_data.get('market_cap')
+        
+        # Handle None market cap
+        if market_cap is None or market_cap <= 0:
+            return 55  # Unknown market cap = moderate risk
         
         # Larger market cap generally indicates more financial stability
         if market_cap >= 100e9:  # $100B+
