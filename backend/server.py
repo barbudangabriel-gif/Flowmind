@@ -870,29 +870,42 @@ async def get_scanner_top_stocks(limit: int = Query(50, description="Numărul de
             
         top_stocks = await global_scanner.get_top_stocks(limit)
         
-        return {
-            "total_found": len(top_stocks),
-            "limit": limit,
-            "scan_date": top_stocks[0].get('scanned_at') if top_stocks else None,
-            "top_stocks": [
-                {
-                    "ticker": stock.get('ticker'),
+        # ENHANCED: Get fresh price data for each stock
+        enhanced_stocks = []
+        for stock in top_stocks:
+            ticker = stock.get('ticker')
+            
+            # Try to get fresh price data
+            try:
+                from enhanced_ticker_data import enhanced_ticker_manager
+                fresh_data = await enhanced_ticker_manager.get_real_time_quote(ticker)
+                
+                enhanced_stock = {
+                    "ticker": ticker,
                     "score": round(stock.get('total_score', 0), 1),
                     "rating": stock.get('rating'),
-                    "price": (
-                        stock.get('stock_data', {}).get('price') or 
-                        stock.get('price') or 
-                        'N/A'
-                    ),
-                    "sector": (
-                        stock.get('stock_data', {}).get('sector') or
-                        stock.get('sector') or
-                        'N/A'
-                    ),
+                    "price": fresh_data.get('price') if fresh_data else stock.get('stock_data', {}).get('price', 'N/A'),
+                    "sector": fresh_data.get('sector') if fresh_data else stock.get('stock_data', {}).get('sector', 'N/A'),
                     "explanation": stock.get('explanation', '')[:100] + "..." if len(stock.get('explanation', '')) > 100 else stock.get('explanation', '')
                 }
-                for stock in top_stocks
-            ]
+            except Exception as e:
+                # Fallback to original data structure
+                enhanced_stock = {
+                    "ticker": ticker,
+                    "score": round(stock.get('total_score', 0), 1),
+                    "rating": stock.get('rating'),
+                    "price": stock.get('stock_data', {}).get('price', 'N/A'),
+                    "sector": stock.get('stock_data', {}).get('sector', 'N/A'),
+                    "explanation": stock.get('explanation', '')[:100] + "..." if len(stock.get('explanation', '')) > 100 else stock.get('explanation', '')
+                }
+            
+            enhanced_stocks.append(enhanced_stock)
+        
+        return {
+            "total_found": len(enhanced_stocks),
+            "limit": limit,
+            "scan_date": top_stocks[0].get('scanned_at') if top_stocks else None,
+            "top_stocks": enhanced_stocks
         }
         
     except Exception as e:
