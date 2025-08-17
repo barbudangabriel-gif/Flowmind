@@ -148,14 +148,14 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
               <Line 
                 dataKey="profit" 
                 stroke="#27ae60" 
-                strokeWidth={1.5} 
+                strokeWidth={2} 
                 dot={false} 
                 connectNulls={false} 
               />
               <Line 
                 dataKey="loss" 
                 stroke="#e74c3c" 
-                strokeWidth={1.5} 
+                strokeWidth={2} 
                 dot={false} 
                 connectNulls={false} 
               />
