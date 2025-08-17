@@ -21,6 +21,137 @@ mongo_client = AsyncIOMotorClient(os.environ.get('MONGO_URL', 'mongodb://localho
 db = mongo_client['flowmind_db']
 scanned_stocks_collection = db['scanned_stocks']
 
+class StockScanner:
+    """Scanner Engine pentru toate tickerele din TradeStation"""
+    
+    def __init__(self, investment_scorer):
+        self.scorer = investment_scorer
+        self.ts_client = None  # TradeStation client pentru tickere
+        self.max_stocks = 1000  # Păstrăm top 1000 acțiuni
+        
+    async def get_all_tickers_from_ts(self) -> List[str]:
+        """Obține toate tickerele din TradeStation"""
+        try:
+            # Lista de tickere majore pentru început (S&P 500 + NASDAQ 100 + alte majore)
+            major_tickers = [
+                'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'BRK.B', 'V', 'JNJ',
+                'WMT', 'JPM', 'PG', 'UNH', 'DIS', 'HD', 'MA', 'PFE', 'BAC', 'ABBV',
+                'ADBE', 'CRM', 'KO', 'PEP', 'TMO', 'COST', 'AVGO', 'DHR', 'NEE', 'ABT',
+                'CMCSA', 'XOM', 'LLY', 'VZ', 'ORCL', 'INTC', 'AMD', 'COP', 'PM', 'HON',
+                'LIN', 'CVX', 'NOW', 'IBM', 'QCOM', 'UBER', 'TXN', 'SPGI', 'LOW', 'CAT',
+                'GS', 'NFLX', 'INTU', 'AMGN', 'RTX', 'ISRG', 'MDT', 'BA', 'SBUX', 'DE',
+                'AMAT', 'GILD', 'AXP', 'BKNG', 'LRCX', 'TJX', 'SYK', 'BLK', 'MU', 'TMUS',
+                'REGN', 'PYPL', 'SCHW', 'PANW', 'C', 'PGR', 'VRTX', 'MMC', 'CB', 'MDLZ',
+                'SO', 'FI', 'BSX', 'EOG', 'KLAC', 'WM', 'EL', 'SNPS', 'ITW', 'ADI',
+                'MSI', 'CSX', 'CME', 'ZTS', 'HCA', 'SHW', 'APD', 'CDNS', 'MO', 'USB'
+            ]
+            
+            # TODO: Integrare TradeStation API pentru lista completă de tickere
+            # Pentru acum folosim lista majoră + putem extinde cu mai multe
+            
+            logger.info(f"Scanăm {len(major_tickers)} tickere majore")
+            return major_tickers
+            
+        except Exception as e:
+            logger.error(f"Eroare la obținerea tickerelor: {e}")
+            return []
+    
+    async def scan_all_stocks(self) -> Dict[str, Any]:
+        """Scanner principal - analizează toate tickerele și păstrează top 1000"""
+        logger.info("🔄 Începe scanarea completă a tuturor tickerelor...")
+        
+        # Obține lista de tickere
+        tickers = await self.get_all_tickers_from_ts()
+        if not tickers:
+            return {"error": "Nu s-au putut obține tickerele"}
+        
+        scanned_results = []
+        processed = 0
+        errors = 0
+        
+        # Scanează fiecare ticker
+        for ticker in tickers:
+            try:
+                logger.info(f"Scanez {ticker} ({processed + 1}/{len(tickers)})")
+                
+                # Obține scoring pentru ticker
+                result = await self.scorer.get_investment_score(ticker)
+                
+                if result and 'total_score' in result:
+                    # Adaugă informații suplimentare
+                    result['ticker'] = ticker
+                    result['scanned_at'] = datetime.utcnow()
+                    result['scan_id'] = f"scan_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+                    
+                    scanned_results.append(result)
+                    logger.info(f"✅ {ticker}: Score {result['total_score']:.1f}")
+                else:
+                    logger.warning(f"⚠️ {ticker}: Nu s-a putut calcula scorul")
+                    
+                processed += 1
+                
+                # Pauză scurtă pentru a nu supraîncărca API-urile
+                await asyncio.sleep(0.5)
+                
+            except Exception as e:
+                errors += 1
+                logger.error(f"❌ Eroare la scanarea {ticker}: {e}")
+                continue
+        
+        # Sortează după scor (descrescător) și păstrează top 1000
+        scanned_results.sort(key=lambda x: x.get('total_score', 0), reverse=True)
+        top_stocks = scanned_results[:self.max_stocks]
+        
+        # Salvează în MongoDB
+        await self.save_scan_results(top_stocks)
+        
+        summary = {
+            'scan_completed_at': datetime.utcnow(),
+            'total_tickers_processed': processed,
+            'successful_scans': len(scanned_results),
+            'errors': errors,
+            'top_stocks_count': len(top_stocks),
+            'top_10_stocks': [
+                {
+                    'ticker': stock['ticker'],
+                    'score': stock['total_score'],
+                    'rating': stock.get('rating', 'N/A')
+                }
+                for stock in top_stocks[:10]
+            ]
+        }
+        
+        logger.info(f"🏆 Scanare completă: {len(top_stocks)} acțiuni top din {processed} procesate")
+        return summary
+    
+    async def save_scan_results(self, results: List[Dict[str, Any]]):
+        """Salvează rezultatele scanării în MongoDB"""
+        try:
+            # Șterge rezultatele vechi
+            await scanned_stocks_collection.delete_many({})
+            
+            # Inserează rezultatele noi
+            if results:
+                await scanned_stocks_collection.insert_many(results)
+                logger.info(f"💾 Salvate {len(results)} rezultate în MongoDB")
+            
+        except Exception as e:
+            logger.error(f"Eroare la salvarea rezultatelor: {e}")
+    
+    async def get_top_stocks(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Obține top acțiuni din ultimul scan"""
+        try:
+            cursor = scanned_stocks_collection.find({}).sort('total_score', -1).limit(limit)
+            results = await cursor.to_list(length=limit)
+            return results
+        except Exception as e:
+            logger.error(f"Eroare la obținerea top acțiuni: {e}")
+            return []
+
+# Instanță globală scanner
+stock_scanner = None
+
+
 class InvestmentScorer:
     def __init__(self):
         # Enhanced weights to include sentiment analysis (40/40/20 split)
