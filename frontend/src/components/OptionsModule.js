@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Tooltip } from 'recharts';
 
-// Custom Tooltip Component - OptionStrat Style
-function CustomTooltip({ active, payload, label }) {
+// Custom Tooltip Component - OptionStrat Style cu toate cifrele
+function CustomTooltip({ active, payload, label, strategyType }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const stockPrice = label;
@@ -10,15 +10,60 @@ function CustomTooltip({ active, payload, label }) {
     const isProfitable = pnlValue > 0;
     
     return (
-      <div className="bg-[#2c3e50] border border-[#34495e] p-3 rounded-none shadow-lg">
-        <div className="text-white text-sm font-semibold mb-2">
+      <div className="bg-[#2c3e50] border border-[#34495e] p-3 rounded-none shadow-lg min-w-[200px]">
+        <div className="text-white text-sm font-semibold mb-2 border-b border-[#34495e] pb-2">
           Stock Price: ${stockPrice}
         </div>
-        <div className={`text-sm font-bold ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`}>
+        
+        <div className={`text-sm font-bold mb-2 ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`}>
           P&L: {isProfitable ? '+' : ''}${pnlValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
-        <div className="text-[#7f8c8d] text-xs mt-1">
-          {isProfitable ? 'Profit Zone' : 'Loss Zone'}
+        
+        {/* Metrici specifice strategiei */}
+        {data.breakeven && (
+          <div className="text-[#f39c12] text-xs mb-1">
+            Breakeven: ${data.breakeven.toFixed(2)}
+          </div>
+        )}
+        
+        {data.premium && (
+          <div className="text-[#7f8c8d] text-xs mb-1">
+            Premium: ${data.premium.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+        )}
+        
+        {data.stockPnL !== undefined && (
+          <div className="text-[#7f8c8d] text-xs mb-1">
+            Stock P&L: {data.stockPnL >= 0 ? '+' : ''}${data.stockPnL.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+        )}
+        
+        {data.optionPnL !== undefined && (
+          <div className="text-[#7f8c8d] text-xs mb-1">
+            Option P&L: {data.optionPnL >= 0 ? '+' : ''}${data.optionPnL.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+        )}
+        
+        {data.collateral && (
+          <div className="text-[#7f8c8d] text-xs mb-1">
+            Collateral: ${data.collateral.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+        )}
+        
+        {data.netDebit && (
+          <div className="text-[#e74c3c] text-xs mb-1">
+            Net Debit: ${data.netDebit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+        )}
+        
+        {data.netCredit && (
+          <div className="text-[#27ae60] text-xs mb-1">
+            Net Credit: ${data.netCredit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </div>
+        )}
+        
+        <div className="text-[#7f8c8d] text-xs mt-2 pt-1 border-t border-[#34495e]">
+          {isProfitable ? '💰 Profit Zone' : '⚠️ Loss Zone'}
         </div>
       </div>
     );
