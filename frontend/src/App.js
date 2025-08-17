@@ -7236,6 +7236,16 @@ function AppContent() {
               } 
             />
             
+            {/* Investment Scoring Scanner Route */}
+            <Route 
+              path="/investment-scoring-scanner" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Investment Scoring Scanner" />}>
+                  <InvestmentScoringDisplay />
+                </Suspense>
+              } 
+            />
+            
             {/* Default Route - renders based on activeTab */}
             <Route path="/*" element={renderContent()} />
           </Routes>
