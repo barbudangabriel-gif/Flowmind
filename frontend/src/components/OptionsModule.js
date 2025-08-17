@@ -240,12 +240,12 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 tickCount={5}
               />
               
-              {/* Interactive Tooltip - Mutat scala cu 5mm spre stânga */}
+              {/* Interactive Tooltip - Poziționare corectă cu coordinateX/Y */}
               <Tooltip 
                 content={<CustomTooltip />}
                 cursor={false}
-                offset={-65}
-                position={{ x: -55, y: 0 }}
+                coordinateX={-20}
+                coordinateY={-10}
               />
               
               {/* Gradient fill areas - PRIMUL LAYER */}
