@@ -6776,6 +6776,38 @@ def main_top_picks():
         print("🔧 Investment Scoring page may need attention")
         return 1
 
+def main_scanner_tests():
+    """Main function to run Investment Scoring Scanner tests as requested"""
+    print("🔍 INVESTMENT SCORING SCANNER ENDPOINT TESTING")
+    print("=" * 80)
+    print("🇷🇴 ROMANIAN REQUEST: Test scanner endpoints for Investment Scoring")
+    print("🌐 Backend URL: https://efec4055-6ab9-4812-bb78-e861d52e4da4.preview.emergentagent.com")
+    print("📊 Testing: Scanner endpoints (status, start-scan, top-stocks)")
+    
+    tester = StockMarketAPITester()
+    
+    # Run the comprehensive Scanner tests
+    success = tester.test_investment_scoring_scanner_endpoints()
+    
+    # Summary
+    print("\n" + "=" * 80)
+    print("🎯 SCANNER ENDPOINTS TEST SUMMARY")
+    print("=" * 80)
+    print(f"Total Tests Run: {tester.tests_run}")
+    print(f"Tests Passed: {tester.tests_passed}")
+    print(f"Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
+    
+    if success:
+        print("🎉 SCANNER ENDPOINTS TESTING PASSED!")
+        print("✅ Stock Scanner Engine funcționează și stochează în MongoDB")
+        print("📊 Investment Scoring scanner should work correctly")
+        return 0
+    else:
+        print("⚠️  SCANNER ENDPOINTS TESTING FAILED!")
+        print("❌ Scanner requirements may not be satisfied")
+        print("🔧 Investment Scoring scanner may need attention")
+        return 1
+
 if __name__ == "__main__":
-    # Run the Top Picks test as requested by user
-    sys.exit(main_top_picks())
+    # Run the Scanner tests as requested in review
+    sys.exit(main_scanner_tests())
