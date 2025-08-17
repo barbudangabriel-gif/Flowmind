@@ -228,13 +228,13 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 dataKey="price" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: "#7f8c8d", fontSize: 9 }}
+                tick={{ fill: "#ffffff", fontSize: 9, opacity: 0.8 }}
                 tickCount={6}
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fill: "#7f8c8d", fontSize: 9 }}
+                tick={{ fill: "#ffffff", fontSize: 9, opacity: 0.8 }}
                 tickCount={5}
               />
               
