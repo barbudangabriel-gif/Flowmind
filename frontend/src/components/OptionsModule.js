@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Tooltip } from 'recharts';
 
-// Custom Tooltip Component - Cu gradient gri 3D în spate
+// Custom Tooltip Component - Gradient gri 3D forțat
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -11,19 +11,29 @@ function CustomTooltip({ active, payload, label }) {
     const isProfitable = pnlValue > 0;
     
     return (
-      <div style={{ 
-        background: 'linear-gradient(145deg, #404040, #2a2a2a)',
-        border: '1px solid #555',
-        borderRadius: '6px',
-        padding: '4px 8px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3)',
-        backdropFilter: 'blur(2px)'
-      }}>
-        <div className={`text-sm font-bold mb-1 ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`}>
-          {isProfitable ? '+' : ''}${pnlValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+      <div className="relative">
+        {/* Background 3D gri */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-500 to-gray-700 rounded-lg shadow-2xl transform rotate-1" 
+             style={{
+               background: 'linear-gradient(135deg, #6b7280 0%, #374151 50%, #1f2937 100%)',
+               boxShadow: '0 10px 25px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+               filter: 'blur(0.5px)'
+             }}>
         </div>
-        <div className="text-white text-sm">
-          {breakeven ? `BE: $${breakeven.toFixed(0)}` : `$${stockPrice}`}
+        
+        {/* Content */}
+        <div className="relative z-10 px-3 py-2 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg border border-gray-500"
+             style={{
+               background: 'linear-gradient(135deg, #4b5563 0%, #374151 50%, #1f2937 100%)',
+               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+               backdropFilter: 'blur(4px)'
+             }}>
+          <div className={`text-sm font-bold mb-1 ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`}>
+            {isProfitable ? '+' : ''}${pnlValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          </div>
+          <div className="text-white text-sm">
+            {breakeven ? `BE: $${breakeven.toFixed(0)}` : `$${stockPrice}`}
+          </div>
         </div>
       </div>
     );
