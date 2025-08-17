@@ -920,7 +920,7 @@ class InvestmentScorer:
         
         return risks[:3]  # Top 3 risks
     
-    def _get_default_score(self, symbol: str) -> Dict[str, Any]:
+    def _get_default_score(self, symbol: str, stock_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """Return default score for error cases"""
         return {
             'symbol': symbol,
@@ -932,6 +932,7 @@ class InvestmentScorer:
             'investment_horizon': "UNKNOWN",
             'key_strengths': [],
             'key_risks': ["Insufficient Data"],
+            'stock_data': stock_data or {},  # FIXED: Include stock_data even in default case
             'last_updated': datetime.utcnow().isoformat()
         }
 
