@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Tooltip } from 'recharts';
 
-// Custom Tooltip Component - Positioning absolut
+// Custom Tooltip Component - Fără positioning absolut
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -11,12 +11,7 @@ function CustomTooltip({ active, payload, label }) {
     const isProfitable = pnlValue > 0;
     
     return (
-      <div style={{ 
-        position: 'absolute',
-        left: '-50px',
-        top: '0px',
-        zIndex: 1000
-      }}>
+      <div className="p-1">
         <div className={`text-sm font-bold mb-1 ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`}>
           {isProfitable ? '+' : ''}${pnlValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </div>
