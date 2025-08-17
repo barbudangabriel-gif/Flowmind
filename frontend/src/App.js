@@ -7108,24 +7108,7 @@ function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Simple dark/light toggle - WORKING VERSION
-  const toggleDarkMode = () => {
-    console.log('🌙 Moon clicked! Current mode:', isDarkMode);
-    
-    if (isDarkMode) {
-      // Switch to LIGHT mode
-      setIsDarkMode(false);
-      document.body.style.backgroundColor = '#ffffff';
-      document.body.style.color = '#000000';
-      console.log('✅ SWITCHED TO LIGHT MODE');
-    } else {
-      // Switch to DARK mode  
-      setIsDarkMode(true);
-      document.body.style.backgroundColor = '#1a252f';
-      document.body.style.color = '#ffffff';
-      console.log('✅ SWITCHED TO DARK MODE');
-    }
-  };
+
 
   // Update activeTab based on current route
   useEffect(() => {
