@@ -349,27 +349,29 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </button>
                         ) : (
-                          <button
-                            onClick={() => toggleSection(group.title)}
-                            className="flex items-center justify-between w-full hover:text-slate-200 transition-colors"
-                          >
-                            <span>{group.title}</span>
-                            <div className="flex items-center gap-2">
-                              {isDashboard && (
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleDarkMode();
-                                  }}
-                                  className="p-1 hover:bg-gray-700 rounded transition-colors"
-                                  title="Toggle Dark/Light Mode"
-                                >
-                                  <Moon className="w-4 h-4 text-blue-400 hover:text-blue-300" />
-                                </button>
-                              )}
+                          <div className="flex items-center justify-between w-full">
+                            <button
+                              onClick={() => toggleSection(group.title)}
+                              className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                            >
+                              <span>{group.title}</span>
                               <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-                            </div>
-                          </button>
+                            </button>
+                            
+                            {/* Luna subțire în marginea dreaptă */}
+                            {isDashboard && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleDarkMode();
+                                }}
+                                className="p-1 hover:bg-gray-700 rounded transition-colors ml-auto"
+                                title="Toggle Dark/Light Mode"
+                              >
+                                <Moon strokeWidth={1} className="w-4 h-4 text-blue-400 hover:text-blue-300" />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </h3>
                     </div>
