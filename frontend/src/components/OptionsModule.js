@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Tooltip } from 'recharts';
 
-// Custom Tooltip Component - Complet transparent, fără background
+// Custom Tooltip Component - Forțat complet transparent
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -11,11 +11,18 @@ function CustomTooltip({ active, payload, label }) {
     const isProfitable = pnlValue > 0;
     
     return (
-      <div style={{ background: 'transparent', border: 'none', padding: '2px' }}>
-        <div className={`text-sm font-bold mb-1 ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`}>
+      <div style={{ 
+        background: 'none !important', 
+        backgroundColor: 'transparent !important',
+        border: 'none !important',
+        boxShadow: 'none !important',
+        padding: '0 !important',
+        margin: '0 !important'
+      }}>
+        <div className={`text-sm font-bold mb-1 ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`} style={{ background: 'transparent !important' }}>
           {isProfitable ? '+' : ''}${pnlValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </div>
-        <div className="text-white text-sm">
+        <div className="text-white text-sm" style={{ background: 'transparent !important' }}>
           {breakeven ? `BE: $${breakeven.toFixed(0)}` : `$${stockPrice}`}
         </div>
       </div>
