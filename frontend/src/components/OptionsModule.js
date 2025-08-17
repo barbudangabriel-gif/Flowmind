@@ -344,9 +344,9 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
         </div>
       </div>
 
-      {/* Button Section - Redus padding */}
-      <div className="px-4 pb-3">
-        <button className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white py-2.5 px-4 text-sm font-semibold transition-colors rounded-none border-0">
+      {/* Button Section - Foarte compact */}
+      <div className="px-4 pb-2">
+        <button className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white py-1.5 px-4 text-xs font-semibold transition-colors rounded-none border-0">
           Open in Builder
         </button>
       </div>
