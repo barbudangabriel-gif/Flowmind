@@ -172,38 +172,38 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
   const data = generatePnLData(strategyType);
   
   return (
-    <div className="bg-[#2c3e50] border border-[#34495e] rounded-none" style={{minHeight: '320px'}}>
-      {/* Header Section - Foarte compact */}
-      <div className="px-4 pt-2 pb-1 border-b border-[#34495e]">
+    <div className="bg-[#2c3e50] border border-[#34495e] rounded-none" style={{minHeight: '280px'}}>
+      {/* Header Section - Ultra compact */}
+      <div className="px-4 pt-1 pb-1 border-b border-[#34495e]">
         <h3 className="text-white text-sm font-bold leading-tight mb-0">{title}</h3>
         <p className="text-[#7f8c8d] text-xs leading-tight">{subtitle}</p>
       </div>
       
-      {/* Metrics Section - Ultra compact */}
+      {/* Metrics Section - Foarte compact */}
       <div className="px-4 py-1">
-        <div className="grid grid-cols-4 gap-2 mb-1 text-xs">
+        <div className="grid grid-cols-4 gap-1 mb-1 text-xs">
           <div className="text-left">
-            <div className="text-[#f39c12] text-lg font-bold leading-none">{returnOnRisk}</div>
+            <div className="text-[#f39c12] text-base font-bold leading-none">{returnOnRisk}</div>
             <div className="text-[#7f8c8d] text-xs">Return</div>
           </div>
           <div className="text-left">
-            <div className="text-[#27ae60] text-lg font-bold leading-none">{chance}</div>
+            <div className="text-[#27ae60] text-base font-bold leading-none">{chance}</div>
             <div className="text-[#7f8c8d] text-xs">Chance</div>
           </div>
           <div className="text-left">
-            <span className="text-[#27ae60] font-semibold text-sm">{profit}</span>
+            <span className="text-[#27ae60] font-semibold text-xs">{profit}</span>
             <div className="text-[#7f8c8d] text-xs">Profit</div>
           </div>
           <div className="text-left">
-            <span className="text-[#e74c3c] font-semibold text-sm">{risk}</span>
+            <span className="text-[#e74c3c] font-semibold text-xs">{risk}</span>
             <div className="text-[#7f8c8d] text-xs">{riskLabel}</div>
           </div>
         </div>
       </div>
 
-      {/* Chart Section - Mare dar în card comprimat */}
+      {/* Chart Section - Mare în card ultra comprimat */}
       <div className="px-1 pb-1">
-        <div className="h-44 bg-[#34495e] rounded-none border border-[#4a5f7a]">
+        <div className="h-40 bg-[#34495e] rounded-none border border-[#4a5f7a]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
               <defs>
