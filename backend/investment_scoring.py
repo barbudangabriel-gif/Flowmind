@@ -300,6 +300,7 @@ class InvestmentScorer:
             logger.error(f"Exception details: {type(e).__name__}: {str(e)}")
             import traceback
             logger.error(f"Full traceback: {traceback.format_exc()}")
+            logger.error(f"Stock data keys: {list(stock_data.keys()) if stock_data else 'None'}")
             return self._get_default_score(stock_data.get('symbol', 'N/A'), stock_data)
     
     def _calculate_pe_score(self, stock_data: Dict[str, Any]) -> float:
