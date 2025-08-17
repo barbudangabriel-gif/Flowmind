@@ -169,9 +169,7 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
          style={{
            minHeight: '280px',
            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3)',
-           background: 'linear-gradient(145deg, #34495e, #2c3e50)',
-           outline: '1px solid #7f8c8d',
-           outlineOffset: '2px'
+           background: 'linear-gradient(145deg, #34495e, #2c3e50)'
          }}>
       {/* Header Section - Ultra compact */}
       <div className="px-4 pt-1 pb-1 border-b border-[#34495e]">
