@@ -25,9 +25,10 @@ function CustomTooltip({ active, payload, label }) {
   }
   return null;
 }
+// Generate P&L data for each strategy cu metrici complete
 function generatePnLData(strategy) {
   const prices = [];
-  for (let i = 50; i <= 350; i += 10) {
+  for (let i = 50; i <= 350; i += 5) { // Mai multe puncte pentru precizie mai mare
     prices.push(i);
   }
   
@@ -36,38 +37,124 @@ function generatePnLData(strategy) {
   switch(strategy) {
     case 'longCall':
       data = prices.map(price => {
-        const pnl = Math.max(0, price - 95) * 100 - 6455;
-        return { price, pnl, profit: pnl > 0 ? pnl : 0, loss: pnl < 0 ? pnl : 0 };
+        const strike = 95;
+        const premium = 64.55;
+        const pnl = Math.max(0, price - strike) * 100 - premium * 100;
+        const breakeven = strike + premium;
+        const maxProfit = price > breakeven ? pnl : 0;
+        const maxLoss = price < breakeven ? Math.max(pnl, -premium * 100) : 0;
+        
+        return { 
+          price, 
+          pnl, 
+          profit: pnl > 0 ? pnl : 0, 
+          loss: pnl < 0 ? pnl : 0,
+          breakeven: breakeven,
+          maxProfit: maxProfit,
+          maxLoss: maxLoss,
+          premium: premium * 100
+        };
       });
       break;
+      
     case 'coveredCall':
       data = prices.map(price => {
-        const pnl = (price - 149.53) * 100 + Math.min(0, 210 - price) * 100 + 1285;
-        return { price, pnl, profit: pnl > 0 ? pnl : 0, loss: pnl < 0 ? pnl : 0 };
+        const stockCost = 149.53;
+        const strike = 210;
+        const premium = 12.85;
+        const stockPnL = (price - stockCost) * 100;
+        const optionPnL = Math.min(0, strike - price) * 100 + premium * 100;
+        const pnl = stockPnL + optionPnL;
+        
+        return { 
+          price, 
+          pnl, 
+          profit: pnl > 0 ? pnl : 0, 
+          loss: pnl < 0 ? pnl : 0,
+          stockPnL: stockPnL,
+          optionPnL: optionPnL,
+          premium: premium * 100
+        };
       });
       break;
+      
     case 'cashSecuredPut':
       data = prices.map(price => {
-        const pnl = -Math.max(0, 125 - price) * 100 + 2615;
-        return { price, pnl, profit: pnl > 0 ? pnl : 0, loss: pnl < 0 ? pnl : 0 };
+        const strike = 125;
+        const premium = 26.15;
+        const pnl = -Math.max(0, strike - price) * 100 + premium * 100;
+        
+        return { 
+          price, 
+          pnl, 
+          profit: pnl > 0 ? pnl : 0, 
+          loss: pnl < 0 ? pnl : 0,
+          collateral: strike * 100,
+          premium: premium * 100
+        };
       });
       break;
+      
     case 'shortPut':
       data = prices.map(price => {
-        const pnl = -Math.max(0, 115 - price) * 100 + 2405;
-        return { price, pnl, profit: pnl > 0 ? pnl : 0, loss: pnl < 0 ? pnl : 0 };
+        const strike = 115;
+        const premium = 24.05;
+        const pnl = -Math.max(0, strike - price) * 100 + premium * 100;
+        
+        return { 
+          price, 
+          pnl, 
+          profit: pnl > 0 ? pnl : 0, 
+          loss: pnl < 0 ? pnl : 0,
+          collateral: 11500,
+          premium: premium * 100
+        };
       });
       break;
+      
     case 'bullCallSpread':
       data = prices.map(price => {
-        const pnl = Math.min(Math.max(0, price - 95), 170) * 100 - 5025;
-        return { price, pnl, profit: pnl > 0 ? pnl : 0, loss: pnl < 0 ? pnl : 0 };
+        const longStrike = 95;
+        const shortStrike = 265;
+        const longPremium = 64.55;
+        const shortPremium = 14.30;
+        const netDebit = (longPremium - shortPremium) * 100;
+        const longPnL = Math.max(0, price - longStrike) * 100;
+        const shortPnL = -Math.max(0, price - shortStrike) * 100;
+        const pnl = longPnL + shortPnL - netDebit;
+        
+        return { 
+          price, 
+          pnl, 
+          profit: pnl > 0 ? pnl : 0, 
+          loss: pnl < 0 ? pnl : 0,
+          maxProfit: (shortStrike - longStrike) * 100 - netDebit,
+          maxLoss: -netDebit,
+          netDebit: netDebit
+        };
       });
       break;
+      
     case 'bullPutSpread':
       data = prices.map(price => {
-        const pnl = 1810 - Math.min(Math.max(0, 185 - price), 95) * 100;
-        return { price, pnl, profit: pnl > 0 ? pnl : 0, loss: pnl < 0 ? pnl : 0 };
+        const longStrike = 90;
+        const shortStrike = 185;
+        const longPremium = 6.15;
+        const shortPremium = 24.20;
+        const netCredit = (shortPremium - longPremium) * 100;
+        const longPnL = -Math.max(0, longStrike - price) * 100;
+        const shortPnL = Math.max(0, shortStrike - price) * 100;
+        const pnl = netCredit - longPnL - shortPnL;
+        
+        return { 
+          price, 
+          pnl, 
+          profit: pnl > 0 ? pnl : 0, 
+          loss: pnl < 0 ? pnl : 0,
+          maxProfit: netCredit,
+          maxLoss: netCredit - (shortStrike - longStrike) * 100,
+          netCredit: netCredit
+        };
       });
       break;
   }
