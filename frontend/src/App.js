@@ -7075,7 +7075,7 @@ const TradeStationCallback = () => {
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(new Set(['TradeStation 🏛️', 'Unusual Whales 🐋']));
+  const [expandedSections, setExpandedSections] = useState(new Set([])); // TOATE PARENT-II RETRAȘI INIȚIAL
   const { isDarkMode } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
