@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ComposedChart, Line, Area, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Tooltip } from 'recharts';
 
-// Custom Tooltip Component - Forțat complet transparent
+// Custom Tooltip Component - Cu gradient gri 3D în spate
 function CustomTooltip({ active, payload, label }) {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -12,17 +12,17 @@ function CustomTooltip({ active, payload, label }) {
     
     return (
       <div style={{ 
-        background: 'none !important', 
-        backgroundColor: 'transparent !important',
-        border: 'none !important',
-        boxShadow: 'none !important',
-        padding: '0 !important',
-        margin: '0 !important'
+        background: 'linear-gradient(145deg, #404040, #2a2a2a)',
+        border: '1px solid #555',
+        borderRadius: '6px',
+        padding: '4px 8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3)',
+        backdropFilter: 'blur(2px)'
       }}>
-        <div className={`text-sm font-bold mb-1 ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`} style={{ background: 'transparent !important' }}>
+        <div className={`text-sm font-bold mb-1 ${isProfitable ? 'text-[#27ae60]' : 'text-[#e74c3c]'}`}>
           {isProfitable ? '+' : ''}${pnlValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </div>
-        <div className="text-white text-sm" style={{ background: 'transparent !important' }}>
+        <div className="text-white text-sm">
           {breakeven ? `BE: $${breakeven.toFixed(0)}` : `$${stockPrice}`}
         </div>
       </div>
