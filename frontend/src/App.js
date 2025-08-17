@@ -7105,14 +7105,20 @@ function AppContent() {
 
   // Toggle dark/light mode
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    
     // Apply to document for global theme
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark');
-      document.body.className = 'bg-gray-50 text-gray-900';
-    } else {
+    if (newMode) {
+      // Switching TO dark mode
       document.documentElement.classList.add('dark');
       document.body.className = 'bg-[#1a252f] text-white';
+      console.log('Switched to DARK mode');
+    } else {
+      // Switching TO light mode
+      document.documentElement.classList.remove('dark');
+      document.body.className = 'bg-gray-50 text-gray-900';
+      console.log('Switched to LIGHT mode');
     }
   };
 
