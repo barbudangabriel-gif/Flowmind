@@ -138,23 +138,23 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
                 strokeWidth={2}
               />
               
-              {/* VERTICAL BLUE LINES - Current Price (Dynamic per strategy) */}
+              {/* VERTICAL BLUE LINES - Current Price (Always Visible) */}
               <ReferenceLine 
-                x={149.53} 
+                x={150} 
                 stroke="#3498db" 
                 strokeDasharray="2 2" 
                 strokeOpacity={0.9} 
                 strokeWidth={1}
               />
               
-              {/* VERTICAL BLUE LINES - Strike Price (Dynamic per strategy) */}
+              {/* VERTICAL ORANGE LINES - Strike Price (Strategy Specific) */}
               <ReferenceLine 
                 x={strategyType === 'longCall' ? 95 : 
                    strategyType === 'coveredCall' ? 210 :
                    strategyType === 'cashSecuredPut' ? 125 :
                    strategyType === 'shortPut' ? 115 :
-                   strategyType === 'bullCallSpread' ? 95 :
-                   strategyType === 'bullPutSpread' ? 185 : 149.53} 
+                   strategyType === 'bullCallSpread' ? 180 :
+                   strategyType === 'bullPutSpread' ? 185 : 200} 
                 stroke="#f39c12" 
                 strokeDasharray="2 2" 
                 strokeOpacity={0.9} 
