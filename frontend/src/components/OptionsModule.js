@@ -200,7 +200,7 @@ function StrategyCard({ title, subtitle, returnOnRisk, chance, profit, risk, ris
 
       {/* Chart Section - Ridicat cu 20% */}
       <div className="px-3 pb-3">
-        <div className="h-44 bg-[#34495e] rounded-none border border-[#4a5f7a]">
+        <div className="h-56 bg-[#34495e] rounded-none border border-[#4a5f7a]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
               <defs>
