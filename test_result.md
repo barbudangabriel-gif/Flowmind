@@ -117,6 +117,18 @@ test_plan:
   test_all: false
   test_priority: "high_first"
 
+  - task: "Trading Chart Component Integration"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/TradingChart.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: false
+        - agent: "main"
+        - comment: "🔧 CRITICAL ISSUE IDENTIFIED: The chart loading issue is NOT with lightweight-charts v5.0.8, but with API connectivity. Frontend is configured to connect to external URL https://stock-analysis-hub.preview.emergentagent.com but backend is running locally at localhost:8001. This causes 'Failed to fetch' and net::ERR_ABORTED errors, preventing the StockAnalysisPage from loading data and thus the chart from displaying. All pages affected: StockAnalysisPage, Investment Scoring Scanner. Backend API tested directly and working perfectly. Need to resolve environment configuration for development."
+
 agent_communication:
     - agent: "testing"
     - message: "🎉 INVESTMENT SCORING SCANNER COMPREHENSIVE TESTING COMPLETE - ALL ROMANIAN REQUIREMENTS SATISFIED: Successfully conducted thorough testing of Investment Scoring Scanner Display component with 100% functionality confirmed. NAVIGATION ✅: Page accessible at '/investment-scoring-scanner' route and via sidebar navigation. STATUS DASHBOARD ✅: All statistics working (Status: Completat, 10 stocks, Database: Activ), buttons functional, Top 5 Quick View operational. SEARCH & FILTER ✅: Romanian interface working, search and limit dropdown functional. RESULTS TABLE ✅: Complete table with 10 stocks, proper color coding, all required columns present. API INTEGRATION ✅: Backend endpoints working perfectly, auto-refresh operational. RESPONSIVE DESIGN ✅: Works across all screen sizes. STATS FOOTER ✅: Categorized results display correctly. DESIGN & THEME ✅: Dark mode, gradients, and UI elements working perfectly. The Investment Scoring Scanner is production-ready and meets all specified Romanian requirements."
