@@ -5071,7 +5071,7 @@ const TradeStationAuth = () => {
         </div>
       )}
 
-      {/* TradeStation Authentication Status */}
+      {/* TradeStation Authentication Status */
       <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Status Overview */}
