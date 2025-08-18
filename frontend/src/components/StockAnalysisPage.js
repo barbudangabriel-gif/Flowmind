@@ -634,12 +634,33 @@ const StockAnalysisPage = () => {
                 📉 Grafice Interactive
               </h3>
               
-              {/* TradingView Chart Component */}
-              <TradingChart 
-                symbol={symbol} 
-                interval="1D"
-                height={500}
-              />
+              {/* Simple Price Chart Placeholder */}
+              <div className="bg-gray-700 rounded-lg p-8 text-center border border-gray-600">
+                <h4 className="text-lg font-semibold text-white mb-4">Grafic Preț {symbol?.toUpperCase()}</h4>
+                <div className="bg-gray-800 rounded-lg p-6 min-h-[400px] flex items-center justify-center">
+                  <div className="text-center">
+                    <LineChart className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+                    <p className="text-gray-400 text-lg">Interactive chart pentru {symbol?.toUpperCase()}</p>
+                    <p className="text-gray-500 text-sm mt-2">Preț curent: ${analysis?.stockData?.price?.toFixed(2) || 'N/A'}</p>
+                    <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                      <div className="bg-gray-900 rounded p-3">
+                        <div className="text-gray-400">Change</div>
+                        <div className={`font-semibold ${(analysis?.stockData?.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(analysis?.stockData?.change || 0) >= 0 ? '+' : ''}
+                          {analysis?.stockData?.change?.toFixed(2) || '0.00'}
+                        </div>
+                      </div>
+                      <div className="bg-gray-900 rounded p-3">
+                        <div className="text-gray-400">Change %</div>
+                        <div className={`font-semibold ${(analysis?.stockData?.change_percent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {(analysis?.stockData?.change_percent || 0) >= 0 ? '+' : ''}
+                          {analysis?.stockData?.change_percent?.toFixed(2) || '0.00'}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
             {/* Chart Controls & Info */}
