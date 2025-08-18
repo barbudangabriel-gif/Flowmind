@@ -121,21 +121,7 @@ const TradeStationAuth = () => {
 
       {error && (
         <div className="bg-red-800 border border-red-600 text-red-200 p-3 rounded-lg mb-4">
-          <p className="text-sm mb-2">{error}</p>
-          {error.includes('Click here to authenticate manually:') && (
-            <button
-              onClick={() => {
-                const url = error.split('Click here to authenticate manually: ')[1];
-                if (url) {
-                  window.open(url, '_blank');
-                  setError('Please complete authentication in the new tab and then click "Check Status" below.');
-                }
-              }}
-              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-medium transition-all"
-            >
-              🔗 Open Authentication Page
-            </button>
-          )}
+          <p className="text-sm">{error}</p>
         </div>
       )}
 
