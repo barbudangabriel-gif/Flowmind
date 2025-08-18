@@ -628,10 +628,10 @@ const StockAnalysisPage = () => {
         {/* Charts Tab */}
         {activeTab === 'charts' && (
           <div className="space-y-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                <LineChart className="mr-2" size={24} />
-                📉 Interactive Charts
+            <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+              <h3 className="text-xl font-bold text-white mb-6 flex items-center">
+                <LineChart className="mr-2 text-blue-400" size={24} />
+                📉 Grafice Interactive
               </h3>
               
               {/* TradingView Chart Component */}
@@ -643,21 +643,21 @@ const StockAnalysisPage = () => {
             </div>
             
             {/* Chart Controls & Info */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Chart Features</h4>
+            <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+              <h4 className="text-lg font-semibold text-white mb-4">Funcții Grafic</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <BarChart3 className="text-blue-600 mb-2" size={24} />
-                  <h5 className="font-semibold text-gray-900">Candlestick Analysis</h5>
-                  <p className="text-sm text-gray-600">OHLC data with volume analysis</p>
+                <div className="bg-blue-900 rounded-lg p-4 border border-blue-800">
+                  <BarChart3 className="text-blue-400 mb-2" size={24} />
+                  <h5 className="font-semibold text-white">Analiză Candlestick</h5>
+                  <p className="text-sm text-gray-400">Date OHLC cu analiză volum</p>
                 </div>
-                <div className="bg-green-50 rounded-lg p-4">
-                  <Activity className="text-green-600 mb-2" size={24} />
-                  <h5 className="font-semibold text-gray-900">Multiple Timeframes</h5>
-                  <p className="text-sm text-gray-600">1m, 5m, 15m, 1H, 1D intervals</p>
+                <div className="bg-green-900 rounded-lg p-4 border border-green-800">
+                  <Activity className="text-green-400 mb-2" size={24} />
+                  <h5 className="font-semibold text-white">Multiple Timeframes</h5>
+                  <p className="text-sm text-gray-400">Intervale 1m, 5m, 15m, 1H, 1D</p>
                 </div>
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <Target className="text-purple-600 mb-2" size={24} />
+                <div className="bg-purple-900 rounded-lg p-4 border border-purple-800">
+                  <Target className="text-purple-400 mb-2" size={24} />
                   <h5 className="font-semibold text-gray-900">TradeStation Data</h5>
                   <p className="text-sm text-gray-600">Real-time market data integration</p>
                 </div>
