@@ -1947,12 +1947,13 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
             logger.warning(f"Connection test failed after authentication: {e}")
             connection_test = {"status": "warning", "message": f"Authentication successful but connection test failed: {e}"}
         
-        # Return success HTML page
-        html_content = f"""
+        # Pentru direct redirect (nu popup), redirectează înapoi la aplicație
+        return HTMLResponse(content=f"""
         <!DOCTYPE html>
         <html>
         <head>
             <title>TradeStation Authentication - Success</title>
+            <meta http-equiv="refresh" content="2;url=http://localhost:3000/settings">
             <style>
                 body {{
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
@@ -1961,7 +1962,7 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
                     align-items: center;
                     height: 100vh;
                     margin: 0;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
                     color: white;
                 }}
                 .container {{
@@ -1988,74 +1989,34 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
                     margin-bottom: 20px;
                     font-weight: 700;
                 }}
-                .details {{
-                    background: rgba(0,0,0,0.2);
-                    padding: 20px;
-                    border-radius: 10px;
-                    margin: 20px 0;
-                    text-align: left;
-                }}
-                .detail-item {{
-                    margin: 10px 0;
-                    font-size: 14px;
-                }}
-                .status-success {{ color: #4ade80; }}
-                .status-warning {{ color: #fbbf24; }}
-                .close-message {{
-                    margin-top: 30px;
-                    font-size: 16px;
-                    opacity: 0.8;
+                .redirect-message {{
+                    font-size: 18px;
+                    margin-top: 20px;
+                    opacity: 0.9;
                 }}
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="success-icon">✅</div>
-                <h1>TradeStation Authentication Successful!</h1>
-                <p>Your FlowMind Analytics platform is now connected to TradeStation.</p>
-                
-                <div class="details">
-                    <div class="detail-item"><strong>Environment:</strong> {ts_auth.environment}</div>
-                    <div class="detail-item"><strong>Token Expires:</strong> {token_data.get('token_info', {}).get('expires_at', 'Unknown')}</div>
-                    <div class="detail-item"><strong>Permissions:</strong> MarketData, ReadAccount, Trade</div>
-                    <div class="detail-item">
-                        <strong>Connection Test:</strong> 
-                        <span class="status-{'success' if connection_test and connection_test.get('status') == 'success' else 'warning'}">
-                            {connection_test.get('message', 'Unknown') if connection_test else 'Not tested'}
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="close-message">
-                    🎉 You can now close this window and return to FlowMind Analytics.<br>
-                    Real-time TradeStation data is now available in your charts!
+                <h1>TradeStation Connected Successfully!</h1>
+                <p>Your FlowMind Analytics is now connected to TradeStation.</p>
+                <div class="redirect-message">
+                    🔄 Redirecting you back to FlowMind Analytics...
                 </div>
             </div>
             
             <script>
-                // Auto-close window after 3 seconds (polling va detecta autentificarea)
+                // Immediate redirect back to settings
                 setTimeout(() => {{
-                    window.close();
-                }}, 3000);
-                
-                // Try to communicate with parent window (backup, dar polling este principal)
-                if (window.opener) {{
-                    window.opener.postMessage({{
-                        type: 'TRADESTATION_AUTH_SUCCESS',
-                        data: {token_data}
-                    }}, '*');
-                }}
-                
-                // Fallback: close immediately if postMessage succeeds
-                if (window.opener) {{
-                    setTimeout(() => window.close(), 1000);
-                }}
+                    window.location.href = 'http://localhost:3000/settings';
+                }}, 2000);
             </script>
         </body>
         </html>
-        """
+        """)
         
-        return HTMLResponse(content=html_content)
+        # OLD POPUP VERSION REMOVED
         
     except HTTPException:
         raise
