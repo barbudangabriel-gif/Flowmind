@@ -340,7 +340,7 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
     return indicators;
   };
 
-  // Add indicators to chart
+  // Add indicators to chart (excluding volume since it's already in subgraph)
   const addIndicators = (chart, chartData, mainSeries) => {
     if (!selectedIndicators.length) return;
 
@@ -349,13 +349,8 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
     selectedIndicators.forEach(indicatorId => {
       switch (indicatorId) {
         case 'volume':
-          const volumeSeries = chart.addHistogramSeries({
-            color: '#26a69a',
-            priceFormat: { type: 'volume' },
-            priceScaleId: '',
-            scaleMargins: { top: 0.7, bottom: 0 },
-          });
-          volumeSeries.setData(indicators.volume);
+          // Volume is already added as separate histogram, skip here
+          console.log('Volume already added in separate pane');
           break;
 
         case 'sma20':
