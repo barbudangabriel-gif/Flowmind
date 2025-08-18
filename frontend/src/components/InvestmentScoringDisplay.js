@@ -93,6 +93,11 @@ const InvestmentScoringDisplay = () => {
     stock.sector?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Navigate to stock analysis page
+  const handleTickerClick = (ticker) => {
+    navigate(`/stock-analysis/${ticker}`);
+  };
+
   // Get rating color
   const getRatingColor = (rating) => {
     if (rating?.includes('BUY')) return 'text-green-400';
