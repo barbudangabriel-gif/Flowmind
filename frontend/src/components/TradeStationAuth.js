@@ -7,8 +7,8 @@ const TradeStationAuth = () => {
   const [error, setError] = useState(null);
   const [authenticating, setAuthenticating] = useState(false);
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
-  const API = `${BACKEND_URL}/api`;
+  // Use ONLY local backend API
+  const API = 'http://localhost:8001/api';
 
   const checkAuthStatus = async () => {
     try {
