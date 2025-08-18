@@ -90,16 +90,37 @@ const StockAnalysisPage = () => {
         }
       }
       
-      // Fetch AI analysis in parallel (using correct endpoints)
+      // Fetch AI analysis with local fallback for development
       const timestamp = Date.now();
-      const [investmentRes, technicalRes] = await Promise.allSettled([
-        axios.get(`${API}/investments/score/${symbol.toUpperCase()}`, {
-          params: { _t: timestamp }
-        }),
-        axios.post(`${API}/agents/technical-analysis`, {}, {
-          params: { symbol: symbol.toUpperCase(), include_smc: true, _t: timestamp }
-        })
-      ]);
+      let investmentRes, technicalRes;
+      
+      try {
+        [investmentRes, technicalRes] = await Promise.allSettled([
+          axios.get(`${API}/investments/score/${symbol.toUpperCase()}`, {
+            params: { _t: timestamp }
+          }),
+          axios.post(`${API}/agents/technical-analysis`, {}, {
+            params: { symbol: symbol.toUpperCase(), include_smc: true, _t: timestamp }
+          })
+        ]);
+      } catch (error) {
+        console.warn(`External AI analysis failed, trying local development backend:`, error.message);
+        try {
+          [investmentRes, technicalRes] = await Promise.allSettled([
+            axios.get(`http://localhost:8001/api/investments/score/${symbol.toUpperCase()}`, {
+              params: { _t: timestamp }
+            }),
+            axios.post(`http://localhost:8001/api/agents/technical-analysis`, {}, {
+              params: { symbol: symbol.toUpperCase(), include_smc: true, _t: timestamp }
+            })
+          ]);
+        } catch (localError) {
+          console.warn(`Local AI analysis also failed:`, localError.message);
+          // Set empty results for fallback
+          investmentRes = { status: 'rejected', reason: localError };
+          technicalRes = { status: 'rejected', reason: localError };
+        }
+      }
       
       // Create consistent analysis data with synchronized price
       const analysisData = {
