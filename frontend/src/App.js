@@ -7258,6 +7258,16 @@ function AppContent() {
                 </Suspense>
               } 
             />
+
+            {/* Professional Chart Test Route */}
+            <Route 
+              path="/professional-charts" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Professional Charts" />}>
+                  <ProfessionalChartTest />
+                </Suspense>
+              } 
+            />
             
             {/* Default Route - renders based on activeTab */}
             <Route path="/*" element={renderContent()} />
