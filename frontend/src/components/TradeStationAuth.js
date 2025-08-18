@@ -190,45 +190,16 @@ const TradeStationAuth = () => {
                 {authenticating ? (
                   <>
                     <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full mr-2"></div>
-                    Authenticating...
+                    Connecting...
                   </>
                 ) : (
                   <>🔗 Connect to TradeStation</>
                 )}
               </button>
               
-              <button
-                onClick={() => {
-                  const testPopup = window.open('about:blank', 'test-popup', 'width=300,height=200');
-                  setTimeout(() => {
-                    if (testPopup && !testPopup.closed) {
-                      testPopup.close();
-                      setError(null);
-                      alert('✅ Popup test successful! You can now authenticate.');
-                    } else {
-                      setError('❌ Popup test failed. Please ensure popups are allowed in your browser settings.');
-                    }
-                  }, 1000);
-                }}
-                className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium transition-all text-sm"
-              >
-                🧪 Test Popup
-              </button>
-              
-              <button
-                onClick={async () => {
-                  try {
-                    const response = await axios.get(`${API}/auth/tradestation/login`);
-                    const authUrl = response.data.auth_url;
-                    window.location.href = authUrl; // Redirect în aceeași fereastră
-                  } catch (err) {
-                    setError(`Failed to get auth URL: ${err.message}`);
-                  }
-                }}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all text-sm"
-              >
-                🔄 Direct Login
-              </button>
+              <div className="text-sm text-gray-400 flex items-center">
+                💡 No popup required - direct authentication in same window
+              </div>
             </>
           ) : (
             <>
