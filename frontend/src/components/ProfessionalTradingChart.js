@@ -288,7 +288,7 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
             price = quote.last || 100;
             change = quote.change || 0;
             changePercent = quote.change_percent || 0;
-            console.log(`💰 TradeStation data for ${symbol}: $${price} (${change:+.2f}, ${changePercent:+.2f}%)`);
+            console.log(`💰 TradeStation data for ${symbol}: $${price} (${change >= 0 ? '+' : ''}${change.toFixed(2)}, ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
           }
         } catch (error) {
           console.warn(`⚠️ TradeStation API failed, trying backup:`, error.message);
