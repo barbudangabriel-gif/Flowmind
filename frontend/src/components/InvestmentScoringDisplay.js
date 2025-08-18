@@ -269,7 +269,7 @@ const InvestmentScoringDisplay = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-700">
                   {filteredStocks.map((stock, index) => (
-                    <tr key={index} className="hover:bg-gray-700 transition-colors">
+                    <tr key={index} className="hover:bg-gray-700 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <span className="bg-blue-600 text-white px-2 py-1 rounded text-sm font-medium">
@@ -280,10 +280,11 @@ const InvestmentScoringDisplay = () => {
                       <td className="px-6 py-4">
                         <button
                           onClick={() => handleTickerClick(stock.ticker)}
-                          className="font-semibold text-blue-400 hover:text-blue-300 text-lg transition-colors duration-200 flex items-center gap-2 group"
+                          className="font-semibold text-blue-400 hover:text-blue-300 text-lg transition-colors duration-200 flex items-center gap-2 group-hover:gap-3"
+                          title={`Analizează ${stock.ticker} în detaliu`}
                         >
                           {stock.ticker}
-                          <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all duration-200" />
                         </button>
                       </td>
                       <td className="px-6 py-4">
