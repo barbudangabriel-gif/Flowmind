@@ -1930,7 +1930,7 @@ async def initiate_tradestation_login():
 
 @api_router.get("/auth/tradestation/callback")
 async def handle_tradestation_callback(code: str = Query(...), state: str = Query(...)):
-    """Handle TradeStation OAuth callback"""
+    """Handle TradeStation OAuth callback with robust error handling"""
     try:
         if not code:
             raise HTTPException(status_code=400, detail="Authorization code not provided")
@@ -1938,24 +1938,24 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
         # Exchange code for tokens
         token_data = await ts_auth.exchange_code_for_tokens(code)
         
-        # Start token monitoring after successful authentication
-        if token_manager and not token_manager.running:
-            await token_manager.start_monitoring()
-            logger.info("🔄 Started token monitoring after successful authentication")
+        # Test the connection immediately
+        connection_test = None
+        try:
+            async with ts_client:
+                connection_test = await ts_client.test_connection()
+        except Exception as e:
+            logger.warning(f"Connection test failed after authentication: {e}")
+            connection_test = {"status": "warning", "message": f"Authentication successful but connection test failed: {e}"}
         
-        # Test the connection
-        async with ts_client:
-            connection_test = await ts_client.test_connection()
-        
-        # Return HTML page that closes the popup and notifies parent
+        # Return success HTML page
         html_content = f"""
         <!DOCTYPE html>
         <html>
         <head>
-            <title>TradeStation Authentication</title>
+            <title>TradeStation Authentication - Success</title>
             <style>
                 body {{
-                    font-family: Arial, sans-serif;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
                     display: flex;
                     justify-content: center;
                     align-items: center;
@@ -1966,45 +1966,85 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
                 }}
                 .container {{
                     text-align: center;
-                    background: rgba(255,255,255,0.1);
-                    padding: 40px;
-                    border-radius: 10px;
-                    backdrop-filter: blur(10px);
+                    background: rgba(255,255,255,0.15);
+                    padding: 50px;
+                    border-radius: 20px;
+                    backdrop-filter: blur(20px);
+                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                    border: 1px solid rgba(255, 255, 255, 0.18);
+                    max-width: 600px;
                 }}
-                .success {{
-                    font-size: 64px;
-                    margin-bottom: 20px;
+                .success-icon {{
+                    font-size: 80px;
+                    margin-bottom: 30px;
+                    animation: bounce 2s infinite;
+                }}
+                @keyframes bounce {{
+                    0%, 100% {{ transform: translateY(0); }}
+                    50% {{ transform: translateY(-20px); }}
                 }}
                 h1 {{
-                    margin: 0 0 10px 0;
+                    font-size: 32px;
+                    margin-bottom: 20px;
+                    font-weight: 700;
                 }}
-                p {{
-                    margin: 0;
+                .details {{
+                    background: rgba(0,0,0,0.2);
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin: 20px 0;
+                    text-align: left;
+                }}
+                .detail-item {{
+                    margin: 10px 0;
+                    font-size: 14px;
+                }}
+                .status-success {{ color: #4ade80; }}
+                .status-warning {{ color: #fbbf24; }}
+                .close-message {{
+                    margin-top: 30px;
+                    font-size: 16px;
                     opacity: 0.8;
                 }}
             </style>
         </head>
         <body>
             <div class="container">
-                <div class="success">✅</div>
-                <h1>Authentication Successful!</h1>
-                <p>TradeStation connection established.</p>
-                <p>This window will close automatically...</p>
+                <div class="success-icon">✅</div>
+                <h1>TradeStation Authentication Successful!</h1>
+                <p>Your FlowMind Analytics platform is now connected to TradeStation.</p>
+                
+                <div class="details">
+                    <div class="detail-item"><strong>Environment:</strong> {ts_auth.environment}</div>
+                    <div class="detail-item"><strong>Token Expires:</strong> {token_data.get('token_info', {}).get('expires_at', 'Unknown')}</div>
+                    <div class="detail-item"><strong>Permissions:</strong> MarketData, ReadAccount, Trade</div>
+                    <div class="detail-item">
+                        <strong>Connection Test:</strong> 
+                        <span class="status-{'success' if connection_test and connection_test.get('status') == 'success' else 'warning'}">
+                            {connection_test.get('message', 'Unknown') if connection_test else 'Not tested'}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="close-message">
+                    🎉 You can now close this window and return to FlowMind Analytics.<br>
+                    Real-time TradeStation data is now available in your charts!
+                </div>
             </div>
             
             <script>
-                // Notify parent window of successful authentication
+                // Auto-close after 10 seconds
+                setTimeout(() => {{
+                    window.close();
+                }}, 10000);
+                
+                // Try to communicate with parent window
                 if (window.opener) {{
                     window.opener.postMessage({{
                         type: 'TRADESTATION_AUTH_SUCCESS',
                         data: {token_data}
                     }}, '*');
                 }}
-                
-                // Close window after 2 seconds
-                setTimeout(() => {{
-                    window.close();
-                }}, 2000);
             </script>
         </body>
         </html>
@@ -2015,48 +2055,65 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"OAuth callback error: {str(e)}")
+        logger.error(f"Unexpected error in TradeStation callback: {str(e)}")
         
         # Return error HTML page
         error_html = f"""
         <!DOCTYPE html>
         <html>
         <head>
-            <title>TradeStation Authentication Error</title>
+            <title>TradeStation Authentication - Error</title>
             <style>
                 body {{
-                    font-family: Arial, sans-serif;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     height: 100vh;
                     margin: 0;
-                    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+                    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
                     color: white;
                 }}
                 .container {{
                     text-align: center;
-                    background: rgba(255,255,255,0.1);
-                    padding: 40px;
-                    border-radius: 10px;
-                    backdrop-filter: blur(10px);
+                    background: rgba(255,255,255,0.15);
+                    padding: 50px;
+                    border-radius: 20px;
+                    backdrop-filter: blur(20px);
+                    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+                    border: 1px solid rgba(255, 255, 255, 0.18);
+                    max-width: 600px;
                 }}
-                .error {{
-                    font-size: 64px;
+                .error-icon {{
+                    font-size: 80px;
+                    margin-bottom: 30px;
+                }}
+                h1 {{
+                    font-size: 32px;
                     margin-bottom: 20px;
+                    font-weight: 700;
+                }}
+                .error-details {{
+                    background: rgba(0,0,0,0.3);
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin: 20px 0;
+                    font-family: monospace;
+                    font-size: 14px;
+                    text-align: left;
                 }}
             </style>
         </head>
         <body>
             <div class="container">
-                <div class="error">❌</div>
+                <div class="error-icon">❌</div>
                 <h1>Authentication Failed</h1>
-                <p>Error: {str(e)}</p>
-                <p>Please close this window and try again.</p>
+                <p>There was an error connecting to TradeStation.</p>
+                <div class="error-details">{str(e)}</div>
+                <p>Please try again or contact support if the problem persists.</p>
             </div>
             
             <script>
-                // Notify parent window of authentication failure
                 if (window.opener) {{
                     window.opener.postMessage({{
                         type: 'TRADESTATION_AUTH_ERROR',
