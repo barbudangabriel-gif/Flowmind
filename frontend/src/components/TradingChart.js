@@ -97,197 +97,154 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
     }
   };
 
-  // Load and render chart
-  useEffect(() => {
-    if (!symbol || !chartContainerRef.current) return;
-
-    const loadAndRenderChart = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // Get real current price from investment scoring API (same as analysis page)
-        console.log(`Loading real price data for ${symbol}`);
-        const priceResponse = await axios.get(`${API}/investments/score/${symbol.toUpperCase()}`);
-        
-        if (!priceResponse.data?.stock_data?.price) {
-          throw new Error('No real price data available');
-        }
-        
-        const currentPrice = priceResponse.data.stock_data.price;
-        const change = priceResponse.data.stock_data.change || 0;
-        const changePercent = priceResponse.data.stock_data.change_percent || 0;
-        
-        console.log(`Real price for ${symbol}: $${currentPrice} (${change >= 0 ? '+' : ''}${change}, ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
-        
-        // Generate realistic chart data based on real current price
-        const generateRealisticChartData = (price, bars = 50) => {
-          const data = [];
-          const currentDate = new Date();
-          
-          for (let i = bars - 1; i >= 0; i--) {
-            const date = new Date(currentDate);
-            date.setDate(date.getDate() - i);
-            
-            // Create realistic price movement around current price
-            const variance = price * 0.02; // 2% daily variance
-            const dayChange = (Math.random() - 0.5) * 2 * variance;
-            const basePrice = price + (dayChange * (i / bars)); // Gradual trend toward current
-            
-            const open = basePrice + (Math.random() - 0.5) * variance * 0.5;
-            const high = Math.max(open, basePrice + Math.random() * variance * 0.3);
-            const low = Math.min(open, basePrice - Math.random() * variance * 0.3);
-            const close = basePrice + (Math.random() - 0.5) * variance * 0.2;
-            
-            data.push({
-              time: date.toISOString().split('T')[0],
-              open: parseFloat(open.toFixed(2)),
-              high: parseFloat(high.toFixed(2)),
-              low: parseFloat(low.toFixed(2)),
-              close: i === 0 ? currentPrice : parseFloat(close.toFixed(2)), // Last candle = current price
-              volume: Math.floor(Math.random() * 1000000) + 500000
-            });
-          }
-          
-          return data;
-        };
-        
-        const chartData = generateRealisticChartData(currentPrice);
-        console.log(`Generated ${chartData.length} realistic data points around price $${currentPrice}`);
-
-        // Clear container
-        chartContainerRef.current.innerHTML = '';
-
-        // Create chart with black grid
-        console.log('Creating chart with enhanced settings...');
-        console.log('createChart function:', typeof createChart);
-        
-        const chart = createChart(chartContainerRef.current, {
-          width: chartContainerRef.current.clientWidth || 800,
-          height: height,
-          layout: {
-            background: { color: '#000000' }, // Pure black background
-            textColor: '#FFFFFF',
-          },
-          grid: {
-            vertLines: { 
-              color: '#000000',  // Black vertical grid lines
-              style: 1,
-              visible: false  // Hide vertical lines completely
-            },
-            horzLines: { 
-              color: '#1a1a1a',  // Very dark horizontal lines
-              style: 1,
-              visible: true
-            },
-          },
-          crosshair: {
-            mode: 1, // Normal crosshair
-            vertLine: {
-              color: '#758694',
-              width: 1,
-              style: 3, // Dashed
-            },
-            horzLine: {
-              color: '#758694', 
-              width: 1,
-              style: 3, // Dashed
-            },
-          },
-          rightPriceScale: {
-            borderColor: '#2B2B43',
-            textColor: '#FFFFFF',
-          },
-          timeScale: {
-            borderColor: '#2B2B43',
-            textColor: '#FFFFFF',
-            timeVisible: true,
-            secondsVisible: false,
-          },
-          localization: {
-            locale: 'en-US',
-            priceFormatter: price => '$' + price.toFixed(2),
-          }
-        });
-
-        console.log('Chart created:', chart);
-        console.log('addCandlestickSeries function:', typeof chart.addCandlestickSeries);
-
-        console.log('Chart created, adding series...');
-        
-        // Add main candlestick series
-        const candlestickSeries = chart.addCandlestickSeries({
-          upColor: '#00D4AA',      // Green for up candles
-          downColor: '#FF6B6B',    // Red for down candles  
-          borderVisible: false,
-          wickUpColor: '#00D4AA',
-          wickDownColor: '#FF6B6B',
-          priceFormat: {
-            type: 'price',
-            precision: 2,
-            minMove: 0.01,
-          },
-        });
-
-        console.log('Candlestick series created, setting data...');
-        candlestickSeries.setData(chartData);
-
-        // Create separate volume histogram series in its own pane (subgraph)
-        console.log('Adding volume histogram in separate pane...');
-        const volumeSeries = chart.addHistogramSeries({
-          color: '#26a69a80', // Semi-transparent green
-          priceFormat: { 
-            type: 'volume',
-            precision: 0,
-          },
-          priceScaleId: '', // Empty string creates separate pane
-          scaleMargins: { 
-            top: 0.7,    // Volume takes bottom 30% of chart
-            bottom: 0 
-          },
-        });
-
-        // Prepare volume data with colors based on candle direction
-        const volumeData = chartData.map(item => ({
+  // Calculate all technical indicators
+  const calculateTechnicalIndicators = (data) => {
+    const indicators = {};
+    
+    // Simple Moving Average
+    const calculateSMA = (data, period) => {
+      return data.map((item, index) => {
+        if (index < period - 1) return null;
+        const sum = data.slice(index - period + 1, index + 1)
+          .reduce((acc, d) => acc + d.close, 0);
+        return {
           time: item.time,
-          value: item.volume,
-          color: item.close >= item.open ? '#00D4AA80' : '#FF6B6B80' // More visible colors
-        }));
-
-        volumeSeries.setData(volumeData);
-        console.log(`Volume data set with ${volumeData.length} bars`);
-
-        // Add selected indicators
-        addIndicators(chart, chartData, candlestickSeries);
-
-        chart.timeScale().fitContent();
-        console.log('Chart rendered successfully with indicators!');
-        setLoading(false);
-
-        // Handle resize
-        const handleResize = () => {
-          chart.applyOptions({
-            width: chartContainerRef.current?.clientWidth || 800,
-          });
+          value: sum / period
         };
-
-        window.addEventListener('resize', handleResize);
-
-        // Cleanup function
-        return () => {
-          window.removeEventListener('resize', handleResize);
-          chart.remove();
-        };
-
-      } catch (err) {
-        console.error('Chart error:', err);
-        setError(err.message);
-        setLoading(false);
-      }
+      }).filter(item => item !== null);
     };
 
-    loadAndRenderChart();
-  }, [symbol, selectedInterval, height]);
+    // Exponential Moving Average
+    const calculateEMA = (data, period) => {
+      const multiplier = 2 / (period + 1);
+      const ema = [];
+      
+      data.forEach((item, index) => {
+        if (index === 0) {
+          ema.push({ time: item.time, value: item.close });
+        } else {
+          const value = (item.close * multiplier) + (ema[index - 1].value * (1 - multiplier));
+          ema.push({ time: item.time, value });
+        }
+      });
+      
+      return ema.slice(period - 1);
+    };
+
+    // RSI (Relative Strength Index)
+    const calculateRSI = (data, period = 14) => {
+      const rsi = [];
+      const gains = [];
+      const losses = [];
+      
+      for (let i = 1; i < data.length; i++) {
+        const change = data[i].close - data[i - 1].close;
+        gains.push(change > 0 ? change : 0);
+        losses.push(change < 0 ? Math.abs(change) : 0);
+        
+        if (i >= period) {
+          const avgGain = gains.slice(-period).reduce((a, b) => a + b) / period;
+          const avgLoss = losses.slice(-period).reduce((a, b) => a + b) / period;
+          const rs = avgGain / (avgLoss || 1);
+          const rsiValue = 100 - (100 / (1 + rs));
+          
+          rsi.push({
+            time: data[i].time,
+            value: rsiValue
+          });
+        }
+      }
+      
+      return rsi;
+    };
+
+    // MACD
+    const calculateMACD = (data) => {
+      const ema12 = calculateEMA(data, 12);
+      const ema26 = calculateEMA(data, 26);
+      const macd = [];
+      
+      const minLength = Math.min(ema12.length, ema26.length);
+      for (let i = 0; i < minLength; i++) {
+        const macdValue = ema12[i].value - ema26[i].value;
+        macd.push({
+          time: ema12[i].time,
+          value: macdValue
+        });
+      }
+      
+      const signal = calculateEMA(macd.map(m => ({ close: m.value, time: m.time })), 9);
+      const histogram = macd.map((m, i) => ({
+        time: m.time,
+        value: signal[i] ? m.value - signal[i].value : 0
+      }));
+      
+      return { macd, signal, histogram };
+    };
+
+    // Bollinger Bands
+    const calculateBollingerBands = (data, period = 20, stdDev = 2) => {
+      const sma = calculateSMA(data, period);
+      const bands = { upper: [], middle: [], lower: [] };
+      
+      sma.forEach((smaPoint, index) => {
+        const dataIndex = index + period - 1;
+        if (dataIndex >= data.length) return;
+        
+        const slice = data.slice(dataIndex - period + 1, dataIndex + 1);
+        const variance = slice.reduce((acc, d) => acc + Math.pow(d.close - smaPoint.value, 2), 0) / period;
+        const standardDeviation = Math.sqrt(variance);
+        
+        bands.upper.push({ time: smaPoint.time, value: smaPoint.value + (stdDev * standardDeviation) });
+        bands.middle.push({ time: smaPoint.time, value: smaPoint.value });
+        bands.lower.push({ time: smaPoint.time, value: smaPoint.value - (stdDev * standardDeviation) });
+      });
+      
+      return bands;
+    };
+
+    // Stochastic Oscillator
+    const calculateStochastic = (data, period = 14) => {
+      const stoch = [];
+      
+      for (let i = period - 1; i < data.length; i++) {
+        const slice = data.slice(i - period + 1, i + 1);
+        const highest = Math.max(...slice.map(d => d.high));
+        const lowest = Math.min(...slice.map(d => d.low));
+        const current = data[i].close;
+        
+        const k = ((current - lowest) / (highest - lowest)) * 100;
+        stoch.push({
+          time: data[i].time,
+          value: k
+        });
+      }
+      
+      return stoch;
+    };
+
+    // Calculate all indicators
+    indicators.sma_9 = calculateSMA(data, 9);
+    indicators.sma_20 = calculateSMA(data, 20);
+    indicators.sma_50 = calculateSMA(data, 50);
+    indicators.sma_200 = calculateSMA(data, 200);
+    indicators.ema_9 = calculateEMA(data, 9);
+    indicators.ema_21 = calculateEMA(data, 21);
+    indicators.ema_50 = calculateEMA(data, 50);
+    indicators.bb_20 = calculateBollingerBands(data, 20, 2);
+    indicators.rsi_14 = calculateRSI(data, 14);
+    indicators.macd = calculateMACD(data);
+    indicators.stoch = calculateStochastic(data, 14);
+    
+    // Volume data
+    indicators.volume = data.map(item => ({
+      time: item.time,
+      value: item.volume,
+      color: item.close >= item.open ? '#26a69a80' : '#ef537080'
+    }));
+
+    return indicators;
+  };
 
   // Calculate technical indicators
   const calculateIndicators = (data) => {
