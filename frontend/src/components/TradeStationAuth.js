@@ -26,29 +26,46 @@ const TradeStationAuth = () => {
   const initiateLogin = async () => {
     try {
       setAuthenticating(true);
-      const response = await axios.get(`${API}/auth/tradestation/login`);
-      const authUrl = response.data.auth_url;
       
-      console.log('🔗 Opening TradeStation auth URL:', authUrl);
-      
-      // Try to open popup window for authentication
+      // DESCHIDE POPUP IMEDIAT (pentru a evita blocarea browser-ului)
       const popup = window.open(
-        authUrl,
+        'about:blank', // Începe cu pagină goală
         'tradestation-auth',
         'width=600,height=700,scrollbars=yes,resizable=yes,left=' + 
         (window.screen.width / 2 - 300) + ',top=' + (window.screen.height / 2 - 350)
       );
 
-      // Better popup detection - check after a small delay
-      setTimeout(() => {
-        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-          console.warn('⚠️ Popup appears to be blocked or closed immediately');
-          setError(`Popup blocked or failed to open. Click here to authenticate manually: ${authUrl}`);
-          setAuthenticating(false);
-          return;
-        }
+      // Verifică dacă popup-ul s-a deschis
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        setError('❌ Popup blocked by browser. Please ensure popups are allowed and try again.');
+        setAuthenticating(false);
+        return;
+      }
 
-        console.log('✅ Popup opened successfully');
+      // Afișează loading în popup
+      popup.document.write(`
+        <html>
+          <head><title>TradeStation Authentication</title></head>
+          <body style="font-family: Arial; text-align: center; padding: 50px; background: #1a1a1a; color: white;">
+            <h2>🔄 Loading TradeStation Authentication...</h2>
+            <p>Please wait while we prepare your authentication...</p>
+            <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #333; border-radius: 50%; border-top-color: #007bff; animation: spin 1s ease-in-out infinite;"></div>
+            <style>
+              @keyframes spin { to { transform: rotate(360deg); } }
+            </style>
+          </body>
+        </html>
+      `);
+
+      try {
+        // Acum obține URL-ul de autentificare
+        const response = await axios.get(`${API}/auth/tradestation/login`);
+        const authUrl = response.data.auth_url;
+        
+        console.log('🔗 Redirecting popup to TradeStation auth URL:', authUrl);
+        
+        // Redirectează popup-ul la URL-ul real de autentificare
+        popup.location.href = authUrl;
         
         // Listen for auth completion
         const handleMessage = (event) => {
@@ -94,7 +111,24 @@ const TradeStationAuth = () => {
           }
         }, 300000); // 5 minutes timeout
 
-      }, 500); // Wait 500ms to properly detect popup status
+      } catch (apiError) {
+        console.error('❌ Failed to get auth URL:', apiError);
+        
+        // Afișează eroare în popup
+        popup.document.write(`
+          <html>
+            <head><title>Authentication Error</title></head>
+            <body style="font-family: Arial; text-align: center; padding: 50px; background: #1a1a1a; color: white;">
+              <h2>❌ Authentication Error</h2>
+              <p>Failed to get authentication URL: ${apiError.message}</p>
+              <button onclick="window.close()" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+            </body>
+          </html>
+        `);
+        
+        setError(`Failed to get authentication URL: ${apiError.message}`);
+        setAuthenticating(false);
+      }
 
     } catch (err) {
       console.error('❌ Login initiation failed:', err);
