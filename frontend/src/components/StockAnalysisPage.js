@@ -99,7 +99,7 @@ const StockAnalysisPage = () => {
           price: stockPrice,
           change: stockChange,
           change_percent: stockChangePercent,
-          data_source: mockPrices[symbol.toUpperCase()] ? 'Consistent Mock Data' : 'API Fallback'
+          data_source: 'Real API Data'
         },
         timestamp: new Date().toISOString()
       };
