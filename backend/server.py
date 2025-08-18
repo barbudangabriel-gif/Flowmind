@@ -1878,19 +1878,22 @@ async def debug_dark_pool():
 
 @api_router.get("/auth/tradestation/status")
 async def get_tradestation_auth_status():
-    """Get current TradeStation authentication status"""
+    """Get comprehensive TradeStation authentication status"""
     try:
-        auth_status = ts_auth.get_auth_status()
-        connection_test = None
+        status = ts_auth.get_status()
         
-        if auth_status["authenticated"]:
-            # Test connection
-            async with ts_client:
-                connection_test = await ts_client.test_connection()
+        # Test connection if authenticated
+        connection_test = None
+        if status["authenticated"]:
+            try:
+                async with ts_client:
+                    connection_test = await ts_client.test_connection()
+            except Exception as e:
+                connection_test = {"status": "error", "message": str(e)}
         
         return {
             "status": "success",
-            "authentication": auth_status,
+            "authentication": status,
             "connection_test": connection_test,
             "api_configuration": {
                 "environment": ts_auth.environment,
@@ -1904,7 +1907,7 @@ async def get_tradestation_auth_status():
         logger.error(f"Error checking TradeStation auth status: {str(e)}")
         return {
             "status": "error",
-            "message": f"Error checking authentication status: {str(e)}",
+            "message": f"Failed to check authentication status: {str(e)}",
             "timestamp": datetime.utcnow().isoformat()
         }
 
