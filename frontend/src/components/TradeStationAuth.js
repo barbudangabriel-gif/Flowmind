@@ -211,24 +211,44 @@ const TradeStationAuth = () => {
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3">
           {!isAuthenticated ? (
-            <button
-              onClick={initiateLogin}
-              disabled={authenticating}
-              className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center ${
-                authenticating 
-                  ? 'bg-gray-600 cursor-not-allowed text-gray-400' 
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
-            >
-              {authenticating ? (
-                <>
-                  <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full mr-2"></div>
-                  Authenticating...
-                </>
-              ) : (
-                <>🔗 Connect to TradeStation</>
-              )}
-            </button>
+            <>
+              <button
+                onClick={initiateLogin}
+                disabled={authenticating}
+                className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center ${
+                  authenticating 
+                    ? 'bg-gray-600 cursor-not-allowed text-gray-400' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
+              >
+                {authenticating ? (
+                  <>
+                    <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full mr-2"></div>
+                    Authenticating...
+                  </>
+                ) : (
+                  <>🔗 Connect to TradeStation</>
+                )}
+              </button>
+              
+              <button
+                onClick={() => {
+                  const testPopup = window.open('about:blank', 'test-popup', 'width=300,height=200');
+                  setTimeout(() => {
+                    if (testPopup && !testPopup.closed) {
+                      testPopup.close();
+                      setError(null);
+                      alert('✅ Popup test successful! You can now authenticate.');
+                    } else {
+                      setError('❌ Popup test failed. Please ensure popups are allowed in your browser settings.');
+                    }
+                  }, 1000);
+                }}
+                className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium transition-all text-sm"
+              >
+                🧪 Test Popup
+              </button>
+            </>
           ) : (
             <>
               <button
