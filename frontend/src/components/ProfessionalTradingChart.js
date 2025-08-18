@@ -453,9 +453,9 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <div className="animate-spin w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <div className="text-purple-400 font-semibold text-xl">📊 Loading Professional Chart</div>
-            <div className="text-gray-400 text-sm mt-2">ApexCharts • Real-time data • {symbol}</div>
-            <div className="text-gray-500 text-xs mt-1">Professional Trading Interface</div>
+            <div className="text-purple-400 font-semibold text-xl">📊 Loading TradeStation Data</div>
+            <div className="text-gray-400 text-sm mt-2">TradeStation API • Real-time quotes • {symbol}</div>
+            <div className="text-gray-500 text-xs mt-1">Professional Trading Platform</div>
           </div>
         </div>
       </div>
