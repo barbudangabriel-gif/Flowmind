@@ -39,11 +39,6 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
     }).filter(item => item !== null);
   };
 
-  const handleIntervalChange = (newInterval) => {
-    console.log(`Changing interval to ${newInterval}`);
-    setSelectedInterval(newInterval);
-  };
-
   // Load and render chart
   useEffect(() => {
     if (!symbol || !chartContainerRef.current) return;
