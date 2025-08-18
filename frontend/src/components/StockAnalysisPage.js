@@ -360,11 +360,11 @@ const StockAnalysisPage = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-400">Scor Tehnic</p>
-                    <p className={`text-3xl font-bold ${getScoreColor(analysis?.technical?.technical_score || 0)}`}>
-                      {analysis?.technical?.technical_score || 'N/A'}
+                    <p className={`text-3xl font-bold ${getScoreColor(analysis?.investment?.technical_score || 0)}`}>
+                      {analysis?.investment?.technical_score?.toFixed(1) || 'N/A'}
                     </p>
                     <p className="text-sm text-gray-300">
-                      {analysis?.technical?.recommendation || 'No Verdict'}
+                      {analysis?.investment?.technical_analysis?.trend_direction || 'No Verdict'}
                     </p>
                   </div>
                   <BarChart3 className="text-green-400" size={24} />
