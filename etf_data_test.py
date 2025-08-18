@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 
 class ETFDataTester:
-    def __init__(self, base_url="https://trade-insights-27.preview.emergentagent.com"):
+    def __init__(self, base_url="https://stock-analysis-hub.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.etf_symbols = ['SPY', 'QQQ', 'DIA', 'IWM']
