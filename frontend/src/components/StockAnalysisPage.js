@@ -190,11 +190,11 @@ const StockAnalysisPage = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="animate-spin mx-auto mb-4 text-blue-500" size={48} />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Loading Analysis</h2>
-          <p className="text-gray-600">Fetching comprehensive data for {symbol?.toUpperCase()}...</p>
+          <RefreshCw className="animate-spin mx-auto mb-4 text-blue-400" size={48} />
+          <h2 className="text-2xl font-bold text-white mb-2">Se încarcă analiza</h2>
+          <p className="text-gray-400">Obținerea datelor comprehensive pentru {symbol?.toUpperCase()}...</p>
         </div>
       </div>
     );
@@ -203,23 +203,23 @@ const StockAnalysisPage = () => {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="text-center max-w-md">
-          <XCircle className="mx-auto mb-4 text-red-500" size={48} />
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Analysis Error</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <XCircle className="mx-auto mb-4 text-red-400" size={48} />
+          <h2 className="text-2xl font-bold text-white mb-2">Eroare Analiză</h2>
+          <p className="text-gray-400 mb-4">{error}</p>
           <div className="space-x-4">
             <button
               onClick={() => navigate(-1)}
-              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
+              className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
             >
-              Go Back
+              Înapoi
             </button>
             <button
               onClick={loadAnalysis}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Retry
+              Reîncearcă
             </button>
           </div>
         </div>
