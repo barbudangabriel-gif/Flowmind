@@ -278,7 +278,13 @@ const InvestmentScoringDisplay = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="font-semibold text-white text-lg">{stock.ticker}</div>
+                        <button
+                          onClick={() => handleTickerClick(stock.ticker)}
+                          className="font-semibold text-blue-400 hover:text-blue-300 text-lg transition-colors duration-200 flex items-center gap-2 group"
+                        >
+                          {stock.ticker}
+                          <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
                       </td>
                       <td className="px-6 py-4">
                         <div className={`text-xl font-bold ${getScoreColor(stock.score)}`}>
