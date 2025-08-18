@@ -115,6 +115,10 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
             timeVisible: true,
             secondsVisible: false,
           },
+          localization: {
+            locale: 'en-US',
+            priceFormatter: price => '$' + price.toFixed(2),
+          }
         });
 
         console.log('Chart created:', chart);
