@@ -246,111 +246,182 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
     return indicators;
   };
 
-  // Calculate technical indicators
-  const calculateIndicators = (data) => {
-    const indicators = {};
+  // Create charts
+  useEffect(() => {
+    if (!mainChartRef.current || !volumeChartRef.current || !symbol) return;
 
-    // Simple Moving Average
-    const calculateSMA = (period) => {
-      return data.map((item, index) => {
-        if (index < period - 1) return { time: item.time, value: null };
-        const sum = data.slice(index - period + 1, index + 1).reduce((acc, d) => acc + d.close, 0);
-        return { time: item.time, value: sum / period };
-      }).filter(item => item.value !== null);
-    };
+    const initializeCharts = async () => {
+      setLoading(true);
+      setError(null);
 
-    // Exponential Moving Average
-    const calculateEMA = (period) => {
-      const multiplier = 2 / (period + 1);
-      const ema = [];
-      let emaValue = data[0].close; // Start with first close price
-      
-      data.forEach((item, index) => {
-        if (index === 0) {
-          emaValue = item.close;
-        } else {
-          emaValue = (item.close * multiplier) + (emaValue * (1 - multiplier));
-        }
-        ema.push({ time: item.time, value: emaValue });
-      });
-      
-      return ema;
-    };
+      try {
+        // Generate market data
+        const data = await generateRealisticMarketData(symbol, selectedInterval);
+        if (data.length === 0) throw new Error('No data available');
+        
+        setChartData(data);
+        const indicators = calculateTechnicalIndicators(data);
 
-    // RSI Calculation
-    const calculateRSI = (period = 14) => {
-      if (data.length < period + 1) return [];
-      
-      const rsiData = [];
-      let gains = 0;
-      let losses = 0;
-      
-      // Calculate initial average gain/loss
-      for (let i = 1; i <= period; i++) {
-        const change = data[i].close - data[i - 1].close;
-        if (change > 0) gains += change;
-        else losses += Math.abs(change);
+        // Clear containers
+        mainChartRef.current.innerHTML = '';
+        volumeChartRef.current.innerHTML = '';
+
+        // Main chart configuration
+        const mainChartInstance = createChart(mainChartRef.current, {
+          width: mainChartRef.current.clientWidth,
+          height: height * 0.7,
+          layout: {
+            background: { color: '#0f0f0f' },
+            textColor: '#d1d5db',
+          },
+          grid: {
+            vertLines: { color: '#1f1f1f' },
+            horzLines: { color: '#1f1f1f' },
+          },
+          crosshair: {
+            mode: CrosshairMode.Normal,
+            vertLine: {
+              color: '#758694',
+              width: 1,
+              style: 3,
+            },
+            horzLine: {
+              color: '#758694',
+              width: 1,
+              style: 3,
+            },
+          },
+          timeScale: {
+            borderColor: '#2B2B43',
+            timeVisible: true,
+            secondsVisible: false,
+          },
+          rightPriceScale: {
+            borderColor: '#2B2B43',
+            textColor: '#d1d5db',
+          }
+        });
+
+        // Volume chart configuration
+        const volumeChartInstance = createChart(volumeChartRef.current, {
+          width: volumeChartRef.current.clientWidth,
+          height: height * 0.3,
+          layout: {
+            background: { color: '#0f0f0f' },
+            textColor: '#d1d5db',
+          },
+          grid: {
+            vertLines: { color: '#1f1f1f' },
+            horzLines: { color: '#1f1f1f' },
+          },
+          crosshair: {
+            mode: CrosshairMode.Normal,
+          },
+          timeScale: {
+            borderColor: '#2B2B43',
+            timeVisible: true,
+            secondsVisible: false,
+          },
+          rightPriceScale: {
+            borderColor: '#2B2B43',
+            textColor: '#d1d5db',
+          }
+        });
+
+        // Add candlestick series to main chart
+        const candlestickSeries = mainChartInstance.addCandlestickSeries({
+          upColor: '#26a69a',
+          downColor: '#ef5350',
+          borderVisible: false,
+          wickUpColor: '#26a69a',
+          wickDownColor: '#ef5350',
+        });
+        candlestickSeries.setData(data);
+
+        // Add volume series to volume chart
+        const volumeSeries = volumeChartInstance.addHistogramSeries({
+          color: '#26a69a',
+          priceFormat: { type: 'volume' },
+        });
+        volumeSeries.setData(indicators.volume);
+
+        // Add selected indicators
+        selectedIndicators.forEach(indicatorId => {
+          const indicator = technicalIndicators.find(ind => ind.id === indicatorId);
+          if (!indicator || indicatorId === 'volume') return;
+
+          if (indicator.type === 'overlay') {
+            if (indicatorId.startsWith('sma_') || indicatorId.startsWith('ema_')) {
+              const series = mainChartInstance.addLineSeries({
+                color: indicator.color,
+                lineWidth: 2,
+                title: indicator.label,
+              });
+              series.setData(indicators[indicatorId]);
+            } else if (indicatorId === 'bb_20') {
+              const upperBand = mainChartInstance.addLineSeries({
+                color: indicator.color,
+                lineWidth: 1,
+                title: 'BB Upper',
+              });
+              const middleBand = mainChartInstance.addLineSeries({
+                color: indicator.color,
+                lineWidth: 2,
+                title: 'BB Middle',
+              });
+              const lowerBand = mainChartInstance.addLineSeries({
+                color: indicator.color,
+                lineWidth: 1,
+                title: 'BB Lower',
+              });
+              upperBand.setData(indicators.bb_20.upper);
+              middleBand.setData(indicators.bb_20.middle);
+              lowerBand.setData(indicators.bb_20.lower);
+            }
+          }
+        });
+
+        // Synchronize crosshairs between charts
+        mainChartInstance.subscribeCrosshairMove((param) => {
+          if (param.time) {
+            volumeChartInstance.setCrosshairPosition(param.time, param.point?.x || 0, param.paneIndex || 0);
+          }
+        });
+
+        volumeChartInstance.subscribeCrosshairMove((param) => {
+          if (param.time) {
+            mainChartInstance.setCrosshairPosition(param.time, param.point?.x || 0, param.paneIndex || 0);
+          }
+        });
+
+        setMainChart(mainChartInstance);
+        setVolumeChart(volumeChartInstance);
+        setLoading(false);
+
+        // Handle resize
+        const handleResize = () => {
+          const width = containerRef.current?.clientWidth || 800;
+          mainChartInstance.applyOptions({ width });
+          volumeChartInstance.applyOptions({ width });
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+          window.removeEventListener('resize', handleResize);
+          mainChartInstance.remove();
+          volumeChartInstance.remove();
+        };
+
+      } catch (err) {
+        console.error('Chart initialization error:', err);
+        setError(err.message);
+        setLoading(false);
       }
-      
-      let avgGain = gains / period;
-      let avgLoss = losses / period;
-      
-      for (let i = period; i < data.length; i++) {
-        const change = data[i].close - data[i - 1].close;
-        const gain = change > 0 ? change : 0;
-        const loss = change < 0 ? Math.abs(change) : 0;
-        
-        avgGain = ((avgGain * (period - 1)) + gain) / period;
-        avgLoss = ((avgLoss * (period - 1)) + loss) / period;
-        
-        const rs = avgGain / avgLoss;
-        const rsi = 100 - (100 / (1 + rs));
-        
-        rsiData.push({ time: data[i].time, value: rsi });
-      }
-      
-      return rsiData;
     };
 
-    // Calculate Bollinger Bands
-    const calculateBollingerBands = (period = 20, stdDev = 2) => {
-      const sma = calculateSMA(period);
-      const bands = { upper: [], middle: [], lower: [] };
-      
-      sma.forEach((smaPoint, index) => {
-        const dataIndex = index + period - 1;
-        if (dataIndex >= data.length) return;
-        
-        const slice = data.slice(dataIndex - period + 1, dataIndex + 1);
-        const variance = slice.reduce((acc, d) => acc + Math.pow(d.close - smaPoint.value, 2), 0) / period;
-        const standardDeviation = Math.sqrt(variance);
-        
-        bands.upper.push({ time: smaPoint.time, value: smaPoint.value + (stdDev * standardDeviation) });
-        bands.middle.push({ time: smaPoint.time, value: smaPoint.value });
-        bands.lower.push({ time: smaPoint.time, value: smaPoint.value - (stdDev * standardDeviation) });
-      });
-      
-      return bands;
-    };
-
-    // Calculate volume data for histogram
-    const volumeData = data.map(item => ({
-      time: item.time,
-      value: item.volume,
-      color: item.close >= item.open ? '#00D4AA33' : '#FF6B6B33'
-    }));
-
-    // Store calculated indicators
-    indicators.sma20 = calculateSMA(20);
-    indicators.sma50 = calculateSMA(50);
-    indicators.ema12 = calculateEMA(12);
-    indicators.ema26 = calculateEMA(26);
-    indicators.rsi = calculateRSI(14);
-    indicators.bollinger = calculateBollingerBands(20, 2);
-    indicators.volume = volumeData;
-
-    return indicators;
-  };
+    initializeCharts();
+  }, [symbol, selectedInterval, height, selectedIndicators]);
 
   // Add indicators to chart (excluding volume since it's already in subgraph)
   const addIndicators = (chart, chartData, mainSeries) => {
