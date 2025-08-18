@@ -112,8 +112,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Investment Scoring Scanner Display"
-  stuck_tasks: []
+    - "META Stock Analysis API Integration"
+  stuck_tasks: 
+    - "META Stock Analysis API Integration"
   test_all: false
   test_priority: "high_first"
 
