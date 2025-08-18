@@ -94,31 +94,36 @@ const StockAnalysisPage = () => {
       const timestamp = Date.now();
       let investmentRes, technicalRes;
       
-      try {
-        [investmentRes, technicalRes] = await Promise.allSettled([
-          axios.get(`${API}/investments/score/${symbol.toUpperCase()}`, {
+      // First try external API
+      [investmentRes, technicalRes] = await Promise.allSettled([
+        axios.get(`${API}/investments/score/${symbol.toUpperCase()}`, {
+          params: { _t: timestamp }
+        }),
+        axios.post(`${API}/agents/technical-analysis`, {}, {
+          params: { symbol: symbol.toUpperCase(), include_smc: true, _t: timestamp }
+        })
+      ]);
+      
+      // If external API failed, try local fallback
+      if (investmentRes.status === 'rejected' || technicalRes.status === 'rejected') {
+        console.warn(`External AI analysis failed, trying local development backend`);
+        const [localInvestmentRes, localTechnicalRes] = await Promise.allSettled([
+          axios.get(`http://localhost:8001/api/investments/score/${symbol.toUpperCase()}`, {
             params: { _t: timestamp }
           }),
-          axios.post(`${API}/agents/technical-analysis`, {}, {
+          axios.post(`http://localhost:8001/api/agents/technical-analysis`, {}, {
             params: { symbol: symbol.toUpperCase(), include_smc: true, _t: timestamp }
           })
         ]);
-      } catch (error) {
-        console.warn(`External AI analysis failed, trying local development backend:`, error.message);
-        try {
-          [investmentRes, technicalRes] = await Promise.allSettled([
-            axios.get(`http://localhost:8001/api/investments/score/${symbol.toUpperCase()}`, {
-              params: { _t: timestamp }
-            }),
-            axios.post(`http://localhost:8001/api/agents/technical-analysis`, {}, {
-              params: { symbol: symbol.toUpperCase(), include_smc: true, _t: timestamp }
-            })
-          ]);
-        } catch (localError) {
-          console.warn(`Local AI analysis also failed:`, localError.message);
-          // Set empty results for fallback
-          investmentRes = { status: 'rejected', reason: localError };
-          technicalRes = { status: 'rejected', reason: localError };
+        
+        // Use local results if they succeeded
+        if (localInvestmentRes.status === 'fulfilled') {
+          investmentRes = localInvestmentRes;
+          console.log(`✅ Using local investment analysis for ${symbol}`);
+        }
+        if (localTechnicalRes.status === 'fulfilled') {
+          technicalRes = localTechnicalRes;
+          console.log(`✅ Using local technical analysis for ${symbol}`);
         }
       }
       
