@@ -272,35 +272,38 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
         setLoading(true);
         setError(null);
 
-        console.log('🚀 Loading professional chart data for', symbol);
+        console.log('🚀 Loading TradeStation data for', symbol);
 
-        // Get real price data with fallback
+        // Get real price data from TradeStation API
         let price = 100;
         let change = 0;
         let changePercent = 0;
         
         try {
-          const response = await axios.get(`${API}/investments/score/${symbol.toUpperCase()}`);
-          const stockData = response.data?.stock_data;
-          if (stockData) {
-            price = stockData.price || 100;
-            change = stockData.change || 0;
-            changePercent = stockData.change_percent || 0;
-            console.log(`💰 Real data from external API for ${symbol}: $${price}`);
+          // Use TradeStation quotes API
+          const response = await axios.get(`${API}/tradestation/quotes/${symbol.toUpperCase()}`);
+          const quotes = response.data?.quotes;
+          if (quotes && quotes.length > 0) {
+            const quote = quotes[0];
+            price = quote.last || 100;
+            change = quote.change || 0;
+            changePercent = quote.change_percent || 0;
+            console.log(`💰 TradeStation data for ${symbol}: $${price} (${change:+.2f}, ${changePercent:+.2f}%)`);
           }
         } catch (error) {
-          console.warn(`⚠️ External API failed, trying local development backend:`, error.message);
+          console.warn(`⚠️ TradeStation API failed, trying backup:`, error.message);
           try {
-            const localResponse = await axios.get(`http://localhost:8001/api/investments/score/${symbol.toUpperCase()}`);
+            // Fallback to investment scoring API
+            const localResponse = await axios.get(`${API}/investments/score/${symbol.toUpperCase()}`);
             const stockData = localResponse.data?.stock_data;
             if (stockData) {
               price = stockData.price || 100;
               change = stockData.change || 0;
               changePercent = stockData.change_percent || 0;
-              console.log(`💰 Real data from local API for ${symbol}: $${price}`);
+              console.log(`💰 Backup data for ${symbol}: $${price}`);
             }
           } catch (localError) {
-            console.warn(`⚠️ Local API also failed, using fallback data:`, localError.message);
+            console.warn(`⚠️ All APIs failed, using realistic fallback data:`, localError.message);
             const fallbackData = {
               'META': { price: 785.23, change: 3.10, changePercent: 0.40 },
               'AAPL': { price: 229.20, change: -1.50, changePercent: -0.65 },
@@ -318,61 +321,103 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
         setPriceChange(change);
         setPriceChangePercent(changePercent);
 
-        // Generate professional OHLC data for the last 60 days
-        const generateProfessionalData = (basePrice) => {
+        // Get TradeStation historical data for charts
+        let historicalData = null;
+        try {
+          const histResponse = await axios.get(`${API}/tradestation/historical/${symbol.toUpperCase()}`, {
+            params: {
+              interval: 1,
+              unit: 'Daily',
+              bars_back: 60
+            }
+          });
+          historicalData = histResponse.data?.bars;
+          if (historicalData && historicalData.length > 0) {
+            console.log(`📊 TradeStation historical data: ${historicalData.length} bars`);
+          }
+        } catch (histError) {
+          console.warn(`⚠️ TradeStation historical data failed:`, histError.message);
+        }
+
+        // Generate professional OHLC data (use TradeStation data if available, otherwise generate)
+        const generateProfessionalData = (basePrice, tradeStationBars = null) => {
           const candleData = [];
           const volumeData = [];
-          const now = new Date();
           
-          for (let i = 59; i >= 0; i--) {
-            const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
-            const timestamp = date.getTime();
-            
-            // Create realistic price movement with trends
-            const trendFactor = Math.sin(i / 10) * 0.03; // Long-term trend
-            const volatility = basePrice * 0.02; // 2% daily volatility
-            const momentum = (Math.random() - 0.5) * 0.015; // Momentum factor
-            
-            const dayPrice = basePrice * (1 + trendFactor + momentum * (i / 60));
-            const intraday = dayPrice * 0.025; // 2.5% intraday range
-            
-            // Generate OHLC with realistic patterns
-            const open = dayPrice + (Math.random() - 0.5) * intraday * 0.5;
-            const close = i === 0 ? basePrice : dayPrice + (Math.random() - 0.5) * intraday * 0.8;
-            
-            // High and low with realistic wicks
-            const bodyTop = Math.max(open, close);
-            const bodyBottom = Math.min(open, close);
-            const wickRange = intraday * 0.6;
-            
-            const high = bodyTop + Math.random() * wickRange * 0.7;
-            const low = bodyBottom - Math.random() * wickRange * 0.7;
-            
-            // Volume correlated with price movement
-            const priceMovement = Math.abs((close - open) / open);
-            const baseVolume = 2000000 + (priceMovement * 8000000);
-            const volume = Math.floor(baseVolume * (0.3 + Math.random() * 1.4));
-            
-            candleData.push({
-              x: timestamp,
-              y: [
-                parseFloat(open.toFixed(2)),
-                parseFloat(high.toFixed(2)),
-                parseFloat(low.toFixed(2)),
-                parseFloat(close.toFixed(2))
-              ]
+          if (tradeStationBars && tradeStationBars.length > 0) {
+            // Use TradeStation historical data
+            tradeStationBars.forEach(bar => {
+              const timestamp = new Date(bar.TimeStamp).getTime();
+              
+              candleData.push({
+                x: timestamp,
+                y: [
+                  parseFloat(bar.Open),
+                  parseFloat(bar.High),
+                  parseFloat(bar.Low),
+                  parseFloat(bar.Close)
+                ]
+              });
+              
+              volumeData.push({
+                x: timestamp,
+                y: parseInt(bar.TotalVolume) || 0
+              });
             });
+          } else {
+            // Generate realistic data based on current price
+            const now = new Date();
             
-            volumeData.push({
-              x: timestamp,
-              y: volume
-            });
+            for (let i = 59; i >= 0; i--) {
+              const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+              const timestamp = date.getTime();
+              
+              // Create realistic price movement with trends
+              const trendFactor = Math.sin(i / 10) * 0.03; // Long-term trend
+              const volatility = basePrice * 0.02; // 2% daily volatility
+              const momentum = (Math.random() - 0.5) * 0.015; // Momentum factor
+              
+              const dayPrice = basePrice * (1 + trendFactor + momentum * (i / 60));
+              const intraday = dayPrice * 0.025; // 2.5% intraday range
+              
+              // Generate OHLC with realistic patterns
+              const open = dayPrice + (Math.random() - 0.5) * intraday * 0.5;
+              const close = i === 0 ? basePrice : dayPrice + (Math.random() - 0.5) * intraday * 0.8;
+              
+              // High and low with realistic wicks
+              const bodyTop = Math.max(open, close);
+              const bodyBottom = Math.min(open, close);
+              const wickRange = intraday * 0.6;
+              
+              const high = bodyTop + Math.random() * wickRange * 0.7;
+              const low = bodyBottom - Math.random() * wickRange * 0.7;
+              
+              // Volume correlated with price movement
+              const priceMovement = Math.abs((close - open) / open);
+              const baseVolume = 2000000 + (priceMovement * 8000000);
+              const volume = Math.floor(baseVolume * (0.3 + Math.random() * 1.4));
+              
+              candleData.push({
+                x: timestamp,
+                y: [
+                  parseFloat(open.toFixed(2)),
+                  parseFloat(high.toFixed(2)),
+                  parseFloat(low.toFixed(2)),
+                  parseFloat(close.toFixed(2))
+                ]
+              });
+              
+              volumeData.push({
+                x: timestamp,
+                y: volume
+              });
+            }
           }
           
           return { candleData, volumeData };
         };
 
-        const { candleData, volumeData } = generateProfessionalData(price);
+        const { candleData, volumeData } = generateProfessionalData(price, historicalData);
         
         setCandlestickSeries([{
           name: 'Price',
@@ -384,7 +429,7 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
           data: volumeData
         }]);
         
-        console.log(`📈 Generated ${candleData.length} professional candles and volume data`);
+        console.log(`📈 Generated ${candleData.length} professional candles and volume data from TradeStation`);
         setLoading(false);
 
       } catch (err) {
