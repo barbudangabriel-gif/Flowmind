@@ -282,6 +282,21 @@ const TradeStationAuth = () => {
               >
                 🧪 Test Popup
               </button>
+              
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await axios.get(`${API}/auth/tradestation/login`);
+                    const authUrl = response.data.auth_url;
+                    window.location.href = authUrl; // Redirect în aceeași fereastră
+                  } catch (err) {
+                    setError(`Failed to get auth URL: ${err.message}`);
+                  }
+                }}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all text-sm"
+              >
+                🔄 Direct Login
+              </button>
             </>
           ) : (
             <>
