@@ -376,11 +376,11 @@ const StockAnalysisPage = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-400">Nivel Risc</p>
-                    <p className={`text-2xl font-bold px-3 py-1 rounded-full ${getRiskColor(analysis?.investment?.risk_analysis?.overall_risk || 'MODERATE')}`}>
-                      {(analysis?.investment?.risk_analysis?.overall_risk || 'MODERATE').toUpperCase()}
+                    <p className={`text-2xl font-bold px-3 py-1 rounded-full ${getRiskColor(analysis?.investment?.risk_level || 'MODERATE')}`}>
+                      {(analysis?.investment?.risk_level || 'MODERATE').toUpperCase()}
                     </p>
                     <p className="text-sm text-gray-400 mt-1">
-                      Încredere: {(analysis?.investment?.confidence_level || 'medium').toUpperCase()}
+                      Orizont: {(analysis?.investment?.investment_horizon || 'medium-term').toUpperCase()}
                     </p>
                   </div>
                   <Shield className="text-purple-400" size={24} />
