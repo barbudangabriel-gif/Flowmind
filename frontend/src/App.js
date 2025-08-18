@@ -4958,15 +4958,7 @@ const MarketNews = () => {
 };
 
 // ==================== TRADESTATION COMPONENTS ====================
-// DISABLED - Using separate TradeStationAuth.js component instead
-/*
-// TradeStation Authentication Component
-const TradeStationAuth = () => {
-  const [authStatus, setAuthStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [manualCode, setManualCode] = useState('');
-  const { isDarkMode } = useTheme();
+// Note: TradeStationAuth component moved to separate file: /components/TradeStationAuth.js
 
   // Check authentication status on component mount
   useEffect(() => {
