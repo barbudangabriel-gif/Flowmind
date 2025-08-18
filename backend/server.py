@@ -2197,32 +2197,6 @@ async def get_token_status():
         logger.error(f"Error getting token status: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get token status: {str(e)}")
 
-@api_router.get("/auth/tradestation/token-status")
-async def get_token_manager_status():
-    """Get TradeStation token manager status"""
-    try:
-        if not token_manager:
-            return {
-                "status": "error",
-                "message": "Token manager not initialized",
-                "timestamp": datetime.utcnow().isoformat()
-            }
-        
-        status = token_manager.get_status()
-        return {
-            "status": "success",
-            "token_manager": status,
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting token manager status: {str(e)}")
-        return {
-            "status": "error", 
-            "message": f"Error getting token manager status: {str(e)}",
-            "timestamp": datetime.utcnow().isoformat()
-        }
-
 # ==================== PORTFOLIO ENDPOINTS ====================
 
 @api_router.get("/tradestation/accounts")
