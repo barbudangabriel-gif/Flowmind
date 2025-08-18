@@ -7269,6 +7269,16 @@ function AppContent() {
                 </Suspense>
               } 
             />
+
+            {/* Settings Route */}
+            <Route 
+              path="/settings" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Settings" />}>
+                  <SettingsPage />
+                </Suspense>
+              } 
+            />
             
             {/* Default Route - renders based on activeTab */}
             <Route path="/*" element={renderContent()} />
