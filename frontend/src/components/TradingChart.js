@@ -46,13 +46,55 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
     { id: 'volume', label: 'Volume', type: 'volume', color: '#6366F1', enabled: true }
   ];
 
-  // Simple indicator calculations
-  const calculateSMA = (data, period) => {
-    return data.map((item, index) => {
-      if (index < period - 1) return null;
-      const sum = data.slice(index - period + 1, index + 1).reduce((acc, d) => acc + d.close, 0);
-      return { time: item.time, value: sum / period };
-    }).filter(item => item !== null);
+  // Generate realistic market data based on current price
+  const generateRealisticMarketData = async (symbol, timeframe, bars = 200) => {
+    try {
+      // Get real current price
+      const priceResponse = await axios.get(`${API}/investments/score/${symbol.toUpperCase()}`);
+      const currentPrice = priceResponse.data?.stock_data?.price || 100;
+      
+      console.log(`Generating ${bars} bars for ${symbol} at $${currentPrice} (${timeframe})`);
+      
+      const data = [];
+      const now = new Date();
+      const timeframeSec = timeframes.find(tf => tf.value === timeframe)?.seconds || 86400;
+      
+      for (let i = bars - 1; i >= 0; i--) {
+        const date = new Date(now.getTime() - (i * timeframeSec * 1000));
+        
+        // Create realistic price movement
+        const trend = Math.sin(i / 20) * 0.05; // Long term trend
+        const volatility = currentPrice * 0.02; // 2% volatility
+        const noise = (Math.random() - 0.5) * volatility;
+        
+        const basePrice = currentPrice * (1 + trend + (noise * (i / bars)));
+        const variation = basePrice * 0.015; // 1.5% intraday variation
+        
+        const open = basePrice + (Math.random() - 0.5) * variation;
+        const close = i === 0 ? currentPrice : basePrice + (Math.random() - 0.5) * variation;
+        const high = Math.max(open, close) + Math.random() * variation * 0.5;
+        const low = Math.min(open, close) - Math.random() * variation * 0.5;
+        
+        // Realistic volume based on price movement
+        const priceChange = Math.abs((close - open) / open);
+        const baseVolume = 500000 + (priceChange * 2000000);
+        const volume = Math.floor(baseVolume * (0.5 + Math.random()));
+        
+        data.push({
+          time: Math.floor(date.getTime() / 1000),
+          open: parseFloat(open.toFixed(2)),
+          high: parseFloat(high.toFixed(2)),
+          low: parseFloat(low.toFixed(2)),
+          close: parseFloat(close.toFixed(2)),
+          volume: volume
+        });
+      }
+      
+      return data.sort((a, b) => a.time - b.time);
+    } catch (error) {
+      console.error('Error generating market data:', error);
+      return [];
+    }
   };
 
   // Load and render chart
