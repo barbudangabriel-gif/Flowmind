@@ -29,7 +29,9 @@ const TradeStationAuth = () => {
       const response = await axios.get(`${API}/auth/tradestation/login`);
       const authUrl = response.data.auth_url;
       
-      // Open popup window for authentication
+      console.log('🔗 Opening TradeStation auth URL:', authUrl);
+      
+      // Try to open popup window for authentication
       const popup = window.open(
         authUrl,
         'tradestation-auth',
@@ -37,41 +39,65 @@ const TradeStationAuth = () => {
         (window.screen.width / 2 - 300) + ',top=' + (window.screen.height / 2 - 350)
       );
 
-      if (!popup) {
-        setError('Popup blocked. Please allow popups for this site and try again.');
-        setAuthenticating(false);
-        return;
-      }
-
-      // Listen for auth completion
-      const handleMessage = (event) => {
-        if (event.data.type === 'TRADESTATION_AUTH_SUCCESS') {
-          popup.close();
-          checkAuthStatus(); // Refresh status
-          window.removeEventListener('message', handleMessage);
-          setError(null);
+      // Better popup detection - check after a small delay
+      setTimeout(() => {
+        if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+          console.warn('⚠️ Popup appears to be blocked or closed immediately');
+          setError(`Popup blocked or failed to open. Click here to authenticate manually: ${authUrl}`);
           setAuthenticating(false);
-        } else if (event.data.type === 'TRADESTATION_AUTH_ERROR') {
-          popup.close();
-          setError('Authentication failed: ' + event.data.error);
-          window.removeEventListener('message', handleMessage);
-          setAuthenticating(false);
+          return;
         }
-      };
 
-      window.addEventListener('message', handleMessage);
+        console.log('✅ Popup opened successfully');
+        
+        // Listen for auth completion
+        const handleMessage = (event) => {
+          console.log('📨 Received message:', event.data);
+          if (event.data.type === 'TRADESTATION_AUTH_SUCCESS') {
+            console.log('✅ Authentication successful');
+            popup.close();
+            checkAuthStatus(); // Refresh status
+            window.removeEventListener('message', handleMessage);
+            setError(null);
+            setAuthenticating(false);
+          } else if (event.data.type === 'TRADESTATION_AUTH_ERROR') {
+            console.log('❌ Authentication failed:', event.data.error);
+            popup.close();
+            setError('Authentication failed: ' + event.data.error);
+            window.removeEventListener('message', handleMessage);
+            setAuthenticating(false);
+          }
+        };
 
-      // Check if popup was closed manually
-      const checkClosed = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkClosed);
-          window.removeEventListener('message', handleMessage);
-          checkAuthStatus(); // Check status in case auth completed
-          setAuthenticating(false);
-        }
-      }, 1000);
+        window.addEventListener('message', handleMessage);
+
+        // Check if popup was closed manually
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            console.log('🔄 Popup was closed, checking auth status');
+            clearInterval(checkClosed);
+            window.removeEventListener('message', handleMessage);
+            checkAuthStatus(); // Check status in case auth completed
+            setAuthenticating(false);
+          }
+        }, 1000);
+
+        // Set timeout for popup (5 minutes max)
+        setTimeout(() => {
+          if (!popup.closed) {
+            console.log('⏰ Authentication timeout');
+            clearInterval(checkClosed);
+            popup.close();
+            window.removeEventListener('message', handleMessage);
+            setError('Authentication timeout. Please try again.');
+            setAuthenticating(false);
+          }
+        }, 300000); // 5 minutes timeout
+
+      }, 500); // Wait 500ms to properly detect popup status
 
     } catch (err) {
+      console.error('❌ Login initiation failed:', err);
       setError(`Failed to initiate login: ${err.message}`);
       setAuthenticating(false);
     }
