@@ -137,33 +137,33 @@ const StockAnalysisPage = () => {
     loadAnalysis();
   }, [loadAnalysis]);
   
-  // Utility functions
+  // Utility functions for dark mode
   const getScoreColor = (score) => {
-    if (score >= 85) return 'text-green-700';
-    if (score >= 75) return 'text-green-600';
-    if (score >= 65) return 'text-blue-600';
-    if (score >= 55) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 85) return 'text-green-400';
+    if (score >= 75) return 'text-green-500';
+    if (score >= 65) return 'text-blue-400';
+    if (score >= 55) return 'text-yellow-400';
+    return 'text-red-400';
   };
 
   const getRatingColor = (rating) => {
     switch (rating) {
-      case 'BUY STRONG': return 'text-green-700 bg-green-100';
-      case 'BUY': return 'text-green-600 bg-green-50';
-      case 'HOLD +': return 'text-blue-600 bg-blue-50';
-      case 'HOLD': return 'text-gray-600 bg-gray-50';
-      case 'HOLD -': return 'text-yellow-600 bg-yellow-50';
-      case 'AVOID': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'BUY STRONG': return 'text-green-300 bg-green-900';
+      case 'BUY': return 'text-green-400 bg-green-800';
+      case 'HOLD +': return 'text-blue-400 bg-blue-800';
+      case 'HOLD': return 'text-gray-300 bg-gray-700';
+      case 'HOLD -': return 'text-yellow-400 bg-yellow-800';
+      case 'AVOID': return 'text-red-400 bg-red-800';
+      default: return 'text-gray-300 bg-gray-700';
     }
   };
 
   const getRiskColor = (risk) => {
     switch (risk) {
-      case 'LOW': return 'text-green-700 bg-green-100';
-      case 'MODERATE': return 'text-yellow-600 bg-yellow-100';
-      case 'HIGH': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'LOW': return 'text-green-300 bg-green-900';
+      case 'MODERATE': return 'text-yellow-300 bg-yellow-900';
+      case 'HIGH': return 'text-red-300 bg-red-900';
+      default: return 'text-gray-300 bg-gray-700';
     }
   };
 
