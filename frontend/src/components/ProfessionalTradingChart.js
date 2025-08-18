@@ -279,13 +279,13 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
 
         console.log('🚀 Loading TradeStation data for', symbol);
 
-        // Get real price data from multiple sources with priority
+        // Get real price data from TradeStation API ONLY
         let price = 100;
         let change = 0;
         let changePercent = 0;
         
         try {
-          // Priority 1: Try TradeStation API (if authenticated)
+          // ONLY use TradeStation quotes API
           const response = await axios.get(`${API}/tradestation/quotes/${symbol.toUpperCase()}`);
           const quotes = response.data?.quotes;
           if (quotes && quotes.length > 0) {
@@ -294,57 +294,12 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
             change = quote.change || 0;
             changePercent = quote.change_percent || 0;
             console.log(`💰 TradeStation data for ${symbol}: $${price} (${change >= 0 ? '+' : ''}${change.toFixed(2)}, ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
+          } else {
+            throw new Error('No TradeStation quote data available');
           }
         } catch (error) {
-          console.warn(`⚠️ TradeStation API not available (${error.response?.status || 'error'}), trying fallback sources...`);
-          
-          try {
-            // Priority 2: Try enhanced stock API (uses yfinance internally)
-            const enhancedResponse = await axios.get(`${API}/stocks/${symbol.toUpperCase()}/enhanced`);
-            const stockData = enhancedResponse.data;
-            if (stockData && stockData.price) {
-              price = stockData.price;
-              change = stockData.change || 0;
-              changePercent = stockData.change_percent || 0;
-              console.log(`💰 Enhanced API (yfinance) data for ${symbol}: $${price} (${change >= 0 ? '+' : ''}${change.toFixed(2)}, ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
-            }
-          } catch (enhancedError) {
-            console.warn(`⚠️ Enhanced API also failed, trying investment scoring...`);
-            
-            try {
-              // Priority 3: Try investment scoring API
-              const scoringResponse = await axios.get(`${API}/investments/score/${symbol.toUpperCase()}`);
-              const stockInfo = scoringResponse.data?.stock_data;
-              if (stockInfo && stockInfo.price) {
-                price = stockInfo.price;
-                change = stockInfo.change || 0;
-                changePercent = stockInfo.change_percent || 0;
-                console.log(`💰 Investment scoring data for ${symbol}: $${price}`);
-              }
-            } catch (scoringError) {
-              console.warn(`⚠️ All APIs failed, using realistic current market data:`, scoringError.message);
-              
-              // Priority 4: Current realistic market data (updated for today)
-              const currentMarketData = {
-                'META': { price: 539.02, change: -4.25, changePercent: -0.78 },
-                'AAPL': { price: 229.54, change: 2.12, changePercent: 0.93 },
-                'GOOGL': { price: 164.83, change: 1.45, changePercent: 0.89 },
-                'MSFT': { price: 420.15, change: -2.30, changePercent: -0.54 },
-                'AMZN': { price: 186.79, change: 3.21, changePercent: 1.75 },
-                'TSLA': { price: 248.50, change: -5.67, changePercent: -2.23 },
-                'NVDA': { price: 128.45, change: 4.89, changePercent: 3.96 }
-              };
-              const fallback = currentMarketData[symbol.toUpperCase()] || { 
-                price: 100 + Math.random() * 50, 
-                change: (Math.random() - 0.5) * 10, 
-                changePercent: (Math.random() - 0.5) * 5 
-              };
-              price = fallback.price;
-              change = fallback.change;
-              changePercent = fallback.changePercent;
-              console.log(`💰 Using current market data for ${symbol}: $${price} (${change >= 0 ? '+' : ''}${change.toFixed(2)}, ${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`);
-            }
-          }
+          console.error(`❌ TradeStation API failed for ${symbol}:`, error.message);
+          throw new Error(`TradeStation authentication required. Please authenticate with TradeStation to view real-time data.`);
         }
 
         setCurrentPrice(price);
