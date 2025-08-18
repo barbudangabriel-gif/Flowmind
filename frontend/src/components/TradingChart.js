@@ -39,17 +39,6 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
     }).filter(item => item !== null);
   };
 
-  // Handle indicator selection
-  const toggleIndicator = (indicatorId) => {
-    setSelectedIndicators(prev => {
-      const newSelection = prev.includes(indicatorId)
-        ? prev.filter(id => id !== indicatorId)
-        : [...prev, indicatorId];
-      console.log('Updated indicators:', newSelection);
-      return newSelection;
-    });
-  };
-
   const handleIntervalChange = (newInterval) => {
     console.log(`Changing interval to ${newInterval}`);
     setSelectedInterval(newInterval);
