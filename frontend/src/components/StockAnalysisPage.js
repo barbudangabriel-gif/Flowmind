@@ -23,7 +23,7 @@ import {
   TrendingUp as BullishIcon,
   TrendingDown as BearishIcon
 } from 'lucide-react';
-import WorkingTradingChart from './WorkingTradingChart';
+import ProfessionalTradingChart from './ProfessionalTradingChart';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
