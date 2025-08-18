@@ -4994,13 +4994,8 @@ const TradeStationAuth = () => {
       const response = await axios.get(`${API}/auth/tradestation/login`);
       
       if (response.data.auth_url) {
-        // Open OAuth URL in new window
-        const authWindow = window.open(response.data.auth_url, 'tradestation-auth', 
-          'width=800,height=600,scrollbars=yes,resizable=yes');
-        
-        if (!authWindow) {
-          throw new Error('Popup window blocked. Please allow popups for this site.');
-        }
+        // Direct redirect instead of popup to avoid blocking
+        window.location.href = response.data.auth_url;
         
         // Listen for messages from the callback window
         const messageListener = (event) => {
