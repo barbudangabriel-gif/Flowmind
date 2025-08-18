@@ -7248,6 +7248,16 @@ function AppContent() {
               } 
             />
             
+            {/* Chart Test Route */}
+            <Route 
+              path="/chart-test" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Chart Test" />}>
+                  <ChartTestPage />
+                </Suspense>
+              } 
+            />
+            
             {/* Default Route - renders based on activeTab */}
             <Route path="/*" element={renderContent()} />
           </Routes>
