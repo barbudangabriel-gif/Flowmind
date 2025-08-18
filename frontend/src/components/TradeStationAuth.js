@@ -173,9 +173,21 @@ const TradeStationAuth = () => {
           {!isAuthenticated ? (
             <button
               onClick={initiateLogin}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all flex items-center"
+              disabled={authenticating}
+              className={`px-6 py-3 rounded-lg font-medium transition-all flex items-center ${
+                authenticating 
+                  ? 'bg-gray-600 cursor-not-allowed text-gray-400' 
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
             >
-              🔗 Connect to TradeStation
+              {authenticating ? (
+                <>
+                  <div className="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full mr-2"></div>
+                  Authenticating...
+                </>
+              ) : (
+                <>🔗 Connect to TradeStation</>
+              )}
             </button>
           ) : (
             <>
