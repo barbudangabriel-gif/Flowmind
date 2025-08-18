@@ -549,9 +549,9 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
             <span className="text-white font-medium">Interactive tools enabled</span>
           </div>
           <div className="text-gray-500">
-            🚀 <span className="text-purple-400 font-bold">ApexCharts Pro</span>
+            🚀 <span className="text-purple-400 font-bold">TradeStation API</span>
             <span className="text-gray-500 mx-2">•</span>
-            <span className="text-gray-400">Professional Trading Platform</span>
+            <span className="text-gray-400">ApexCharts Professional</span>
           </div>
         </div>
       </div>
