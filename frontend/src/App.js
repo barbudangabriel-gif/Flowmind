@@ -7188,7 +7188,9 @@ function AppContent() {
       case 'trading-strategies':
         return <TradingStrategies />;
       case 'ts-auth':
-        return <TradeStationAuth />;
+        // Redirectează la pagina Settings pentru autentificare TradeStation
+        window.location.href = '/settings';
+        return <div className="p-6 text-center text-white">Redirecting to Settings...</div>;
       case 'ts-portfolio':
         return <TradeStationPortfolio />;
       case 'ts-balance':
