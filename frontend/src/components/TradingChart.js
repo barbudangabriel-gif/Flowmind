@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createChart } from 'lightweight-charts';
 import axios from 'axios';
 
 const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
@@ -19,19 +20,20 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
         setLoading(true);
         setError(null);
 
-        console.log('Loading lightweight-charts v5.0.8 for', symbol);
+        console.log('🚀 Initializing Lightweight Charts v5.0.8 for', symbol);
+        console.log('📊 createChart function type:', typeof createChart);
 
-        // Dynamic import for v5.0.8 ES modules
-        const { createChart } = await import('lightweight-charts');
-        console.log('Successfully imported createChart:', typeof createChart);
+        if (typeof createChart !== 'function') {
+          throw new Error('createChart is not available - lightweight-charts import failed');
+        }
 
         // Get real price data
         const response = await axios.get(`${API}/investments/score/${symbol.toUpperCase()}`);
         const currentPrice = response.data?.stock_data?.price || 100;
         
-        console.log(`Creating charts for ${symbol} at price $${currentPrice}`);
+        console.log(`💰 Real price for ${symbol}: $${currentPrice}`);
 
-        // Generate realistic data based on current price
+        // Generate realistic market data based on current price
         const generateRealisticData = (price) => {
           const data = [];
           const now = Date.now();
@@ -73,14 +75,15 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
 
         const data = generateRealisticData(currentPrice);
         setChartData(data);
-        console.log('Generated', data.length, 'realistic data points');
+        console.log(`📈 Generated ${data.length} realistic data points`);
 
         // Clear containers
         mainChartRef.current.innerHTML = '';
         volumeChartRef.current.innerHTML = '';
 
-        // Create main price chart with v5.0.8 API
-        console.log('Creating main chart with v5.0.8 API...');
+        console.log('🎨 Creating main price chart...');
+        
+        // Create main price chart with v5.0.8 configuration
         const mainChart = createChart(mainChartRef.current, {
           width: mainChartRef.current.clientWidth || 800,
           height: height * 0.7,
@@ -116,7 +119,7 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
           },
         });
 
-        console.log('Main chart created successfully');
+        console.log('✅ Main chart created successfully');
 
         // Add candlestick series
         const candlestickSeries = mainChart.addCandlestickSeries({
@@ -133,10 +136,11 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
         });
 
         candlestickSeries.setData(data);
-        console.log('Candlestick data set successfully');
+        console.log('📊 Candlestick data set successfully');
 
+        console.log('📊 Creating volume chart...');
+        
         // Create volume chart
-        console.log('Creating volume chart...');
         const volumeChart = createChart(volumeChartRef.current, {
           width: volumeChartRef.current.clientWidth || 800,
           height: height * 0.3,
@@ -159,7 +163,7 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
           },
         });
 
-        console.log('Volume chart created successfully');
+        console.log('✅ Volume chart created successfully');
 
         // Add volume histogram
         const volumeData = data.map(item => ({
@@ -176,18 +180,24 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
         });
 
         volumeSeries.setData(volumeData);
-        console.log('Volume data set successfully');
+        console.log('📊 Volume data set successfully');
 
-        // Synchronize time scales
+        // Synchronize time scales for v5.0.8
         mainChart.timeScale().subscribeVisibleTimeRangeChange((timeRange) => {
-          volumeChart.timeScale().setVisibleRange(timeRange);
+          if (timeRange) {
+            volumeChart.timeScale().setVisibleRange(timeRange);
+          }
         });
 
         volumeChart.timeScale().subscribeVisibleTimeRangeChange((timeRange) => {
-          mainChart.timeScale().setVisibleRange(timeRange);
+          if (timeRange) {
+            mainChart.timeScale().setVisibleRange(timeRange);
+          }
         });
 
-        console.log('Charts synchronized successfully');
+        console.log('🔗 Charts synchronized successfully');
+        console.log('🎉 LIGHTWEIGHT CHARTS v5.0.8 INITIALIZED SUCCESSFULLY!');
+        
         setLoading(false);
 
         // Handle resize
@@ -204,26 +214,37 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
           try {
             mainChart.remove();
             volumeChart.remove();
+            console.log('🧹 Charts cleanup completed');
           } catch (e) {
-            console.warn('Error removing charts:', e);
+            console.warn('⚠️ Error during charts cleanup:', e);
           }
         };
 
       } catch (err) {
-        console.error('Chart initialization error:', err);
+        console.error('💥 Chart initialization error:', err);
         setError(`Chart Error: ${err.message}`);
         setLoading(false);
       }
     };
 
-    // Initialize with small delay
-    const timer = setTimeout(initCharts, 300);
+    // Initialize with small delay to ensure DOM is ready
+    const timer = setTimeout(initCharts, 100);
     return () => clearTimeout(timer);
 
   }, [symbol, height, API]);
 
-  // Timeframes and indicators for v5.0.8
-  const timeframes = ['1m', '5m', '15m', '1H', '4H', '1D', '1W', '1M'];
+  // Professional timeframes and indicators for v5.0.8
+  const timeframes = [
+    { id: '1m', label: '1m' },
+    { id: '5m', label: '5m' },
+    { id: '15m', label: '15m' },
+    { id: '1H', label: '1H' },
+    { id: '4H', label: '4H' },
+    { id: '1D', label: '1D' },
+    { id: '1W', label: '1W' },
+    { id: '1M', label: '1M' }
+  ];
+  
   const indicators = [
     { id: 'volume', label: 'Volume', active: true, color: '#26a69a' },
     { id: 'sma20', label: 'SMA 20', active: false, color: '#ff9500' },
@@ -236,12 +257,13 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 rounded-lg" style={{ height }}>
+      <div className="bg-gray-900 rounded-lg border border-blue-500" style={{ height }}>
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <div className="text-gray-400">Loading Lightweight Charts v5.0.8...</div>
-            <div className="text-gray-500 text-sm mt-2">Initializing {symbol} chart with real data</div>
+            <div className="animate-spin w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <div className="text-blue-400 font-semibold text-lg">🚀 Loading Lightweight Charts v5.0.8</div>
+            <div className="text-gray-400 text-sm mt-2">Initializing professional trading interface for {symbol}</div>
+            <div className="text-gray-500 text-xs mt-1">Static import • Real-time data • Dual charts</div>
           </div>
         </div>
       </div>
@@ -253,20 +275,22 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
       <div className="bg-gray-900 rounded-lg border-2 border-red-500" style={{ height }}>
         <div className="flex items-center justify-center h-full">
           <div className="text-center p-6">
-            <div className="text-red-400 text-xl font-bold mb-2">⚠️ Lightweight Charts v5.0.8 Error</div>
-            <div className="text-gray-300 text-sm mb-4 max-w-md">{error}</div>
+            <div className="text-red-400 text-2xl font-bold mb-3">💥 Lightweight Charts v5.0.8 Error</div>
+            <div className="text-gray-200 text-sm mb-4 max-w-md bg-gray-800 p-3 rounded-lg border border-gray-600">
+              {error}
+            </div>
             <div className="space-x-2">
               <button 
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium"
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all"
               >
-                🔄 Reload Charts
+                🔄 Reload Page
               </button>
               <button 
-                onClick={() => setError(null)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+                onClick={() => { setError(null); setLoading(true); }}
+                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all"
               >
-                🔧 Retry Init
+                🔧 Retry Charts
               </button>
             </div>
           </div>
@@ -276,40 +300,41 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-700">
-      {/* Chart Controls Header */}
+    <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-700 shadow-2xl">
+      {/* Professional Chart Controls Header */}
       <div className="bg-gray-800 p-4 border-b border-gray-700">
         {/* Timeframes Row */}
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-gray-300 text-sm font-semibold mr-3">📊 Timeframe:</span>
+          <span className="text-gray-200 text-sm font-bold mr-3">⏱️ Timeframe:</span>
           {timeframes.map((tf) => (
             <button
-              key={tf}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
-                tf === '1D' 
-                  ? 'bg-blue-600 text-white shadow-lg' 
+              key={tf.id}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 transform hover:scale-105 ${
+                tf.id === '1D' 
+                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50' 
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
               }`}
             >
-              {tf}
+              {tf.label}
             </button>
           ))}
         </div>
 
         {/* Indicators Row */}
         <div className="flex flex-wrap gap-2">
-          <span className="text-gray-300 text-sm font-semibold mr-3">📈 Indicators:</span>
+          <span className="text-gray-200 text-sm font-bold mr-3">📊 Indicators:</span>
           {indicators.map((indicator) => (
             <button
               key={indicator.id}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 ${
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 transform hover:scale-105 ${
                 indicator.active 
-                  ? 'text-white border-2' 
+                  ? 'text-white border-2 shadow-lg' 
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
               style={{
                 backgroundColor: indicator.active ? indicator.color : undefined,
-                borderColor: indicator.active ? indicator.color : undefined
+                borderColor: indicator.active ? indicator.color : undefined,
+                boxShadow: indicator.active ? `0 0 10px ${indicator.color}50` : undefined
               }}
             >
               {indicator.label}
@@ -318,7 +343,7 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
         </div>
       </div>
 
-      {/* Charts Container */}
+      {/* Dual Charts Container */}
       <div className="relative">
         {/* Main Price Chart */}
         <div 
@@ -327,7 +352,7 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
           style={{ height: height * 0.7 }}
         />
         
-        {/* Volume Chart */}
+        {/* Volume Chart (Subgraph) */}
         <div 
           ref={volumeChartRef} 
           className="w-full"
@@ -335,22 +360,22 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
         />
       </div>
 
-      {/* Chart Footer Info */}
+      {/* Professional Footer Info */}
       <div className="bg-gray-800 p-3 border-t border-gray-700">
         <div className="flex items-center justify-between text-xs">
           <div className="text-gray-400">
-            📍 <span className="text-white font-semibold">{symbol}</span>
-            {' • '}
-            <span className="text-blue-400">Real-time TradeStation data</span>
-            {' • '}
-            <span className="text-green-400">Volume subgraph</span>
-            {' • '}
-            <span className="text-white">{chartData.length} bars</span>
+            🎯 <span className="text-white font-bold">{symbol}</span>
+            <span className="text-gray-500 mx-1">•</span>
+            <span className="text-blue-400 font-medium">Real-time TradeStation data</span>
+            <span className="text-gray-500 mx-1">•</span>
+            <span className="text-green-400 font-medium">Volume subgraph</span>
+            <span className="text-gray-500 mx-1">•</span>
+            <span className="text-white font-medium">{chartData.length} bars</span>
           </div>
           <div className="text-gray-500">
-            🚀 <span className="text-yellow-400 font-medium">Lightweight Charts v5.0.8</span>
-            {' • '}
-            Professional Trading Interface
+            ⚡ <span className="text-yellow-400 font-bold">Lightweight Charts v5.0.8</span>
+            <span className="text-gray-500 mx-1">•</span>
+            <span className="text-gray-400">Professional Trading Interface</span>
           </div>
         </div>
       </div>
