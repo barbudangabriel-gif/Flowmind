@@ -319,15 +319,15 @@ const StockAnalysisPage = () => {
             {/* Key Metrics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {/* Stock Price */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Current Price</p>
-                    <p className="text-3xl font-bold text-gray-900">
+                    <p className="text-sm font-medium text-gray-400">Preț Curent</p>
+                    <p className="text-3xl font-bold text-white">
                       ${analysis?.stockData?.price?.toFixed(2) || 'N/A'}
                     </p>
                     <p className={`text-sm ${
-                      (analysis?.stockData?.change || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                      (analysis?.stockData?.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'
                     }`}>
                       {(analysis?.stockData?.change || 0) >= 0 ? '+' : ''}
                       {analysis?.stockData?.change?.toFixed(2) || '0.00'} (
@@ -335,55 +335,55 @@ const StockAnalysisPage = () => {
                       {analysis?.stockData?.change_percent?.toFixed(2) || '0.00'}%)
                     </p>
                   </div>
-                  <DollarSign className="text-blue-500" size={24} />
+                  <DollarSign className="text-blue-400" size={24} />
                 </div>
               </div>
 
               {/* Investment Score */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Investment Score</p>
+                    <p className="text-sm font-medium text-gray-400">Scor Investiție</p>
                     <p className={`text-3xl font-bold ${getScoreColor(analysis?.investment?.investment_score || 0)}`}>
                       {analysis?.investment?.investment_score || 'N/A'}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-300">
                       {analysis?.investment?.recommendation || 'No Rating'}
                     </p>
                   </div>
-                  <Award className="text-yellow-500" size={24} />
+                  <Award className="text-yellow-400" size={24} />
                 </div>
               </div>
 
               {/* Technical Score */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Technical Score</p>
+                    <p className="text-sm font-medium text-gray-400">Scor Tehnic</p>
                     <p className={`text-3xl font-bold ${getScoreColor(analysis?.technical?.technical_score || 0)}`}>
                       {analysis?.technical?.technical_score || 'N/A'}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-300">
                       {analysis?.technical?.recommendation || 'No Verdict'}
                     </p>
                   </div>
-                  <BarChart3 className="text-green-500" size={24} />
+                  <BarChart3 className="text-green-400" size={24} />
                 </div>
               </div>
 
               {/* Risk Level */}
-              <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Risk Level</p>
+                    <p className="text-sm font-medium text-gray-400">Nivel Risc</p>
                     <p className={`text-2xl font-bold px-3 py-1 rounded-full ${getRiskColor(analysis?.investment?.risk_analysis?.overall_risk || 'MODERATE')}`}>
                       {(analysis?.investment?.risk_analysis?.overall_risk || 'MODERATE').toUpperCase()}
                     </p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Confidence: {(analysis?.investment?.confidence_level || 'medium').toUpperCase()}
+                    <p className="text-sm text-gray-400 mt-1">
+                      Încredere: {(analysis?.investment?.confidence_level || 'medium').toUpperCase()}
                     </p>
                   </div>
-                  <Shield className="text-purple-500" size={24} />
+                  <Shield className="text-purple-400" size={24} />
                 </div>
               </div>
             </div>
