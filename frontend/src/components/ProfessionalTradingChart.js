@@ -534,10 +534,10 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
           </div>
           <div className="text-right">
             <div className="text-purple-300 font-semibold">
-              ⚡ TradeStation API • ApexCharts
+              ⚡ Multi-Source Real-Time Data
             </div>
             <div className="text-gray-400 text-sm">
-              Real-time • Professional Trading
+              TradeStation • YFinance • ApexCharts
             </div>
           </div>
         </div>
