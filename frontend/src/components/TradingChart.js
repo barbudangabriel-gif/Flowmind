@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createChart, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
 
+console.log('TradingChart: lightweight-charts import:', { createChart, CrosshairMode });
+
 // Get backend URL from environment
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
