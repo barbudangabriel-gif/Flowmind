@@ -5,7 +5,7 @@ import json
 from collections import Counter
 
 class ETFSymbolAnalyzer:
-    def __init__(self, base_url="https://stock-analysis-hub.preview.emergentagent.com"):
+    def __init__(self, base_url="https://chart-repair-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.target_etfs = ['SPY', 'QQQ', 'DIA', 'IWM']

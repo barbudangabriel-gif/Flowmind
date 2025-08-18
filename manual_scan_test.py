@@ -149,7 +149,7 @@ async def test_api_endpoints_after_scan():
     
     import requests
     
-    base_url = "https://stock-analysis-hub.preview.emergentagent.com/api"
+    base_url = "https://chart-repair-1.preview.emergentagent.com/api"
     
     try:
         # Test scanner status

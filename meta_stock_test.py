@@ -16,7 +16,7 @@ import json
 from datetime import datetime
 
 class METAStockTester:
-    def __init__(self, base_url="https://592d38d4-6bec-4fa8-80d4-8cd7f7df1a41.preview.emergentagent.com"):
+    def __init__(self, base_url="https://chart-repair-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
