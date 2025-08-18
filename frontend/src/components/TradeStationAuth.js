@@ -12,7 +12,14 @@ const TradeStationAuth = () => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API}/auth/tradestation/status`);
+      // Try local API first, then external
+      let response;
+      try {
+        response = await axios.get(`http://localhost:8001/api/auth/tradestation/status`);
+      } catch (localError) {
+        console.warn('Local API failed, trying external:', localError.message);
+        response = await axios.get(`${API}/auth/tradestation/status`);
+      }
       setAuthStatus(response.data);
       setError(null);
     } catch (err) {
@@ -24,15 +31,29 @@ const TradeStationAuth = () => {
 
   const initiateLogin = async () => {
     try {
-      const response = await axios.get(`${API}/auth/tradestation/login`);
+      // Try local API first
+      let response;
+      try {
+        response = await axios.get(`http://localhost:8001/api/auth/tradestation/login`);
+      } catch (localError) {
+        console.warn('Local API failed, trying external:', localError.message);
+        response = await axios.get(`${API}/auth/tradestation/login`);
+      }
+      
       const authUrl = response.data.auth_url;
       
       // Open popup window for authentication
       const popup = window.open(
         authUrl,
         'tradestation-auth',
-        'width=600,height=700,scrollbars=yes,resizable=yes'
+        'width=600,height=700,scrollbars=yes,resizable=yes,left=' + 
+        (window.screen.width / 2 - 300) + ',top=' + (window.screen.height / 2 - 350)
       );
+
+      if (!popup) {
+        setError('Popup blocked. Please allow popups for this site and try again.');
+        return;
+      }
 
       // Listen for auth completion
       const handleMessage = (event) => {
@@ -40,6 +61,7 @@ const TradeStationAuth = () => {
           popup.close();
           checkAuthStatus(); // Refresh status
           window.removeEventListener('message', handleMessage);
+          setError(null);
         } else if (event.data.type === 'TRADESTATION_AUTH_ERROR') {
           popup.close();
           setError('Authentication failed: ' + event.data.error);
@@ -65,7 +87,11 @@ const TradeStationAuth = () => {
 
   const logout = async () => {
     try {
-      await axios.delete(`${API}/auth/tradestation/logout`);
+      try {
+        await axios.delete(`http://localhost:8001/api/auth/tradestation/logout`);
+      } catch (localError) {
+        await axios.delete(`${API}/auth/tradestation/logout`);
+      }
       checkAuthStatus();
     } catch (err) {
       setError(`Failed to logout: ${err.message}`);
@@ -74,7 +100,11 @@ const TradeStationAuth = () => {
 
   const refreshToken = async () => {
     try {
-      await axios.post(`${API}/auth/tradestation/refresh`);
+      try {
+        await axios.post(`http://localhost:8001/api/auth/tradestation/refresh`);
+      } catch (localError) {
+        await axios.post(`${API}/auth/tradestation/refresh`);
+      }
       checkAuthStatus();
     } catch (err) {
       setError(`Failed to refresh token: ${err.message}`);
