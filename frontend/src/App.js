@@ -62,6 +62,7 @@ const InvestmentScoring = React.lazy(() => import("./components/InvestmentScorin
 const InvestmentScoringDisplay = React.lazy(() => import("./components/InvestmentScoringDisplay"));
 const StockAnalysisPage = React.lazy(() => import("./components/StockAnalysisPage"));
 const OptionsModule = React.lazy(() => import("./components/OptionsModule"));
+const ChartTestPage = React.lazy(() => import("./components/ChartTestPage"));
 
 import "./App.css";
 
