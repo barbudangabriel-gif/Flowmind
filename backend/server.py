@@ -2033,17 +2033,22 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
             </div>
             
             <script>
-                // Auto-close after 10 seconds
+                // Auto-close window after 3 seconds (polling va detecta autentificarea)
                 setTimeout(() => {{
                     window.close();
-                }}, 10000);
+                }}, 3000);
                 
-                // Try to communicate with parent window
+                // Try to communicate with parent window (backup, dar polling este principal)
                 if (window.opener) {{
                     window.opener.postMessage({{
                         type: 'TRADESTATION_AUTH_SUCCESS',
                         data: {token_data}
                     }}, '*');
+                }}
+                
+                // Fallback: close immediately if postMessage succeeds
+                if (window.opener) {{
+                    setTimeout(() => window.close(), 1000);
                 }}
             </script>
         </body>
