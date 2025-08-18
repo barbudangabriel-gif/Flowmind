@@ -47,7 +47,7 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
           }
         }
         
-        console.log(`💰 Real price for ${symbol}: $${currentPrice}`);
+        console.log(`💰 Final price for ${symbol}: $${currentPrice}`);
 
         // Generate realistic market data based on current price
         const generateRealisticData = (price) => {
