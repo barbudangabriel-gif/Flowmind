@@ -1,34 +1,49 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart } from 'lightweight-charts';
+import { createChart, CrosshairMode } from 'lightweight-charts';
 import axios from 'axios';
 
 // Get backend URL from environment
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
-  const chartContainerRef = useRef();
+const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
+  const mainChartRef = useRef();
+  const volumeChartRef = useRef();
+  const containerRef = useRef();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [chartInstance, setChartInstance] = useState(null);
+  const [mainChart, setMainChart] = useState(null);
+  const [volumeChart, setVolumeChart] = useState(null);
   const [selectedInterval, setSelectedInterval] = useState(interval);
-  const [selectedIndicators, setSelectedIndicators] = useState(['volume']); // Default volume
+  const [selectedIndicators, setSelectedIndicators] = useState(['volume']);
+  const [chartData, setChartData] = useState([]);
 
-  const intervals = [
-    { label: '1D', value: '1D' },
-    { label: '4H', value: '4H' },
-    { label: '1H', value: '1H' },
-    { label: '15m', value: '15m' },
-    { label: '5m', value: '5m' }
+  // Complete timeframes like professional trading platforms
+  const timeframes = [
+    { label: '1m', value: '1m', seconds: 60 },
+    { label: '5m', value: '5m', seconds: 300 },
+    { label: '15m', value: '15m', seconds: 900 },
+    { label: '1H', value: '1h', seconds: 3600 },
+    { label: '4H', value: '4h', seconds: 14400 },
+    { label: '1D', value: '1d', seconds: 86400 },
+    { label: '1W', value: '1w', seconds: 604800 },
+    { label: '1M', value: '1M', seconds: 2629746 }
   ];
 
-  const availableIndicators = [
-    { id: 'volume', label: 'Volume', color: '#26a69a' },
-    { id: 'sma20', label: 'SMA 20', color: '#FF9500' },
-    { id: 'sma50', label: 'SMA 50', color: '#9013FE' },
-    { id: 'ema12', label: 'EMA 12', color: '#2196F3' },
-    { id: 'rsi', label: 'RSI (14)', color: '#E91E63' },
-    { id: 'bollinger', label: 'Bollinger Bands', color: '#795548' }
+  // Complete technical indicators
+  const technicalIndicators = [
+    { id: 'sma_9', label: 'SMA 9', type: 'overlay', color: '#FF6B35', period: 9 },
+    { id: 'sma_20', label: 'SMA 20', type: 'overlay', color: '#F7931E', period: 20 },
+    { id: 'sma_50', label: 'SMA 50', type: 'overlay', color: '#FFD23F', period: 50 },
+    { id: 'sma_200', label: 'SMA 200', type: 'overlay', color: '#06FFA5', period: 200 },
+    { id: 'ema_9', label: 'EMA 9', type: 'overlay', color: '#3B82F6', period: 9 },
+    { id: 'ema_21', label: 'EMA 21', type: 'overlay', color: '#8B5CF6', period: 21 },
+    { id: 'ema_50', label: 'EMA 50', type: 'overlay', color: '#EC4899', period: 50 },
+    { id: 'bb_20', label: 'Bollinger Bands', type: 'overlay', color: '#6B7280', period: 20 },
+    { id: 'rsi_14', label: 'RSI (14)', type: 'oscillator', color: '#EF4444', period: 14 },
+    { id: 'macd', label: 'MACD', type: 'oscillator', color: '#10B981' },
+    { id: 'stoch', label: 'Stochastic', type: 'oscillator', color: '#F59E0B' },
+    { id: 'volume', label: 'Volume', type: 'volume', color: '#6366F1', enabled: true }
   ];
 
   // Simple indicator calculations
