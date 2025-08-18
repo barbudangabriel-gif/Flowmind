@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Activity, RefreshCw, Search, Filter, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { TrendingUp, TrendingDown, Activity, RefreshCw, Search, Filter, Star, ExternalLink } from 'lucide-react';
 
 const InvestmentScoringDisplay = () => {
   const [scannerStatus, setScannerStatus] = useState(null);
