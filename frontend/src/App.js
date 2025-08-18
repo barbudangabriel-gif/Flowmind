@@ -4994,69 +4994,7 @@ const TradeStationAuth = () => {
       const response = await axios.get(`${API}/auth/tradestation/login`);
       
       if (response.data.auth_url) {
-        // Open OAuth URL in new window
-        const authWindow = window.open(response.data.auth_url, 'tradestation-auth', 
-          'width=800,height=600,scrollbars=yes,resizable=yes');
-        
-        if (!authWindow) {
-          throw new Error('Popup window blocked. Please allow popups for this site.');
-        }
-        
-        // Listen for messages from the callback window
-        const messageListener = (event) => {
-          // Verify origin for security (allow localhost for TradeStation callback)
-          if (!event.origin.includes('localhost') && event.origin !== window.location.origin) return;
-          
-          if (event.data.type === 'TRADESTATION_AUTH_SUCCESS') {
-            setLoading(false);
-            setError(null);
-            // Refresh auth status
-            checkAuthStatus();
-            window.removeEventListener('message', messageListener);
-          } else if (event.data.type === 'TRADESTATION_AUTH_ERROR') {
-            setLoading(false);
-            setError(event.data.error || 'Authentication failed');
-            window.removeEventListener('message', messageListener);
-          }
-        };
-        
-        window.addEventListener('message', messageListener);
-        
-        // Set up polling as backup and to detect window closure
-        let checkCount = 0;
-        const maxChecks = 60; // 3 minutes maximum
-        
-        const authCheckInterval = setInterval(async () => {
-          try {
-            checkCount++;
-            
-            // Check if window was closed by user
-            if (authWindow.closed) {
-              clearInterval(authCheckInterval);
-              window.removeEventListener('message', messageListener);
-              setLoading(false);
-              
-              // Only show error if closed very quickly (before authentication could complete)
-              if (checkCount < 3) {
-                setError('Authentication window was closed. Please try again.');
-              }
-              return;
-            }
-            
-            // Stop after maximum checks
-            if (checkCount >= maxChecks) {
-              clearInterval(authCheckInterval);
-              window.removeEventListener('message', messageListener);
-              setLoading(false);
-              setError('Authentication timeout. Please try again.');
-              if (!authWindow.closed) {
-                authWindow.close();
-              }
-            }
-          } catch (err) {
-            console.error('Auth check error:', err);
-          }
-        }, 3000);
+        window.location.href = response.data.auth_url;
         
       } else {
         throw new Error('Failed to generate authentication URL');
