@@ -10,6 +10,7 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
   const chartContainerRef = useRef();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [chartInstance, setChartInstance] = useState(null);
   const [selectedInterval, setSelectedInterval] = useState(interval);
   const [selectedIndicators, setSelectedIndicators] = useState(['volume']); // Default volume
 
