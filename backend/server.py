@@ -27,7 +27,7 @@ from expert_options_system import expert_system, StrategyType
 from options_strategy_charts import chart_generator
 
 # TradeStation Integration
-from tradestation_auth import ts_auth
+from tradestation_auth_service import tradestation_auth_service as ts_auth
 from tradestation_client import TradeStationClient
 from portfolio_service import PortfolioService
 from trading_service import TradingService, OrderRequest, OrderModification, RiskLimits
