@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Activity, RefreshCw, Search, Filter, Star, ExternalLink } from 'lucide-react';
 
 const InvestmentScoringDisplay = () => {
+  const navigate = useNavigate();
   const [scannerStatus, setScannerStatus] = useState(null);
   const [topStocks, setTopStocks] = useState([]);
   const [loading, setLoading] = useState(false);
