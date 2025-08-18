@@ -1915,23 +1915,18 @@ async def get_tradestation_auth_status():
 async def initiate_tradestation_login():
     """Initiate TradeStation OAuth login process"""
     try:
-        auth_url = ts_auth.generate_auth_url()
+        auth_info = ts_auth.generate_auth_url()
         
         return {
             "status": "success",
-            "message": "OAuth URL generated. Redirect user to complete authentication.",
-            "auth_url": auth_url,
-            "instructions": [
-                "1. User must visit the auth_url to log into TradeStation",
-                "2. After authorization, TradeStation will redirect to callback URL",
-                "3. Callback will exchange code for access tokens"
-            ],
+            "message": "OAuth URL generated. Complete authentication by visiting the auth_url.",
+            **auth_info,
             "timestamp": datetime.utcnow().isoformat()
         }
         
     except Exception as e:
-        logger.error(f"Error initiating TradeStation login: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to initiate login: {str(e)}")
+        logger.error(f"Error generating TradeStation auth URL: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate auth URL: {str(e)}")
 
 @api_router.get("/auth/tradestation/callback")
 async def handle_tradestation_callback(code: str = Query(...), state: str = Query(...)):
