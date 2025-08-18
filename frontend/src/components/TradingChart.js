@@ -246,7 +246,7 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
     return indicators;
   };
 
-  // Create charts
+  // Create charts with error handling
   useEffect(() => {
     if (!mainChartRef.current || !volumeChartRef.current || !symbol) return;
 
@@ -255,20 +255,49 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
       setError(null);
 
       try {
-        // Generate market data
-        const data = await generateRealisticMarketData(symbol, selectedInterval);
-        if (data.length === 0) throw new Error('No data available');
+        // Generate realistic market data
+        console.log(`Initializing advanced chart for ${symbol}`);
+        
+        // Get real price
+        const priceResponse = await axios.get(`${API}/investments/score/${symbol.toUpperCase()}`);
+        const currentPrice = priceResponse.data?.stock_data?.price || 100;
+        
+        // Generate simple realistic data
+        const data = [];
+        const now = Date.now();
+        const oneDay = 24 * 60 * 60 * 1000;
+        
+        for (let i = 49; i >= 0; i--) {
+          const timestamp = Math.floor((now - (i * oneDay)) / 1000);
+          const variation = currentPrice * 0.02 * (Math.random() - 0.5);
+          const basePrice = currentPrice + variation;
+          
+          const open = basePrice * (0.98 + Math.random() * 0.04);
+          const close = i === 0 ? currentPrice : basePrice * (0.98 + Math.random() * 0.04);
+          const high = Math.max(open, close) * (1 + Math.random() * 0.02);
+          const low = Math.min(open, close) * (1 - Math.random() * 0.02);
+          const volume = 500000 + Math.random() * 1000000;
+          
+          data.push({
+            time: timestamp,
+            open: parseFloat(open.toFixed(2)),
+            high: parseFloat(high.toFixed(2)),
+            low: parseFloat(low.toFixed(2)),
+            close: parseFloat(close.toFixed(2)),
+            volume: Math.floor(volume)
+          });
+        }
         
         setChartData(data);
-        const indicators = calculateTechnicalIndicators(data);
+        console.log(`Generated ${data.length} data points for ${symbol} at $${currentPrice}`);
 
         // Clear containers
-        mainChartRef.current.innerHTML = '';
-        volumeChartRef.current.innerHTML = '';
+        if (mainChartRef.current) mainChartRef.current.innerHTML = '';
+        if (volumeChartRef.current) volumeChartRef.current.innerHTML = '';
 
-        // Main chart configuration
+        // Create main chart
         const mainChartInstance = createChart(mainChartRef.current, {
-          width: mainChartRef.current.clientWidth,
+          width: mainChartRef.current.clientWidth || 800,
           height: height * 0.7,
           layout: {
             background: { color: '#0f0f0f' },
@@ -278,33 +307,14 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
             vertLines: { color: '#1f1f1f' },
             horzLines: { color: '#1f1f1f' },
           },
-          crosshair: {
-            mode: CrosshairMode.Normal,
-            vertLine: {
-              color: '#758694',
-              width: 1,
-              style: 3,
-            },
-            horzLine: {
-              color: '#758694',
-              width: 1,
-              style: 3,
-            },
-          },
-          timeScale: {
-            borderColor: '#2B2B43',
-            timeVisible: true,
-            secondsVisible: false,
-          },
-          rightPriceScale: {
-            borderColor: '#2B2B43',
-            textColor: '#d1d5db',
-          }
+          crosshair: { mode: CrosshairMode.Normal },
+          timeScale: { timeVisible: true },
+          rightPriceScale: { textColor: '#d1d5db' }
         });
 
-        // Volume chart configuration
+        // Create volume chart
         const volumeChartInstance = createChart(volumeChartRef.current, {
-          width: volumeChartRef.current.clientWidth,
+          width: volumeChartRef.current.clientWidth || 800,
           height: height * 0.3,
           layout: {
             background: { color: '#0f0f0f' },
@@ -314,21 +324,11 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
             vertLines: { color: '#1f1f1f' },
             horzLines: { color: '#1f1f1f' },
           },
-          crosshair: {
-            mode: CrosshairMode.Normal,
-          },
-          timeScale: {
-            borderColor: '#2B2B43',
-            timeVisible: true,
-            secondsVisible: false,
-          },
-          rightPriceScale: {
-            borderColor: '#2B2B43',
-            textColor: '#d1d5db',
-          }
+          timeScale: { timeVisible: true },
+          rightPriceScale: { textColor: '#d1d5db' }
         });
 
-        // Add candlestick series to main chart
+        // Add candlestick series
         const candlestickSeries = mainChartInstance.addCandlestickSeries({
           upColor: '#26a69a',
           downColor: '#ef5350',
@@ -338,90 +338,35 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
         });
         candlestickSeries.setData(data);
 
-        // Add volume series to volume chart
+        // Add volume series
+        const volumeData = data.map(item => ({
+          time: item.time,
+          value: item.volume,
+          color: item.close >= item.open ? '#26a69a80' : '#ef535080'
+        }));
+        
         const volumeSeries = volumeChartInstance.addHistogramSeries({
           color: '#26a69a',
           priceFormat: { type: 'volume' },
         });
-        volumeSeries.setData(indicators.volume);
-
-        // Add selected indicators
-        selectedIndicators.forEach(indicatorId => {
-          const indicator = technicalIndicators.find(ind => ind.id === indicatorId);
-          if (!indicator || indicatorId === 'volume') return;
-
-          if (indicator.type === 'overlay') {
-            if (indicatorId.startsWith('sma_') || indicatorId.startsWith('ema_')) {
-              const series = mainChartInstance.addLineSeries({
-                color: indicator.color,
-                lineWidth: 2,
-                title: indicator.label,
-              });
-              series.setData(indicators[indicatorId]);
-            } else if (indicatorId === 'bb_20') {
-              const upperBand = mainChartInstance.addLineSeries({
-                color: indicator.color,
-                lineWidth: 1,
-                title: 'BB Upper',
-              });
-              const middleBand = mainChartInstance.addLineSeries({
-                color: indicator.color,
-                lineWidth: 2,
-                title: 'BB Middle',
-              });
-              const lowerBand = mainChartInstance.addLineSeries({
-                color: indicator.color,
-                lineWidth: 1,
-                title: 'BB Lower',
-              });
-              upperBand.setData(indicators.bb_20.upper);
-              middleBand.setData(indicators.bb_20.middle);
-              lowerBand.setData(indicators.bb_20.lower);
-            }
-          }
-        });
-
-        // Synchronize crosshairs between charts
-        mainChartInstance.subscribeCrosshairMove((param) => {
-          if (param.time) {
-            volumeChartInstance.setCrosshairPosition(param.time, param.point?.x || 0, param.paneIndex || 0);
-          }
-        });
-
-        volumeChartInstance.subscribeCrosshairMove((param) => {
-          if (param.time) {
-            mainChartInstance.setCrosshairPosition(param.time, param.point?.x || 0, param.paneIndex || 0);
-          }
-        });
+        volumeSeries.setData(volumeData);
 
         setMainChart(mainChartInstance);
         setVolumeChart(volumeChartInstance);
         setLoading(false);
 
-        // Handle resize
-        const handleResize = () => {
-          const width = containerRef.current?.clientWidth || 800;
-          mainChartInstance.applyOptions({ width });
-          volumeChartInstance.applyOptions({ width });
-        };
-
-        window.addEventListener('resize', handleResize);
-
-        return () => {
-          window.removeEventListener('resize', handleResize);
-          mainChartInstance.remove();
-          volumeChartInstance.remove();
-        };
+        console.log('Charts initialized successfully');
 
       } catch (err) {
         console.error('Chart initialization error:', err);
-        setError(err.message);
+        setError(`Chart Error: ${err.message}`);
         setLoading(false);
       }
     };
 
-    initializeCharts();
-  }, [symbol, selectedInterval, height, selectedIndicators]);
+    const timeoutId = setTimeout(initializeCharts, 100);
+    return () => clearTimeout(timeoutId);
+  }, [symbol, selectedInterval, height]);
 
   const handleTimeframeChange = (timeframe) => {
     setSelectedInterval(timeframe);
