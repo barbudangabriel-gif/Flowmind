@@ -67,35 +67,43 @@ const TradeStationAuth = () => {
         // Redirectează popup-ul la URL-ul real de autentificare
         popup.location.href = authUrl;
         
-        // Listen for auth completion
-        const handleMessage = (event) => {
-          console.log('📨 Received message:', event.data);
-          if (event.data.type === 'TRADESTATION_AUTH_SUCCESS') {
-            console.log('✅ Authentication successful');
-            popup.close();
-            checkAuthStatus(); // Refresh status
-            window.removeEventListener('message', handleMessage);
-            setError(null);
-            setAuthenticating(false);
-          } else if (event.data.type === 'TRADESTATION_AUTH_ERROR') {
-            console.log('❌ Authentication failed:', event.data.error);
-            popup.close();
-            setError('Authentication failed: ' + event.data.error);
-            window.removeEventListener('message', handleMessage);
-            setAuthenticating(false);
+        // Listen for auth completion REMOVED - folosim polling în loc
+        // const handleMessage = (event) => { ... } - ȘTERS pentru că nu funcționează cu redirect-uri externe
+        
+        // În loc de postMessage, folosim polling automat
+        const pollForCompletion = setInterval(async () => {
+          try {
+            const statusResponse = await axios.get(`${API}/auth/tradestation/status`);
+            if (statusResponse.data?.authentication?.authenticated) {
+              console.log('✅ Authentication detected via polling!');
+              clearInterval(pollForCompletion);
+              if (!popup.closed) popup.close();
+              checkAuthStatus(); // Refresh UI
+              setError(null);
+              setAuthenticating(false);
+            }
+          } catch (pollError) {
+            // Ignore polling errors
           }
-        };
-
-        window.addEventListener('message', handleMessage);
+        }, 2000); // Check every 2 seconds
 
         // Check if popup was closed manually
         const checkClosed = setInterval(() => {
           if (popup.closed) {
-            console.log('🔄 Popup was closed, checking auth status');
+            console.log('🔄 Popup closed, doing final auth status check');
             clearInterval(checkClosed);
-            window.removeEventListener('message', handleMessage);
-            checkAuthStatus(); // Check status in case auth completed
-            setAuthenticating(false);
+            clearInterval(pollForCompletion);
+            
+            // Final check after popup closes
+            setTimeout(async () => {
+              try {
+                await checkAuthStatus();
+                setAuthenticating(false);
+              } catch (finalError) {
+                console.error('Final auth check failed:', finalError);
+                setAuthenticating(false);
+              }
+            }, 1000); // Wait 1 second after popup closes
           }
         }, 1000);
 
@@ -104,8 +112,8 @@ const TradeStationAuth = () => {
           if (!popup.closed) {
             console.log('⏰ Authentication timeout');
             clearInterval(checkClosed);
+            clearInterval(pollForCompletion);
             popup.close();
-            window.removeEventListener('message', handleMessage);
             setError('Authentication timeout. Please try again.');
             setAuthenticating(false);
           }
