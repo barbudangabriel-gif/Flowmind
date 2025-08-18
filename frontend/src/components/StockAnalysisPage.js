@@ -278,7 +278,6 @@ const StockAnalysisPage = () => {
               { id: 'investment', label: '🎯 Investment Analysis', icon: Award },
               { id: 'technical', label: '📈 Technical Analysis', icon: BarChart3 },
               { id: 'options', label: '⚡ Options Strategies', icon: Zap },
-              { id: 'charts', label: '📉 Charts', icon: LineChart },
               { id: 'fundamentals', label: '💼 Fundamentals', icon: DollarSign }
             ].map((tab) => {
               const Icon = tab.icon;
