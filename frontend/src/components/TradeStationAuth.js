@@ -5,6 +5,7 @@ const TradeStationAuth = () => {
   const [authStatus, setAuthStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [authenticating, setAuthenticating] = useState(false);
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
   const API = `${BACKEND_URL}/api`;
