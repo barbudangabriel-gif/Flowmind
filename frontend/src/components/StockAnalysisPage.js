@@ -53,39 +53,29 @@ const StockAnalysisPage = () => {
       let stockChange = 0;
       let stockChangePercent = 0;
       
-      // Use consistent pricing logic - same as Top Picks mock data
-      const mockPrices = {
-        'UNH': 304.01,
-        'CRM': 242.44,
-        'AAPL': 231.59,
-        'MSFT': 520.17,
-        'NVDA': 180.45,
-        'GOOGL': 165.32,
-        'TSLA': 187.91,
-        'AMZN': 225.73,
-        'META': 528.45,
-        'JPM': 212.34
-      };
-      
-      // Use mock price if available, otherwise try API
-      if (mockPrices[symbol.toUpperCase()]) {
-        stockPrice = mockPrices[symbol.toUpperCase()];
-        stockChange = (Math.random() - 0.5) * 10; // Random change for demo
-        stockChangePercent = (stockChange / stockPrice) * 100;
-        console.log(`Using consistent mock price for ${symbol}: $${stockPrice}`);
-      } else {
-        // Fallback to API for symbols not in mock data
-        try {
+      // Use real API data instead of mock prices for consistency with scanner
+      try {
+        // First try to get price from investment scoring API (same as scanner)
+        const investmentResponse = await axios.get(`${API}/investments/score/${symbol.toUpperCase()}`);
+        if (investmentResponse.data?.stock_data?.price) {
+          stockPrice = investmentResponse.data.stock_data.price;
+          stockChange = investmentResponse.data.stock_data.change || 0;
+          stockChangePercent = investmentResponse.data.stock_data.change_percent || 0;
+          console.log(`Using real API price for ${symbol}: $${stockPrice}`);
+        } else {
+          // Fallback to enhanced stock API
           const priceResponse = await axios.get(`${API}/stocks/${symbol.toUpperCase()}/enhanced`);
           if (priceResponse.data?.price) {
             stockPrice = priceResponse.data.price;
             stockChange = priceResponse.data.change || 0;
             stockChangePercent = priceResponse.data.change_percent || 0;
           }
-        } catch (priceError) {
-          console.warn(`Could not get API price for ${symbol}, using default`);
-          stockPrice = 100.00; // Default price
         }
+      } catch (priceError) {
+        console.warn(`Could not get API price for ${symbol}, using fallback`);
+        stockPrice = 100.00; // Default price only as last resort
+        stockChange = 0;
+        stockChangePercent = 0;
       }
       
       // Fetch AI analysis in parallel (using correct endpoints)
