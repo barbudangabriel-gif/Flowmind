@@ -113,7 +113,12 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
         style: {
           color: '#9CA3AF'
         }
-      }
+      },
+      // Position price scale on the right
+      opposite: true,
+      tickAmount: 6,
+      min: function(min) { return min * 0.98; },
+      max: function(max) { return max * 1.02; }
     },
     grid: {
       borderColor: '#374151',
