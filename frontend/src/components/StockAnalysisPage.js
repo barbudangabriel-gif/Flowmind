@@ -468,10 +468,9 @@ const StockAnalysisPage = () => {
               
               {/* Real Interactive Trading Chart */}
               <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-                <WorkingTradingChart 
+                <ProfessionalTradingChart 
                   symbol={symbol} 
-                  interval="1D"
-                  height={450}
+                  height={500}
                 />
               </div>
 
