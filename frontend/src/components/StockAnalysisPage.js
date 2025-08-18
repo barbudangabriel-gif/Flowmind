@@ -88,11 +88,11 @@ const StockAnalysisPage = () => {
         }
       }
       
-      // Fetch AI analysis in parallel (keeping original logic)
+      // Fetch AI analysis in parallel (using correct endpoints)
       const timestamp = Date.now();
       const [investmentRes, technicalRes] = await Promise.allSettled([
-        axios.post(`${API}/agents/investment-scoring`, {}, {
-          params: { symbol: symbol.toUpperCase(), _t: timestamp }
+        axios.get(`${API}/investments/score/${symbol.toUpperCase()}`, {
+          params: { _t: timestamp }
         }),
         axios.post(`${API}/agents/technical-analysis`, {}, {
           params: { symbol: symbol.toUpperCase(), include_smc: true, _t: timestamp }
