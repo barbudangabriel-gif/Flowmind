@@ -2127,6 +2127,76 @@ async def handle_tradestation_callback(code: str = Query(...), state: str = Quer
         
         return HTMLResponse(content=error_html)
 
+@api_router.post("/auth/tradestation/refresh")
+async def refresh_tradestation_token():
+    """Manually refresh TradeStation token"""
+    try:
+        if not ts_auth.refresh_token:
+            raise HTTPException(status_code=400, detail="No refresh token available")
+        
+        success = await ts_auth.refresh_access_token()
+        
+        if success:
+            return {
+                "status": "success",
+                "message": "Token refreshed successfully",
+                "token_info": {
+                    "expires_at": ts_auth.token_expires.isoformat() if ts_auth.token_expires else None,
+                    "environment": ts_auth.environment
+                },
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Failed to refresh token")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error refreshing TradeStation token: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Token refresh failed: {str(e)}")
+
+@api_router.delete("/auth/tradestation/logout")
+async def logout_tradestation():
+    """Clear TradeStation authentication"""
+    try:
+        ts_auth._clear_tokens()
+        
+        return {
+            "status": "success",
+            "message": "TradeStation authentication cleared successfully",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error clearing TradeStation authentication: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Logout failed: {str(e)}")
+
+@api_router.get("/auth/tradestation/token-status")
+async def get_token_status():
+    """Get detailed token status information"""
+    try:
+        status = ts_auth.get_status()
+        
+        return {
+            "status": "success",
+            "token_status": status,
+            "recommendations": [
+                "Token is valid and ready for API calls" if status["authenticated"] else
+                "Authentication required - use /auth/tradestation/login to authenticate",
+                
+                "Token will refresh automatically when needed" if status["has_refresh_token"] else
+                "No refresh token - will need to re-authenticate when token expires",
+                
+                f"Token expires: {status['token_expires']}" if status["token_expires"] else
+                "Token expiration unknown"
+            ],
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting token status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get token status: {str(e)}")
+
 @api_router.get("/auth/tradestation/token-status")
 async def get_token_manager_status():
     """Get TradeStation token manager status"""
