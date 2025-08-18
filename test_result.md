@@ -120,14 +120,14 @@ test_plan:
   - task: "Trading Chart Component Integration"
     implemented: true
     working: false
-    file: "/app/frontend/src/components/TradingChart.js"
-    stuck_count: 1
+    file: "/app/frontend/src/components/TradingChart.js,/app/frontend/src/components/WorkingTradingChart.js"
+    stuck_count: 2
     priority: "high"
     needs_retesting: true
     status_history:
         - working: false
         - agent: "main"
-        - comment: "🔧 CRITICAL ISSUE IDENTIFIED: The chart loading issue is NOT with lightweight-charts v5.0.8, but with API connectivity. Frontend is configured to connect to external URL https://stock-analysis-hub.preview.emergentagent.com but backend is running locally at localhost:8001. This causes 'Failed to fetch' and net::ERR_ABORTED errors, preventing the StockAnalysisPage from loading data and thus the chart from displaying. All pages affected: StockAnalysisPage, Investment Scoring Scanner. Backend API tested directly and working perfectly. Need to resolve environment configuration for development."
+        - comment: "🔧 ROOT CAUSE IDENTIFIED: The chart loading issue is caused by TWO problems: 1) React 19 compatibility issue with lightweight-charts v5.0.8 (React 19 is experimental and conflicts with DOM manipulation), 2) Frontend configured to use external API URL (https://stock-analysis-hub.preview.emergentagent.com) which causes CORS/connectivity issues from localhost. Created WorkingTradingChart.js using Recharts as React 19 compatible alternative. However, StockAnalysisPage still stuck loading due to API connectivity issues preventing full page render. Local backend API tested directly and working perfectly with all endpoints returning proper data."
 
 agent_communication:
     - agent: "testing"
