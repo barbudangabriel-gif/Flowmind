@@ -178,14 +178,14 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
         // Create separate volume histogram series in its own pane (subgraph)
         console.log('Adding volume histogram in separate pane...');
         const volumeSeries = chart.addHistogramSeries({
-          color: '#26a69a',
+          color: '#26a69a80', // Semi-transparent green
           priceFormat: { 
             type: 'volume',
             precision: 0,
           },
-          priceScaleId: 'volume', // Separate price scale for volume
+          priceScaleId: '', // Empty string creates separate pane
           scaleMargins: { 
-            top: 0.8,    // Volume takes bottom 20% of chart
+            top: 0.7,    // Volume takes bottom 30% of chart
             bottom: 0 
           },
         });
@@ -194,13 +194,11 @@ const TradingChart = ({ symbol, interval = '1D', height = 400 }) => {
         const volumeData = chartData.map(item => ({
           time: item.time,
           value: item.volume,
-          color: item.close >= item.open ? '#00D4AA60' : '#FF6B6B60' // Semi-transparent colors
+          color: item.close >= item.open ? '#00D4AA80' : '#FF6B6B80' // More visible colors
         }));
 
         volumeSeries.setData(volumeData);
-
-        // Store chart instance for indicators
-        setChartInstance(chart);
+        console.log(`Volume data set with ${volumeData.length} bars`);
 
         // Add selected indicators
         addIndicators(chart, chartData, candlestickSeries);
