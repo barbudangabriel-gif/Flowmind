@@ -344,8 +344,8 @@ const StockAnalysisPage = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-400">Scor Investiție</p>
-                    <p className={`text-3xl font-bold ${getScoreColor(analysis?.investment?.investment_score || 0)}`}>
-                      {analysis?.investment?.investment_score || 'N/A'}
+                    <p className={`text-3xl font-bold ${getScoreColor(analysis?.investment?.total_score || 0)}`}>
+                      {analysis?.investment?.total_score || 'N/A'}
                     </p>
                     <p className="text-sm text-gray-300">
                       {analysis?.investment?.recommendation || 'No Rating'}
