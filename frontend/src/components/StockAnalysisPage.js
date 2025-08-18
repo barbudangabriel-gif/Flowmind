@@ -658,8 +658,8 @@ const StockAnalysisPage = () => {
                 </div>
                 <div className="bg-purple-900 rounded-lg p-4 border border-purple-800">
                   <Target className="text-purple-400 mb-2" size={24} />
-                  <h5 className="font-semibold text-gray-900">TradeStation Data</h5>
-                  <p className="text-sm text-gray-600">Real-time market data integration</p>
+                  <h5 className="font-semibold text-white">Date TradeStation</h5>
+                  <p className="text-sm text-gray-400">Integrare date în timp real</p>
                 </div>
               </div>
             </div>
