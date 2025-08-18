@@ -423,105 +423,37 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
     initializeCharts();
   }, [symbol, selectedInterval, height, selectedIndicators]);
 
-  // Add indicators to chart (excluding volume since it's already in subgraph)
-  const addIndicators = (chart, chartData, mainSeries) => {
-    if (!selectedIndicators.length) return;
+  const handleTimeframeChange = (timeframe) => {
+    setSelectedInterval(timeframe);
+  };
 
-    const indicators = calculateIndicators(chartData);
-
-    selectedIndicators.forEach(indicatorId => {
-      switch (indicatorId) {
-        case 'volume':
-          // Volume is already added as separate histogram, skip here
-          console.log('Volume already added in separate pane');
-          break;
-
-        case 'sma20':
-          const sma20Series = chart.addLineSeries({
-            color: '#FF9500',
-            lineWidth: 2,
-            title: 'SMA 20',
-          });
-          sma20Series.setData(indicators.sma20);
-          break;
-
-        case 'sma50':
-          const sma50Series = chart.addLineSeries({
-            color: '#9013FE',
-            lineWidth: 2,
-            title: 'SMA 50',
-          });
-          sma50Series.setData(indicators.sma50);
-          break;
-
-        case 'ema12':
-          const ema12Series = chart.addLineSeries({
-            color: '#2196F3',
-            lineWidth: 1,
-            title: 'EMA 12',
-          });
-          ema12Series.setData(indicators.ema12);
-          break;
-
-        case 'ema26':
-          const ema26Series = chart.addLineSeries({
-            color: '#FF5722',
-            lineWidth: 1,
-            title: 'EMA 26',
-          });
-          ema26Series.setData(indicators.ema26);
-          break;
-
-        case 'bollinger':
-          const upperSeries = chart.addLineSeries({
-            color: '#E91E63',
-            lineWidth: 1,
-            title: 'BB Upper',
-          });
-          const middleSeries = chart.addLineSeries({
-            color: '#795548',
-            lineWidth: 1,
-            title: 'BB Middle',
-          });
-          const lowerSeries = chart.addLineSeries({
-            color: '#E91E63',
-            lineWidth: 1,
-            title: 'BB Lower',
-          });
-          upperSeries.setData(indicators.bollinger.upper);
-          middleSeries.setData(indicators.bollinger.middle);
-          lowerSeries.setData(indicators.bollinger.lower);
-          break;
-
-        default:
-          break;
+  const toggleIndicator = (indicatorId) => {
+    setSelectedIndicators(prev => {
+      if (prev.includes(indicatorId)) {
+        return prev.filter(id => id !== indicatorId);
+      } else {
+        return [...prev, indicatorId];
       }
     });
   };
 
-  // Handle indicator selection
-  const toggleIndicator = (indicatorId) => {
-    setSelectedIndicators(prev => {
-      const newSelection = prev.includes(indicatorId)
-        ? prev.filter(id => id !== indicatorId)
-        : [...prev, indicatorId];
-      return newSelection;
-    });
-  };
-
-  const handleIntervalChange = (newInterval) => {
-    console.log(`Changing interval to ${newInterval}`);
-    setSelectedInterval(newInterval);
-  };
+  if (loading) {
+    return (
+      <div className="bg-gray-900 rounded-lg p-6 text-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+        <div className="text-gray-400">Loading advanced chart for {symbol}...</div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6 text-center">
+      <div className="bg-gray-900 rounded-lg p-6 text-center">
         <div className="text-red-400 mb-2">Chart Error</div>
-        <div className="text-gray-400 text-sm">{error}</div>
+        <div className="text-gray-400 text-sm mb-4">{error}</div>
         <button 
-          onClick={() => setSelectedInterval(selectedInterval)} // Trigger reload
-          className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
+          onClick={() => setSelectedInterval(selectedInterval)}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
         >
           Retry
         </button>
@@ -530,47 +462,43 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg p-4">
-      {/* Chart Header */}
-      <div className="flex flex-col space-y-4 mb-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <h3 className="text-lg font-semibold text-white">{symbol} Chart</h3>
-            {loading && (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-            )}
-          </div>
-          
-          {/* Interval Selector */}
-          <div className="flex space-x-1">
-            {intervals.map((int) => (
-              <button
-                key={int.value}
-                onClick={() => handleIntervalChange(int.value)}
-                className={`px-3 py-1 text-xs rounded transition-colors ${
-                  selectedInterval === int.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                {int.label}
-              </button>
-            ))}
-          </div>
+    <div ref={containerRef} className="bg-gray-900 rounded-lg overflow-hidden">
+      {/* Chart Controls */}
+      <div className="bg-gray-800 p-4 border-b border-gray-700">
+        {/* Timeframe Controls */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-gray-400 text-sm font-medium mr-2">Timeframe:</span>
+          {timeframes.map((tf) => (
+            <button
+              key={tf.value}
+              onClick={() => handleTimeframeChange(tf.value)}
+              className={`px-3 py-1 text-sm rounded transition-colors ${
+                selectedInterval === tf.value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {tf.label}
+            </button>
+          ))}
         </div>
 
-        {/* Indicators Selector */}
+        {/* Technical Indicators */}
         <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-gray-400 mr-2">Indicators:</span>
-          {availableIndicators.map((indicator) => (
+          <span className="text-gray-400 text-sm font-medium mr-2">Indicators:</span>
+          {technicalIndicators.map((indicator) => (
             <button
               key={indicator.id}
               onClick={() => toggleIndicator(indicator.id)}
-              className={`px-2 py-1 text-xs rounded transition-colors ${
+              className={`px-3 py-1 text-xs rounded transition-colors ${
                 selectedIndicators.includes(indicator.id)
-                  ? 'bg-green-600 text-white'
+                  ? 'text-white border'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
+              style={{
+                backgroundColor: selectedIndicators.includes(indicator.id) ? indicator.color : undefined,
+                borderColor: selectedIndicators.includes(indicator.id) ? indicator.color : undefined
+              }}
             >
               {indicator.label}
             </button>
@@ -579,15 +507,38 @@ const TradingChart = ({ symbol, interval = '1D', height = 500 }) => {
       </div>
 
       {/* Chart Container */}
-      <div 
-        ref={chartContainerRef}
-        className="w-full bg-black rounded" // Black background for chart
-        style={{ height: `${height}px` }}
-      />
-      
+      <div className="relative">
+        {/* Main Price Chart */}
+        <div 
+          ref={mainChartRef} 
+          className="w-full"
+          style={{ height: height * 0.7 }}
+        />
+        
+        {/* Volume Chart */}
+        <div 
+          ref={volumeChartRef} 
+          className="w-full border-t border-gray-700"
+          style={{ height: height * 0.3 }}
+        />
+      </div>
+
       {/* Chart Info */}
-      <div className="mt-2 text-xs text-gray-400 text-center">
-        {loading ? 'Loading chart data...' : `${symbol?.toUpperCase()} • ${selectedInterval} • ${selectedIndicators.length} indicators`}
+      <div className="bg-gray-800 p-3 border-t border-gray-700">
+        <div className="flex items-center justify-between text-xs text-gray-400">
+          <div>
+            Symbol: <span className="text-white font-medium">{symbol}</span>
+            {' • '}
+            Interval: <span className="text-white">{selectedInterval}</span>
+            {' • '}
+            Bars: <span className="text-white">{chartData.length}</span>
+          </div>
+          <div>
+            Indicators: <span className="text-white">{selectedIndicators.length}</span>
+            {' • '}
+            Last Update: <span className="text-white">{new Date().toLocaleTimeString()}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
