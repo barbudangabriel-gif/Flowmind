@@ -345,10 +345,10 @@ const StockAnalysisPage = () => {
                   <div>
                     <p className="text-sm font-medium text-gray-400">Scor Investiție</p>
                     <p className={`text-3xl font-bold ${getScoreColor(analysis?.investment?.total_score || 0)}`}>
-                      {analysis?.investment?.total_score || 'N/A'}
+                      {analysis?.investment?.total_score?.toFixed(1) || 'N/A'}
                     </p>
                     <p className="text-sm text-gray-300">
-                      {analysis?.investment?.recommendation || 'No Rating'}
+                      {analysis?.investment?.rating || 'No Rating'}
                     </p>
                   </div>
                   <Award className="text-yellow-400" size={24} />
