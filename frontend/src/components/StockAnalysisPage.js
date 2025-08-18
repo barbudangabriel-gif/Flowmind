@@ -389,24 +389,27 @@ const StockAnalysisPage = () => {
             </div>
 
             {/* Quick Summary */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Summary</h3>
+            <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+              <h3 className="text-lg font-bold text-white mb-4">Rezumat Rapid</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold text-green-700 mb-2 flex items-center">
+                  <h4 className="font-semibold text-green-400 mb-2 flex items-center">
                     <CheckCircle size={16} className="mr-2" />
-                    Key Strengths
+                    Puncte Forte
                   </h4>
                   <div className="space-y-1">
                     {(analysis?.investment?.key_signals || [])
                       .filter(signal => signal.direction === 'bullish')
                       .slice(0, 3)
                       .map((signal, idx) => (
-                        <div key={idx} className="text-sm text-gray-600 flex items-center">
-                          <BullishIcon size={12} className="mr-2 text-green-500" />
-                          {signal.type?.replace('_', ' ') || 'Positive Signal'}
+                        <div key={idx} className="text-sm text-gray-300 flex items-center">
+                          <BullishIcon size={12} className="mr-2 text-green-400" />
+                          {signal.type?.replace('_', ' ') || 'Semnal Pozitiv'}
                         </div>
                       ))}
+                    {(analysis?.investment?.key_signals || []).filter(signal => signal.direction === 'bullish').length === 0 && (
+                      <div className="text-sm text-gray-500">Nu s-au identificat semnale pozitive</div>
+                    )}
                   </div>
                 </div>
                 
