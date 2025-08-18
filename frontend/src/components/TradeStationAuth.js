@@ -68,6 +68,26 @@ const TradeStationAuth = () => {
   };
 
   useEffect(() => {
+    // Verifică dacă ne întoarcem din autentificare
+    const checkAuthReturn = () => {
+      const authInProgress = localStorage.getItem('ts_auth_in_progress');
+      const authStartTime = localStorage.getItem('ts_auth_started');
+      
+      if (authInProgress === 'true') {
+        console.log('🔄 Detected return from authentication process');
+        
+        // Curăță flag-urile
+        localStorage.removeItem('ts_auth_in_progress');
+        localStorage.removeItem('ts_auth_started');
+        
+        // Verifică dacă autentificarea a avut succes
+        setTimeout(() => {
+          checkAuthStatus();
+        }, 1000);
+      }
+    };
+    
+    checkAuthReturn();
     checkAuthStatus();
   }, []);
 
