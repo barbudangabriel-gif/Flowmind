@@ -228,35 +228,48 @@ const StockAnalysisPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-gray-800 shadow-sm border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate(-1)}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+                className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
               >
                 <ArrowLeft size={20} />
-                <span>Back</span>
+                <span>Înapoi la Scanner</span>
               </button>
-              <div className="h-6 w-px bg-gray-300"></div>
+              <div className="h-6 w-px bg-gray-600"></div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <Target className="mr-3 text-blue-600" size={28} />
-                  {symbol?.toUpperCase()} Analysis
+                <h1 className="text-2xl font-bold text-white flex items-center">
+                  <Target className="mr-3 text-blue-400" size={28} />
+                  {symbol?.toUpperCase()} - Analiză Detaliată
                 </h1>
-                <p className="text-sm text-gray-500">
-                  Comprehensive investment and technical analysis
+                <p className="text-sm text-gray-400">
+                  Analiză comprehensivă de investiții și tehnică
                 </p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <div className="text-2xl font-bold text-white">
+                  ${analysis?.stockData?.price?.toFixed(2) || 'N/A'}
+                </div>
+                <div className={`text-sm ${
+                  (analysis?.stockData?.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {(analysis?.stockData?.change || 0) >= 0 ? '+' : ''}
+                  {analysis?.stockData?.change?.toFixed(2) || '0.00'} (
+                  {(analysis?.stockData?.change_percent || 0) >= 0 ? '+' : ''}
+                  {analysis?.stockData?.change_percent?.toFixed(2) || '0.00'}%)
+                </div>
+              </div>
               <button
                 onClick={loadAnalysis}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2 transition-colors"
               >
                 <RefreshCw size={16} />
                 <span>Refresh</span>
