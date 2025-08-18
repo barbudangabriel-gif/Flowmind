@@ -462,7 +462,7 @@ const StockAnalysisPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="text-center bg-gray-50 rounded-lg p-6">
                   <div className={`text-5xl font-bold ${getScoreColor(analysis.investment.total_score || 0)}`}>
-                    {analysis.investment.total_score || 0}
+                    {analysis.investment.total_score?.toFixed(1) || 0}
                   </div>
                   <div className="text-gray-600 text-sm mt-2">Investment Score</div>
                 </div>
