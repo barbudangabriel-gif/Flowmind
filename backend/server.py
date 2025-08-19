@@ -1705,52 +1705,44 @@ def get_complete_fallback_dataset():
 
 @api_router.get("/market/top-movers")
 async def get_top_movers():
-    """Get top gainers and losers with fallback for API failures"""
+    """Get top gainers and losers using TradeStation or Unusual Whales data"""
     try:
-        # Sample of popular stocks for fallback
+        # Sample of popular stocks
         stock_symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM', 'JNJ', 'WMT',
                         'V', 'PG', 'UNH', 'HD', 'MA', 'DIS', 'BAC', 'ADBE', 'CRM', 'NFLX']
         
         gainers = []
         losers = []
         
-        # Try to get real data first
-        for symbol in stock_symbols[:12]:  # Limit to avoid timeout
-            try:
-                ticker = yf.Ticker(symbol)
-                info = ticker.info
-                hist = ticker.history(period="2d")
+        # Try to get data from Unusual Whales first
+        try:
+            uw_stocks = await uw_service.get_stock_screener_data(limit=100, exchange="all")
+            
+            for stock in uw_stocks:
+                change_percent = float(stock.get('change_percent', 0))
                 
-                if len(hist) >= 2 and 'regularMarketPrice' in info:
-                    current_price = info.get('regularMarketPrice', hist['Close'].iloc[-1])
-                    previous_close = hist['Close'].iloc[-2] if len(hist) > 1 else current_price
-                    
-                    change = current_price - previous_close
-                    change_percent = (change / previous_close) * 100 if previous_close > 0 else 0
-                    
-                    stock_data = {
-                        "symbol": symbol,
-                        "price": round(current_price, 2),
-                        "change": round(change, 2),
-                        "change_percent": round(change_percent, 2)
-                    }
-                    
-                    if change_percent > 0:
-                        gainers.append(stock_data)
-                    else:
-                        losers.append(stock_data)
+                stock_data = {
+                    "symbol": stock.get('symbol', ''),
+                    "price": round(float(stock.get('price', 0)), 2),
+                    "change": round(float(stock.get('change', 0)), 2),
+                    "change_percent": round(change_percent, 2)
+                }
+                
+                if change_percent > 0:
+                    gainers.append(stock_data)
+                else:
+                    losers.append(stock_data)
                 
                 # Break early if we have enough data
-                if len(gainers) >= 5 and len(losers) >= 5:
+                if len(gainers) >= 10 and len(losers) >= 10:
                     break
                     
-            except Exception as e:
-                logging.warning(f"Failed to get data for {symbol}: {e}")
-                continue
+        except Exception as e:
+            logger.warning(f"Unusual Whales top movers failed: {str(e)}")
         
-        # If we don't have enough real data, use fallback
+        # If we don't have enough data, use fallback
         if len(gainers) < 3 or len(losers) < 3:
-            logging.warning("Insufficient real market data. Using fallback top movers.")
+            logger.warning("Insufficient market data. Using fallback top movers.")
             fallback_data = get_fallback_top_movers()
             gainers = fallback_data['gainers']
             losers = fallback_data['losers']
@@ -1762,17 +1754,17 @@ async def get_top_movers():
         return {
             "gainers": gainers,
             "losers": losers,
-            "last_updated": datetime.now().isoformat()
+            "last_updated": datetime.utcnow().isoformat()
         }
         
     except Exception as e:
-        logging.error(f"Top movers error: {e}")
+        logger.error(f"Top movers error: {e}")
         # Always return fallback data
         fallback_data = get_fallback_top_movers()
         return {
             "gainers": fallback_data['gainers'],
             "losers": fallback_data['losers'], 
-            "last_updated": datetime.now().isoformat(),
+            "last_updated": datetime.utcnow().isoformat(),
             "note": "Using simulated data due to market data provider issues"
         }
 
