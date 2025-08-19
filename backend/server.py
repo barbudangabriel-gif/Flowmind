@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timedelta
 import aiohttp
 import asyncio
-import yfinance as yf
+
 from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
 import pandas as pd
