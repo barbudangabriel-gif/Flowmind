@@ -3716,6 +3716,161 @@ async def get_scoring_methodology():
         logger.error(f"Error getting scoring methodology: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error retrieving methodology: {str(e)}")
 
+# Advanced Investment Scoring Routes
+@api_router.get("/investment-scoring/advanced/{symbol}")
+async def get_advanced_investment_score(symbol: str):
+    """
+    Advanced multi-factor investment scoring folosind noul engine
+    Integrează 40+ factori de analiză pentru scor complet
+    """
+    try:
+        # Inițializează advanced scoring engine cu clienții disponibili
+        scoring_engine = get_scoring_engine(ts_client=ts_client, uw_service=uw_service)
+        
+        # Calculează scorul complet
+        score_result = await scoring_engine.calculate_comprehensive_score(symbol.upper())
+        
+        return {
+            "status": "success",
+            "symbol": symbol.upper(),
+            "advanced_score": score_result,
+            "timestamp": datetime.utcnow().isoformat(),
+            "engine_version": "2.0",
+            "features_used": [
+                "Technical Analysis (15+ indicators)",
+                "Fundamental Analysis (12+ metrics)", 
+                "Options Flow Analysis",
+                "Market Sentiment Analysis",
+                "Risk Assessment",
+                "TradeStation Integration",
+                "Unusual Whales Integration"
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in advanced scoring for {symbol}: {e}")
+        raise HTTPException(status_code=500, detail=f"Advanced scoring failed: {str(e)}")
+
+@api_router.get("/investment-scoring/compare")
+async def compare_investment_scores(symbols: str = Query(..., description="Comma-separated symbols")):
+    """
+    Compară scorurile de investiție pentru multiple simboluri
+    Example: /api/investment-scoring/compare?symbols=AAPL,MSFT,GOOGL
+    """
+    try:
+        symbol_list = [s.strip().upper() for s in symbols.split(',') if s.strip()]
+        
+        if len(symbol_list) > 10:
+            raise HTTPException(status_code=400, detail="Maximum 10 symbols allowed")
+        
+        scoring_engine = get_scoring_engine(ts_client=ts_client, uw_service=uw_service)
+        
+        # Calculează scorurile în paralel pentru viteză
+        tasks = [scoring_engine.calculate_comprehensive_score(symbol) for symbol in symbol_list]
+        scores = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Procesează rezultatele 
+        comparison_results = []
+        for i, (symbol, score_result) in enumerate(zip(symbol_list, scores)):
+            if isinstance(score_result, Exception):
+                logger.error(f"Error scoring {symbol}: {score_result}")
+                continue
+                
+            comparison_results.append({
+                'symbol': symbol,
+                'total_score': score_result.get('total_score', 0),
+                'rating': score_result.get('rating', 'N/A'),
+                'risk_level': score_result.get('risk_level', 'UNKNOWN'),
+                'confidence': score_result.get('confidence', 0),
+                'recommendation': score_result.get('recommendation', ''),
+                'component_scores': score_result.get('component_scores', {})
+            })
+        
+        # Sortează după scor
+        comparison_results.sort(key=lambda x: x['total_score'], reverse=True)
+        
+        return {
+            "status": "success",
+            "comparison_count": len(comparison_results),
+            "symbols_analyzed": symbol_list,
+            "results": comparison_results,
+            "best_pick": comparison_results[0] if comparison_results else None,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in score comparison: {e}")
+        raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
+
+@api_router.get("/investment-scoring/top-picks")
+async def get_top_investment_picks(
+    count: int = Query(10, ge=5, le=50, description="Number of top picks"),
+    sector: Optional[str] = Query(None, description="Filter by sector"),
+    min_score: float = Query(60.0, ge=0, le=100, description="Minimum score threshold")
+):
+    """
+    Obține top picks de investiții bazate pe scoring avansat
+    """
+    try:
+        # Lista extinsă de tickere pentru screening
+        screening_symbols = [
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'BRK.B', 'V', 'JNJ',
+            'WMT', 'JPM', 'PG', 'UNH', 'DIS', 'HD', 'MA', 'PFE', 'BAC', 'ABBV',
+            'ADBE', 'CRM', 'KO', 'PEP', 'TMO', 'COST', 'AVGO', 'DHR', 'NEE', 'ABT',
+            'CMCSA', 'XOM', 'LLY', 'VZ', 'ORCL', 'INTC', 'AMD', 'COP', 'PM', 'HON',
+            'LIN', 'CVX', 'NOW', 'IBM', 'QCOM', 'UBER', 'TXN', 'SPGI', 'LOW', 'CAT',
+            'GS', 'NFLX', 'INTU', 'AMGN', 'RTX', 'ISRG', 'MDT', 'BA', 'SBUX', 'DE'
+        ]
+        
+        scoring_engine = get_scoring_engine(ts_client=ts_client, uw_service=uw_service)
+        
+        # Screening în batch-uri pentru performanță
+        batch_size = 10
+        all_scores = []
+        
+        for i in range(0, len(screening_symbols), batch_size):
+            batch = screening_symbols[i:i + batch_size]
+            tasks = [scoring_engine.calculate_comprehensive_score(symbol) for symbol in batch]
+            batch_scores = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # Filtrează erorile și adaugă la rezultate
+            for score_result in batch_scores:
+                if not isinstance(score_result, Exception):
+                    if score_result.get('total_score', 0) >= min_score:
+                        all_scores.append(score_result)
+            
+            # Pauză scurtă între batch-uri
+            await asyncio.sleep(0.1)
+        
+        # Sortează și ia top picks
+        all_scores.sort(key=lambda x: x.get('total_score', 0), reverse=True)
+        top_picks = all_scores[:count]
+        
+        return {
+            "status": "success", 
+            "screening_completed": True,
+            "symbols_screened": len(screening_symbols),
+            "qualifying_stocks": len(all_scores),
+            "top_picks_count": len(top_picks),
+            "min_score_threshold": min_score,
+            "top_picks": top_picks,
+            "screening_summary": {
+                "highest_score": top_picks[0].get('total_score', 0) if top_picks else 0,
+                "average_score": sum(s.get('total_score', 0) for s in top_picks) / len(top_picks) if top_picks else 0,
+                "strong_buys": len([s for s in top_picks if s.get('rating') == 'STRONG BUY']),
+                "buys": len([s for s in top_picks if s.get('rating') == 'BUY'])
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in top picks screening: {e}")
+        raise HTTPException(status_code=500, detail=f"Top picks screening failed: {str(e)}")
+
+# Enhanced Market Data Routes with Scoring Integration
+
 # ==================== TECHNICAL ANALYSIS EXPERT AGENT ====================
 
 @api_router.post("/agents/technical-analysis")
