@@ -1443,20 +1443,20 @@ async def get_market_overview():
                     "error": f"Processing error: {str(e)}"
                 })
         
-        # Determine primary data source with better messaging
+        # Determine primary data source - updated for new structure
         uw_count = sum(1 for index in indices_data if "Unusual Whales" in index.get('data_source', ''))
-        yf_count = sum(1 for index in indices_data if "Yahoo Finance" in index.get('data_source', ''))
-        mock_count = sum(1 for index in indices_data if "Mock Data" in index.get('data_source', ''))
+        ts_count = sum(1 for index in indices_data if "TradeStation" in index.get('data_source', ''))
+        error_count = sum(1 for index in indices_data if "ERROR" in index.get('data_source', ''))
         
         if uw_count >= 2:
             primary_source = f"Unusual Whales API (Live Data for {uw_count}/4 ETFs)"
-            note_text = f"Live ETF data from Unusual Whales API. {uw_count} ETFs with UW data, {yf_count} with real-time market data."
-        elif yf_count >= 2:
-            primary_source = f"Live Market Data (Real-time ETF prices for {yf_count}/4 ETFs)"
-            note_text = f"Live ETF market data with real-time prices. Showing actual tradeable ETF symbols."
+            note_text = f"Live ETF data from Unusual Whales API. {uw_count} ETFs with UW data, {ts_count} with TradeStation data."
+        elif ts_count >= 2:
+            primary_source = f"TradeStation API (Live ETF prices for {ts_count}/4 ETFs)"
+            note_text = f"Live ETF market data from TradeStation API. Showing actual tradeable ETF symbols."
         else:
-            primary_source = f"Fallback Data ({mock_count}/4 using mock data)"
-            note_text = f"Using mock data due to API issues. {mock_count} ETFs with simulated data."
+            primary_source = f"Error Data ({error_count}/4 with data errors)"
+            note_text = f"Data source errors encountered. {error_count} ETFs with data issues."
         
         return {
             "indices": indices_data,
@@ -1464,7 +1464,7 @@ async def get_market_overview():
             "note": note_text,
             "last_updated": datetime.utcnow().isoformat(),
             "unusual_whales_coverage": f"{uw_count}/4 ETFs",
-            "live_data_status": "Live ETF prices available" if yf_count >= 2 else "Limited live data"
+            "live_data_status": "Live ETF prices available" if ts_count >= 2 else "Limited live data"
         }
         
     except Exception as e:
