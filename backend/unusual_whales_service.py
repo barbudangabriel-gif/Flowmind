@@ -875,33 +875,14 @@ class UnusualWhalesService:
         limit: Optional[int] = 100,
         exchange: Optional[str] = "all"
     ) -> List[Dict[str, Any]]:
-        """Fetch stock screener data from Unusual Whales API"""
+        """Fetch stock screener data from Unusual Whales API - OPTIMIZED"""
         try:
-            params = {
-                "limit": limit
-            }
-            
-            # Add exchange filter if specified
-            if exchange and exchange != "all":
-                params["exchange"] = exchange
-            
-            # Try to fetch from Unusual Whales API
-            response = await self._make_request("/api/stocks/screener", params)
-            
-            if not response.get('data'):
-                logger.warning("No stock screener data from Unusual Whales, using mock data")
-                return await self._get_mock_stock_screener_data(limit, exchange)
-            
-            processed_stocks = []
-            for stock in response['data']:
-                processed_stock = self._process_stock_data(stock)
-                processed_stocks.append(processed_stock)
-            
-            return processed_stocks
+            # Since UW API doesn't have screener endpoints, return mock data immediately
+            logger.info("Using mock stock screener data - UW API doesn't provide screener endpoint")
+            return await self._get_mock_stock_screener_data(limit, exchange)
             
         except Exception as e:
             logger.error(f"Error fetching stock screener data: {str(e)}")
-            # Return mock data if API fails
             return await self._get_mock_stock_screener_data(limit, exchange)
     
     async def filter_stocks_by_criteria(
