@@ -1291,24 +1291,56 @@ async def test_data_sources(symbol: str):
     }
 @api_router.get("/stocks/search/{query}")
 async def search_stocks(query: str):
-    """Search for stocks by symbol or company name"""
+    """Search for stocks by symbol or company name using Unusual Whales or fallback"""
     try:
-        ticker = yf.Ticker(query.upper())
-        info = ticker.info
+        # Try to search using Unusual Whales data first
+        uw_stocks = await uw_service.get_stock_screener_data(limit=500, exchange="all")
         
-        if not info.get('symbol'):
-            return {"results": []}
+        results = []
+        query_upper = query.upper()
         
+        # Search by symbol or name
+        for stock in uw_stocks:
+            symbol = stock.get('symbol', '').upper()
+            name = stock.get('name', '').upper()
+            
+            if (query_upper in symbol or 
+                query_upper in name or 
+                symbol.startswith(query_upper)):
+                
+                results.append({
+                    "symbol": stock.get('symbol', query_upper),
+                    "name": stock.get('name', 'N/A'),
+                    "sector": stock.get('sector', 'N/A'),
+                    "industry": stock.get('industry', 'N/A')
+                })
+                
+                # Limit results
+                if len(results) >= 10:
+                    break
+        
+        # If no results found, return basic result for the query
+        if not results and len(query) <= 5:  # Likely a stock symbol
+            results = [{
+                "symbol": query.upper(),
+                "name": f"{query.upper()} - Symbol Search",
+                "sector": "Unknown",
+                "industry": "Unknown"
+            }]
+        
+        return {"results": results}
+        
+    except Exception as e:
+        logger.error(f"Error searching stocks: {str(e)}")
+        # Fallback response
         return {
             "results": [{
-                "symbol": info.get('symbol', query.upper()),
-                "name": info.get('longName', 'N/A'),
-                "sector": info.get('sector', 'N/A'),
-                "industry": info.get('industry', 'N/A')
-            }]
+                "symbol": query.upper(),
+                "name": f"{query.upper()} - Basic Search",
+                "sector": "Unknown", 
+                "industry": "Unknown"
+            }] if len(query) <= 5 else []
         }
-    except:
-        return {"results": []}
 
 # Portfolio Routes (unchanged)
 @api_router.post("/portfolio", response_model=PortfolioItem)
