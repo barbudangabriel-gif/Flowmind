@@ -1427,9 +1427,21 @@ async def get_market_overview():
                     
             except Exception as e:
                 logger.error(f"Error processing {symbol}: {str(e)}")
-                # Use fallback data for this ETF
-                fallback_data = get_fallback_etf_data(symbol, symbol, etf_display_names[i])
-                indices_data.append(fallback_data)
+                # Return error instead of fallback data
+                indices_data.append({
+                    "symbol": symbol,
+                    "name": etf_display_names[i],
+                    "price": 0.0,
+                    "change": 0.0,
+                    "change_percent": 0.0,
+                    "underlying_symbol": symbol,
+                    "data_source": "ERROR - Processing failed",
+                    "unusual_activity": False,
+                    "options_flow_signal": "neutral",
+                    "volume": 0,
+                    "market_cap": 0,
+                    "error": f"Processing error: {str(e)}"
+                })
         
         # Determine primary data source with better messaging
         uw_count = sum(1 for index in indices_data if "Unusual Whales" in index.get('data_source', ''))
