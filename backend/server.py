@@ -1376,38 +1376,54 @@ async def get_market_overview():
                     logger.info(f"Using live Unusual Whales data for {symbol}: ${etf_data.get('price', 0):.2f}")
                     continue
                 
-                # Fallback to yfinance if Unusual Whales doesn't have the ETF
-                logger.warning(f"No Unusual Whales data for {symbol}, using yfinance fallback")
-                ticker = yf.Ticker(symbol)
-                info = ticker.info
-                hist = ticker.history(period="1d")
+                # Use TradeStation API for market data instead of Yahoo Finance
+                logger.info(f"No Unusual Whales data for {symbol}, using TradeStation API")
+                try:
+                    # Get quotes from TradeStation
+                    ts_client = TradeStationClient()
+                    quotes = await ts_client.get_quote([symbol])
+                    
+                    if quotes and len(quotes) > 0:
+                        quote = quotes[0]
+                        current_price = quote.last
+                        change = quote.change
+                        change_percent = quote.change_percent
+                        
+                        indices_data.append({
+                            "symbol": display_symbol,
+                            "name": etf_display_names[i],
+                            "price": round(current_price, 2),
+                            "change": round(change, 2),
+                            "change_percent": round(change_percent, 2),
+                            "underlying_symbol": symbol,
+                            "data_source": "TradeStation API (Live Market Data)",
+                            "unusual_activity": False,
+                            "options_flow_signal": "neutral",
+                            "volume": quote.volume,
+                            "market_cap": 0  # Not available from TradeStation quotes
+                        })
+                        logger.info(f"Using TradeStation data for {symbol}: ${current_price:.2f}")
+                        continue
+                        
+                except Exception as ts_e:
+                    logger.error(f"TradeStation API failed for {symbol}: {str(ts_e)}")
                 
-                if not hist.empty and 'regularMarketPrice' in info:
-                    current_price = info.get('regularMarketPrice', hist['Close'].iloc[-1])
-                    previous_close = info.get('regularMarketPreviousClose', hist['Close'].iloc[0])
-                    
-                    change = current_price - previous_close
-                    change_percent = (change / previous_close) * 100
-                    
-                    indices_data.append({
-                        "symbol": display_symbol,  # Display ETF symbol directly
-                        "name": etf_display_names[i],
-                        "price": round(current_price, 2),
-                        "change": round(change, 2),
-                        "change_percent": round(change_percent, 2),
-                        "underlying_symbol": symbol,  # Same as display symbol for ETFs
-                        "data_source": "Yahoo Finance (ETF Live Data)",
-                        "unusual_activity": False,  # Not available from yfinance
-                        "options_flow_signal": "neutral",  # Not available from yfinance
-                        "volume": info.get('regularMarketVolume', 0),
-                        "market_cap": info.get('marketCap', 0)
-                    })
-                    logger.info(f"Using yfinance data for {symbol}: ${current_price:.2f}")
-                else:
-                    # Use fallback data if yfinance also fails
-                    logger.error(f"Both Unusual Whales and yfinance failed for {symbol}")
-                    fallback_data = get_fallback_etf_data(symbol, display_symbol, etf_display_names[i])
-                    indices_data.append(fallback_data)
+                # If TradeStation fails, show error instead of fallback
+                logger.error(f"All market data sources failed for {symbol}")
+                indices_data.append({
+                    "symbol": display_symbol,
+                    "name": etf_display_names[i],
+                    "price": 0.0,
+                    "change": 0.0,
+                    "change_percent": 0.0,
+                    "underlying_symbol": symbol,
+                    "data_source": "ERROR - No data available",
+                    "unusual_activity": False,
+                    "options_flow_signal": "neutral",
+                    "volume": 0,
+                    "market_cap": 0,
+                    "error": "Market data unavailable"
+                })
                     
             except Exception as e:
                 logger.error(f"Error processing {symbol}: {str(e)}")
