@@ -1176,7 +1176,7 @@ const InvestmentScoring = React.memo(() => {
               <div className="flex flex-wrap items-center gap-6 text-xs">
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 bg-gradient-to-br from-green-600 to-green-700 rounded"></div>
-                  <span className="text-gray-600">Strong Gains (>2%)</span>
+                  <span className="text-gray-600">Strong Gains (&gt;2%)</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 bg-gradient-to-br from-green-400 to-green-500 rounded"></div>
