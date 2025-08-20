@@ -269,9 +269,9 @@ const InvestmentScoring = React.memo(() => {
     try {
       console.log('Loading top picks from:', `${API}/investments/top-picks?limit=10`);
       
-      // Set a shorter timeout for quicker fallback
+      // Set a longer timeout for advanced scoring
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
       
       const response = await axios.get(`${API}/investment-scoring/top-picks?count=10`, {
         signal: controller.signal,
