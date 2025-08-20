@@ -137,8 +137,12 @@ class TechnicalAnalysisAgent:
             # 10. Risk/Entry analysis
             risk_entry_analysis = self._analyze_risk_entry_levels(price_data, sr_analysis)
             
+            # Get live stock data for current price
+            live_stock_data = await self._get_live_stock_data(symbol)
+            
             return {
                 'symbol': symbol,
+                'stock_data': live_stock_data,  # Add live stock data
                 'technical_score': round(composite_score, 1),
                 'recommendation': recommendation,
                 'confidence_level': confidence,
