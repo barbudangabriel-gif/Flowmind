@@ -184,7 +184,7 @@ const StockAnalysisPageEnhanced = () => {
                 className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors"
               >
                 <ArrowLeft size={20} />
-                <span>Înapoi la Scanner</span>
+                <span>Scoring</span>
               </button>
               <div className="h-6 w-px bg-gray-600"></div>
               <div>
