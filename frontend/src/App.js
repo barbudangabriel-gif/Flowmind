@@ -6856,6 +6856,12 @@ function AppContent() {
             <AllPortfolios />
           </Suspense>
         );
+      case 'create-portfolio':
+        return (
+          <Suspense fallback={<LoadingFallback componentName="Create Portfolio" />}>
+            <CreatePortfolio />
+          </Suspense>
+        );
       case 'screener':
         return (
           <Suspense fallback={<LoadingFallback componentName="Advanced Screener" />}>
