@@ -237,8 +237,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Portfolio Charts and Smart Rebalancing Agent Testing Complete"
-  stuck_tasks: []
+    - "Portfolio Charts Component - Routing Issues"
+    - "Smart Rebalancing Agent Component - Routing Issues"
+  stuck_tasks:
+    - "Portfolio Charts Component"
+    - "Smart Rebalancing Agent Component"
   test_all: false
   test_priority: "high_first"
 
