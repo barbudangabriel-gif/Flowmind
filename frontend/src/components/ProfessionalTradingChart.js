@@ -464,21 +464,21 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
   }
 
   return (
-    <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-700 shadow-2xl">
+    <div className="bg-gray-900 rounded-lg overflow-hidden border border-gray-700 shadow-2xl w-full h-full">
       {/* Professional Header */}
-      <div className="bg-gradient-to-r from-purple-900 to-blue-900 p-4 border-b border-gray-700">
+      <div className="bg-gradient-to-r from-purple-900 to-blue-900 p-3 border-b border-gray-700 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-2xl font-bold text-white flex items-center">
-              📈 {symbol} <span className="ml-2 text-purple-300">Professional Chart</span>
+            <h3 className="text-lg font-bold text-white flex items-center">
+              📈 {symbol} <span className="ml-2 text-purple-300">Professional</span>
             </h3>
-            <div className="flex items-center space-x-4 mt-2">
+            <div className="flex items-center space-x-3 mt-1">
               <div className="text-white">
-                <span className="text-gray-300">Price: </span>
-                <span className="text-2xl font-bold">${currentPrice.toFixed(2)}</span>
+                <span className="text-gray-300 text-sm">Price: </span>
+                <span className="text-lg font-bold">${currentPrice.toFixed(2)}</span>
               </div>
-              <div className={`flex items-center ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                <span className="text-lg font-bold">
+              <div className={`flex items-center text-sm ${priceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <span className="font-bold">
                   {priceChange >= 0 ? '+' : ''}{priceChange.toFixed(2)}
                 </span>
                 <span className="ml-1">
@@ -488,50 +488,43 @@ const ProfessionalTradingChart = ({ symbol, height = 500 }) => {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-purple-300 font-semibold">
-              ⚡ TradeStation API
-            </div>
-            <div className="text-gray-400 text-sm">
-              Professional Trading Platform
+            <div className="text-purple-300 font-semibold text-sm">
+              ⚡ TradeStation
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Candlestick Chart */}
-      <div className="bg-gray-900" style={{ height: height * 0.7 }}>
+      <div className="bg-gray-900 flex-grow" style={{ height: height * 0.65 }}>
         <ReactApexChart
           options={candlestickOptions}
           series={candlestickSeries}
           type="candlestick"
-          height={height * 0.7}
+          height={height * 0.65}
         />
       </div>
 
       {/* Volume Chart */}
-      <div className="bg-gray-900 border-t border-gray-700" style={{ height: height * 0.3 }}>
+      <div className="bg-gray-900 border-t border-gray-700" style={{ height: height * 0.25 }}>
         <ReactApexChart
           options={volumeOptions}
           series={volumeSeries}
           type="bar"
-          height={height * 0.3}
+          height={height * 0.25}
         />
       </div>
 
-      {/* Professional Footer */}
-      <div className="bg-gray-800 p-4 border-t border-gray-700">
-        <div className="flex items-center justify-between text-sm">
+      {/* Professional Footer - Compact */}
+      <div className="bg-gray-800 p-2 border-t border-gray-700 flex-shrink-0">
+        <div className="flex items-center justify-between text-xs">
           <div className="text-gray-400">
             🎯 <span className="text-white font-bold">{symbol}</span>
-            <span className="text-gray-500 mx-2">•</span>
-            <span className="text-purple-400 font-medium">60-day professional view</span>
-            <span className="text-gray-500 mx-2">•</span>
-            <span className="text-white font-medium">Interactive tools enabled</span>
+            <span className="text-gray-500 mx-1">•</span>
+            <span className="text-purple-400">60-day view</span>
           </div>
           <div className="text-gray-500">
-            🚀 <span className="text-purple-400 font-bold">TradeStation Professional</span>
-            <span className="text-gray-500 mx-2">•</span>
-            <span className="text-gray-400">Real-time Market Data</span>
+            🚀 <span className="text-purple-400 font-bold">TradeStation</span>
           </div>
         </div>
       </div>
