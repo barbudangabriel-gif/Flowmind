@@ -6899,7 +6899,7 @@ function AppContent() {
               path="/stock-analysis/:symbol" 
               element={
                 <Suspense fallback={<LoadingFallback componentName="Stock Analysis" />}>
-                  <StockAnalysisPage />
+                  <StockAnalysisPageEnhanced />
                 </Suspense>
               } 
             />
