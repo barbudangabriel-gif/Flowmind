@@ -9,7 +9,9 @@ import {
   X,
   Eye,
   BarChart3,
-  FileText
+  FileText,
+  Brain,
+  PieChart as PieChartIcon
 } from 'lucide-react';
 
 const IndividualPortfolio = () => {
