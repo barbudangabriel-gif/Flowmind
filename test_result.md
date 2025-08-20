@@ -207,7 +207,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Comprehensive Frontend Testing Complete"
+    - "Portfolio Charts and Smart Rebalancing Agent Testing Complete"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
