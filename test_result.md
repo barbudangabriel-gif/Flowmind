@@ -242,7 +242,7 @@ The Options Calculator backend is **FULLY OPERATIONAL** and ready to support the
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Enhanced FlowMind Analytics with UI/UX improvements: 1) Move 'Automated Trading' section to bottom of navigation (like 'Auto Options' in user photo), 2) Add dropdown functionality to 'Unusual Whales' section for better organization of multiple data sources. Maintain all existing TradeStation integration and Unusual Whales API functionality while improving navigation structure."
+user_problem_statement: "User reports 'nu ai live price in scoring' (no live price in scoring) - Investment Scoring Top Picks section not displaying live TradeStation prices despite authentication being successful. Need to fix frontend integration to show real-time prices from TradeStation API in the Top Investment Picks section."
 
 backend:
   - task: "TradeStation OAuth Authentication System"
