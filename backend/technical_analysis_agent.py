@@ -268,17 +268,16 @@ class TechnicalAnalysisAgent:
         try:
             logger.info(f"🔍 Fetching multi-timeframe data for {symbol} from TradeStation")
             
-            # Import TradeStation client 
-            from tradestation_client import TradeStationClient
+            # Import TradeStation client with correct initialization
             from tradestation_auth_service import tradestation_auth_service as ts_auth
-            
-            # Initialize TradeStation client
-            ts_client = TradeStationClient(ts_auth)
             
             # Check if authenticated
             if not ts_auth.is_authenticated():
                 logger.warning(f"⚠️ TradeStation not authenticated, using mock data for {symbol}")
                 return self._get_enhanced_mock_price_data(symbol)
+            
+            from tradestation_client import TradeStationClient
+            ts_client = TradeStationClient(ts_auth)
             
             # Fetch multiple timeframes from TradeStation
             timeframe_data = {}
