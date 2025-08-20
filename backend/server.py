@@ -70,6 +70,10 @@ ts_client = TradeStationClient(ts_auth)
 portfolio_service = PortfolioService(ts_client)
 trading_service = TradingService(ts_client)
 
+# Initialize new services
+portfolio_charts_service = PortfolioChartsService()
+smart_rebalancing_service = SmartRebalancingService()
+
 # Create the main app without a prefix
 app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
 
