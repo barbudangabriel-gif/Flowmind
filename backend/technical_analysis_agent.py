@@ -232,7 +232,10 @@ class TechnicalAnalysisAgent:
                 'daily': {'interval': 1, 'unit': 'Daily', 'bars_back': 200},
                 'weekly': {'interval': 1, 'unit': 'Weekly', 'bars_back': 52},
                 'monthly': {'interval': 1, 'unit': 'Monthly', 'bars_back': 24},
-                'hourly': {'interval': 1, 'unit': 'Hourly', 'bars_back': 100}
+                'h4': {'interval': 4, 'unit': 'Hourly', 'bars_back': 100},
+                'h1': {'interval': 1, 'unit': 'Hourly', 'bars_back': 200},
+                'm15': {'interval': 15, 'unit': 'Minute', 'bars_back': 400},
+                'm1': {'interval': 1, 'unit': 'Minute', 'bars_back': 500}
             }
             
             for timeframe, params in timeframes.items():
