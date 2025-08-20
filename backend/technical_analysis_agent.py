@@ -1696,11 +1696,12 @@ class TechnicalAnalysisAgent:
             current_price = None
             if hasattr(self, 'ts_client') and self.ts_client:
                 try:
-                    from tradestation_client import TradeStationClient
                     from tradestation_auth_service import tradestation_auth_service as ts_auth
                     
-                    ts_client = TradeStationClient(ts_auth)
                     if ts_auth.is_authenticated():
+                        from tradestation_client import TradeStationClient
+                        ts_client = TradeStationClient(ts_auth)
+                        
                         quotes = await ts_client.get_quote([symbol])
                         if quotes and len(quotes) > 0:
                             current_price = quotes[0].last
