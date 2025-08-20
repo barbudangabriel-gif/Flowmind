@@ -146,6 +146,36 @@ backend:
           comment: "✅ Smart Rebalancing Agent API endpoints tested and working perfectly. All endpoints return comprehensive analysis data, AI recommendations work correctly, Smart DCA algorithms functional, and comprehensive analysis combines all modules successfully."
 
 frontend:
+  - task: "Portfolio Charts Component"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/PortfolioCharts.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Portfolio Charts component implemented with comprehensive P&L visualization, interactive filters (closed/all trades, stocks/options/combined, timeframes), custom date ranges, main performance chart, side charts (allocation pie chart, risk vs return scatter), and portfolio summary panel. Component integrated with routes and navigation from Individual Portfolio page."
+        - working: false
+          agent: "testing"
+          comment: "❌ PORTFOLIO CHARTS COMPONENT TESTING - CRITICAL NAVIGATION ISSUES: Conducted comprehensive testing of Portfolio Charts component as requested in review. ✅ COMPONENT IMPLEMENTATION: Portfolio Charts component exists at /app/frontend/src/components/PortfolioCharts.js with complete implementation including filters, charts, and summary panels. ✅ NAVIGATION SETUP: Individual Portfolio page has Charts button that should navigate to /portfolios/htech-15t/charts route. ❌ CRITICAL ISSUE - ROUTING PROBLEM: When navigating to Portfolio Charts page, application redirects to dashboard instead of loading the charts component. URL shows correct path (/portfolios/htech-15t/charts) but content displays Market Dashboard. ❌ BACKEND API INTEGRATION ISSUE: API endpoint /api/portfolio/htech-15t/performance returns HTML instead of JSON data, indicating routing or API configuration problems. ✅ COMPONENT STRUCTURE VERIFIED: All required elements present in code - Trade Status Filter (Closed Trades vs All), Asset Type Filter (Stocks, Options, Combined), Time Period Filter (Daily, Weekly, Monthly, All), Custom Date Range with calendar, P&L Performance Chart with legend (Green=Stocks, Blue=Options, Orange=Combined), Portfolio Allocation pie chart, Risk vs Return scatter plot, Portfolio Summary panel with Total Portfolio Value, Total P&L, Active Positions. ❌ FUNCTIONALITY NOT TESTABLE: Due to routing issues, unable to test interactive features, filter functionality, chart rendering, or responsive design. SUCCESS RATE: 0% (routing prevents component loading). RECOMMENDATION: Fix routing configuration in App.js and verify API endpoint responses before retesting."
+
+  - task: "Smart Rebalancing Agent Component"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/SmartRebalancingAgent.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Smart Rebalancing Agent component implemented with AI/ML capabilities, purple gradient header with Bot icon, tab navigation (Current Analysis, AI Recommendations, Smart DCA, Risk Management), portfolio health metrics, sector allocation bars, AI recommendations with priority badges and confidence scores, Smart DCA with bottom-finding algorithms, and comprehensive risk analysis."
+        - working: false
+          agent: "testing"
+          comment: "❌ SMART REBALANCING AGENT COMPONENT TESTING - CRITICAL NAVIGATION ISSUES: Conducted comprehensive testing of Smart Rebalancing Agent component as requested in review. ✅ COMPONENT IMPLEMENTATION: Smart Rebalancing Agent component exists at /app/frontend/src/components/SmartRebalancingAgent.js with complete implementation including AI features, tabs, and analysis capabilities. ✅ NAVIGATION SETUP: Individual Portfolio page has AI Rebalancing button that should navigate to /portfolios/htech-15t/rebalancing route. ❌ CRITICAL ISSUE - ROUTING PROBLEM: When navigating to Smart Rebalancing Agent page, application redirects to dashboard instead of loading the rebalancing component. URL shows correct path (/portfolios/htech-15t/rebalancing) but content displays Market Dashboard. ❌ BACKEND API INTEGRATION ISSUE: Similar to Portfolio Charts, API endpoints likely returning HTML instead of JSON data, indicating routing or API configuration problems. ✅ COMPONENT STRUCTURE VERIFIED: All required elements present in code - Purple gradient header with Bot icon, Portfolio value display, Tab navigation (Current Analysis, AI Recommendations, Smart DCA, Risk Management), Portfolio Health Overview with metrics cards (Health Score, Diversification, Risk Score, Leverage), Sector Allocation with progress bars, AI Recommendations with priority badges (High=red, Medium=yellow, Low=green) and confidence scores, Smart DCA with bottom confidence percentages, technical signals, support levels, Risk Management with Beta, Sharpe ratio, Max Drawdown, risk factors analysis, Run Analysis button with loading states. ❌ FUNCTIONALITY NOT TESTABLE: Due to routing issues, unable to test tab switching, AI features, interactive elements, or responsive design. SUCCESS RATE: 0% (routing prevents component loading). RECOMMENDATION: Fix routing configuration in App.js and verify API endpoint responses before retesting."
+
   - task: "Investment Scoring Scanner Display"
     implemented: true
     working: true
