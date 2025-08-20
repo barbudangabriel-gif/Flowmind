@@ -267,7 +267,7 @@ const InvestmentScoring = React.memo(() => {
     ];
     
     try {
-      console.log('Loading top picks from:', `${API}/investments/top-picks?limit=10`);
+      console.log('Loading top picks from:', `${API}/investment-scoring/top-picks?count=10`);
       
       // Set a longer timeout for advanced scoring
       const controller = new AbortController();
