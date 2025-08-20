@@ -133,28 +133,6 @@ const InvestmentScoring = React.memo(() => {
     }
   }, [selectedSector]);
 
-  const analyzeStock = useCallback(async () => {
-    if (!selectedStock) return;
-    
-    setLoading(true);
-    try {
-      console.log(`Analyzing stock: ${selectedStock}`);
-      const response = await axios.get(`${API}/investments/score/${selectedStock}`);
-      console.log('Stock analysis response:', response.data);
-      setStockAnalysis(response.data);
-      
-      // Navigate to detailed stock analysis page after successful analysis
-      console.log(`Navigating to detailed analysis page for ${selectedStock}`);
-      navigate(`/stock-analysis/${selectedStock.toUpperCase()}`);
-      
-    } catch (error) {
-      console.error('Error analyzing stock:', error);
-      setStockAnalysis(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedStock, navigate]);
-
   // AI Investment Scoring Agent Analysis
   const analyzeWithAI = useCallback(async () => {
     if (!aiAnalysisSymbol.trim()) return;
