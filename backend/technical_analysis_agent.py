@@ -112,7 +112,10 @@ class TechnicalAnalysisAgent:
             # 3. Multi-Indicator Technical Analysis
             technical_scores = await self._analyze_technical_indicators(price_data, symbol)
             
-            # 4. Multi-Timeframe Confluence
+            # 5. Session Analysis with Live Data
+            session_analysis = await self._analyze_session_analysis(symbol, price_data)
+            
+            # 4. Multi-Timeframe Confluence (keeping for compatibility)
             timeframe_analysis = self._analyze_multi_timeframe_confluence(price_data)
             
             # 5. Support/Resistance Analysis
