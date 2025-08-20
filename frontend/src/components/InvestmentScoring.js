@@ -907,32 +907,123 @@ const InvestmentScoring = React.memo(() => {
         </div>
       )}
 
-      {/* Sector Leaders Tab */}
+      {/* Sector Leaders Tab - Interactive Heatmap */}
       {activeTab === 'sectors' && (
-        <div className="space-y-4">
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold flex items-center">
-                <PieChart className="mr-2" size={20} />
-                Sector Leaders
-              </h3>
-              <select
-                value={selectedSector}
-                onChange={(e) => setSelectedSector(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {sectors.map(sector => (
-                  <option key={sector} value={sector}>{sector}</option>
-                ))}
-              </select>
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold mb-6 flex items-center">
+              <PieChart className="mr-3" size={24} />
+              Sector Performance Heatmap
+            </h3>
+            
+            {/* Heatmap Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {[
+                { name: 'Technology', performance: 8.5, stocks: 145, leader: 'AAPL' },
+                { name: 'Healthcare', performance: 6.2, stocks: 89, leader: 'JNJ' },
+                { name: 'Financials', performance: 4.1, stocks: 112, leader: 'JPM' },
+                { name: 'Energy', performance: -2.3, stocks: 67, leader: 'XOM' },
+                { name: 'Consumer Discretionary', performance: 5.8, stocks: 98, leader: 'AMZN' },
+                { name: 'Communication Services', performance: 3.2, stocks: 45, leader: 'META' },
+                { name: 'Industrials', performance: 2.8, stocks: 134, leader: 'BA' },
+                { name: 'Consumer Staples', performance: 1.9, stocks: 76, leader: 'PG' },
+                { name: 'Materials', performance: -1.2, stocks: 83, leader: 'LIN' },
+                { name: 'Real Estate', performance: 0.5, stocks: 52, leader: 'AMT' },
+                { name: 'Utilities', performance: -0.8, stocks: 61, leader: 'NEE' }
+              ].map((sector) => {
+                const getHeatmapColor = (performance) => {
+                  if (performance >= 7) return 'bg-gradient-to-br from-green-600 to-green-700 text-white';
+                  if (performance >= 4) return 'bg-gradient-to-br from-green-400 to-green-500 text-white';
+                  if (performance >= 2) return 'bg-gradient-to-br from-yellow-400 to-yellow-500 text-white';
+                  if (performance >= 0) return 'bg-gradient-to-br from-orange-400 to-orange-500 text-white';
+                  if (performance >= -2) return 'bg-gradient-to-br from-red-400 to-red-500 text-white';
+                  return 'bg-gradient-to-br from-red-600 to-red-700 text-white';
+                };
+
+                return (
+                  <div
+                    key={sector.name}
+                    className={`${getHeatmapColor(sector.performance)} p-4 rounded-xl shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer border-2 border-opacity-20 hover:border-opacity-50 border-white`}
+                    onClick={() => setSelectedSector(sector.name)}
+                  >
+                    <div className="text-center">
+                      <div className="text-sm font-bold mb-2 leading-tight">
+                        {sector.name.split(' ').map((word, i) => (
+                          <div key={i}>{word}</div>
+                        ))}
+                      </div>
+                      <div className="text-2xl font-black mb-1">
+                        {sector.performance > 0 ? '+' : ''}{sector.performance.toFixed(1)}%
+                      </div>
+                      <div className="text-xs opacity-90 mb-2">
+                        {sector.stocks} stocks
+                      </div>
+                      <div className="text-xs font-bold bg-black bg-opacity-20 px-2 py-1 rounded-full">
+                        Leader: {sector.leader}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Heatmap Legend */}
+            <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Performance Scale</h4>
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-gradient-to-br from-red-600 to-red-700 rounded"></div>
+                  <span className="text-gray-600">Strong Decline (&lt;-2%)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-gradient-to-br from-red-400 to-red-500 rounded"></div>
+                  <span className="text-gray-600">Decline (-2% to 0%)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-gradient-to-br from-orange-400 to-orange-500 rounded"></div>
+                  <span className="text-gray-600">Neutral (0% to 2%)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded"></div>
+                  <span className="text-gray-600">Moderate (2% to 4%)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-gradient-to-br from-green-400 to-green-500 rounded"></div>
+                  <span className="text-gray-600">Strong (4% to 7%)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-gradient-to-br from-green-600 to-green-700 rounded"></div>
+                  <span className="text-gray-600">Excellent (&gt;7%)</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sectorLeaders.map((leader) => (
-              <InvestmentCard key={leader.symbol} investment={leader} />
-            ))}
-          </div>
+          {/* Selected Sector Details */}
+          {selectedSector && (
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold flex items-center">
+                  <TrendingUp className="mr-3 text-blue-500" size={24} />
+                  {selectedSector} Sector Leaders
+                </h3>
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm text-gray-600">
+                    Performance: <span className="font-bold text-green-600">+5.2%</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Market Cap: <span className="font-bold">$2.4T</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sectorLeaders.map((leader) => (
+                  <InvestmentCard key={leader.symbol} investment={leader} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
