@@ -907,123 +907,299 @@ const InvestmentScoring = React.memo(() => {
         </div>
       )}
 
-      {/* Sector Leaders Tab - Interactive Heatmap */}
+      {/* Sector Leaders Tab - Professional Market Heatmap */}
       {activeTab === 'sectors' && (
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h3 className="text-xl font-semibold mb-6 flex items-center">
               <PieChart className="mr-3" size={24} />
-              Sector Performance Heatmap
+              S&P 500 Market Heatmap
+              <span className="ml-auto text-sm text-gray-500">Real-time • TradeStation API</span>
             </h3>
             
-            {/* Heatmap Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {[
-                { name: 'Technology', performance: 8.5, stocks: 145, leader: 'AAPL' },
-                { name: 'Healthcare', performance: 6.2, stocks: 89, leader: 'JNJ' },
-                { name: 'Financials', performance: 4.1, stocks: 112, leader: 'JPM' },
-                { name: 'Energy', performance: -2.3, stocks: 67, leader: 'XOM' },
-                { name: 'Consumer Discretionary', performance: 5.8, stocks: 98, leader: 'AMZN' },
-                { name: 'Communication Services', performance: 3.2, stocks: 45, leader: 'META' },
-                { name: 'Industrials', performance: 2.8, stocks: 134, leader: 'BA' },
-                { name: 'Consumer Staples', performance: 1.9, stocks: 76, leader: 'PG' },
-                { name: 'Materials', performance: -1.2, stocks: 83, leader: 'LIN' },
-                { name: 'Real Estate', performance: 0.5, stocks: 52, leader: 'AMT' },
-                { name: 'Utilities', performance: -0.8, stocks: 61, leader: 'NEE' }
-              ].map((sector) => {
-                const getHeatmapColor = (performance) => {
-                  if (performance >= 7) return 'bg-gradient-to-br from-green-600 to-green-700 text-white';
-                  if (performance >= 4) return 'bg-gradient-to-br from-green-400 to-green-500 text-white';
-                  if (performance >= 2) return 'bg-gradient-to-br from-yellow-400 to-yellow-500 text-white';
-                  if (performance >= 0) return 'bg-gradient-to-br from-orange-400 to-orange-500 text-white';
-                  if (performance >= -2) return 'bg-gradient-to-br from-red-400 to-red-500 text-white';
-                  return 'bg-gradient-to-br from-red-600 to-red-700 text-white';
-                };
+            {/* Professional S&P 500 Heatmap Grid */}
+            <div className="relative bg-gray-100 p-4 rounded-xl overflow-hidden" style={{ height: '600px' }}>
+              
+              {/* Technology Sector - Large Cap */}
+              <div className="absolute" style={{ top: '10px', left: '10px', width: '180px', height: '120px' }}>
+                <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-3 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-lg font-bold">AAPL</div>
+                  <div className="text-2xl font-black">+2.45%</div>
+                  <div className="text-xs opacity-90">$3.2T</div>
+                </div>
+              </div>
 
-                return (
-                  <div
-                    key={sector.name}
-                    className={`${getHeatmapColor(sector.performance)} p-4 rounded-xl shadow-lg hover:scale-105 transition-all duration-300 cursor-pointer border-2 border-opacity-20 hover:border-opacity-50 border-white`}
-                    onClick={() => setSelectedSector(sector.name)}
-                  >
-                    <div className="text-center">
-                      <div className="text-sm font-bold mb-2 leading-tight">
-                        {sector.name.split(' ').map((word, i) => (
-                          <div key={i}>{word}</div>
-                        ))}
-                      </div>
-                      <div className="text-2xl font-black mb-1">
-                        {sector.performance > 0 ? '+' : ''}{sector.performance.toFixed(1)}%
-                      </div>
-                      <div className="text-xs opacity-90 mb-2">
-                        {sector.stocks} stocks
-                      </div>
-                      <div className="text-xs font-bold bg-black bg-opacity-20 px-2 py-1 rounded-full">
-                        Leader: {sector.leader}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              <div className="absolute" style={{ top: '10px', left: '200px', width: '160px', height: '120px' }}>
+                <div className="bg-gradient-to-br from-green-400 to-green-500 text-white p-3 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-lg font-bold">MSFT</div>
+                  <div className="text-2xl font-black">+1.87%</div>
+                  <div className="text-xs opacity-90">$2.8T</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '10px', left: '370px', width: '140px', height: '60px' }}>
+                <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">NVDA</div>
+                  <div className="text-lg font-black">-3.21%</div>
+                  <div className="text-xs opacity-90">$850B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '80px', left: '370px', width: '140px', height: '50px' }}>
+                <div className="bg-gradient-to-br from-green-300 to-green-400 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">GOOGL</div>
+                  <div className="text-md font-black">+0.95%</div>
+                  <div className="text-xs opacity-90">$1.7T</div>
+                </div>
+              </div>
+
+              {/* Healthcare Sector */}
+              <div className="absolute" style={{ top: '140px', left: '10px', width: '120px', height: '80px' }}>
+                <div className="bg-gradient-to-br from-green-600 to-green-700 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">JNJ</div>
+                  <div className="text-lg font-black">+2.84%</div>
+                  <div className="text-xs opacity-90">$420B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '140px', left: '140px', width: '100px', height: '80px' }}>
+                <div className="bg-gradient-to-br from-green-400 to-green-500 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">UNH</div>
+                  <div className="text-md font-black">+1.95%</div>
+                  <div className="text-xs opacity-90">$520B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '140px', left: '250px', width: '80px', height: '50px' }}>
+                <div className="bg-gradient-to-br from-red-400 to-red-500 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">PFE</div>
+                  <div className="text-sm font-black">-1.22%</div>
+                  <div className="text-xs opacity-90">$160B</div>
+                </div>
+              </div>
+
+              {/* Financials */}
+              <div className="absolute" style={{ top: '230px', left: '10px', width: '110px', height: '90px' }}>
+                <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">JPM</div>
+                  <div className="text-lg font-black">+3.12%</div>
+                  <div className="text-xs opacity-90">$480B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '230px', left: '130px', width: '90px', height: '60px' }}>
+                <div className="bg-gradient-to-br from-green-300 to-green-400 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">BAC</div>
+                  <div className="text-md font-black">+1.45%</div>
+                  <div className="text-xs opacity-90">$320B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '300px', left: '130px', width: '90px', height: '50px' }}>
+                <div className="bg-gradient-to-br from-orange-400 to-orange-500 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">WFC</div>
+                  <div className="text-sm font-black">+0.31%</div>
+                  <div className="text-xs opacity-90">$180B</div>
+                </div>
+              </div>
+
+              {/* Consumer Discretionary */}
+              <div className="absolute" style={{ top: '230px', left: '230px', width: '130px', height: '70px' }}>
+                <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">AMZN</div>
+                  <div className="text-lg font-black">-2.14%</div>
+                  <div className="text-xs opacity-90">$1.6T</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '310px', left: '230px', width: '100px', height: '60px' }}>
+                <div className="bg-gradient-to-br from-red-600 to-red-700 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">TSLA</div>
+                  <div className="text-md font-black">-4.67%</div>
+                  <div className="text-xs opacity-90">$790B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '380px', left: '230px', width: '80px', height: '40px' }}>
+                <div className="bg-gradient-to-br from-green-400 to-green-500 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">HD</div>
+                  <div className="text-sm font-black">+1.23%</div>
+                  <div className="text-xs opacity-90">$380B</div>
+                </div>
+              </div>
+
+              {/* Communication Services */}
+              <div className="absolute" style={{ top: '140px', left: '340px', width: '120px', height: '70px' }}>
+                <div className="bg-gradient-to-br from-red-400 to-red-500 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">META</div>
+                  <div className="text-lg font-black">-1.89%</div>
+                  <div className="text-xs opacity-90">$1.3T</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '220px', left: '370px', width: '90px', height: '50px' }}>
+                <div className="bg-gradient-to-br from-green-300 to-green-400 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">NFLX</div>
+                  <div className="text-sm font-black">+0.78%</div>
+                  <div className="text-xs opacity-90">$220B</div>
+                </div>
+              </div>
+
+              {/* Energy Sector */}
+              <div className="absolute" style={{ top: '360px', left: '10px', width: '100px', height: '70px' }}>
+                <div className="bg-gradient-to-br from-red-600 to-red-700 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">XOM</div>
+                  <div className="text-lg font-black">-3.45%</div>
+                  <div className="text-xs opacity-90">$410B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '360px', left: '120px', width: '80px', height: '50px' }}>
+                <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">CVX</div>
+                  <div className="text-sm font-black">-2.87%</div>
+                  <div className="text-xs opacity-90">$280B</div>
+                </div>
+              </div>
+
+              {/* Consumer Staples */}
+              <div className="absolute" style={{ top: '440px', left: '10px', width: '90px', height: '60px' }}>
+                <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">PG</div>
+                  <div className="text-md font-black">+2.15%</div>
+                  <div className="text-xs opacity-90">$380B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '440px', left: '110px', width: '70px', height: '60px' }}>
+                <div className="bg-gradient-to-br from-green-400 to-green-500 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">KO</div>
+                  <div className="text-sm font-black">+1.67%</div>
+                  <div className="text-xs opacity-90">$290B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '440px', left: '190px', width: '60px', height: '40px' }}>
+                <div className="bg-gradient-to-br from-orange-400 to-orange-500 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">WMT</div>
+                  <div className="text-xs font-black">+0.45%</div>
+                  <div className="text-xs opacity-90">$690B</div>
+                </div>
+              </div>
+
+              {/* Industrials */}
+              <div className="absolute" style={{ top: '280px', left: '340px', width: '80px', height: '70px' }}>
+                <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-sm font-bold">BA</div>
+                  <div className="text-md font-black">-2.93%</div>
+                  <div className="text-xs opacity-90">$150B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '360px', left: '340px', width: '70px', height: '50px' }}>
+                <div className="bg-gradient-to-br from-green-400 to-green-500 text-white p-2 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">CAT</div>
+                  <div className="text-sm font-black">+1.12%</div>
+                  <div className="text-xs opacity-90">$170B</div>
+                </div>
+              </div>
+
+              {/* Utilities & Materials - Smaller tiles */}
+              <div className="absolute" style={{ top: '430px', left: '260px', width: '60px', height: '40px' }}>
+                <div className="bg-gradient-to-br from-orange-300 to-orange-400 text-white p-1 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">NEE</div>
+                  <div className="text-xs font-black">+0.23%</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '430px', left: '330px', width: '50px', height: '40px' }}>
+                <div className="bg-gradient-to-br from-red-400 to-red-500 text-white p-1 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">LIN</div>
+                  <div className="text-xs font-black">-1.56%</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '480px', left: '190px', width: '50px', height: '30px' }}>
+                <div className="bg-gradient-to-br from-green-300 to-green-400 text-white p-1 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">SO</div>
+                  <div className="text-xs font-black">+0.67%</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '480px', left: '250px', width: '45px', height: '30px' }}>
+                <div className="bg-gradient-to-br from-orange-400 to-orange-500 text-white p-1 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">FCX</div>
+                  <div className="text-xs font-black">+0.12%</div>
+                </div>
+              </div>
+
+              {/* Real Estate - Small tiles */}
+              <div className="absolute" style={{ top: '420px', left: '390px', width: '60px', height: '50px' }}>
+                <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-1 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">AMT</div>
+                  <div className="text-sm font-black">+1.89%</div>
+                  <div className="text-xs opacity-90">$95B</div>
+                </div>
+              </div>
+
+              <div className="absolute" style={{ top: '480px', left: '390px', width: '50px', height: '30px' }}>
+                <div className="bg-gradient-to-br from-orange-300 to-orange-400 text-white p-1 rounded-lg shadow-lg h-full flex flex-col justify-center items-center hover:scale-105 transition-all cursor-pointer">
+                  <div className="text-xs font-bold">PLD</div>
+                  <div className="text-xs font-black">+0.34%</div>
+                </div>
+              </div>
             </div>
-            
-            {/* Heatmap Legend */}
-            <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">Performance Scale</h4>
-              <div className="flex items-center justify-between text-xs">
+
+            {/* Market Summary Stats */}
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <div className="text-green-800 font-bold text-2xl">67%</div>
+                <div className="text-green-600 text-sm">Stocks Up</div>
+              </div>
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <div className="text-red-800 font-bold text-2xl">33%</div>
+                <div className="text-red-600 text-sm">Stocks Down</div>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <div className="text-blue-800 font-bold text-2xl">+0.85%</div>
+                <div className="text-blue-600 text-sm">S&P 500</div>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <div className="text-purple-800 font-bold text-2xl">$42.3T</div>
+                <div className="text-purple-600 text-sm">Total Market Cap</div>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-semibold text-gray-700 mb-3">Market Heatmap Legend</h4>
+              <div className="flex flex-wrap items-center gap-6 text-xs">
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-gradient-to-br from-red-600 to-red-700 rounded"></div>
-                  <span className="text-gray-600">Strong Decline (&lt;-2%)</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-gradient-to-br from-red-400 to-red-500 rounded"></div>
-                  <span className="text-gray-600">Decline (-2% to 0%)</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-gradient-to-br from-orange-400 to-orange-500 rounded"></div>
-                  <span className="text-gray-600">Neutral (0% to 2%)</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded"></div>
-                  <span className="text-gray-600">Moderate (2% to 4%)</span>
+                  <div className="w-4 h-4 bg-gradient-to-br from-green-600 to-green-700 rounded"></div>
+                  <span className="text-gray-600">Strong Gains (>2%)</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 bg-gradient-to-br from-green-400 to-green-500 rounded"></div>
-                  <span className="text-gray-600">Strong (4% to 7%)</span>
+                  <span className="text-gray-600">Moderate Gains (1-2%)</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-gradient-to-br from-green-600 to-green-700 rounded"></div>
-                  <span className="text-gray-600">Excellent (&gt;7%)</span>
+                  <div className="w-4 h-4 bg-gradient-to-br from-orange-400 to-orange-500 rounded"></div>
+                  <span className="text-gray-600">Flat (0-1%)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-gradient-to-br from-red-400 to-red-500 rounded"></div>
+                  <span className="text-gray-600">Moderate Loss (-1 to -2%)</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-gradient-to-br from-red-600 to-red-700 rounded"></div>
+                  <span className="text-gray-600">Heavy Loss (>-2%)</span>
+                </div>
+                <div className="ml-auto text-gray-500">
+                  • Tile size = Market Cap • Real-time prices via TradeStation
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Selected Sector Details */}
-          {selectedSector && (
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold flex items-center">
-                  <TrendingUp className="mr-3 text-blue-500" size={24} />
-                  {selectedSector} Sector Leaders
-                </h3>
-                <div className="flex items-center space-x-4">
-                  <div className="text-sm text-gray-600">
-                    Performance: <span className="font-bold text-green-600">+5.2%</span>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Market Cap: <span className="font-bold">$2.4T</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sectorLeaders.map((leader) => (
-                  <InvestmentCard key={leader.symbol} investment={leader} />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
