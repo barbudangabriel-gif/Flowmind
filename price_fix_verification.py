@@ -8,7 +8,7 @@ import json
 import time
 
 def test_price_fix():
-    base_url = "https://tradestation-sync-1.preview.emergentagent.com"
+    base_url = "https://tradesmartview.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔧 TESTING PRICE FIX...")
