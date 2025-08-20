@@ -191,14 +191,12 @@ class TechnicalAnalysisAgent:
                         'change': quote.change,
                         'change_percent': quote.change_percent,
                         'volume': quote.volume,
-                        'high': quote.high,
-                        'low': quote.low,
-                        'open': quote.open,
-                        'previous_close': quote.previous_close,
+                        'bid': quote.bid,
+                        'ask': quote.ask,
                         'timestamp': datetime.now().isoformat(),
                         'data_source': 'TradeStation Live API'
                     }
-                    logger.info(f"📈 Live data for {symbol}: ${quote.last} ({quote.change_percent:.2f}%)")
+                    logger.info(f"📈 Live data for {symbol}: ${quote.last} ({quote.change_percent:.2f}%) Volume: {quote.volume}")
                     return live_data
                 else:
                     logger.warning(f"No quotes received for {symbol}")
