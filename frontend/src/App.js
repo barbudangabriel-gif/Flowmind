@@ -7033,17 +7033,7 @@ function AppContent() {
               } 
             />
 
-            {/* Individual Portfolio Routes */}
-            <Route 
-              path="/portfolios/:portfolioId" 
-              element={
-                <Suspense fallback={<LoadingFallback componentName="Portfolio" />}>
-                  <IndividualPortfolio />
-                </Suspense>
-              } 
-            />
-
-            {/* Portfolio Charts Route */}
+            {/* Portfolio Charts Route - MUST be before :portfolioId route */}
             <Route 
               path="/portfolios/:portfolioId/charts" 
               element={
@@ -7053,12 +7043,32 @@ function AppContent() {
               } 
             />
 
-            {/* Smart Rebalancing Agent Route */}
+            {/* Smart Rebalancing Agent Route - MUST be before :portfolioId route */}
             <Route 
               path="/portfolios/:portfolioId/rebalancing" 
               element={
                 <Suspense fallback={<LoadingFallback componentName="Smart Rebalancing Agent" />}>
                   <SmartRebalancingAgent />
+                </Suspense>
+              } 
+            />
+
+            {/* Individual Portfolio Routes - MUST be after specific routes */}
+            <Route 
+              path="/portfolios/view/:portfolioId" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolio" />}>
+                  <IndividualPortfolio />
+                </Suspense>
+              } 
+            />
+
+            {/* Legacy Individual Portfolio Route for compatibility */}
+            <Route 
+              path="/portfolios/:portfolioId" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolio" />}>
+                  <IndividualPortfolio />
                 </Suspense>
               } 
             />
