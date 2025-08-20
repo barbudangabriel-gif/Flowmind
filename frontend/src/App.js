@@ -7010,6 +7010,16 @@ function AppContent() {
                 </Suspense>
               } 
             />
+
+            {/* Add Lots to Portfolio Route */}
+            <Route 
+              path="/portfolios/create/manual/quantities" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Add Lots" />}>
+                  <AddLotsToPortfolio />
+                </Suspense>
+              } 
+            />
             
             {/* Default Route - renders based on activeTab */}
             <Route path="/*" element={renderContent()} />
