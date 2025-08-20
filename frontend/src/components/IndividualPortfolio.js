@@ -124,12 +124,23 @@ const IndividualPortfolio = () => {
         
         <div className="flex items-center mt-2">
           <Eye className="text-white mr-2" size={16} />
-          <span className="text-3xl font-bold text-white">
-            ${currentPortfolio.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
-          <span className={`ml-4 text-lg font-medium ${currentPortfolio.change >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-            {currentPortfolio.change >= 0 ? '+' : ''}${Math.abs(currentPortfolio.change).toFixed(2)} ({currentPortfolio.changePercent >= 0 ? '+' : ''}{currentPortfolio.changePercent.toFixed(2)}%)
-          </span>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate(`/portfolios/${portfolioId}/charts`)}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <PieChartIcon size={16} />
+              <span>Charts</span>
+            </button>
+            
+            <button
+              onClick={() => navigate(`/portfolios/${portfolioId}/rebalancing`)}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <Brain size={16} />
+              <span>AI Rebalancing</span>
+            </button>
+          </div>
         </div>
       </div>
 
