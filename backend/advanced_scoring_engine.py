@@ -589,16 +589,30 @@ class AdvancedScoringEngine:
         """Evaluează calitatea datelor"""
         quality_factors = []
         
-        if tech_data and tech_data.get('data_points', 0) >= 100:
-            quality_factors.append("tech")
+        # Verifică dacă avem date tehnice live
+        if tech_data and tech_data.get('is_live_data') and tech_data.get('data_points', 0) >= 100:
+            quality_factors.append("live_technical")
+        elif tech_data and tech_data.get('data_points', 0) >= 100:
+            quality_factors.append("technical")
+            
+        # Verifică date fundamentale
         if fund_data and not fund_data.get('is_mock'):
-            quality_factors.append("fundamental") 
+            quality_factors.append("live_fundamental") 
+        elif fund_data:
+            quality_factors.append("fundamental")
+            
+        # Verifică options data
         if options_data and not options_data.get('is_mock'):
+            quality_factors.append("live_options")
+        elif options_data:
             quality_factors.append("options")
         
-        if len(quality_factors) >= 3:
+        live_factors = len([f for f in quality_factors if f.startswith('live_')])
+        total_factors = len(quality_factors)
+        
+        if live_factors >= 2:
             return "HIGH"
-        elif len(quality_factors) >= 2:
+        elif live_factors >= 1 or total_factors >= 2:
             return "MEDIUM"
         else:
             return "LOW"
