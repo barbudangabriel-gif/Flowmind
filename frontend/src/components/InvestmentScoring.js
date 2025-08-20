@@ -423,7 +423,6 @@ const InvestmentScoring = React.memo(() => {
           {[
             { id: 'ai-agent', label: '🤖 AI Agent', icon: Zap },
             { id: 'top-picks', label: 'Top Picks', icon: Award },
-            { id: 'search', label: 'Stock Analysis', icon: Search },
             { id: 'sectors', label: 'Sector Leaders', icon: PieChart },
             { id: 'risk', label: 'Risk Analysis', icon: Shield }
           ].map((tab) => {
