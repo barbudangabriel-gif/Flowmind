@@ -208,22 +208,77 @@ class TechnicalAnalysisAgent:
         }
 
     async def _fetch_multi_timeframe_data(self, symbol: str) -> Dict[str, List[Dict]]:
-        """Fetch comprehensive multi-timeframe data with session awareness."""
-        # In production, this would fetch real OHLCV data from market data provider
-        mock_data = self._get_enhanced_mock_price_data(symbol)
-        
-        return {
-            # Primary Check Timeframes
-            'monthly': mock_data['monthly'],
-            'weekly': mock_data['weekly'],
-            'daily': mock_data['daily'],
+        """Fetch comprehensive multi-timeframe data using TradeStation integration."""
+        try:
+            logger.info(f"🔍 Fetching multi-timeframe data for {symbol} from TradeStation")
             
-            # Secondary Check Timeframes  
-            'h4': mock_data['h4'],
-            'h1': mock_data['h1'],
-            'm15': mock_data['m15'],
-            'm1': mock_data['m1']
-        }
+            # Import TradeStation client 
+            from tradestation_client import TradeStationClient
+            from tradestation_auth_service import tradestation_auth_service as ts_auth
+            
+            # Initialize TradeStation client
+            ts_client = TradeStationClient(ts_auth)
+            
+            # Check if authenticated
+            if not ts_auth.is_authenticated():
+                logger.warning(f"⚠️ TradeStation not authenticated, using mock data for {symbol}")
+                return self._get_enhanced_mock_price_data(symbol)
+            
+            # Fetch multiple timeframes from TradeStation
+            timeframe_data = {}
+            
+            # Define timeframes to fetch
+            timeframes = {
+                'daily': {'interval': 1, 'unit': 'Daily', 'bars_back': 200},
+                'weekly': {'interval': 1, 'unit': 'Weekly', 'bars_back': 52},
+                'monthly': {'interval': 1, 'unit': 'Monthly', 'bars_back': 24},
+                'hourly': {'interval': 1, 'unit': 'Hourly', 'bars_back': 100}
+            }
+            
+            for timeframe, params in timeframes.items():
+                try:
+                    logger.info(f"📊 Fetching {timeframe} data for {symbol}")
+                    
+                    bars = await ts_client.get_historical_bars(
+                        symbol=symbol,
+                        interval=params['interval'],
+                        unit=params['unit'],
+                        bars_back=params['bars_back']
+                    )
+                    
+                    if bars and len(bars) > 0:
+                        # Convert TradeStation format to internal format
+                        converted_bars = []
+                        for bar in bars:
+                            converted_bars.append({
+                                'timestamp': bar.get('TimeStamp', ''),
+                                'open': float(bar.get('Open', 0)),
+                                'high': float(bar.get('High', 0)),
+                                'low': float(bar.get('Low', 0)),
+                                'close': float(bar.get('Close', 0)),
+                                'volume': int(bar.get('TotalVolume', 0))
+                            })
+                        
+                        timeframe_data[timeframe] = converted_bars
+                        logger.info(f"✅ Fetched {len(converted_bars)} {timeframe} bars for {symbol}")
+                    else:
+                        logger.warning(f"⚠️ No {timeframe} data for {symbol}")
+                        
+                except Exception as e:
+                    logger.error(f"❌ Error fetching {timeframe} data for {symbol}: {e}")
+                    continue
+            
+            # Ensure we have at least daily data
+            if 'daily' not in timeframe_data or len(timeframe_data['daily']) < 20:
+                logger.warning(f"⚠️ Insufficient data from TradeStation for {symbol}, using mock")
+                return self._get_enhanced_mock_price_data(symbol)
+            
+            logger.info(f"🎯 Successfully fetched multi-timeframe data for {symbol}: {list(timeframe_data.keys())} timeframes")
+            return timeframe_data
+            
+        except Exception as e:
+            logger.error(f"❌ Error fetching multi-timeframe data for {symbol}: {e}")
+            return self._get_enhanced_mock_price_data(symbol)
     
     async def _analyze_smart_money_concepts(self, price_data: Dict[str, List[Dict]], symbol: str) -> Dict[str, Any]:
         """
