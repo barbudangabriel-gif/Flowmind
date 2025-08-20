@@ -168,7 +168,55 @@ class TechnicalAnalysisAgent:
                 'timestamp': datetime.now().isoformat()
             }
     
-    def _generate_fallback_analysis(self, symbol: str) -> Dict[str, Any]:
+    async def _get_live_stock_data(self, symbol: str) -> Dict[str, Any]:
+        """Get live stock data from TradeStation API."""
+        try:
+            from tradestation_client import TradeStationClient
+            from tradestation_auth_service import tradestation_auth_service as ts_auth
+            
+            ts_client = TradeStationClient(ts_auth)
+            
+            if ts_auth.is_authenticated():
+                # Get live quote
+                quotes = await ts_client.get_quote([symbol])
+                
+                if quotes and len(quotes) > 0:
+                    quote = quotes[0]
+                    live_data = {
+                        'symbol': symbol,
+                        'price': quote.last,
+                        'change': quote.change,
+                        'change_percent': quote.change_percent,
+                        'volume': quote.volume,
+                        'high': quote.high,
+                        'low': quote.low,
+                        'open': quote.open,
+                        'previous_close': quote.previous_close,
+                        'timestamp': datetime.now().isoformat(),
+                        'data_source': 'TradeStation Live API'
+                    }
+                    logger.info(f"📈 Live data for {symbol}: ${quote.last} ({quote.change_percent:.2f}%)")
+                    return live_data
+                else:
+                    logger.warning(f"No quotes received for {symbol}")
+                    
+            else:
+                logger.warning("TradeStation not authenticated for live data")
+                
+        except Exception as e:
+            logger.error(f"Error getting live stock data for {symbol}: {e}")
+        
+        # Fallback to basic data
+        return {
+            'symbol': symbol,
+            'price': None,
+            'change': None,
+            'change_percent': None,
+            'timestamp': datetime.now().isoformat(),
+            'data_source': 'Not Available',
+            'error': 'Could not fetch live data'
+        }
+
         """Generate a basic fallback analysis when data is insufficient."""
         return {
             'symbol': symbol,
