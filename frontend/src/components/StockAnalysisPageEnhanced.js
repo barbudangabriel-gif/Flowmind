@@ -465,8 +465,8 @@ const StockAnalysisPageEnhanced = () => {
                 Technical Chart
               </h3>
               
-              <div className="h-80 bg-gray-900 rounded-lg flex items-center justify-center">
-                <ProfessionalTradingChart symbol={symbol} />
+              <div className="relative bg-gray-900 rounded-lg overflow-hidden" style={{ height: '400px' }}>
+                <ProfessionalTradingChart symbol={symbol} height={400} />
               </div>
             </div>
           </div>
