@@ -142,6 +142,14 @@ const StockAnalysisPage = () => {
         timestamp: new Date().toISOString()
       };
       
+      // Process technical analysis data
+      if (technicalRes.status === 'fulfilled' && technicalRes.value?.data) {
+        console.log('✅ Technical analysis data received:', technicalRes.value.data);
+        console.log('🔍 Timeframe analysis data:', technicalRes.value.data.timeframe_analysis);
+      } else {
+        console.warn('❌ No technical analysis data received');
+      }
+      
       // Handle any errors
       if (investmentRes.status === 'rejected') {
         console.error('Investment analysis error:', investmentRes.reason);
