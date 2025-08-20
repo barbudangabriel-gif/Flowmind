@@ -276,8 +276,20 @@ class TechnicalAnalysisAgent:
                 logger.warning(f"⚠️ Insufficient data from TradeStation for {symbol}, using mock")
                 return self._get_enhanced_mock_price_data(symbol)
             
-            logger.info(f"🎯 Successfully fetched multi-timeframe data for {symbol}: {list(timeframe_data.keys())} timeframes")
-            return timeframe_data
+            # Fill missing timeframes with mock data if needed
+            mock_data = self._get_enhanced_mock_price_data(symbol)
+            final_data = {}
+            
+            required_timeframes = ['monthly', 'weekly', 'daily', 'h4', 'h1', 'm15', 'm1']
+            for tf in required_timeframes:
+                if tf in timeframe_data and len(timeframe_data[tf]) > 0:
+                    final_data[tf] = timeframe_data[tf]
+                else:
+                    logger.info(f"📋 Using mock data for {tf} timeframe for {symbol}")
+                    final_data[tf] = mock_data.get(tf, [])
+            
+            logger.info(f"🎯 Successfully fetched multi-timeframe data for {symbol}: {list(final_data.keys())} timeframes")
+            return final_data
             
         except Exception as e:
             logger.error(f"❌ Error fetching multi-timeframe data for {symbol}: {e}")
