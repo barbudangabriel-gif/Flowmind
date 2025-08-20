@@ -35,8 +35,6 @@ const InvestmentScoring = React.memo(() => {
   const [riskAnalysis, setRiskAnalysis] = useState(null);
   const [sectorLeaders, setSectorLeaders] = useState([]);
   const [selectedSector, setSelectedSector] = useState('Technology');
-  const [selectedStock, setSelectedStock] = useState('');
-  const [stockAnalysis, setStockAnalysis] = useState(null);
   const [activeTab, setActiveTab] = useState('ai-agent');  // Default to AI Agent tab
   const [loading, setLoading] = useState(false);
   
