@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 
 class StockAnalysisAPITester:
-    def __init__(self, base_url="https://chart-repair-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://tradestation-sync-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
@@ -425,7 +425,7 @@ if __name__ == "__main__":
     print("=" * 80)
     print("🔧 REVIEW REQUEST: Test backend API endpoints crucial for Stock Analysis and Chart functionality")
     print("📊 FOCUS: META symbol testing with comprehensive data structure validation")
-    print("🌐 Backend URL: https://chart-repair-1.preview.emergentagent.com")
+    print("🌐 Backend URL: https://tradestation-sync-1.preview.emergentagent.com")
     
     tester = StockAnalysisAPITester()
     success = tester.test_stock_analysis_chart_endpoints()

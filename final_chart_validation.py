@@ -21,7 +21,7 @@ def final_validation_test():
     print("5. Error handling")
     print("=" * 80)
     
-    url = "https://chart-repair-1.preview.emergentagent.com/api/unusual-whales/trading-strategies"
+    url = "https://tradestation-sync-1.preview.emergentagent.com/api/unusual-whales/trading-strategies"
     
     try:
         response = requests.get(url, timeout=30)

@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 class TradeStationAuthTester:
-    def __init__(self, base_url="https://cac859fa-9e83-4d31-ae7b-b557fe567155.preview.emergentagent.com"):
+    def __init__(self, base_url="https://tradestation-sync-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
