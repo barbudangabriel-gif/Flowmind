@@ -6999,6 +6999,16 @@ function AppContent() {
                 </Suspense>
               } 
             />
+
+            {/* Add Symbols to Portfolio Route */}
+            <Route 
+              path="/portfolios/create/manual" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Add Symbols" />}>
+                  <AddSymbolsToPortfolio />
+                </Suspense>
+              } 
+            />
             
             {/* Default Route - renders based on activeTab */}
             <Route path="/*" element={renderContent()} />
