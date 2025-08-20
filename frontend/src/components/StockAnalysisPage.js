@@ -601,20 +601,140 @@ const StockAnalysisPage = () => {
               {analysis.technical.timeframe_analysis && (
                 <div className="mb-6">
                   <h4 className="text-lg font-semibold text-indigo-700 mb-3">Multi-Timeframe Analysis</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {Object.entries(analysis.technical.timeframe_analysis).map(([timeframe, data]) => (
-                      <div key={timeframe} className="bg-gray-50 p-4 rounded-lg border">
-                        <div className="text-sm font-medium text-gray-700 capitalize mb-2">
-                          {timeframe}
-                        </div>
-                        <div className={`text-2xl font-bold ${getScoreColor(data.score)}`}>
-                          {data.score}
-                        </div>
-                        <div className={`text-xs ${getSignalColor(data.signal)} font-medium`}>
-                          {data.signal}
+                  
+                  {/* Overall Confluence Score */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-blue-800">Overall Confluence Score</span>
+                      <span className={`text-2xl font-bold ${getScoreColor(analysis.technical.timeframe_analysis.overall_confluence_score || 0)}`}>
+                        {analysis.technical.timeframe_analysis.overall_confluence_score || 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    
+                    {/* Primary Timeframes */}
+                    {analysis.technical.timeframe_analysis.primary_timeframes && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <h5 className="font-semibold text-green-800 mb-2">Primary Timeframes</h5>
+                        <div className="text-sm text-green-700">
+                          <div className="flex justify-between mb-1">
+                            <span>Confluence:</span>
+                            <span className="font-bold">{analysis.technical.timeframe_analysis.primary_timeframes.confluence_score}%</span>
+                          </div>
+                          <div className="flex justify-between mb-1">
+                            <span>Alignment:</span>
+                            <span className="font-bold capitalize">{analysis.technical.timeframe_analysis.primary_timeframes.trend_alignment || 'Mixed'}</span>
+                          </div>
+                          {analysis.technical.timeframe_analysis.primary_timeframes.timeframe_scores && (
+                            <div className="mt-2 space-y-1">
+                              {Object.entries(analysis.technical.timeframe_analysis.primary_timeframes.timeframe_scores).map(([tf, data]) => (
+                                <div key={tf} className="flex justify-between text-xs">
+                                  <span className="capitalize">{tf}:</span>
+                                  <span className={`font-bold ${data.trend === 'bullish' ? 'text-green-600' : data.trend === 'bearish' ? 'text-red-600' : 'text-gray-600'}`}>
+                                    {data.trend} ({data.score})
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
-                    ))}
+                    )}
+                    
+                    {/* Secondary Timeframes */}
+                    {analysis.technical.timeframe_analysis.secondary_timeframes && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h5 className="font-semibold text-blue-800 mb-2">Secondary Timeframes</h5>
+                        <div className="text-sm text-blue-700">
+                          <div className="flex justify-between mb-1">
+                            <span>Confluence:</span>
+                            <span className="font-bold">{analysis.technical.timeframe_analysis.secondary_timeframes.confluence_score}%</span>
+                          </div>
+                          {analysis.technical.timeframe_analysis.secondary_timeframes.timeframe_scores && (
+                            <div className="mt-2 space-y-1">
+                              {Object.entries(analysis.technical.timeframe_analysis.secondary_timeframes.timeframe_scores).map(([tf, data]) => (
+                                <div key={tf} className="flex justify-between text-xs">
+                                  <span className="uppercase">{tf}:</span>
+                                  <span className={`font-bold ${data.trend === 'bullish' ? 'text-green-600' : data.trend === 'bearish' ? 'text-red-600' : 'text-gray-600'}`}>
+                                    {data.trend} ({data.score})
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Gap Analysis */}
+                    {analysis.technical.timeframe_analysis.gap_analysis && (
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <h5 className="font-semibold text-purple-800 mb-2">Gap Analysis</h5>
+                        <div className="text-sm text-purple-700">
+                          <div className="flex justify-between mb-1">
+                            <span>Pattern:</span>
+                            <span className="font-bold capitalize">{analysis.technical.timeframe_analysis.gap_analysis.gap_analysis || 'N/A'}</span>
+                          </div>
+                          <div className="flex justify-between mb-1">
+                            <span>Gaps (10d):</span>
+                            <span className="font-bold">{analysis.technical.timeframe_analysis.gap_analysis.gap_count_last_10_days || 0}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Unfilled:</span>
+                            <span className="font-bold">{analysis.technical.timeframe_analysis.gap_analysis.unfilled_gaps?.length || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Session Analysis */}
+                    {analysis.technical.timeframe_analysis.session_analysis && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                        <h5 className="font-semibold text-orange-800 mb-2">Session Analysis</h5>
+                        <div className="text-sm text-orange-700">
+                          <div className="flex justify-between mb-1">
+                            <span>Premarket:</span>
+                            <span className={`font-bold capitalize ${analysis.technical.timeframe_analysis.session_analysis.premarket_sentiment === 'bullish' ? 'text-green-600' : analysis.technical.timeframe_analysis.session_analysis.premarket_sentiment === 'bearish' ? 'text-red-600' : 'text-gray-600'}`}>
+                              {analysis.technical.timeframe_analysis.session_analysis.premarket_sentiment}
+                            </span>
+                          </div>
+                          <div className="flex justify-between mb-1">
+                            <span>Regular:</span>
+                            <span className={`font-bold capitalize ${analysis.technical.timeframe_analysis.session_analysis.regular_market_sentiment === 'bullish' ? 'text-green-600' : analysis.technical.timeframe_analysis.session_analysis.regular_market_sentiment === 'bearish' ? 'text-red-600' : 'text-gray-600'}`}>
+                              {analysis.technical.timeframe_analysis.session_analysis.regular_market_sentiment}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Postmarket:</span>
+                            <span className={`font-bold capitalize ${analysis.technical.timeframe_analysis.session_analysis.postmarket_sentiment === 'bullish' ? 'text-green-600' : analysis.technical.timeframe_analysis.session_analysis.postmarket_sentiment === 'bearish' ? 'text-red-600' : 'text-gray-600'}`}>
+                              {analysis.technical.timeframe_analysis.session_analysis.postmarket_sentiment}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Timeframe Alignment */}
+                    {analysis.technical.timeframe_analysis.timeframe_alignment && (
+                      <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                        <h5 className="font-semibold text-indigo-800 mb-2">Timeframe Alignment</h5>
+                        <div className="text-sm text-indigo-700">
+                          <div className="text-center">
+                            <span className={`text-lg font-bold capitalize ${
+                              analysis.technical.timeframe_analysis.timeframe_alignment === 'strong_bullish' ? 'text-green-600' : 
+                              analysis.technical.timeframe_analysis.timeframe_alignment === 'strong_bearish' ? 'text-red-600' : 
+                              analysis.technical.timeframe_analysis.timeframe_alignment?.includes('bullish') ? 'text-green-500' :
+                              analysis.technical.timeframe_analysis.timeframe_alignment?.includes('bearish') ? 'text-red-500' : 'text-gray-600'
+                            }`}>
+                              {analysis.technical.timeframe_analysis.timeframe_alignment || 'Mixed'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
                   </div>
                 </div>
               )}
