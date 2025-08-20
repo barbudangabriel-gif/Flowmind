@@ -132,27 +132,51 @@ class AdvancedScoringEngine:
     async def _get_technical_data(self, symbol: str) -> Dict[str, Any]:
         """Obține date tehnice avansate"""
         try:
-            # Folosește TradeStation pentru date istorice
-            if self.ts_client and hasattr(self.ts_client, 'get_historical_bars'):
-                try:
-                    bars = await self.ts_client.get_historical_bars(
-                        symbol=symbol,
-                        interval=1,
-                        unit="Daily", 
-                        bars_back=200  # 200 zile pentru analiză tehnică solidă
-                    )
+            logger.info(f"🔍 Getting technical data for {symbol}")
+            
+            # Verifică dacă TradeStation client este disponibil și autentificat
+            if self.ts_client:
+                logger.info(f"📊 TradeStation client available, checking authentication...")
+                
+                # Verifică autentificarea
+                if hasattr(self.ts_client, 'auth') and hasattr(self.ts_client.auth, 'is_authenticated'):
+                    is_auth = self.ts_client.auth.is_authenticated()
+                    logger.info(f"🔐 TradeStation authentication status: {is_auth}")
                     
-                    if bars and len(bars) > 50:
-                        df = pd.DataFrame(bars)
-                        return self._calculate_advanced_technical_indicators(df, symbol)
-                except Exception as e:
-                    logger.warning(f"TradeStation technical data failed for {symbol}: {e}")
+                    if is_auth and hasattr(self.ts_client, 'get_historical_bars'):
+                        try:
+                            logger.info(f"📈 Fetching historical bars for {symbol} from TradeStation...")
+                            bars = await self.ts_client.get_historical_bars(
+                                symbol=symbol,
+                                interval=1,
+                                unit="Daily", 
+                                bars_back=200  # 200 zile pentru analiză tehnică solidă
+                            )
+                            
+                            logger.info(f"📊 Received {len(bars) if bars else 0} bars for {symbol}")
+                            
+                            if bars and len(bars) > 50:
+                                logger.info(f"✅ Using TradeStation live data for {symbol}")
+                                df = pd.DataFrame(bars)
+                                result = self._calculate_advanced_technical_indicators(df, symbol)
+                                result['is_live_data'] = True
+                                result['data_source'] = 'TradeStation API'
+                                return result
+                            else:
+                                logger.warning(f"⚠️ Insufficient TradeStation data for {symbol}: {len(bars) if bars else 0} bars")
+                        except Exception as e:
+                            logger.error(f"❌ TradeStation technical data failed for {symbol}: {e}")
+                else:
+                    logger.warning(f"❌ TradeStation not authenticated or missing methods")
+            else:
+                logger.warning(f"❌ TradeStation client not available")
             
             # Fallback la mock data realistică
+            logger.info(f"🔄 Using mock technical data for {symbol}")
             return self._generate_mock_technical_data(symbol)
             
         except Exception as e:
-            logger.error(f"Error getting technical data for {symbol}: {e}")
+            logger.error(f"❌ Error getting technical data for {symbol}: {e}")
             return {}
     
     def _calculate_advanced_technical_indicators(self, df: pd.DataFrame, symbol: str) -> Dict[str, Any]:
