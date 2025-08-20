@@ -1323,7 +1323,7 @@ const InvestmentScoring = React.memo(() => {
                 </div>
                 <div>
                   <h4 className="text-lg font-semibold text-red-800">Aggressive Strategy</h4>
-                  <p className="text-sm text-red-600">Age <30 or High Risk Tolerance</p>
+                  <p className="text-sm text-red-600">Age &lt;30 or High Risk Tolerance</p>
                 </div>
               </div>
               
