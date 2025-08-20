@@ -459,7 +459,7 @@ const StockAnalysisPageEnhanced = () => {
 
           {/* Middle Column - Chart */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 h-full">
+            <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 h-full overflow-hidden">
               <h3 className="text-xl font-bold text-white mb-6 flex items-center">
                 <LineChart className="mr-3 text-blue-400" size={24} />
                 Technical Chart
