@@ -621,6 +621,61 @@ class AdvancedScoringEngine:
         else:
             return "LOW"
     
+    async def _get_live_stock_data(self, symbol: str) -> Dict[str, Any]:
+        """Get live stock data from TradeStation API for pricing."""
+        try:
+            if self.ts_client:
+                try:
+                    from tradestation_auth_service import tradestation_auth_service as ts_auth
+                    
+                    if ts_auth.is_authenticated():
+                        from tradestation_client import TradeStationClient
+                        ts_client = TradeStationClient(ts_auth)
+                        
+                        quotes = await ts_client.get_quote([symbol])
+                        
+                        if quotes and len(quotes) > 0:
+                            quote = quotes[0]
+                            return {
+                                'symbol': symbol,
+                                'price': quote.last,
+                                'change': quote.change,
+                                'change_percent': quote.change_percent,
+                                'volume': quote.volume,
+                                'bid': quote.bid,
+                                'ask': quote.ask,
+                                'timestamp': datetime.utcnow().isoformat(),
+                                'data_source': 'TradeStation Live API'
+                            }
+                        else:
+                            logger.warning(f"No live quotes for {symbol}")
+                            
+                except Exception as e:
+                    logger.error(f"Error getting live stock data for {symbol}: {e}")
+            
+            # Fallback to mock data if TradeStation fails
+            import random
+            mock_price = random.uniform(50, 500)
+            return {
+                'symbol': symbol,
+                'price': round(mock_price, 2),
+                'change': round(random.uniform(-10, 10), 2),
+                'change_percent': round(random.uniform(-5, 5), 2),
+                'volume': random.randint(1000000, 50000000),
+                'timestamp': datetime.utcnow().isoformat(),
+                'data_source': 'Mock Data (TradeStation unavailable)'
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in _get_live_stock_data for {symbol}: {e}")
+            return {
+                'symbol': symbol,
+                'price': 0.0,
+                'timestamp': datetime.utcnow().isoformat(),
+                'data_source': 'Error',
+                'error': str(e)
+            }
+
     def _get_default_score(self, symbol: str, error: str) -> Dict[str, Any]:
         """Score default pentru erori"""
         return {
