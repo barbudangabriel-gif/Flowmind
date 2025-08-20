@@ -254,7 +254,7 @@ class TechnicalAnalysisAgent:
                         converted_bars = []
                         for bar in bars:
                             converted_bars.append({
-                                'timestamp': bar.get('TimeStamp', ''),
+                                'date': bar.get('TimeStamp', ''),
                                 'open': float(bar.get('Open', 0)),
                                 'high': float(bar.get('High', 0)),
                                 'low': float(bar.get('Low', 0)),
