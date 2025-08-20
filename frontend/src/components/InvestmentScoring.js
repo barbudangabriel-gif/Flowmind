@@ -1192,7 +1192,7 @@ const InvestmentScoring = React.memo(() => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 bg-gradient-to-br from-red-600 to-red-700 rounded"></div>
-                  <span className="text-gray-600">Heavy Loss (>-2%)</span>
+                  <span className="text-gray-600">Heavy Loss (&lt;-2%)</span>
                 </div>
                 <div className="ml-auto text-gray-500">
                   • Tile size = Market Cap • Real-time prices via TradeStation
