@@ -6971,6 +6971,16 @@ function AppContent() {
                 </Suspense>
               } 
             />
+
+            {/* All Portfolios Route */}
+            <Route 
+              path="/portfolios" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="All Portfolios" />}>
+                  <AllPortfolios />
+                </Suspense>
+              } 
+            />
             
             {/* Default Route - renders based on activeTab */}
             <Route path="/*" element={renderContent()} />
