@@ -7,23 +7,20 @@ import {
   Award,
   Shield,
   AlertTriangle,
-  Target,
-  Star,
   BarChart3,
   PieChart,
-  Activity,
-  DollarSign,
-  Timer,
-  Search,
-  RefreshCw,
   Zap,
-  CheckCircle,
-  XCircle,
+  RefreshCw,
+  Search,
   Plus,
   ArrowDown,
-  ChevronUp,
-  ChevronDown
-} from "lucide-react";
+  User,
+  ChevronRight,
+  CheckCircle,
+  XCircle,
+  Clock,
+  DollarSign
+} from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
