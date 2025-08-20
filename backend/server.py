@@ -4138,6 +4138,199 @@ async def get_market_analysis(symbol: str):
         logger.error(f"Error analyzing market conditions: {str(e)}")
         return {"error": "Failed to analyze market conditions", "details": str(e)}
 
+# ==================== PORTFOLIO CHARTS ENDPOINTS ====================
+
+@api_router.get("/portfolio/{portfolio_id}/performance")
+async def get_portfolio_performance_data(
+    portfolio_id: str,
+    filter: Optional[str] = Query('closed', description="Filter type: 'closed' or 'all'"),
+    asset_type: Optional[str] = Query('combined', description="Asset type: 'stocks', 'options', or 'combined'"),
+    timeframe: Optional[str] = Query('all', description="Timeframe: 'daily', 'weekly', 'monthly', 'all', or 'custom'"),
+    start_date: Optional[str] = Query(None, description="Start date for custom range (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="End date for custom range (YYYY-MM-DD)")
+):
+    """
+    Get portfolio performance data for charts
+    Returns P&L data, cumulative performance, and portfolio summary
+    """
+    try:
+        performance_data = await portfolio_charts_service.get_portfolio_performance_data(
+            portfolio_id=portfolio_id,
+            filter_type=filter,
+            asset_type=asset_type,
+            timeframe=timeframe,
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        return performance_data
+        
+    except Exception as e:
+        logger.error(f"Error fetching portfolio performance data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch performance data: {str(e)}")
+
+@api_router.get("/portfolio/{portfolio_id}/allocation")
+async def get_portfolio_allocation_data(
+    portfolio_id: str,
+    filter: Optional[str] = Query('closed', description="Filter type: 'closed' or 'all'"),
+    asset_type: Optional[str] = Query('combined', description="Asset type: 'stocks', 'options', or 'combined'"),
+    timeframe: Optional[str] = Query('all', description="Timeframe filter")
+):
+    """
+    Get portfolio allocation data for pie charts and distribution analysis
+    Returns position breakdown, sector allocation, and risk metrics
+    """
+    try:
+        allocation_data = await portfolio_charts_service.get_portfolio_allocation_data(
+            portfolio_id=portfolio_id,
+            filter_type=filter,
+            asset_type=asset_type,
+            timeframe=timeframe
+        )
+        
+        return allocation_data
+        
+    except Exception as e:
+        logger.error(f"Error fetching portfolio allocation data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch allocation data: {str(e)}")
+
+# ==================== SMART REBALANCING AGENT ENDPOINTS ====================
+
+class RebalancingRequest(BaseModel):
+    portfolio_id: str
+    include_ml_predictions: Optional[bool] = True
+    include_smart_dca: Optional[bool] = True
+    risk_tolerance: Optional[str] = 'moderate'  # 'conservative', 'moderate', 'aggressive'
+
+@api_router.post("/agents/rebalancing-analysis")
+async def analyze_portfolio_comprehensive(request: RebalancingRequest):
+    """
+    Comprehensive AI analysis of portfolio health and composition
+    Uses ML models to analyze portfolio metrics and provide insights
+    """
+    try:
+        analysis_result = await smart_rebalancing_service.analyze_portfolio_comprehensive(
+            request.portfolio_id
+        )
+        
+        return analysis_result
+        
+    except Exception as e:
+        logger.error(f"Error in comprehensive portfolio analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to analyze portfolio: {str(e)}")
+
+@api_router.post("/agents/rebalancing-recommendations")
+async def generate_rebalancing_recommendations(request: RebalancingRequest):
+    """
+    Generate AI-powered rebalancing recommendations
+    Includes stock rebalancing, options management, position sizing, and Smart DCA
+    """
+    try:
+        recommendations_result = await smart_rebalancing_service.generate_rebalancing_recommendations(
+            request.portfolio_id
+        )
+        
+        return recommendations_result
+        
+    except Exception as e:
+        logger.error(f"Error generating rebalancing recommendations: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate recommendations: {str(e)}")
+
+@api_router.post("/agents/smart-dca-analysis")
+async def analyze_smart_dca_opportunities(request: RebalancingRequest):
+    """
+    Analyze Smart DCA opportunities using bottom-finding algorithms
+    Provides entry points, allocation strategies, and technical signals
+    """
+    try:
+        dca_result = await smart_rebalancing_service.analyze_smart_dca_opportunities(
+            request.portfolio_id
+        )
+        
+        return dca_result
+        
+    except Exception as e:
+        logger.error(f"Error analyzing Smart DCA opportunities: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to analyze DCA opportunities: {str(e)}")
+
+@api_router.post("/agents/risk-analysis")
+async def analyze_portfolio_risk(request: RebalancingRequest):
+    """
+    Comprehensive risk analysis with ML-powered insights
+    Returns risk metrics, factor analysis, and mitigation strategies
+    """
+    try:
+        risk_result = await smart_rebalancing_service.analyze_risk_management(
+            request.portfolio_id
+        )
+        
+        return risk_result
+        
+    except Exception as e:
+        logger.error(f"Error analyzing portfolio risk: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to analyze risk: {str(e)}")
+
+@api_router.get("/agents/market-conditions")
+async def get_market_conditions():
+    """
+    Get current market conditions for rebalancing decisions
+    Provides market sentiment, technical outlook, and recommended strategies
+    """
+    try:
+        market_result = await smart_rebalancing_service.get_market_conditions_analysis()
+        
+        return market_result
+        
+    except Exception as e:
+        logger.error(f"Error getting market conditions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get market conditions: {str(e)}")
+
+@api_router.post("/agents/comprehensive-rebalancing")
+async def run_comprehensive_rebalancing_analysis(request: RebalancingRequest):
+    """
+    Run comprehensive AI/ML rebalancing analysis
+    Combines all analysis modules for complete portfolio optimization
+    """
+    try:
+        logger.info(f"Running comprehensive AI rebalancing analysis for portfolio {request.portfolio_id}")
+        
+        # Run all analysis modules in parallel for performance
+        analysis_task = smart_rebalancing_service.analyze_portfolio_comprehensive(request.portfolio_id)
+        recommendations_task = smart_rebalancing_service.generate_rebalancing_recommendations(request.portfolio_id)
+        dca_task = smart_rebalancing_service.analyze_smart_dca_opportunities(request.portfolio_id)
+        risk_task = smart_rebalancing_service.analyze_risk_management(request.portfolio_id)
+        market_task = smart_rebalancing_service.get_market_conditions_analysis()
+        
+        analysis_result, recommendations_result, dca_result, risk_result, market_result = await asyncio.gather(
+            analysis_task, recommendations_task, dca_task, risk_task, market_task,
+            return_exceptions=True
+        )
+        
+        # Compile comprehensive results
+        comprehensive_result = {
+            'status': 'success',
+            'portfolio_id': request.portfolio_id,
+            'analysis_complete': True,
+            'portfolio_analysis': analysis_result if not isinstance(analysis_result, Exception) else {'status': 'error', 'error': str(analysis_result)},
+            'recommendations': recommendations_result if not isinstance(recommendations_result, Exception) else {'status': 'error', 'error': str(recommendations_result)},
+            'smart_dca': dca_result if not isinstance(dca_result, Exception) else {'status': 'error', 'error': str(dca_result)},
+            'risk_analysis': risk_result if not isinstance(risk_result, Exception) else {'status': 'error', 'error': str(risk_result)},
+            'market_conditions': market_result if not isinstance(market_result, Exception) else {'status': 'error', 'error': str(market_result)},
+            'parameters': {
+                'include_ml_predictions': request.include_ml_predictions,
+                'include_smart_dca': request.include_smart_dca,
+                'risk_tolerance': request.risk_tolerance
+            },
+            'processing_time': 'Real-time analysis completed',
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        return comprehensive_result
+        
+    except Exception as e:
+        logger.error(f"Error in comprehensive rebalancing analysis: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to run comprehensive analysis: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
