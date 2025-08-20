@@ -64,6 +64,7 @@ const AllPortfolios = React.lazy(() => import("./components/AllPortfolios"));
 const CreatePortfolio = React.lazy(() => import("./components/CreatePortfolio"));
 const AddSymbolsToPortfolio = React.lazy(() => import("./components/AddSymbolsToPortfolio"));
 const AddLotsToPortfolio = React.lazy(() => import("./components/AddLotsToPortfolio"));
+const IndividualPortfolio = React.lazy(() => import("./components/IndividualPortfolio"));
 const StockAnalysisPageEnhanced = React.lazy(() => import("./components/StockAnalysisPageEnhanced"));
 const OptionsModule = React.lazy(() => import("./components/OptionsModule"));
 const ChartTestPage = React.lazy(() => import("./components/ChartTestPage"));
