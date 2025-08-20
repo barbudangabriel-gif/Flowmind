@@ -110,12 +110,16 @@ class AdvancedScoringEngine:
             # Determină rating-ul
             rating = self._get_investment_rating(total_score)
             
+            # Obține stock data live de la TradeStation
+            stock_data = await self._get_live_stock_data(symbol)
+            
             result = {
                 'symbol': symbol.upper(),
                 'timestamp': datetime.utcnow().isoformat(),
                 'total_score': round(total_score, 2),
                 'rating': rating,
                 'component_scores': scores,
+                'stock_data': stock_data,  # Add live stock data
                 'data_quality': self._assess_data_quality(technical_data, fundamental_data, options_data),
                 'recommendation': self._get_recommendation(total_score, scores),
                 'risk_level': self._assess_risk_level(risk_data, scores.get('risk_score', 50)),
