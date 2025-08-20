@@ -473,6 +473,11 @@ const InvestmentScoring = React.memo(() => {
       });
       console.log('AI Analysis response:', response.data);
       setAiAnalysis(response.data);
+      
+      // Navigate to detailed stock analysis page after successful analysis
+      console.log(`Navigating to detailed analysis page for ${aiAnalysisSymbol}`);
+      navigate(`/stock-analysis/${aiAnalysisSymbol.toUpperCase()}`);
+      
     } catch (error) {
       console.error('Error in AI analysis:', error);
       setAiAnalysis({
@@ -482,7 +487,7 @@ const InvestmentScoring = React.memo(() => {
     } finally {
       setAiLoading(false);
     }
-  }, [aiAnalysisSymbol]);
+  }, [aiAnalysisSymbol, navigate]);
 
   // Top Picks expansion function
   const expandTopPicks = useCallback(() => {
