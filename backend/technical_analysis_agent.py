@@ -177,13 +177,13 @@ class TechnicalAnalysisAgent:
     async def _get_live_stock_data(self, symbol: str) -> Dict[str, Any]:
         """Get live stock data from TradeStation API."""
         try:
-            from tradestation_client import TradeStationClient
             from tradestation_auth_service import tradestation_auth_service as ts_auth
             
-            ts_client = TradeStationClient(ts_auth)
-            
             if ts_auth.is_authenticated():
-                # Get live quote
+                # Get live quote using the correct TradeStationClient initialization
+                from tradestation_client import TradeStationClient
+                ts_client = TradeStationClient(ts_auth)
+                
                 quotes = await ts_client.get_quote([symbol])
                 
                 if quotes and len(quotes) > 0:
