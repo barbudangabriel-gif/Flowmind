@@ -655,8 +655,9 @@ const StockAnalysisPage = () => {
           </div>
         </div>
       </div>
-    ----[TRUNCATED]----
-  }
+    </div>
+  );
+};
                   {analysis?.stockData?.change?.toFixed(2) || '0.00'} (
                   {(analysis?.stockData?.change_percent || 0) >= 0 ? '+' : ''}
                   {analysis?.stockData?.change_percent?.toFixed(2) || '0.00'}%)
