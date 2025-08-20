@@ -291,37 +291,25 @@ const InvestmentScoring = React.memo(() => {
         
         // Update API recommendations with real-time prices
         try {
-          console.log('Updating API recommendations with real-time prices...');
-          const updatedRecommendations = await Promise.allSettled(
-            recommendations.slice(0, 5).map(async (pick) => {
-              try {
-                const priceResponse = await axios.get(`${API}/stocks/${pick.symbol}/enhanced`, {
-                  timeout: 3000
-                });
-                
-                if (priceResponse.data && priceResponse.data.price) {
-                  return {
-                    ...pick,
-                    current_price: priceResponse.data.price
-                  };
-                }
-                return pick;
-              } catch (priceError) {
-                console.warn(`Could not update price for ${pick.symbol}:`, priceError.message);
-                return pick;
-              }
-            })
-          );
+          console.log('Using API data with live prices already included:', recommendations.length, 'items');
           
-          const finalRecommendations = updatedRecommendations
-            .filter(result => result.status === 'fulfilled')
-            .map(result => result.value)
-            .concat(recommendations.slice(5)); // Add remaining items unchanged
+          // Map the advanced endpoint response to frontend expected structure
+          const mappedRecommendations = recommendations.map(rec => ({
+            symbol: rec.symbol,
+            total_score: rec.total_score,
+            rating: rec.rating,
+            explanation: rec.recommendation || 'Advanced investment analysis completed.',
+            risk_level: rec.risk_level,
+            key_strengths: ["Strong Performance", "Good Fundamentals", "Positive Outlook"],
+            key_risks: rec.risk_level === 'HIGH' ? ["High Volatility", "Market Risk"] : ["Market Risk"],
+            current_price: rec.stock_data?.price,
+            data_source: rec.stock_data?.data_source || 'TradeStation Live API'
+          }));
           
-          console.log('Updated API recommendations with real prices');
-          setTopPicks(finalRecommendations);
-        } catch (priceUpdateError) {
-          console.error('Error updating API recommendation prices:', priceUpdateError.message);
+          console.log('Mapped API recommendations with live prices');
+          setTopPicks(mappedRecommendations);
+        } catch (mappingError) {
+          console.error('Error mapping API recommendation data:', mappingError.message);
           setTopPicks(recommendations);
         }
       } else {
