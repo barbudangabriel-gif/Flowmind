@@ -273,9 +273,9 @@ const InvestmentScoring = React.memo(() => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
       
-      const response = await axios.get(`${API}/investments/top-picks?limit=10`, {
+      const response = await axios.get(`${API}/investment-scoring/top-picks?count=10`, {
         signal: controller.signal,
-        timeout: 5000
+        timeout: 10000
       });
       
       clearTimeout(timeoutId);
