@@ -7062,6 +7062,16 @@ function AppContent() {
                 </Suspense>
               } 
             />
+
+            {/* Legacy Individual Portfolio route for backward compatibility */}
+            <Route 
+              path="/portfolios/:portfolioId" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolio" />}>
+                  <IndividualPortfolio />
+                </Suspense>
+              } 
+            />
             
             {/* Default Route - renders based on activeTab */}
             <Route path="/" element={renderContent()} />
