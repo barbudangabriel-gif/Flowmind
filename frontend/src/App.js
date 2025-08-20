@@ -7036,7 +7036,11 @@ function AppContent() {
             {/* Portfolio Charts Route - MUST be before :portfolioId route */}
             <Route 
               path="/portfolios/:portfolioId/charts" 
-              element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Test Portfolio Charts Component</h1><p>Route is working!</p></div>} 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolio Charts" />}>
+                  <PortfolioCharts />
+                </Suspense>
+              } 
             />
 
             {/* Smart Rebalancing Agent Route - MUST be before :portfolioId route */}
