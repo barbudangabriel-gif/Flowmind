@@ -234,6 +234,17 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       ]
     },
     {
+      title: "Portfolios 📊",
+      items: [
+        { id: 'all-portfolios', label: 'All Portfolios', icon: Briefcase, color: 'from-blue-500 to-cyan-500', badge: '📈', shortLabel: 'All' },
+        { id: 'portfolio-1', label: 'Portfolio 1', icon: TrendingDown, color: 'from-red-400 to-red-500', badge: '-1.15%', shortLabel: 'P1', route: '/portfolios/portfolio-1' },
+        { id: 'portfolio-2', label: 'Portfolio 2', icon: TrendingUp, color: 'from-green-400 to-green-500', badge: '+0.54%', shortLabel: 'P2', route: '/portfolios/portfolio-2' },
+        { id: 'portfolio-3', label: 'Portfolio 3', icon: TrendingUp, color: 'from-green-500 to-green-600', badge: '+1.39%', shortLabel: 'P3', route: '/portfolios/portfolio-3' },
+        { id: 'portfolio-htech', label: 'HTech 15T', icon: TrendingDown, color: 'from-red-300 to-red-400', badge: '-0.07%', shortLabel: 'HTech', route: '/portfolios/htech-15t' },
+        { id: 'create-portfolio', label: 'Create Portfolio', icon: Plus, color: 'from-gray-500 to-gray-600', badge: '➕', shortLabel: 'Create', route: '/portfolios/create' }
+      ]
+    },
+    {
       title: "Unusual Whales 🐋",
       items: [
         { id: 'options-flow', label: 'Options Flow', icon: Activity, color: 'from-cyan-500 to-blue-600', badge: '📈', shortLabel: 'Flow' },
