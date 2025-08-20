@@ -210,7 +210,7 @@ const PortfolioCharts = () => {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate(`/portfolios/view/${portfolioId}`)}
+                onClick={() => navigate(`/portfolios/${portfolioId}`)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <ArrowLeft size={20} className="text-gray-600" />
