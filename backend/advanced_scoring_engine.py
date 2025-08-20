@@ -277,6 +277,8 @@ class AdvancedScoringEngine:
         """Generează date tehnice mock realiste pentru demo"""
         import random
         
+        logger.info(f"📋 Generating mock technical data for {symbol}")
+        
         # Simulează indicatori realisti
         rsi = random.uniform(30, 80)  
         trend_strength = random.uniform(40, 90)
@@ -297,6 +299,8 @@ class AdvancedScoringEngine:
             },
             'data_points': 200,
             'is_mock': True,
+            'is_live_data': False,
+            'data_source': 'Mock Data',
             'calculation_date': datetime.utcnow().isoformat()
         }
     
