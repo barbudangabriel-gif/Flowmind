@@ -1477,8 +1477,7 @@ async def get_market_overview():
                 # Use TradeStation API for market data instead of Yahoo Finance
                 logger.info(f"No Unusual Whales data for {symbol}, using TradeStation API")
                 try:
-                    # Get quotes from TradeStation
-                    ts_client = TradeStationClient()
+                    # Get quotes from TradeStation using the global ts_client
                     quotes = await ts_client.get_quote([symbol])
                     
                     if quotes and len(quotes) > 0:
