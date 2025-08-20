@@ -283,7 +283,7 @@ const InvestmentScoring = React.memo(() => {
       console.log('Top picks response status:', response.status);
       console.log('Top picks response data:', response.data);
       
-      const recommendations = response.data?.recommendations || [];
+      const recommendations = response.data?.top_picks || [];
       console.log('Extracted recommendations:', recommendations.length, 'items');
       
       if (recommendations.length > 0) {
