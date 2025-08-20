@@ -6849,6 +6849,12 @@ function AppContent() {
             <InvestmentScoring />
           </Suspense>
         );
+      case 'all-portfolios':
+        return (
+          <Suspense fallback={<LoadingFallback componentName="All Portfolios" />}>
+            <AllPortfolios />
+          </Suspense>
+        );
       case 'screener':
         return (
           <Suspense fallback={<LoadingFallback componentName="Advanced Screener" />}>
