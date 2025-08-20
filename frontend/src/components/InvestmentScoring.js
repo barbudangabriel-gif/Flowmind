@@ -60,222 +60,16 @@ const InvestmentScoring = React.memo(() => {
   const loadTopPicks = useCallback(async () => {
     setLoading(true);
     
-    // Define comprehensive mock data with placeholders for real prices
-    const mockTopPicks = [
-      {
-        symbol: "UNH",
-        total_score: 82.1,
-        rating: "BUY",
-        explanation: "UNH (Healthcare) shows strong momentum and healthcare leadership.",
-        risk_level: "LOW",
-        key_strengths: ["Strong Performance", "Healthcare Leader", "Dividend Growth"],
-        key_risks: [],
-        current_price: 304.01 // Will be updated with real price
-      },
-      {
-        symbol: "CRM",
-        total_score: 79.3,
-        rating: "BUY",
-        explanation: "CRM (Technology) shows solid growth and cloud leadership.",
-        risk_level: "LOW",
-        key_strengths: ["Cloud Leadership", "Strong Revenue Growth", "Market Position"],
-        key_risks: ["High Valuation"],
-        current_price: 242.44
-      },
-      {
-        symbol: "AAPL",
-        total_score: 75.2,
-        rating: "HOLD +",
-        explanation: "AAPL (Technology) at $231.59 remains stable with slight decline today.",
-        risk_level: "LOW",
-        key_strengths: ["Financial Stability", "Brand Strength", "Innovation"],
-        key_risks: ["Market Saturation"],
-        current_price: 231.59
-      },
-      {
-        symbol: "MSFT",
-        total_score: 74.8,
-        rating: "HOLD +",
-        explanation: "MSFT (Technology) at $520.17 shows resilience with minimal decline.",
-        risk_level: "LOW",
-        key_strengths: ["Cloud Dominance", "AI Leadership", "Enterprise Focus"], 
-        key_risks: ["Competition"],
-        current_price: 520.17
-      },
-      {
-        symbol: "NVDA",
-        total_score: 73.5,
-        rating: "HOLD +",
-        explanation: "NVDA (Technology) at $180.45 continues AI leadership despite volatility.",
-        risk_level: "MODERATE", 
-        key_strengths: ["AI Market Leader", "Data Center Growth", "Technology Innovation"],
-        key_risks: ["High Volatility", "Competition"],
-        current_price: 180.45
-      },
-      // Additional tickers for demonstration (expanded to 20 for testing)
-      {
-        symbol: "GOOGL",
-        total_score: 72.1,
-        rating: "HOLD +",
-        explanation: "GOOGL (Communication Services) maintains strong position in search and cloud.",
-        risk_level: "LOW",
-        key_strengths: ["Search Dominance", "Cloud Growth", "AI Development"],
-        key_risks: ["Regulatory Pressure"],
-        current_price: 163.25
-      },
-      {
-        symbol: "AMZN",
-        total_score: 71.8,
-        rating: "HOLD +",
-        explanation: "AMZN (Consumer Discretionary) shows resilience in e-commerce and AWS.",
-        risk_level: "LOW",
-        key_strengths: ["E-commerce Leader", "AWS Dominance", "Innovation"],
-        key_risks: ["Competition"],
-        current_price: 186.44
-      },
-      {
-        symbol: "TSLA",
-        total_score: 68.9,
-        rating: "HOLD",
-        explanation: "TSLA (Consumer Discretionary) maintains EV leadership with moderate volatility.",
-        risk_level: "MODERATE",
-        key_strengths: ["EV Pioneer", "Technology Innovation", "Brand Strength"],
-        key_risks: ["High Volatility", "Competition"],
-        current_price: 239.85
-      },
-      {
-        symbol: "META",
-        total_score: 67.4,
-        rating: "HOLD",
-        explanation: "META (Communication Services) continues social media dominance with metaverse investments.",
-        risk_level: "MODERATE",
-        key_strengths: ["Social Media Leader", "VR/AR Investment", "User Base"],
-        key_risks: ["Regulatory Issues", "Privacy Concerns"],
-        current_price: 557.13
-      },
-      {
-        symbol: "JNJ",
-        total_score: 66.2,
-        rating: "HOLD",
-        explanation: "JNJ (Healthcare) provides stable dividend income with defensive characteristics.",
-        risk_level: "LOW",
-        key_strengths: ["Healthcare Diversification", "Dividend History", "Global Reach"],
-        key_risks: ["Legal Issues"],
-        current_price: 157.88
-      },
-      // Additional tickers to reach 20+ for testing load more functionality
-      {
-        symbol: "BRK.B",
-        total_score: 65.8,
-        rating: "HOLD",
-        explanation: "Berkshire Hathaway provides diversified exposure with strong management.",
-        risk_level: "LOW",
-        key_strengths: ["Diversification", "Management Quality", "Financial Strength"],
-        key_risks: ["Succession Concerns"],
-        current_price: 423.15
-      },
-      {
-        symbol: "V",
-        total_score: 65.1,
-        rating: "HOLD",
-        explanation: "Visa maintains payment processing dominance with consistent growth.",
-        risk_level: "LOW",
-        key_strengths: ["Payment Network", "Global Growth", "Digital Trends"],
-        key_risks: ["Regulatory Risk"],
-        current_price: 267.89
-      },
-      {
-        symbol: "JPM",
-        total_score: 64.7,
-        rating: "HOLD",
-        explanation: "JPMorgan Chase shows banking sector leadership with strong fundamentals.",
-        risk_level: "MODERATE",
-        key_strengths: ["Banking Leader", "Interest Rate Sensitivity", "Strong Balance Sheet"],
-        key_risks: ["Economic Cycle", "Regulation"],
-        current_price: 212.34
-      },
-      {
-        symbol: "HD",
-        total_score: 64.3,
-        rating: "HOLD",
-        explanation: "Home Depot benefits from housing market trends and home improvement demand.",
-        risk_level: "LOW",
-        key_strengths: ["Market Leader", "Housing Trends", "E-commerce Growth"],
-        key_risks: ["Economic Sensitivity"],
-        current_price: 399.38
-      },
-      {
-        symbol: "PG",
-        total_score: 63.9,
-        rating: "HOLD",
-        explanation: "Procter & Gamble offers defensive consumer staples exposure with dividend growth.",
-        risk_level: "LOW",
-        key_strengths: ["Brand Portfolio", "Global Reach", "Dividend Growth"],
-        key_risks: ["Currency Impact"],
-        current_price: 172.56
-      },
-      {
-        symbol: "MA",
-        total_score: 63.5,
-        rating: "HOLD",
-        explanation: "Mastercard complements Visa in payment processing with strong network effects.",
-        risk_level: "LOW",
-        key_strengths: ["Payment Network", "Global Growth", "Technology"],
-        key_risks: ["Competition"],
-        current_price: 478.92
-      },
-      {
-        symbol: "BAC",
-        total_score: 62.8,
-        rating: "HOLD",
-        explanation: "Bank of America provides banking exposure with interest rate sensitivity.",
-        risk_level: "MODERATE",
-        key_strengths: ["Scale Advantages", "Interest Rates", "Cost Management"],
-        key_risks: ["Credit Risk", "Regulation"],
-        current_price: 41.23
-      },
-      {
-        symbol: "ABBV",
-        total_score: 62.4,
-        rating: "HOLD",
-        explanation: "AbbVie offers pharmaceutical exposure with strong pipeline and dividend.",
-        risk_level: "MODERATE",
-        key_strengths: ["Drug Pipeline", "Patent Protection", "Dividend Yield"],
-        key_risks: ["Patent Expiry", "Regulatory"],
-        current_price: 198.76
-      },
-      {
-        symbol: "WMT",
-        total_score: 61.9,
-        rating: "HOLD",
-        explanation: "Walmart provides defensive retail exposure with e-commerce growth.",
-        risk_level: "LOW",
-        key_strengths: ["Scale Advantages", "E-commerce", "Defensive"],
-        key_risks: ["Competition", "Margins"],
-        current_price: 89.34
-      },
-      {
-        symbol: "KO",
-        total_score: 61.5,
-        rating: "HOLD",
-        explanation: "Coca-Cola offers defensive beverage exposure with global brand recognition.",
-        risk_level: "LOW",
-        key_strengths: ["Brand Strength", "Global Reach", "Dividend"],
-        key_risks: ["Health Trends", "Currency"],
-        current_price: 68.45
-      }
-    ];
-    
     try {
       console.log('Loading top picks from:', `${API}/investment-scoring/top-picks?count=10`);
       
       // Set a longer timeout for advanced scoring
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
       const response = await axios.get(`${API}/investment-scoring/top-picks?count=10`, {
         signal: controller.signal,
-        timeout: 10000
+        timeout: 30000
       });
       
       clearTimeout(timeoutId);
@@ -287,119 +81,31 @@ const InvestmentScoring = React.memo(() => {
       console.log('Extracted recommendations:', recommendations.length, 'items');
       
       if (recommendations.length > 0) {
-        console.log('Using API data:', recommendations.length, 'items');
+        console.log('Using LIVE API data:', recommendations.length, 'items');
         
-        // Update API recommendations with real-time prices
-        try {
-          console.log('Using API data with live prices already included:', recommendations.length, 'items');
-          
-          // Map the advanced endpoint response to frontend expected structure
-          const mappedRecommendations = recommendations.map(rec => ({
-            symbol: rec.symbol,
-            total_score: rec.total_score,
-            rating: rec.rating,
-            explanation: rec.recommendation || 'Advanced investment analysis completed.',
-            risk_level: rec.risk_level,
-            key_strengths: ["Strong Performance", "Good Fundamentals", "Positive Outlook"],
-            key_risks: rec.risk_level === 'HIGH' ? ["High Volatility", "Market Risk"] : ["Market Risk"],
-            current_price: rec.stock_data?.price,
-            data_source: rec.stock_data?.data_source || 'TradeStation Live API'
-          }));
-          
-          console.log('Mapped API recommendations with live prices');
-          setTopPicks(mappedRecommendations);
-        } catch (mappingError) {
-          console.error('Error mapping API recommendation data:', mappingError.message);
-          setTopPicks(recommendations);
-        }
+        // Map the advanced endpoint response to frontend expected structure
+        const mappedRecommendations = recommendations.map(rec => ({
+          symbol: rec.symbol,
+          total_score: rec.total_score,
+          rating: rec.rating,
+          explanation: rec.recommendation || 'Advanced investment analysis completed.',
+          risk_level: rec.risk_level,
+          key_strengths: ["Strong Performance", "Good Fundamentals", "Positive Outlook"],
+          key_risks: rec.risk_level === 'HIGH' ? ["High Volatility", "Market Risk"] : ["Market Risk"],
+          current_price: rec.stock_data?.price,
+          data_source: rec.stock_data?.data_source || 'TradeStation Live API'
+        }));
+        
+        console.log('✅ LIVE PRICES FROM TRADESTATION:', mappedRecommendations.map(r => `${r.symbol}: $${r.current_price}`));
+        setTopPicks(mappedRecommendations);
       } else {
-        console.log('API returned empty data, using fallback mock data');
-        
-        // Update mock data with real-time prices
-        try {
-          console.log('Updating mock data with real-time prices...');
-          const updatedMockData = await Promise.allSettled(
-            mockTopPicks.slice(0, 5).map(async (pick) => {
-              try {
-                const priceResponse = await axios.get(`${API}/stocks/${pick.symbol}/enhanced`, {
-                  timeout: 3000
-                });
-                
-                if (priceResponse.data && priceResponse.data.price) {
-                  return {
-                    ...pick,
-                    current_price: priceResponse.data.price,
-                    explanation: pick.explanation.replace(/shows.*\./, `shows current price of $${priceResponse.data.price.toFixed(2)}.`)
-                  };
-                }
-                return pick;
-              } catch (priceError) {
-                console.warn(`Could not update price for ${pick.symbol}:`, priceError.message);
-                return pick;
-              }
-            })
-          );
-          
-          const finalMockData = updatedMockData
-            .filter(result => result.status === 'fulfilled')
-            .map(result => result.value)
-            .concat(mockTopPicks.slice(5)); // Add remaining mock data unchanged
-          
-          console.log('Updated mock data with real prices for', finalMockData.length, 'items');
-          setTopPicks(finalMockData);
-          
-        } catch (priceUpdateError) {
-          console.error('Error updating mock prices:', priceUpdateError.message);
-          setTopPicks(mockTopPicks);
-        }
+        console.error('❌ NO DATA RETURNED FROM API - API might be down');
+        setTopPicks([]);
       }
     } catch (error) {
-      console.error('Error loading top picks, using mock data:', error.message);
-      console.log('Loading mock data with updated prices...');
-      
-      // ALWAYS update mock data with real prices from enhanced API
-      try {
-        console.log('Fetching real-time prices for top picks (sequential)...');
-        
-        const updatedPicks = [];
-        
-        // Process first 3 symbols sequentially to avoid overwhelming the API
-        for (const pick of mockTopPicks.slice(0, 3)) {
-          try {
-            console.log(`Fetching price for ${pick.symbol}...`);
-            const priceResponse = await axios.get(`${API}/stocks/${pick.symbol}/enhanced`, {
-              timeout: 10000 // Increased timeout
-            });
-            
-            if (priceResponse.data && priceResponse.data.price) {
-              console.log(`✅ Updated ${pick.symbol}: $${priceResponse.data.price}`);
-              updatedPicks.push({
-                ...pick,
-                current_price: priceResponse.data.price
-              });
-            } else {
-              console.log(`⚠️ No price data for ${pick.symbol}, using mock`);
-              updatedPicks.push(pick);
-            }
-          } catch (priceError) {
-            console.warn(`❌ Could not update price for ${pick.symbol}:`, priceError.message);
-            updatedPicks.push(pick); // Use original mock data
-          }
-          
-          // Wait 500ms between requests to avoid overwhelming API
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        
-        // Add remaining mock data unchanged
-        const finalMockData = updatedPicks.concat(mockTopPicks.slice(3));
-        
-        console.log(`✅ Price sync complete: ${updatedPicks.filter(p => p.current_price !== mockTopPicks.find(m => m.symbol === p.symbol)?.current_price).length} prices updated`);
-        setTopPicks(finalMockData);
-        
-      } catch (priceUpdateError) {
-        console.error('Failed to update mock prices:', priceUpdateError.message);
-        setTopPicks(mockTopPicks);
-      }
+      console.error('❌ API ERROR:', error.message);
+      console.error('Backend down or API failing - showing empty state');
+      setTopPicks([]);
     } finally {
       setLoading(false);
     }
