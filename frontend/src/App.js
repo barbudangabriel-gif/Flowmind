@@ -7042,6 +7042,26 @@ function AppContent() {
                 </Suspense>
               } 
             />
+
+            {/* Portfolio Charts Route */}
+            <Route 
+              path="/portfolios/:portfolioId/charts" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolio Charts" />}>
+                  <PortfolioCharts />
+                </Suspense>
+              } 
+            />
+
+            {/* Smart Rebalancing Agent Route */}
+            <Route 
+              path="/portfolios/:portfolioId/rebalancing" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Smart Rebalancing Agent" />}>
+                  <SmartRebalancingAgent />
+                </Suspense>
+              } 
+            />
             
             {/* Default Route - renders based on activeTab */}
             <Route path="/*" element={renderContent()} />
