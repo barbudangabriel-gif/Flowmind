@@ -118,6 +118,9 @@ class TechnicalAnalysisAgent:
             # 4. Multi-Timeframe Confluence (keeping for compatibility)
             timeframe_analysis = self._analyze_multi_timeframe_confluence(price_data)
             
+            # Add session analysis to timeframe analysis
+            timeframe_analysis['session_analysis'] = session_analysis
+            
             # 5. Support/Resistance Analysis
             sr_analysis = self._analyze_support_resistance_levels(price_data, symbol)
             
