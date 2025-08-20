@@ -1203,130 +1203,348 @@ const InvestmentScoring = React.memo(() => {
         </div>
       )}
 
-      {/* Risk Analysis Tab */}
-      {activeTab === 'risk' && (
+      {/* Portfolio Risk Analysis Tab - Portfolio Construction Guidelines */}
+      {activeTab === 'portfolio-risk' && (
         <div className="space-y-6">
-          <div className="bg-white p-4 rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold mb-2 flex items-center">
-              <Shield className="mr-2" size={20} />
-              Risk-Based Investment Categories
+          {/* Header Section */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h3 className="text-xl font-semibold mb-4 flex items-center">
+              <Shield className="mr-3" size={24} />
+              Portfolio Risk Analysis & Construction
             </h3>
-            <p className="text-gray-600 text-sm">
-              {riskAnalysis?.methodology || "Risk assessed based on beta, market cap, volatility, and financial stability"}
+            <p className="text-gray-600 text-sm mb-4">
+              Strategic guidelines for building balanced portfolios based on risk tolerance, investment horizon, and diversification principles.
             </p>
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <p className="text-blue-800 text-sm">
+                💡 <strong>Your individual portfolio risk</strong> will be calculated based on your actual holdings, allocation percentages, and the risk categories selected from our analysis.
+              </p>
+            </div>
           </div>
 
+          {/* Portfolio Allocation Strategies */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Conservative Strategy */}
+            <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+              <div className="flex items-center mb-4">
+                <div className="p-3 bg-green-100 rounded-full mr-4">
+                  <Shield className="text-green-600" size={24} />
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-green-800">Conservative Strategy</h4>
+                  <p className="text-sm text-green-600">Age 50+ or Risk Averse</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h5 className="font-semibold text-green-800 mb-3">Allocation Guidelines:</h5>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-green-700">🟢 Low Risk</span>
+                      <span className="font-bold text-green-800">70%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-yellow-600">🟡 Moderate Risk</span>
+                      <span className="font-bold text-yellow-700">25%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-red-600">🔴 High Risk</span>
+                      <span className="font-bold text-red-700">5%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-green-700 space-y-2">
+                  <p><strong>Expected Annual Return:</strong> 6-8%</p>
+                  <p><strong>Max Drawdown:</strong> -15%</p>
+                  <p><strong>Volatility:</strong> Low (10-15%)</p>
+                </div>
+                
+                <div className="bg-green-100 p-3 rounded-lg">
+                  <p className="text-xs text-green-800">
+                    <strong>Best For:</strong> Capital preservation, steady income, approaching retirement
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Balanced Strategy */}
+            <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+              <div className="flex items-center mb-4">
+                <div className="p-3 bg-blue-100 rounded-full mr-4">
+                  <Target className="text-blue-600" size={24} />
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-blue-800">Balanced Strategy</h4>
+                  <p className="text-sm text-blue-600">Age 30-50 or Moderate Risk</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h5 className="font-semibold text-blue-800 mb-3">Allocation Guidelines:</h5>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-green-700">🟢 Low Risk</span>
+                      <span className="font-bold text-green-800">40%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-yellow-600">🟡 Moderate Risk</span>
+                      <span className="font-bold text-yellow-700">40%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-red-600">🔴 High Risk</span>
+                      <span className="font-bold text-red-700">20%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-blue-700 space-y-2">
+                  <p><strong>Expected Annual Return:</strong> 8-12%</p>
+                  <p><strong>Max Drawdown:</strong> -25%</p>
+                  <p><strong>Volatility:</strong> Moderate (15-20%)</p>
+                </div>
+                
+                <div className="bg-blue-100 p-3 rounded-lg">
+                  <p className="text-xs text-blue-800">
+                    <strong>Best For:</strong> Long-term growth, balanced approach, building wealth
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Aggressive Strategy */}
+            <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+              <div className="flex items-center mb-4">
+                <div className="p-3 bg-red-100 rounded-full mr-4">
+                  <TrendingUp className="text-red-600" size={24} />
+                </div>
+                <div>
+                  <h4 className="text-lg font-semibold text-red-800">Aggressive Strategy</h4>
+                  <p className="text-sm text-red-600">Age <30 or High Risk Tolerance</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <h5 className="font-semibold text-red-800 mb-3">Allocation Guidelines:</h5>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-green-700">🟢 Low Risk</span>
+                      <span className="font-bold text-green-800">20%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-yellow-600">🟡 Moderate Risk</span>
+                      <span className="font-bold text-yellow-700">30%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-red-600">🔴 High Risk</span>
+                      <span className="font-bold text-red-700">50%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-red-700 space-y-2">
+                  <p><strong>Expected Annual Return:</strong> 12-18%</p>
+                  <p><strong>Max Drawdown:</strong> -40%</p>
+                  <p><strong>Volatility:</strong> High (20-30%)</p>
+                </div>
+                
+                <div className="bg-red-100 p-3 rounded-lg">
+                  <p className="text-xs text-red-800">
+                    <strong>Best For:</strong> Maximum growth, long time horizon, high risk tolerance
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Diversification Guidelines */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h4 className="text-lg font-semibold mb-4 flex items-center">
+              <PieChart className="mr-3 text-purple-600" size={20} />
+              Diversification Guidelines
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h5 className="font-semibold text-purple-800 mb-3">Sector Diversification</h5>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Technology</span>
+                    <span className="font-medium">15-25%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Healthcare</span>
+                    <span className="font-medium">10-20%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Financials</span>
+                    <span className="font-medium">10-15%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Consumer Goods</span>
+                    <span className="font-medium">10-15%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Other Sectors</span>
+                    <span className="font-medium">30-40%</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <h5 className="font-semibold text-purple-800 mb-3">Risk Management Rules</h5>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <p>• <strong>Single Stock Limit:</strong> Max 5% per position</p>
+                  <p>• <strong>Sector Concentration:</strong> Max 25% per sector</p>
+                  <p>• <strong>Correlation Check:</strong> Avoid highly correlated stocks</p>
+                  <p>• <strong>Market Cap Mix:</strong> Combine large, mid, small caps</p>
+                  <p>• <strong>Geographic Spread:</strong> Include international exposure</p>
+                  <p>• <strong>Rebalancing:</strong> Review quarterly, rebalance semi-annually</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Portfolio Tools */}
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h4 className="text-lg font-semibold mb-4 text-gray-800">Portfolio Construction Tools</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <h5 className="font-semibold text-blue-600 mb-2">📊 Risk Calculator</h5>
+                <p className="text-sm text-gray-600">Calculate your portfolio's overall risk score based on individual holdings</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <h5 className="font-semibold text-green-600 mb-2">🎯 Allocation Optimizer</h5>
+                <p className="text-sm text-gray-600">Optimize allocation percentages for target risk/return profile</p>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm">
+                <h5 className="font-semibold text-purple-600 mb-2">🔄 Rebalancing Assistant</h5>
+                <p className="text-sm text-gray-600">Get recommendations for portfolio rebalancing</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Individual Stock Categories */}
           {riskAnalysis ? (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {Object.entries(riskAnalysis.risk_categories).map(([riskLevel, stocks]) => (
-                <div key={riskLevel} className="space-y-4">
-                  <div className={`p-3 rounded-lg ${getRiskColor(riskLevel)}`}>
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h4 className="text-lg font-semibold mb-4 flex items-center">
+                <Award className="mr-3 text-orange-600" size={20} />
+                Stock Categories for Portfolio Construction
+              </h4>
+              <p className="text-gray-600 text-sm mb-4">
+                Use these categorized stocks to build your portfolio according to the strategies above:
+              </p>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {Object.entries(riskAnalysis.risk_categories).map(([riskLevel, stocks]) => (
+                  <div key={riskLevel} className="space-y-4">
+                    <div className={`p-3 rounded-lg ${getRiskColor(riskLevel)}`}>
+                      <h4 className="font-semibold flex items-center">
+                        <Shield className="mr-2" size={16} />
+                        {riskLevel} RISK STOCKS
+                      </h4>
+                      <p className="text-xs mt-1">
+                        {riskLevel === 'LOW' && 'For portfolio stability and income'}
+                        {riskLevel === 'MODERATE' && 'For balanced growth and stability'}
+                        {riskLevel === 'HIGH' && 'For maximum growth potential'}
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {stocks.map((stock) => (
+                        <InvestmentCard key={stock.symbol} investment={stock} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              <h4 className="text-lg font-semibold mb-4 flex items-center">
+                <Award className="mr-3 text-orange-600" size={20} />
+                Stock Categories for Portfolio Construction
+              </h4>
+              <p className="text-gray-600 text-sm mb-4">
+                Choose from these risk-categorized stocks to build your optimal portfolio:
+              </p>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Low Risk Stocks */}
+                <div className="space-y-4">
+                  <div className="p-3 rounded-lg text-green-700 bg-green-100">
                     <h4 className="font-semibold flex items-center">
                       <Shield className="mr-2" size={16} />
-                      {riskLevel} RISK
+                      LOW RISK STOCKS
                     </h4>
-                    <p className="text-xs mt-1">
-                      {riskLevel === 'LOW' && 'Stable, established companies with predictable returns'}
-                      {riskLevel === 'MODERATE' && 'Balanced risk-reward profile for steady growth'}
-                      {riskLevel === 'HIGH' && 'Higher volatility with potential for significant returns'}
-                    </p>
+                    <p className="text-xs mt-1">For portfolio stability and income generation</p>
                   </div>
-
+                  
                   <div className="space-y-3">
-                    {stocks.map((stock) => (
+                    {[
+                      { symbol: 'AAPL', total_score: 78.5, rating: 'HOLD +', risk_level: 'LOW', explanation: 'Stable tech giant with consistent performance' },
+                      { symbol: 'MSFT', total_score: 82.1, rating: 'BUY', risk_level: 'LOW', explanation: 'Cloud leader with predictable revenue' },
+                      { symbol: 'JNJ', total_score: 75.3, rating: 'HOLD +', risk_level: 'LOW', explanation: 'Healthcare stability with dividend growth' },
+                      { symbol: 'PG', total_score: 71.8, rating: 'HOLD', risk_level: 'LOW', explanation: 'Consumer staple defensive play' },
+                      { symbol: 'KO', total_score: 69.2, rating: 'HOLD', risk_level: 'LOW', explanation: 'Dividend aristocrat with global reach' }
+                    ].map((stock) => (
                       <InvestmentCard key={stock.symbol} investment={stock} />
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            // Loading state or demo data
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Low Risk */}
-              <div className="space-y-4">
-                <div className="p-3 rounded-lg text-green-700 bg-green-100">
-                  <h4 className="font-semibold flex items-center">
-                    <Shield className="mr-2" size={16} />
-                    LOW RISK
-                  </h4>
-                  <p className="text-xs mt-1">Stable, established companies with predictable returns</p>
-                </div>
-                
-                <div className="space-y-3">
-                  {[
-                    { symbol: 'AAPL', total_score: 78.5, rating: 'HOLD +', risk_level: 'LOW', explanation: 'Strong fundamentals with steady dividend growth' },
-                    { symbol: 'MSFT', total_score: 82.1, rating: 'BUY', risk_level: 'LOW', explanation: 'Market leader with stable cloud revenue' },
-                    { symbol: 'JNJ', total_score: 75.3, rating: 'HOLD +', risk_level: 'LOW', explanation: 'Healthcare giant with consistent performance' },
-                    { symbol: 'PG', total_score: 71.8, rating: 'HOLD', risk_level: 'LOW', explanation: 'Consumer staple with reliable dividends' },
-                    { symbol: 'KO', total_score: 69.2, rating: 'HOLD', risk_level: 'LOW', explanation: 'Global brand with defensive characteristics' }
-                  ].map((stock) => (
-                    <InvestmentCard key={stock.symbol} investment={stock} />
-                  ))}
-                </div>
-              </div>
 
-              {/* Moderate Risk */}
-              <div className="space-y-4">
-                <div className="p-3 rounded-lg text-yellow-600 bg-yellow-100">
-                  <h4 className="font-semibold flex items-center">
-                    <Shield className="mr-2" size={16} />
-                    MODERATE RISK
-                  </h4>
-                  <p className="text-xs mt-1">Balanced risk-reward profile for steady growth</p>
+                {/* Moderate Risk Stocks */}
+                <div className="space-y-4">
+                  <div className="p-3 rounded-lg text-yellow-600 bg-yellow-100">
+                    <h4 className="font-semibold flex items-center">
+                      <Shield className="mr-2" size={16} />
+                      MODERATE RISK STOCKS
+                    </h4>
+                    <p className="text-xs mt-1">For balanced growth with manageable volatility</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {[
+                      { symbol: 'GOOGL', total_score: 79.4, rating: 'BUY', risk_level: 'MODERATE', explanation: 'Search leader with AI growth potential' },
+                      { symbol: 'JPM', total_score: 76.8, rating: 'HOLD +', risk_level: 'MODERATE', explanation: 'Banking leader with rate sensitivity' },
+                      { symbol: 'UNH', total_score: 81.2, rating: 'BUY', risk_level: 'MODERATE', explanation: 'Healthcare growth with demographic trends' },
+                      { symbol: 'HD', total_score: 73.9, rating: 'HOLD +', risk_level: 'MODERATE', explanation: 'Home improvement leader with cycles' },
+                      { symbol: 'V', total_score: 77.6, rating: 'HOLD +', risk_level: 'MODERATE', explanation: 'Payment network with digital growth' }
+                    ].map((stock) => (
+                      <InvestmentCard key={stock.symbol} investment={stock} />
+                    ))}
+                  </div>
                 </div>
-                
-                <div className="space-y-3">
-                  {[
-                    { symbol: 'GOOGL', total_score: 79.4, rating: 'BUY', risk_level: 'MODERATE', explanation: 'Search dominance with AI growth potential' },
-                    { symbol: 'JPM', total_score: 76.8, rating: 'HOLD +', risk_level: 'MODERATE', explanation: 'Leading bank with interest rate sensitivity' },
-                    { symbol: 'UNH', total_score: 81.2, rating: 'BUY', risk_level: 'MODERATE', explanation: 'Healthcare leader with growth prospects' },
-                    { symbol: 'HD', total_score: 73.9, rating: 'HOLD +', risk_level: 'MODERATE', explanation: 'Home improvement leader with cyclical exposure' },
-                    { symbol: 'V', total_score: 77.6, rating: 'HOLD +', risk_level: 'MODERATE', explanation: 'Payment network with digital trends benefit' }
-                  ].map((stock) => (
-                    <InvestmentCard key={stock.symbol} investment={stock} />
-                  ))}
-                </div>
-              </div>
 
-              {/* High Risk */}
-              <div className="space-y-4">
-                <div className="p-3 rounded-lg text-red-600 bg-red-100">
-                  <h4 className="font-semibold flex items-center">
-                    <Shield className="mr-2" size={16} />
-                    HIGH RISK
-                  </h4>
-                  <p className="text-xs mt-1">Higher volatility with potential for significant returns</p>
-                </div>
-                
-                <div className="space-y-3">
-                  {[
-                    { symbol: 'NVDA', total_score: 85.7, rating: 'BUY STRONG', risk_level: 'HIGH', explanation: 'AI chip leader with high growth potential and volatility' },
-                    { symbol: 'TSLA', total_score: 71.2, rating: 'HOLD', risk_level: 'HIGH', explanation: 'EV pioneer with significant price swings' },
-                    { symbol: 'AMZN', total_score: 74.8, rating: 'HOLD +', risk_level: 'HIGH', explanation: 'E-commerce and cloud giant with growth focus' },
-                    { symbol: 'META', total_score: 69.5, rating: 'HOLD', risk_level: 'HIGH', explanation: 'Social media leader with metaverse investments' },
-                    { symbol: 'NFLX', total_score: 67.3, rating: 'HOLD -', risk_level: 'HIGH', explanation: 'Streaming leader facing intense competition' }
-                  ].map((stock) => (
-                    <InvestmentCard key={stock.symbol} investment={stock} />
-                  ))}
+                {/* High Risk Stocks */}
+                <div className="space-y-4">
+                  <div className="p-3 rounded-lg text-red-600 bg-red-100">
+                    <h4 className="font-semibold flex items-center">
+                      <Shield className="mr-2" size={16} />
+                      HIGH RISK STOCKS
+                    </h4>
+                    <p className="text-xs mt-1">For aggressive growth with higher volatility</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {[
+                      { symbol: 'NVDA', total_score: 85.7, rating: 'BUY STRONG', risk_level: 'HIGH', explanation: 'AI chip leader with explosive growth potential' },
+                      { symbol: 'TSLA', total_score: 71.2, rating: 'HOLD', risk_level: 'HIGH', explanation: 'EV pioneer with significant volatility' },
+                      { symbol: 'AMZN', total_score: 74.8, rating: 'HOLD +', risk_level: 'HIGH', explanation: 'E-commerce and cloud growth story' },
+                      { symbol: 'META', total_score: 69.5, rating: 'HOLD', risk_level: 'HIGH', explanation: 'Social media transformation and VR bets' },
+                      { symbol: 'NFLX', total_score: 67.3, rating: 'HOLD -', risk_level: 'HIGH', explanation: 'Streaming wars with international growth' }
+                    ].map((stock) => (
+                      <InvestmentCard key={stock.symbol} investment={stock} />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
           )}
-
-          {/* Risk Analysis Info */}
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="text-blue-800 font-semibold mb-2">Risk Analysis Methodology</h4>
-            <div className="text-blue-700 text-sm space-y-1">
-              <p>• <strong>Beta Analysis:</strong> Measures stock volatility relative to market</p>
-              <p>• <strong>Market Cap:</strong> Larger companies typically more stable</p>
-              <p>• <strong>Financial Stability:</strong> Debt ratios, cash flow, profitability</p>
-              <p>• <strong>Historical Volatility:</strong> Price movement patterns over time</p>
-            </div>
-            <div className="mt-3 text-xs text-blue-600">
-              💡 <strong>Investment Tip:</strong> Diversify across risk levels for optimal portfolio balance
-            </div>
-          </div>
         </div>
       )}
     </div>
