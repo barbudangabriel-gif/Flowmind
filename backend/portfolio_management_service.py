@@ -153,6 +153,11 @@ class PortfolioManagementService:
     async def _load_tradestation_positions(self, account_id: str = None):
         """Load real positions from TradeStation API"""
         try:
+            if not self.ts_client:
+                logger.warning("TradeStation client not available, using fallback data")
+                await self._initialize_mock_positions_fallback()
+                return
+                
             if not account_id:
                 # Get first available account
                 accounts_response = await self.ts_client.get_accounts()
