@@ -245,7 +245,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       title: "Portfolios 📊",
       items: [
         { id: 'all-portfolios', label: 'All Portfolios', icon: Briefcase, color: 'from-blue-500 to-cyan-500', badge: '📈', shortLabel: 'All' },
-        { id: 'htech-15t', label: 'HTech 15T', icon: TrendingUp, color: 'from-blue-400 to-blue-500', badge: '-0.07%', shortLabel: 'HT', route: '/portfolios/htech-15t' },
+        { id: 'tradestation-main', label: 'TradeStation Main', icon: Activity, color: 'from-green-500 to-blue-500', badge: 'LIVE', shortLabel: 'TS', route: '/portfolios/tradestation-main' },
         { id: 'create-portfolio', label: 'Create Portfolio', icon: Plus, color: 'from-gray-500 to-gray-600', badge: '➕', shortLabel: 'Create', route: '/portfolios/create' }
       ]
     },
