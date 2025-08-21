@@ -98,7 +98,17 @@ backend:
           agent: "testing"
           comment: "🎉 PORTFOLIO CHARTS SERVICE COMPREHENSIVE TESTING - EXCELLENT RESULTS: Successfully tested all Portfolio Charts endpoints with portfolio 'htech-15t' as specified in review request. ✅ PERFORMANCE ENDPOINT WORKING PERFECTLY: GET /api/portfolio/htech-15t/performance returns complete data structure with 91 performance data points, proper P&L arrays (stocks_pnl, options_pnl, combined_pnl), portfolio summary showing $139,902.60 total value. ✅ FILTER VARIATIONS OPERATIONAL: All filter combinations working - closed/all trades, stocks/options/combined asset types, proper data filtering applied with consistent response structure. ✅ TIMEFRAME SUPPORT COMPLETE: Daily (31 points), Weekly (13 points), Monthly (13 points), All Time (91 points), Custom date ranges (61 points) all generating appropriate data ranges with correct date sequences. ✅ ALLOCATION ENDPOINT FUNCTIONAL: GET /api/portfolio/htech-15t/allocation returns 9 total positions with proper asset type filtering - 5 stocks, 3 options, complete position breakdown with values and types. ✅ DATA STRUCTURE VERIFIED: All required fields present (status, portfolio_id, filters, performance_data, portfolio_summary), P&L data structure complete with date, stocks_pnl, options_pnl, combined_pnl fields. ✅ CUSTOM DATE RANGES: Successfully tested 60-day custom range (2025-06-21 to 2025-08-20) with accurate date filtering and data generation. SUCCESS RATE: 100% (8/8 phases passed). Portfolio Charts service ready for frontend integration with P&L visualization and allocation charts."
 
-  - task: "Smart Rebalancing Agent Service"
+  - task: "Portfolio Management Service API"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py, /app/backend/portfolio_management_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "unknown"
+          agent: "main"
+          comment: "Portfolio Management Service API endpoints implemented with comprehensive functionality. Added 7 endpoints: get all portfolios, get portfolio positions, move position (full/partial), get available portfolios for move, create custom portfolio, aggregate view, and move history. Integrated PortfolioManagementService with 4 default portfolios (TradeStation Main, Long Term, Medium Term, Short Term) and 6 mock positions with stocks and options. Ready for backend testing."
     implemented: true
     working: true
     file: "/app/backend/smart_rebalancing_service.py"
