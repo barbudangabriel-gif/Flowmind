@@ -44,6 +44,9 @@ from options_calculator import options_engine, StrategyConfig, StrategyAnalysis
 from portfolio_charts_service import PortfolioChartsService
 from smart_rebalancing_service import SmartRebalancingService
 
+# Portfolio Management
+from portfolio_management_service import PortfolioManagementService
+
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
