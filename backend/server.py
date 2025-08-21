@@ -4356,6 +4356,9 @@ async def run_comprehensive_rebalancing_analysis(request: RebalancingRequest):
 async def get_all_portfolios():
     """Get all portfolios with their current totals"""
     try:
+        # Ensure service is initialized with TradeStation data
+        await initialize_portfolio_service()
+        
         portfolios = await portfolio_management_service.get_all_portfolios()
         
         portfolios_data = []
