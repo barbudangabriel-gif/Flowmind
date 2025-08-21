@@ -134,69 +134,6 @@ const IndividualPortfolio = () => {
         } catch (error) {
           console.error('Error loading real TradeStation data:', error);
           setError(error.message);
-          
-          // Add some mock data for testing the grouped structure
-          const mockPositions = [
-            {
-              id: 'mock-aapl-stock',
-              symbol: 'AAPL',
-              quantity: 100,
-              avg_cost: 185.50,
-              current_price: 189.25,
-              market_value: 18925,
-              unrealized_pnl: 375,
-              unrealized_pnl_percent: 2.02,
-              portfolio_id: 'tradestation-main',
-              position_type: 'stock',
-              metadata: { asset_type: 'STOCK', source: 'mock' }
-            },
-            {
-              id: 'mock-aapl-call',
-              symbol: 'AAPL',
-              quantity: 5,
-              avg_cost: 8.50,
-              current_price: 12.75,
-              market_value: 6375,
-              unrealized_pnl: 2125,
-              unrealized_pnl_percent: 50.0,
-              portfolio_id: 'tradestation-main',
-              position_type: 'option',
-              metadata: { 
-                asset_type: 'OPTION', 
-                option_type: 'CALL',
-                strike_price: 190,
-                expiration_date: '2024-12-20',
-                source: 'mock' 
-              }
-            },
-            {
-              id: 'mock-tsla-stock',
-              symbol: 'TSLA',
-              quantity: 50,
-              avg_cost: 235.60,
-              current_price: 248.45,
-              market_value: 12422.50,
-              unrealized_pnl: 642.50,
-              unrealized_pnl_percent: 5.45,
-              portfolio_id: 'tradestation-main',
-              position_type: 'stock',
-              metadata: { asset_type: 'STOCK', source: 'mock' }
-            }
-          ];
-          
-          setPositions(mockPositions);
-          const totalValue = mockPositions.reduce((sum, pos) => sum + pos.market_value, 0);
-          const totalPnl = mockPositions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
-          
-          setCurrentPortfolio({
-            id: 'tradestation-main',
-            name: 'TradeStation Main',
-            total_value: totalValue,
-            total_pnl: totalPnl,
-            positions_count: mockPositions.length,
-            description: 'Mock data for testing grouped structure'
-          });
-          
         } finally {
           setLoading(false);
         }
