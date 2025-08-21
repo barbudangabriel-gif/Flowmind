@@ -239,12 +239,13 @@ class PortfolioManagementService:
                         'underlying_symbol': ts_pos.get('underlying_symbol', None)
                     })
                 
+                # Create Position object with REAL TradeStation data
                 position = Position(
                     id=position_id,
-                    symbol=getattr(ts_pos, 'symbol', 'UNKNOWN'),
-                    quantity=getattr(ts_pos, 'quantity', 0),
-                    avg_cost=getattr(ts_pos, 'average_price', 0),
-                    current_price=getattr(ts_pos, 'mark_price', 0) or getattr(ts_pos, 'last_price', 0),
+                    symbol=ts_pos.get('symbol', 'UNKNOWN'),
+                    quantity=quantity,
+                    avg_cost=avg_cost,
+                    current_price=current_price,
                     position_type=position_type,
                     market_value=market_value,
                     unrealized_pnl=unrealized_pnl,
@@ -255,11 +256,19 @@ class PortfolioManagementService:
                 )
                 
                 self.positions[position_id] = position
+                total_value += market_value
+                total_pnl += unrealized_pnl
                 logger.debug(f"✅ Added REAL position: {position.symbol} ({position.quantity} {position.position_type})")
             
             # Update TradeStation portfolio totals with REAL data
-            await self._update_portfolio_totals('tradestation-main')
+            if 'tradestation-main' in self.portfolios:
+                self.portfolios['tradestation-main'].total_value = total_value
+                self.portfolios['tradestation-main'].total_pnl = total_pnl
+                self.portfolios['tradestation-main'].positions_count = len(ts_positions)
+                self.portfolios['tradestation-main'].last_updated = datetime.now()
+                
             logger.info(f"🎉 Successfully loaded {len(ts_positions)} REAL TradeStation positions - NO MOCK DATA USED")
+            logger.info(f"💰 Portfolio totals: ${total_value:,.2f} value, ${total_pnl:,.2f} P&L")
             
         except Exception as e:
             logger.error(f"❌ CRITICAL ERROR loading TradeStation positions: {str(e)}")
