@@ -70,20 +70,18 @@ const IndividualPortfolio = () => {
             const positionsResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/positions`);
             const positionsData = await positionsResponse.json();
             
-            // Get cash balance from account balances API - specifically "Cash available to withdraw"
+            // Get cash balance from account balances API - using CashBalance field
             try {
               const balancesResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/balances`);
               const balancesData = await balancesResponse.json();
               
               if (balancesData.status === 'success' && balancesData.balances) {
-                // Extract "Cash available to withdraw" specifically
-                const cashAvailable = balancesData.balances['Cash available to withdraw'] || 
-                                    balancesData.balances.CashAvailableToWithdraw || 
+                // Extract CashBalance - this is the cash available to withdraw
+                const cashAvailable = balancesData.balances.Balances?.[0]?.CashBalance || 
                                     balancesData.balances.CashBalance || 
-                                    balancesData.balances.TotalCash || 
                                     0;
                 setCashBalance(parseFloat(cashAvailable));
-                console.log('✅ Loaded cash available to withdraw from TradeStation:', cashAvailable);
+                console.log('✅ Loaded CashBalance (available to withdraw) from TradeStation:', cashAvailable);
               }
             } catch (balanceError) {
               console.warn('⚠️ Could not fetch cash balance:', balanceError.message);
