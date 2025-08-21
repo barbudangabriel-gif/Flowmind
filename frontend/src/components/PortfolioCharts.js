@@ -593,6 +593,7 @@ const PortfolioCharts = () => {
                     tick={{ fontSize: 12, fill: '#6B7280' }}
                   />
                   <YAxis 
+                    orientation="right"
                     dataKey="value" 
                     name="Value" 
                     tick={{ fontSize: 12, fill: '#6B7280' }}
