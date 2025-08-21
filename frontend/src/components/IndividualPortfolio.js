@@ -178,6 +178,18 @@ const IndividualPortfolio = () => {
     }
   };
 
+  // Default to TradeStation Main if no portfolio found
+  const displayPortfolio = currentPortfolio || {
+    name: 'TradeStation Main',
+    total_value: 0,
+    total_pnl: 0,
+    positions_count: 0
+  };
+
+  const changePercent = displayPortfolio.total_value > 0 
+    ? (displayPortfolio.total_pnl / (displayPortfolio.total_value - displayPortfolio.total_pnl)) * 100 
+    : 0;
+
   // Calculate portfolio statistics for cards
   const portfolioStats = React.useMemo(() => {
     if (!positions || positions.length === 0) {
@@ -210,18 +222,6 @@ const IndividualPortfolio = () => {
       cashBalance
     };
   }, [positions, displayPortfolio?.total_value]);
-
-  // Default to TradeStation Main if no portfolio found
-  const displayPortfolio = currentPortfolio || {
-    name: 'TradeStation Main',
-    total_value: 0,
-    total_pnl: 0,
-    positions_count: 0
-  };
-
-  const changePercent = displayPortfolio.total_value > 0 
-    ? (displayPortfolio.total_pnl / (displayPortfolio.total_value - displayPortfolio.total_pnl)) * 100 
-    : 0;
 
   const getRatingColor = (rating) => {
     if (rating >= 4) return 'bg-green-500 text-white';
