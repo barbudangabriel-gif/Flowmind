@@ -30,20 +30,32 @@ const TradeStationMainPortfolio = () => {
       
       // Get accounts first
       const accountsResponse = await fetch(`${backendUrl}/api/tradestation/accounts`);
-      if (!accountsResponse.ok) throw new Error('Failed to fetch accounts');
+      if (!accountsResponse.ok) throw new Error(`Failed to fetch accounts: ${accountsResponse.status}`);
       const accountsData = await accountsResponse.json();
       
+      console.log('🔍 Accounts response:', accountsData);
+      
       // Find the margin account (usually the main trading account)
-      const mainAccount = accountsData.accounts?.find(acc => acc.Type === 'Margin') || accountsData.accounts?.[0];
+      // The accounts are directly in the response, not under .accounts
+      const accounts = accountsData.accounts || accountsData;
+      const mainAccount = accounts?.find?.(acc => acc.Type === 'Margin') || accounts?.[0];
       if (!mainAccount) throw new Error('No TradeStation account found');
+      
+      console.log('🎯 Using account:', mainAccount.AccountID);
       
       // Get positions for the main account
       const positionsResponse = await fetch(`${backendUrl}/api/tradestation/accounts/${mainAccount.AccountID}/positions`);
-      if (!positionsResponse.ok) throw new Error('Failed to fetch positions');
+      if (!positionsResponse.ok) throw new Error(`Failed to fetch positions: ${positionsResponse.status}`);
       const positionsData = await positionsResponse.json();
       
+      console.log('🔍 Positions response structure:', {
+        hasData: !!positionsData.data,
+        positionsCount: positionsData.data?.length || 0,
+        keys: Object.keys(positionsData)
+      });
+      
       // Calculate portfolio totals from real TradeStation data
-      const positions = positionsData.data || [];
+      const positions = positionsData.data || positionsData;
       let totalMarketValue = 0;
       let totalUnrealizedPnL = 0;
       
