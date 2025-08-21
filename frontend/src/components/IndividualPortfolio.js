@@ -455,6 +455,9 @@ const IndividualPortfolio = () => {
               <tbody>
                 {positions.map((position, index) => {
                   const pnlPercent = position.unrealized_pnl_percent || 0;
+                  const accountPercent = displayPortfolio?.total_value > 0 
+                    ? (position.market_value / displayPortfolio.total_value) * 100 
+                    : 0;
                   
                   return (
                     <tr 
@@ -479,6 +482,7 @@ const IndividualPortfolio = () => {
                       <td className="text-right py-3 px-2 text-slate-200">${position.avg_cost.toFixed(2)}</td>
                       <td className="text-right py-3 px-2 font-medium text-slate-200">${position.current_price.toFixed(2)}</td>
                       <td className="text-right py-3 px-2 font-medium text-slate-200">${position.market_value.toFixed(2)}</td>
+                      <td className="text-right py-3 px-2 font-medium text-blue-400">{accountPercent.toFixed(2)}%</td>
                       <td className={`text-right py-3 px-2 font-medium ${getChangeColor(position.unrealized_pnl)}`}>
                         {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
                       </td>
