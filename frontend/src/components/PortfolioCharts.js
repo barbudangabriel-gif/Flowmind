@@ -38,7 +38,8 @@ const PortfolioCharts = () => {
   const navigate = useNavigate();
   
   // State management
-  const [activeFilter, setActiveFilter] = useState('closed'); // 'closed' | 'all'
+  const [activeFilter, setActiveFilter] = useState('closed'); // 'open' | 'closed' | 'all'
+  const [activeTab, setActiveTab] = useState('performance'); // 'performance' | 'tradelist'
   const [assetFilter, setAssetFilter] = useState('combined'); // 'stocks' | 'options' | 'combined'
   const [allocationView, setAllocationView] = useState('stocks'); // 'stocks' | 'options' for pie chart
   const [timeFilter, setTimeFilter] = useState('all'); // 'daily' | 'weekly' | 'monthly' | 'all' | 'custom'
