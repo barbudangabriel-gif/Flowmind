@@ -78,6 +78,21 @@ portfolio_charts_service = PortfolioChartsService()
 smart_rebalancing_service = SmartRebalancingService()
 portfolio_management_service = PortfolioManagementService()
 
+# Global flag to track initialization
+portfolio_service_initialized = False
+
+async def initialize_portfolio_service():
+    """Initialize portfolio management service with TradeStation data"""
+    global portfolio_service_initialized
+    if not portfolio_service_initialized:
+        try:
+            await portfolio_management_service.initialize()
+            portfolio_service_initialized = True
+            logger.info("Portfolio management service initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize portfolio management service: {str(e)}")
+            portfolio_service_initialized = False
+
 # Create the main app without a prefix
 app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
 
