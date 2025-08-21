@@ -116,7 +116,8 @@ class PortfolioManagementTester:
             print("❌ Get positions endpoint failed")
             return False
         
-        positions = positions_data if isinstance(positions_data, list) else []
+        # Extract positions from nested response
+        positions = positions_data.get('positions', []) if isinstance(positions_data, dict) else []
         print(f"📊 Found {len(positions)} positions in TradeStation Main")
         
         # Verify we have 6 mock positions
