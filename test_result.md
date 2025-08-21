@@ -93,6 +93,18 @@ backend:
           agent: "testing"
           comment: "🎯 STRATEGY ENGINE COMPREHENSIVE TESTING - OUTSTANDING RESULTS: Tested multi-leg strategy calculations with CRCL parameters as requested in review. ✅ BULL CALL SPREAD WORKING: 2-leg strategy with Max Profit $329.87, Max Loss -$666.03, Breakeven $149.54. Proper leg structure with long and short calls. ✅ COVERED CALL WORKING: 1-leg strategy (stock ownership assumed) with Max Profit $113.76, Max Loss -$6381.36, Breakeven $149.49. ✅ P&L ANALYSIS ACCURATE: Complete P&L arrays generated for interactive charting with 100 price points covering ±50% price range. ✅ BREAKEVEN CALCULATIONS: Precise breakeven point calculations using linear interpolation for zero crossings. ✅ STRATEGY METADATA: Complete strategy descriptions, leg configurations, and risk/reward profiles. ✅ MULTI-LEG SUPPORT: Successfully handles complex strategies with multiple option legs. SUCCESS RATE: 100% for strategy calculations. Ready to support advanced options strategies with accurate P&L analysis."
 
+  - task: "TradeStation Live Portfolio API endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "🎯 TRADESTATION LIVE PORTFOLIO API ENDPOINTS TESTING COMPLETE - EXCELLENT RESULTS: Comprehensive testing of TradeStation Live Portfolio API endpoints as requested in review. ✅ GET /api/tradestation/accounts WORKING PERFECTLY: Returns proper account data with 2 accounts (11775499 - Margin, 210MJP11 - Futures). Authentication status confirmed as AUTHENTICATED in LIVE environment. ✅ GET /api/tradestation/accounts/{account_id}/positions-simple WORKING: Endpoint responds correctly but data structure analysis reveals critical frontend integration issue. ✅ GET /api/tradestation/accounts/{account_id}/positions WORKING: Full positions endpoint provides comprehensive position data with 84 positions (19 stocks, 65 options). ✅ AUTHENTICATION VERIFIED: TradeStation OAuth authentication working correctly with proper credentials configured. ✅ DATA STRUCTURE ANALYSIS: Backend returns data nested under 'data' field but frontend expects root level access - this explains the loading spinner issue. ✅ DROPDOWN FUNCTIONALITY CONFIRMED: 19 symbols have multiple positions suitable for dropdown grouping including user-reported symbols (IBM, AAPL, TSLA). ✅ PERFORMANCE EXCELLENT: Average response time 0.38-0.93s. SUCCESS RATE: 100% (5/5 phases passed). CRITICAL FINDING: Frontend needs to access response.data.* instead of response.* to resolve loading spinner issue."
+
   - task: "Portfolio Charts Service"
     implemented: true
     working: true
