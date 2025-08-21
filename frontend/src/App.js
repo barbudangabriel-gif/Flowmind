@@ -7049,6 +7049,16 @@ function AppContent() {
               } 
             />
 
+            {/* Portfolio Trade List Route - MUST be before :portfolioId route */}
+            <Route 
+              path="/portfolios/:portfolioId/tradelist" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolio Trade List" />}>
+                  <PortfolioTradeList />
+                </Suspense>
+              } 
+            />
+
             {/* Individual Portfolio Routes - MUST be after specific routes */}
             <Route 
               path="/portfolios/view/:portfolioId" 
