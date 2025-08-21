@@ -326,6 +326,15 @@ class PortfolioManagementService:
 
     async def get_portfolio_positions(self, portfolio_id: str) -> List[Position]:
         """Get all positions for a specific portfolio"""
+        # If requesting TradeStation main portfolio, try to load fresh data
+        if portfolio_id == 'tradestation-main':
+            try:
+                await self._load_tradestation_positions()
+                logger.info("Refreshed TradeStation positions")
+            except Exception as e:
+                logger.error(f"Failed to refresh TradeStation positions: {str(e)}")
+                # Continue with existing/cached data
+        
         positions = [pos for pos in self.positions.values() if pos.portfolio_id == portfolio_id]
         return sorted(positions, key=lambda x: x.market_value, reverse=True)
 
