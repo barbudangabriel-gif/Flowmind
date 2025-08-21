@@ -195,16 +195,7 @@ class PortfolioManagementService:
             ts_positions_response = positions_response.json()
             
             # Extract positions from response structure
-            if hasattr(ts_positions_response, 'positions'):
-                ts_positions = ts_positions_response.positions
-            elif isinstance(ts_positions_response, dict) and 'positions' in ts_positions_response:
-                ts_positions = ts_positions_response['positions']
-            elif isinstance(ts_positions_response, list):
-                ts_positions = ts_positions_response
-            else:
-                logger.error(f"❌ Unexpected TradeStation response structure: {type(ts_positions_response)}")
-                raise Exception("Invalid TradeStation API response structure")
-            
+            ts_positions = ts_positions_response.get('positions', [])
             logger.info(f"✅ Retrieved {len(ts_positions)} REAL positions from TradeStation API")
             
             # Clear existing positions in TradeStation Main portfolio
@@ -214,24 +205,27 @@ class PortfolioManagementService:
                 del self.positions[pos_id]
             
             # Convert TradeStation positions to our format - REAL DATA ONLY
+            total_value = 0
+            total_pnl = 0
+            
             for ts_pos in ts_positions:
                 position_id = str(uuid.uuid4())
                 
-                # Use real TradeStation data fields
-                market_value = abs(getattr(ts_pos, 'market_value', 0) or 
-                                 (getattr(ts_pos, 'quantity', 0) * getattr(ts_pos, 'mark_price', 0)))
-                cost_basis = abs(getattr(ts_pos, 'quantity', 0) * getattr(ts_pos, 'average_price', 0))
-                unrealized_pnl = getattr(ts_pos, 'unrealized_pnl', market_value - cost_basis)
+                # Use real TradeStation data fields (dictionary format from API)
+                quantity = ts_pos.get('quantity', 0)
+                current_price = ts_pos.get('mark_price', ts_pos.get('current_price', 0))
+                avg_cost = ts_pos.get('average_price', ts_pos.get('avg_cost', 0))
+                market_value = ts_pos.get('market_value', abs(quantity * current_price)) if ts_pos.get('market_value') else abs(quantity * current_price)
+                unrealized_pnl = ts_pos.get('unrealized_pnl', 0)
                 
                 # Determine position type from TradeStation data
-                asset_type = getattr(ts_pos, 'asset_type', 'UNKNOWN')
+                asset_type = ts_pos.get('asset_type', 'UNKNOWN')
                 position_type = 'stock' if asset_type == 'STOCK' else 'option' if asset_type in ['STOCKOPTION', 'OPTION'] else 'unknown'
                 
                 # Create metadata with REAL TradeStation source
                 metadata = {
                     'asset_type': asset_type,
                     'account_id': account_id,
-                    'ts_position_id': getattr(ts_pos, 'position_id', None),
                     'source': 'tradestation_live_api',  # MARK AS REAL DATA
                     'last_sync': datetime.now().isoformat()
                 }
@@ -239,10 +233,10 @@ class PortfolioManagementService:
                 # Add option-specific metadata if available
                 if position_type == 'option':
                     metadata.update({
-                        'option_type': getattr(ts_pos, 'option_type', 'Unknown'),
-                        'strike': getattr(ts_pos, 'strike_price', None),
-                        'expiry': getattr(ts_pos, 'expiry_date', None),
-                        'underlying': getattr(ts_pos, 'underlying_symbol', None)
+                        'option_type': ts_pos.get('option_type', 'Unknown'),
+                        'strike_price': ts_pos.get('strike_price', None),
+                        'expiration_date': ts_pos.get('expiration_date', None),
+                        'underlying_symbol': ts_pos.get('underlying_symbol', None)
                     })
                 
                 position = Position(
