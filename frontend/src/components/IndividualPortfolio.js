@@ -124,7 +124,7 @@ const IndividualPortfolio = () => {
       
       loadOtherPortfolioData();
     }
-  }, [portfolioId, portfolios]);
+  }, [portfolioId]); // Only re-run when portfolioId changes
 
   // Handle right-click context menu
   const handleContextMenu = (event, position) => {
