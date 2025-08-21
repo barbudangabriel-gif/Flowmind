@@ -5048,12 +5048,14 @@ const TradeStationPortfolio = () => {
       }
       
       const data = await response.json();
-      console.log('🔍 DEBUG: Portfolio data received, positions:', data.data?.positions?.length || 0);
+      console.log('🔍 DEBUG: Portfolio data received:', data);
       
       if (data.data) {
         setPortfolioData(data.data);
         setError(null);
         console.log('🔍 DEBUG: Real TradeStation data loaded successfully');
+        console.log('🔍 DEBUG: Positions count:', data.data.positions?.length || 0);
+        console.log('🔍 DEBUG: Portfolio metrics:', data.data.portfolio_metrics);
       } else {
         throw new Error('Invalid data structure received');
       }
