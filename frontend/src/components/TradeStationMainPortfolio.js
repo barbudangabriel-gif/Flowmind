@@ -63,11 +63,13 @@ const TradeStationMainPortfolio = () => {
       
       console.log('🔍 Raw positions response:', positionsData);
       console.log('🔍 Positions response keys:', Object.keys(positionsData || {}));
-      console.log('🔍 Positions data field:', positionsData.data);
+      console.log('🔍 Positions array:', positionsData.positions);
       
       // Calculate portfolio totals from real TradeStation data
       let positions;
-      if (positionsData.data && Array.isArray(positionsData.data)) {
+      if (positionsData.positions && Array.isArray(positionsData.positions)) {
+        positions = positionsData.positions;
+      } else if (positionsData.data && Array.isArray(positionsData.data)) {
         positions = positionsData.data;
       } else if (Array.isArray(positionsData)) {
         positions = positionsData;
