@@ -418,8 +418,8 @@ class PortfolioManagementService:
                 self.positions[new_position.id] = new_position
 
             # Update portfolio totals
-            self._update_portfolio_totals(from_portfolio_id)
-            self._update_portfolio_totals(to_portfolio_id)
+            await self._update_portfolio_totals(from_portfolio_id)
+            await self._update_portfolio_totals(to_portfolio_id)
 
             return {
                 'success': True,
