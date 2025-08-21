@@ -310,16 +310,6 @@ const PortfolioCharts = () => {
                   Open
                 </button>
                 <button
-                  onClick={() => setActiveFilter('open')}
-                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                    activeFilter === 'open'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Open
-                </button>
-                <button
                   onClick={() => setActiveFilter('closed')}
                   className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
                     activeFilter === 'closed'
@@ -435,6 +425,37 @@ const PortfolioCharts = () => {
           </div>
         )}
 
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-xl shadow-sm mb-6">
+          <div className="border-b border-gray-200">
+            <div className="flex space-x-8 px-6">
+              <button
+                onClick={() => setActiveTab('performance')}
+                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'performance'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📊 <span>Performance Charts</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('tradelist')}
+                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'tradelist'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📋 <span>Trade List</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Performance Charts Tab */}
+        {activeTab === 'performance' && (
+          <div>
         {/* Main Chart Area */}
         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
           <div className="flex items-center justify-between mb-6">
@@ -729,100 +750,6 @@ const PortfolioCharts = () => {
               </div>
             </div>
           </div>
-        )}
-          
-        {/* Trade List Tab */}
-        {activeTab === 'tradelist' && (
-          <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Trade List</h2>
-            
-            {/* Trade List Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Symbol</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Type</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Quantity</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Entry Price</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Current Price</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">P&L</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">P&L %</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Sample trade data */}
-                  <tr className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium">AAPL</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Stock</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Open</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">100</td>
-                    <td className="py-3 px-4 text-right">$185.50</td>
-                    <td className="py-3 px-4 text-right">$189.25</td>
-                    <td className="py-3 px-4 text-right text-green-600">+$375.00</td>
-                    <td className="py-3 px-4 text-right text-green-600">+2.02%</td>
-                    <td className="py-3 px-4">2024-12-20</td>
-                  </tr>
-                  
-                  <tr className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium">TSLA</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Call</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Open</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">10</td>
-                    <td className="py-3 px-4 text-right">$12.50</td>
-                    <td className="py-3 px-4 text-right">$8.75</td>
-                    <td className="py-3 px-4 text-right text-red-600">-$3,750.00</td>
-                    <td className="py-3 px-4 text-right text-red-600">-30.00%</td>
-                    <td className="py-3 px-4">2024-12-15</td>
-                  </tr>
-                  
-                  <tr className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium">MSFT</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">Stock</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">Closed</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">50</td>
-                    <td className="py-3 px-4 text-right">$385.20</td>
-                    <td className="py-3 px-4 text-right">$392.45</td>
-                    <td className="py-3 px-4 text-right text-green-600">+$362.50</td>
-                    <td className="py-3 px-4 text-right text-green-600">+1.88%</td>
-                    <td className="py-3 px-4">2024-12-18</td>
-                  </tr>
-                  
-                  <tr className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium">SPY</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded">Put</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Open</span>
-                    </td>
-                    <td className="py-3 px-4 text-right">5</td>
-                    <td className="py-3 px-4 text-right">$4.25</td>
-                    <td className="py-3 px-4 text-right">$2.10</td>
-                    <td className="py-3 px-4 text-right text-red-600">-$1,075.00</td>
-                    <td className="py-3 px-4 text-right text-red-600">-50.59%</td>
-                    <td className="py-3 px-4">2024-12-10</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
         </div>
       </div>
     </div>
