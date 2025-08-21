@@ -33,13 +33,26 @@ const TradeStationMainPortfolio = () => {
       if (!accountsResponse.ok) throw new Error(`Failed to fetch accounts: ${accountsResponse.status}`);
       const accountsData = await accountsResponse.json();
       
-      console.log('🔍 Accounts response:', accountsData);
+      console.log('🔍 Raw accounts response:', accountsData);
       
       // Find the margin account (usually the main trading account)
       // The accounts are directly in the response, not under .accounts
       const accounts = accountsData.accounts || accountsData;
-      const mainAccount = accounts?.find?.(acc => acc.Type === 'Margin') || accounts?.[0];
-      if (!mainAccount) throw new Error('No TradeStation account found');
+      console.log('🔍 Parsed accounts:', accounts);
+      
+      let mainAccount;
+      if (Array.isArray(accounts)) {
+        mainAccount = accounts.find(acc => acc.Type === 'Margin') || accounts[0];
+      } else if (accounts && typeof accounts === 'object') {
+        // If accounts is an object, check if it has account properties
+        mainAccount = accounts;
+      }
+      
+      console.log('🎯 Selected account:', mainAccount);
+      
+      if (!mainAccount || !mainAccount.AccountID) {
+        throw new Error(`No valid TradeStation account found. Accounts structure: ${JSON.stringify(accounts)}`);
+      }
       
       console.log('🎯 Using account:', mainAccount.AccountID);
       
