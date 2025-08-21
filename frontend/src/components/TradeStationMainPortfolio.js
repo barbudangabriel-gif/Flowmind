@@ -55,13 +55,26 @@ const TradeStationMainPortfolio = () => {
       });
       
       // Calculate portfolio totals from real TradeStation data
-      const positions = positionsData.data || positionsData;
+      const positions = positionsData.data || positionsData || [];
+      
+      // Ensure positions is an array
+      const positionsArray = Array.isArray(positions) ? positions : [];
+      
+      console.log('🔍 Positions array:', {
+        isArray: Array.isArray(positionsArray),
+        count: positionsArray.length,
+        sample: positionsArray[0]
+      });
+      
       let totalMarketValue = 0;
       let totalUnrealizedPnL = 0;
       
-      positions.forEach(position => {
-        totalMarketValue += Math.abs(position.quantity * position.mark_price);
-        totalUnrealizedPnL += position.unrealized_pnl || 0;
+      positionsArray.forEach(position => {
+        const marketValue = Math.abs(position.quantity * position.mark_price);
+        const unrealizedPnL = position.unrealized_pnl || 0;
+        
+        totalMarketValue += marketValue;
+        totalUnrealizedPnL += unrealizedPnL;
       });
       
       // Calculate percentage change
@@ -69,8 +82,17 @@ const TradeStationMainPortfolio = () => {
       const percentChange = costBasis !== 0 ? (totalUnrealizedPnL / costBasis) * 100 : 0;
       
       // Group positions by asset type
-      const stocks = positions.filter(p => p.asset_type === 'STOCK');
-      const options = positions.filter(p => p.asset_type === 'STOCKOPTION');
+      const stocks = positionsArray.filter(p => p.asset_type === 'STOCK');
+      const options = positionsArray.filter(p => p.asset_type === 'STOCKOPTION');
+      
+      console.log('🎯 Portfolio calculated:', {
+        totalMarketValue,
+        totalUnrealizedPnL,
+        percentChange,
+        totalPositions: positionsArray.length,
+        stocks: stocks.length,
+        options: options.length
+      });
       
       setPortfolioData({
         account: mainAccount,
