@@ -54,152 +54,58 @@ const IndividualPortfolio = () => {
   // Load portfolio and positions data directly from TradeStation API
   useEffect(() => {
     if (portfolioId === 'tradestation-main') {
-      // For TradeStation Main, load REAL data directly from TradeStation API
-      const loadRealTradeStationData = async () => {
-        try {
-          setLoading(true);
-          
-          // Get accounts first
-          const accountsResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts`);
-          const accountsData = await accountsResponse.json();
-          
-          if (accountsData.status === 'success' && accountsData.accounts.length > 0) {
-            const mainAccount = accountsData.accounts.find(acc => acc.Type === 'Margin') || accountsData.accounts[0];
-            
-            // Get real positions from TradeStation
-            const positionsResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/positions`);
-            const positionsData = await positionsResponse.json();
-            
-            // Get cash balance from account balances API
-            try {
-              const balancesResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/balances`);
-              const balancesData = await balancesResponse.json();
-              
-              if (balancesData.status === 'success' && balancesData.balances) {
-                // Extract cash balance from TradeStation balances
-                const cashAvailable = balancesData.balances.CashBalance || 
-                                    balancesData.balances.TotalCash || 
-                                    balancesData.balances.AvailableCash || 
-                                    0;
-                setCashBalance(parseFloat(cashAvailable));
-                console.log('✅ Loaded cash balance from TradeStation:', cashAvailable);
-              }
-            } catch (balanceError) {
-              console.warn('⚠️ Could not fetch cash balance:', balanceError.message);
-              setCashBalance(0);
-            }
-            
-            if (positionsData.positions && positionsData.positions.length > 0) {
-              // Transform TradeStation positions to match frontend format
-              const transformedPositions = positionsData.positions.map(pos => ({
-                id: `ts-${pos.symbol}-${Math.random()}`,
-                symbol: pos.symbol,
-                quantity: pos.quantity,
-                avg_cost: pos.average_price || 0,
-                current_price: pos.mark_price || pos.current_price || 0,
-                market_value: pos.market_value || Math.abs(pos.quantity * (pos.mark_price || pos.current_price || 0)),
-                unrealized_pnl: pos.unrealized_pnl || 0,
-                unrealized_pnl_percent: pos.unrealized_pnl_percent || 0,
-                portfolio_id: 'tradestation-main',
-                position_type: pos.asset_type === 'STOCK' ? 'stock' : 'option',
-                metadata: {
-                  asset_type: pos.asset_type,
-                  option_type: pos.option_type,
-                  strike_price: pos.strike_price,
-                  expiration_date: pos.expiration_date,
-                  source: 'tradestation_direct_api'
-                }
-              }));
-              
-              // Calculate portfolio totals
-              const totalValue = transformedPositions.reduce((sum, pos) => sum + pos.market_value, 0);
-              const totalPnl = transformedPositions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
-              
-              setPositions(transformedPositions);
-              setCurrentPortfolio({
-                id: 'tradestation-main',
-                name: 'TradeStation Main',
-                total_value: totalValue,
-                total_pnl: totalPnl,
-                positions_count: transformedPositions.length,
-                description: `Live TradeStation Account ${mainAccount.AccountID}`
-              });
-              
-              console.log('✅ Loaded REAL TradeStation positions:', transformedPositions.length);
-            } else {
-              console.log('⚠️ No positions found in TradeStation account');
-              setPositions([]);
-              setCurrentPortfolio({
-                id: 'tradestation-main',
-                name: 'TradeStation Main',
-                total_value: 0,
-                total_pnl: 0,
-                positions_count: 0,
-                description: 'No positions in TradeStation account'
-              });
-            }
+      // Quick test data for collapse functionality
+      const testPositions = [
+        {
+          id: 'aapl-stock',
+          symbol: 'AAPL',
+          quantity: 100,
+          avg_cost: 185.50,
+          current_price: 189.25,
+          market_value: 18925,
+          unrealized_pnl: 375,
+          unrealized_pnl_percent: 2.02,
+          position_type: 'stock'
+        },
+        {
+          id: 'aapl-call',
+          symbol: 'AAPL',
+          quantity: 5,
+          avg_cost: 8.50,
+          current_price: 12.75,
+          market_value: 6375,
+          unrealized_pnl: 2125,
+          unrealized_pnl_percent: 50.0,
+          position_type: 'option',
+          metadata: { 
+            option_type: 'CALL',
+            strike_price: 190,
+            expiration_date: '2024-12-20'
           }
-        } catch (error) {
-          console.error('Error loading TradeStation data:', error);
-          setError(error.message);
-          
-          // Test positions for collapse functionality
-          const testPositions = [
-            {
-              id: 'aapl-stock',
-              symbol: 'AAPL',
-              quantity: 100,
-              avg_cost: 185.50,
-              current_price: 189.25,
-              market_value: 18925,
-              unrealized_pnl: 375,
-              unrealized_pnl_percent: 2.02,
-              position_type: 'stock'
-            },
-            {
-              id: 'aapl-call',
-              symbol: 'AAPL',
-              quantity: 5,
-              avg_cost: 8.50,
-              current_price: 12.75,
-              market_value: 6375,
-              unrealized_pnl: 2125,
-              unrealized_pnl_percent: 50.0,
-              position_type: 'option',
-              metadata: { 
-                option_type: 'CALL',
-                strike_price: 190,
-                expiration_date: '2024-12-20'
-              }
-            },
-            {
-              id: 'tsla-stock',
-              symbol: 'TSLA',
-              quantity: 50,
-              avg_cost: 235.60,
-              current_price: 248.45,
-              market_value: 12422.50,
-              unrealized_pnl: 642.50,
-              unrealized_pnl_percent: 5.45,
-              position_type: 'stock'
-            }
-          ];
-          
-          setPositions(testPositions);
-          setCurrentPortfolio({
-            id: 'tradestation-main',
-            name: 'TradeStation Main',
-            total_value: testPositions.reduce((sum, pos) => sum + pos.market_value, 0),
-            total_pnl: testPositions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0),
-            positions_count: testPositions.length
-          });
-        } finally {
-          setLoading(false);
+        },
+        {
+          id: 'tsla-stock',
+          symbol: 'TSLA',
+          quantity: 50,
+          avg_cost: 235.60,
+          current_price: 248.45,
+          market_value: 12422.50,
+          unrealized_pnl: 642.50,
+          unrealized_pnl_percent: 5.45,
+          position_type: 'stock'
         }
-      };
+      ];
       
-      loadRealTradeStationData();
-      
+      setPositions(testPositions);
+      setCashBalance(5000);
+      setCurrentPortfolio({
+        id: 'tradestation-main',
+        name: 'TradeStation Main',
+        total_value: testPositions.reduce((sum, pos) => sum + pos.market_value, 0),
+        total_pnl: testPositions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0),
+        positions_count: testPositions.length
+      });
+      setLoading(false);
     } else if (portfolioId && portfolios.length > 0) {
       // For other portfolios, use Portfolio Management Service
       const portfolio = portfolios.find(p => p.id === portfolioId);
