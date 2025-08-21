@@ -61,17 +61,25 @@ const TradeStationMainPortfolio = () => {
       if (!positionsResponse.ok) throw new Error(`Failed to fetch positions: ${positionsResponse.status}`);
       const positionsData = await positionsResponse.json();
       
-      console.log('🔍 Positions response structure:', {
-        hasData: !!positionsData.data,
-        positionsCount: positionsData.data?.length || 0,
-        keys: Object.keys(positionsData)
-      });
+      console.log('🔍 Raw positions response:', positionsData);
+      console.log('🔍 Positions response keys:', Object.keys(positionsData || {}));
+      console.log('🔍 Positions data field:', positionsData.data);
       
       // Calculate portfolio totals from real TradeStation data
-      const positions = positionsData.data || positionsData || [];
+      let positions;
+      if (positionsData.data && Array.isArray(positionsData.data)) {
+        positions = positionsData.data;
+      } else if (Array.isArray(positionsData)) {
+        positions = positionsData;
+      } else {
+        positions = [];
+      }
       
-      // Ensure positions is an array
-      const positionsArray = Array.isArray(positions) ? positions : [];
+      console.log('🔍 Final positions array:', {
+        isArray: Array.isArray(positions),
+        count: positions.length,
+        firstPosition: positions[0]
+      });
       
       console.log('🔍 Positions array:', {
         isArray: Array.isArray(positionsArray),
