@@ -129,7 +129,7 @@ const IndividualPortfolio = () => {
         try {
           await fetchPortfolioPositions(portfolioId);
           await fetchAvailablePortfolios(portfolioId);
-          setPositions(hookPositions);
+          // Positions will be set via hook's internal state
         } catch (error) {
           setError(error.message);
         }
@@ -137,7 +137,7 @@ const IndividualPortfolio = () => {
       
       loadOtherPortfolioData();
     }
-  }, [portfolioId, portfolios, hookPositions]);
+  }, [portfolioId, portfolios]);
 
   // Handle right-click context menu
   const handleContextMenu = (event, position) => {
