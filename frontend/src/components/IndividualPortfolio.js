@@ -138,7 +138,6 @@ const IndividualPortfolio = () => {
                 description: 'No positions in TradeStation account'
               });
             }
-            }
           }
         } catch (error) {
           console.error('Error loading TradeStation data:', error);
