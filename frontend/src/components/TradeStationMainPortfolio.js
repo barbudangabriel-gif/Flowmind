@@ -81,18 +81,20 @@ const TradeStationMainPortfolio = () => {
         firstPosition: positions[0]
       });
       
-      console.log('🔍 Positions array:', {
-        isArray: Array.isArray(positionsArray),
-        count: positionsArray.length,
-        sample: positionsArray[0]
-      });
-      
       let totalMarketValue = 0;
       let totalUnrealizedPnL = 0;
       
-      positionsArray.forEach(position => {
+      positions.forEach(position => {
         const marketValue = Math.abs(position.quantity * position.mark_price);
         const unrealizedPnL = position.unrealized_pnl || 0;
+        
+        console.log('📊 Processing position:', {
+          symbol: position.symbol,
+          quantity: position.quantity,
+          markPrice: position.mark_price,
+          marketValue,
+          unrealizedPnL
+        });
         
         totalMarketValue += marketValue;
         totalUnrealizedPnL += unrealizedPnL;
@@ -103,14 +105,14 @@ const TradeStationMainPortfolio = () => {
       const percentChange = costBasis !== 0 ? (totalUnrealizedPnL / costBasis) * 100 : 0;
       
       // Group positions by asset type
-      const stocks = positionsArray.filter(p => p.asset_type === 'STOCK');
-      const options = positionsArray.filter(p => p.asset_type === 'STOCKOPTION');
+      const stocks = positions.filter(p => p.asset_type === 'STOCK');
+      const options = positions.filter(p => p.asset_type === 'STOCKOPTION');
       
-      console.log('🎯 Portfolio calculated:', {
+      console.log('🎯 Final portfolio calculated:', {
         totalMarketValue,
         totalUnrealizedPnL,
         percentChange,
-        totalPositions: positionsArray.length,
+        totalPositions: positions.length,
         stocks: stocks.length,
         options: options.length
       });
