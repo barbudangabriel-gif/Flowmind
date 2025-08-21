@@ -11,7 +11,7 @@ from datetime import datetime
 
 class ReviewInvestmentScoringTester:
     def __init__(self):
-        self.base_url = "https://tradesmartview.preview.emergentagent.com"
+        self.base_url = "https://market-pulse-139.preview.emergentagent.com"
         self.api_url = f"{self.base_url}/api"
         self.test_results = []
         self.test_symbols = ['AAPL', 'MSFT', 'NVDA', 'TSLA']  # As requested in review

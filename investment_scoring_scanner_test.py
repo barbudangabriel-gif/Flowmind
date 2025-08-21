@@ -11,7 +11,7 @@ from datetime import datetime
 import sys
 
 class InvestmentScoringPriceInvestigator:
-    def __init__(self, base_url="https://tradesmartview.preview.emergentagent.com"):
+    def __init__(self, base_url="https://market-pulse-139.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
