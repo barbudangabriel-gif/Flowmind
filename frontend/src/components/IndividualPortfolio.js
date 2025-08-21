@@ -226,66 +226,93 @@ const IndividualPortfolio = () => {
         
         {/* Holdings Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-2 font-medium text-gray-600">Symbol</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-600">Price</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-600">Change</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-600">Change %</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-600">Weight</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-600">Volume</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-600">Avg. Vol</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-600">Prev Close</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-600">Open</th>
-                <th className="text-center py-3 px-2 font-medium text-gray-600">Day Range</th>
-                <th className="text-center py-3 px-2 font-medium text-gray-600">52W Range</th>
-                <th className="text-center py-3 px-2 font-medium text-gray-600">Quant SA Analyst Rating</th>
-                <th className="text-center py-3 px-2 font-medium text-gray-600">SA Analyst Ratings</th>
-                <th className="text-center py-3 px-2 font-medium text-gray-600">Wall Street Ratings</th>
-              </tr>
-            </thead>
-            <tbody>
-              {holdings.map((holding, index) => (
-                <tr key={holding.symbol} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-2">
-                    <span className="text-blue-600 font-medium cursor-pointer hover:underline">
-                      {holding.symbol}
-                    </span>
-                  </td>
-                  <td className="text-right py-3 px-2 font-medium">{holding.price.toFixed(2)}</td>
-                  <td className={`text-right py-3 px-2 font-medium ${getChangeColor(holding.change)}`}>
-                    {holding.change >= 0 ? '+' : ''}{holding.change.toFixed(2)}
-                  </td>
-                  <td className={`text-right py-3 px-2 font-medium ${getChangeColor(holding.changePercent)}`}>
-                    {holding.changePercent >= 0 ? '+' : ''}{holding.changePercent.toFixed(2)}%
-                  </td>
-                  <td className="text-right py-3 px-2">{holding.weight}</td>
-                  <td className="text-right py-3 px-2">{holding.volume}</td>
-                  <td className="text-right py-3 px-2">{holding.avgVol}</td>
-                  <td className="text-right py-3 px-2">{holding.prevClose.toFixed(2)}</td>
-                  <td className="text-right py-3 px-2">{holding.open.toFixed(2)}</td>
-                  <td className="text-center py-3 px-2 text-gray-600">{holding.dayRange}</td>
-                  <td className="text-center py-3 px-2 text-gray-600">{holding.week52Range}</td>
-                  <td className="text-center py-3 px-2">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${getRatingColor(holding.quantRating)}`}>
-                      {holding.quantRating.toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="text-center py-3 px-2">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${getRatingColor(holding.saRating)}`}>
-                      {holding.saRating.toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="text-center py-3 px-2">
-                    <span className={`px-2 py-1 rounded text-xs font-bold ${getRatingColor(holding.wsRating)}`}>
-                      {holding.wsRating.toFixed(2)}
-                    </span>
-                  </td>
+          {loading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-gray-600">Loading positions...</span>
+            </div>
+          )}
+          
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <span className="text-red-700">Error: {error}</span>
+              <button
+                onClick={clearError}
+                className="ml-2 text-red-600 hover:text-red-800"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+          
+          {!loading && positions.length === 0 && !error && (
+            <div className="text-center py-8 text-gray-500">
+              No positions found in this portfolio.
+            </div>
+          )}
+
+          {!loading && positions.length > 0 && (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-2 font-medium text-gray-600">Symbol</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-600">Quantity</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-600">Avg Cost</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-600">Current Price</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-600">Market Value</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-600">Unrealized P&L</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-600">P&L %</th>
+                  <th className="text-center py-3 px-2 font-medium text-gray-600">Type</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {positions.map((position, index) => {
+                  const pnlPercent = position.unrealized_pnl_percent || 0;
+                  
+                  return (
+                    <tr 
+                      key={position.id} 
+                      className="border-b border-gray-100 hover:bg-gray-50 cursor-context-menu"
+                      onContextMenu={(e) => handleContextMenu(e, position)}
+                      title="Right-click to move position to another portfolio"
+                    >
+                      <td className="py-3 px-2">
+                        <div>
+                          <span className="text-blue-600 font-medium cursor-pointer hover:underline">
+                            {position.symbol}
+                          </span>
+                          {position.position_type === 'option' && (
+                            <div className="text-xs text-gray-500">
+                              {position.metadata?.option_type} {position.metadata?.strike} {position.metadata?.expiry}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="text-right py-3 px-2 font-medium">{position.quantity}</td>
+                      <td className="text-right py-3 px-2">${position.avg_cost.toFixed(2)}</td>
+                      <td className="text-right py-3 px-2 font-medium">${position.current_price.toFixed(2)}</td>
+                      <td className="text-right py-3 px-2 font-medium">${position.market_value.toFixed(2)}</td>
+                      <td className={`text-right py-3 px-2 font-medium ${getChangeColor(position.unrealized_pnl)}`}>
+                        {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
+                      </td>
+                      <td className={`text-right py-3 px-2 font-medium ${getChangeColor(pnlPercent)}`}>
+                        {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
+                      </td>
+                      <td className="text-center py-3 px-2">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          position.position_type === 'stock' 
+                            ? 'bg-blue-100 text-blue-800' 
+                            : 'bg-purple-100 text-purple-800'
+                        }`}>
+                          {position.position_type.toUpperCase()}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Warnings */}
