@@ -4363,6 +4363,14 @@ async def get_all_portfolios():
         
         portfolios_data = []
         for portfolio in portfolios:
+            # Determine data source for TradeStation Main portfolio
+            data_source = "Mock Data (Fallback)"
+            if portfolio.id == 'tradestation-main':
+                if portfolio_management_service.ts_client:
+                    data_source = "TradeStation API Integration"
+                else:
+                    data_source = "Mock Data (TradeStation Not Available)"
+            
             portfolios_data.append({
                 "id": portfolio.id,
                 "name": portfolio.name,
@@ -4371,6 +4379,7 @@ async def get_all_portfolios():
                 "total_value": portfolio.total_value,
                 "total_pnl": portfolio.total_pnl,
                 "positions_count": portfolio.positions_count,
+                "data_source": data_source,
                 "created_date": portfolio.created_date.isoformat(),
                 "last_updated": portfolio.last_updated.isoformat(),
                 "settings": portfolio.settings
