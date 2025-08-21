@@ -501,6 +501,36 @@ const IndividualPortfolio = () => {
                     </tr>
                   );
                 })}
+                
+                {/* Total Row */}
+                {positions.length > 0 && (
+                  <tr className="border-t-2 border-slate-600 bg-slate-700">
+                    <td className="py-3 px-2 font-bold text-slate-200">TOTAL</td>
+                    <td className="text-right py-3 px-2 font-bold text-slate-200">
+                      {positions.reduce((sum, pos) => sum + Math.abs(pos.quantity), 0).toLocaleString()}
+                    </td>
+                    <td className="text-right py-3 px-2 text-slate-400">-</td>
+                    <td className="text-right py-3 px-2 text-slate-400">-</td>
+                    <td className="text-right py-3 px-2 font-bold text-white">
+                      ${positions.reduce((sum, pos) => sum + pos.market_value, 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td className="text-right py-3 px-2 font-bold text-blue-400">100.00%</td>
+                    <td className={`text-right py-3 px-2 font-bold ${getChangeColor(positions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0))}`}>
+                      {positions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0) >= 0 ? '+' : ''}${positions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0).toFixed(2)}
+                    </td>
+                    <td className={`text-right py-3 px-2 font-bold ${getChangeColor(displayPortfolio.total_pnl || 0)}`}>
+                      {displayPortfolio?.total_value > 0 
+                        ? `${((displayPortfolio.total_pnl || 0) / (displayPortfolio.total_value - (displayPortfolio.total_pnl || 0)) * 100).toFixed(2)}%`
+                        : '0.00%'
+                      }
+                    </td>
+                    <td className="text-center py-3 px-2">
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-slate-600 text-white">
+                        {positions.length} POS
+                      </span>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           )}
