@@ -159,7 +159,7 @@ const IndividualPortfolio = () => {
       <div className="bg-blue-500 px-6 py-4">
         <div className="flex items-center space-x-2">
           <h1 className="text-2xl font-bold text-white flex items-center">
-            Portfolio {currentPortfolio.name}
+            Portfolio {displayPortfolio.name}
             <ChevronDown className="ml-2" size={20} />
           </h1>
         </div>
@@ -167,10 +167,10 @@ const IndividualPortfolio = () => {
         <div className="flex items-center mt-2">
           <Eye className="text-white mr-2" size={16} />
           <span className="text-3xl font-bold text-white">
-            ${currentPortfolio.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ${displayPortfolio.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
-          <span className={`ml-4 text-lg font-medium ${currentPortfolio.change >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-            {currentPortfolio.change >= 0 ? '+' : ''}${Math.abs(currentPortfolio.change).toFixed(2)} ({currentPortfolio.changePercent >= 0 ? '+' : ''}{currentPortfolio.changePercent.toFixed(2)}%)
+          <span className={`ml-4 text-lg font-medium ${displayPortfolio.total_pnl >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+            {displayPortfolio.total_pnl >= 0 ? '+' : ''}${Math.abs(displayPortfolio.total_pnl).toFixed(2)} ({changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%)
           </span>
         </div>
         
