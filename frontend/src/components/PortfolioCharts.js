@@ -753,7 +753,6 @@ const PortfolioCharts = () => {
         </div>
       </div>
     </div>
-  );
 };
 
 export default PortfolioCharts;
