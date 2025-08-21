@@ -7071,6 +7071,16 @@ function AppContent() {
               } 
             />
 
+            {/* TradeStation Main Portfolio Route - Special handling for real data */}
+            <Route 
+              path="/portfolios/tradestation-main-balance" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="TradeStation Portfolio" />}>
+                  <TradeStationMainPortfolio />
+                </Suspense>
+              } 
+            />
+
             {/* Legacy Individual Portfolio route for backward compatibility */}
             <Route 
               path="/portfolios/:portfolioId" 
