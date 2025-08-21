@@ -47,6 +47,7 @@ const IndividualPortfolio = () => {
   const [currentPortfolio, setCurrentPortfolio] = useState(null);
   const [positions, setPositions] = useState([]);
   const [cashBalance, setCashBalance] = useState(0); // Add cash balance state
+  const [expandedTickers, setExpandedTickers] = useState(new Set()); // Track expanded tickers
   const [error, setError] = useState(null);
 
   // Load portfolio and positions data directly from TradeStation API
