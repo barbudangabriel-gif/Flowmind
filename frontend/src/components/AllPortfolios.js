@@ -106,7 +106,6 @@ const AllPortfolios = () => {
       </div>
     );
   }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -124,16 +123,42 @@ const AllPortfolios = () => {
               </p>
             </div>
             
-            <button 
-              onClick={() => navigate('/portfolios/create')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-            >
-              <Plus size={20} />
-              <span>Create Portfolio</span>
-            </button>
+            <div className="flex space-x-3">
+              <button 
+                onClick={handleRefresh}
+                className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center space-x-2"
+                disabled={loading}
+              >
+                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                <span>Refresh</span>
+              </button>
+              
+              <button 
+                onClick={() => navigate('/portfolios/create')}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+              >
+                <Plus size={20} />
+                <span>Create Portfolio</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <span className="text-red-700">Error: {error}</span>
+            <button
+              onClick={clearError}
+              className="ml-2 text-red-600 hover:text-red-800"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -144,9 +169,48 @@ const AllPortfolios = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Value</p>
-                <p className="text-2xl font-bold text-white">$139,903</p>
+                <p className="text-2xl font-bold text-white">
+                  ${aggregateStats.totalValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
               </div>
               <DollarSign className="text-green-400" size={32} />
+            </div>
+          </div>
+          
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Total Portfolios</p>
+                <p className="text-2xl font-bold text-white">{aggregateStats.totalPortfolios}</p>
+              </div>
+              <Briefcase className="text-blue-400" size={32} />
+            </div>
+          </div>
+          
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Daily P&L</p>
+                <p className={`text-2xl font-bold ${getChangeColor(aggregateStats.totalPnl)}`}>
+                  {aggregateStats.totalPnl >= 0 ? '+' : ''}${aggregateStats.totalPnl.toFixed(0)}
+                </p>
+              </div>
+              {aggregateStats.totalPnl >= 0 ? 
+                <TrendingUp className="text-green-400" size={32} /> : 
+                <TrendingDown className="text-red-400" size={32} />
+              }
+            </div>
+          </div>
+          
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm">Active Portfolio</p>
+                <p className="text-lg font-bold text-white">{aggregateStats.activePortfolio}</p>
+                <p className="text-xs text-green-400">+0.28%</p>
+              </div>
+              <Target className="text-purple-400" size={32} />
+            </div>
             </div>
           </div>
           
