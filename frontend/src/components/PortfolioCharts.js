@@ -179,11 +179,27 @@ const PortfolioCharts = () => {
     });
   }, [performanceData, assetFilter]);
 
-  // Filter allocation data 
+  // Filter allocation data based on allocation view (stocks/options toggle)
   const filteredAllocationData = useMemo(() => {
-    if (assetFilter === 'combined') return allocationData;
-    return allocationData.filter(item => item.type === assetFilter);
-  }, [allocationData, assetFilter]);
+    let data = allocationData;
+    
+    // Always include cash and margin
+    const cashAndMargin = data.filter(item => item.type === 'cash' || item.type === 'margin');
+    
+    // Filter based on allocation view toggle
+    let filteredPositions;
+    if (allocationView === 'stocks') {
+      filteredPositions = data.filter(item => item.type === 'stocks');
+    } else if (allocationView === 'options') {
+      filteredPositions = data.filter(item => item.type === 'options');
+    } else {
+      // Combined view - show both stocks and options
+      filteredPositions = data.filter(item => item.type === 'stocks' || item.type === 'options');
+    }
+    
+    // Combine positions with cash and margin
+    return [...filteredPositions, ...cashAndMargin];
+  }, [allocationData, allocationView]);
 
   // Custom tooltip for performance chart
   const PerformanceTooltip = ({ active, payload, label }) => {
