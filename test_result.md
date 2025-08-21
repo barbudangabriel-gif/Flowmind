@@ -433,7 +433,7 @@ The Options Calculator backend is **FULLY OPERATIONAL** and ready to support the
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "User reports 'nu ai live price in scoring' (no live price in scoring) - Investment Scoring Top Picks section not displaying live TradeStation prices despite authentication being successful. Need to fix frontend integration to show real-time prices from TradeStation API in the Top Investment Picks section."
+user_problem_statement: "Verify the correct TradeStation portfolio values by testing these endpoints to check if the values are accurate: 1) GET /api/tradestation/accounts - Check accounts and their balance information, 2) GET /api/tradestation/accounts/11775499/positions - Get exact position values and total portfolio value, 3) GET /api/portfolio-management/portfolios/tradestation-main/positions - Compare portfolio management service values with direct TradeStation API. The user reports that values displayed ($790,174) are not correct, so need to identify where the error is coming from and get the true correct values from TradeStation API."
 
 backend:
   - task: "TradeStation OAuth Authentication System"
