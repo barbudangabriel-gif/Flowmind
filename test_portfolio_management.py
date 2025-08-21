@@ -278,7 +278,8 @@ class PortfolioManagementTester:
         
         success, history_data = self.run_test("Get Move History", "GET", "portfolio-management/move-history/tradestation-main", 200)
         if success:
-            move_history = history_data if isinstance(history_data, list) else []
+            # Extract move history from nested response
+            move_history = history_data.get('moves', []) if isinstance(history_data, dict) else []
             print(f"✅ Move history retrieved successfully")
             print(f"   Found {len(move_history)} move records")
             
