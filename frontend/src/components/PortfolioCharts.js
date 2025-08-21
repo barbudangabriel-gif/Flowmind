@@ -144,10 +144,11 @@ const PortfolioCharts = () => {
       });
     }
 
-    // Mock data with realistic cash/margin logic
-    const cashAvailable = currentPortfolio.cash || 100000;
-    const marginUsed = Math.max(0, currentPortfolio.value - cashAvailable);
-    const marginAvailable = cashAvailable > 0 ? 0 : 25000; // Only available if no cash
+    // Calculate cash/margin logic 
+    const portfolioCash = currentPortfolio.cash || 100000;
+    const totalPortfolioValue = currentPortfolio.value;
+    const calculatedMarginUsed = Math.max(0, totalPortfolioValue - portfolioCash);
+    const calculatedMarginAvailable = portfolioCash > 0 ? 0 : 25000; // Only available if no cash
     
     const allocationData = [
       { name: 'AAPL', value: 25000, type: 'stocks', count: 5 },
@@ -159,32 +160,26 @@ const PortfolioCharts = () => {
     ];
 
     // Add cash only if available
-    if (cashAvailable > 0) {
-      allocationData.push({ name: 'Cash', value: cashAvailable, type: 'cash', count: 1 });
+    if (portfolioCash > 0) {
+      allocationData.push({ name: 'Cash', value: portfolioCash, type: 'cash', count: 1 });
     }
 
     // Add margin only if being used or available when no cash
-    if (marginUsed > 0) {
-      allocationData.push({ name: 'Margin Used', value: marginUsed, type: 'margin_used', count: 1 });
-    } else if (marginAvailable > 0) {
-      allocationData.push({ name: 'Margin Available', value: marginAvailable, type: 'margin', count: 1 });
+    if (calculatedMarginUsed > 0) {
+      allocationData.push({ name: 'Margin Used', value: calculatedMarginUsed, type: 'margin_used', count: 1 });
+    } else if (calculatedMarginAvailable > 0) {
+      allocationData.push({ name: 'Margin Available', value: calculatedMarginAvailable, type: 'margin', count: 1 });
     }
 
     setPerformanceData(performanceData);
     setAllocationData(allocationData);
-    // Calculate margin usage based on cash availability
-    const cashAvailable = currentPortfolio.cash || 100000;
-    const totalPortfolioValue = currentPortfolio.value;
-    const marginUsed = Math.max(0, totalPortfolioValue - cashAvailable);
-    const marginAvailable = cashAvailable > 0 ? 0 : 25000; // Only show margin if no cash
-
     setPortfolioData({
       total_value: currentPortfolio.value,
       total_pnl: 2500.75,
-      cash_balance: cashAvailable,
-      margin_used: marginUsed,
-      margin_available: marginAvailable,
-      buying_power: cashAvailable + (cashAvailable > 0 ? 0 : 25000)
+      cash_balance: portfolioCash,
+      margin_used: calculatedMarginUsed,
+      margin_available: calculatedMarginAvailable,
+      buying_power: portfolioCash + (portfolioCash > 0 ? 0 : 25000)
     });
   };
 
