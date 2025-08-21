@@ -580,20 +580,45 @@ const PortfolioCharts = () => {
 
             {/* Cash and Margin Information */}
             <div className="mt-4 grid grid-cols-2 gap-4">
-              <div className="bg-purple-50 p-3 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-purple-700">💰 Cash Available</span>
-                  <span className="text-lg font-bold text-purple-900">$100k</span>
+              {/* Cash - only show if available */}
+              {portfolioData?.cash_balance > 0 && (
+                <div className="bg-purple-50 p-3 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-purple-700">💰 Cash Available</span>
+                    <span className="text-lg font-bold text-purple-900">
+                      ${(portfolioData.cash_balance / 1000).toFixed(0)}k
+                    </span>
+                  </div>
+                  <p className="text-xs text-purple-600 mt-1">Available for withdrawal</p>
                 </div>
-                <p className="text-xs text-purple-600 mt-1">Available for withdrawal</p>
-              </div>
+              )}
               
-              <div className="bg-orange-50 p-3 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-orange-700">📈 Margin Use</span>
-                  <span className="text-lg font-bold text-orange-900">$25k</span>
+              {/* Margin - only show when used or available (when no cash) */}
+              {(portfolioData?.margin_used > 0 || portfolioData?.margin_available > 0) && (
+                <div className="bg-orange-50 p-3 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-orange-700">
+                      📈 {portfolioData?.margin_used > 0 ? 'Margin Used' : 'Margin Available'}
+                    </span>
+                    <span className="text-lg font-bold text-orange-900">
+                      ${((portfolioData?.margin_used || portfolioData?.margin_available || 0) / 1000).toFixed(0)}k
+                    </span>
+                  </div>
+                  <p className="text-xs text-orange-600 mt-1">
+                    {portfolioData?.margin_used > 0 ? 'Currently leveraged amount' : 'Available when cash depleted'}
+                  </p>
                 </div>
-                <p className="text-xs text-orange-600 mt-1">Available margin capacity</p>
+              )}
+              
+              {/* Buying Power */}
+              <div className="bg-green-50 p-3 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-green-700">⚡ Buying Power</span>
+                  <span className="text-lg font-bold text-green-900">
+                    ${((portfolioData?.buying_power || 0) / 1000).toFixed(0)}k
+                  </span>
+                </div>
+                <p className="text-xs text-green-600 mt-1">Total available to trade</p>
               </div>
             </div>
           </div>
