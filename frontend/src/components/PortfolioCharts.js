@@ -310,6 +310,16 @@ const PortfolioCharts = () => {
                   Open
                 </button>
                 <button
+                  onClick={() => setActiveFilter('open')}
+                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                    activeFilter === 'open'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Open
+                </button>
+                <button
                   onClick={() => setActiveFilter('closed')}
                   className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
                     activeFilter === 'closed'
