@@ -17,48 +17,15 @@ const AllPortfolios = () => {
   const navigate = useNavigate();
   const [portfolios] = useState([
     {
-      id: 'portfolio-1',
-      name: 'Portfolio 1',
-      value: '$125,450.00',
-      change: -1.15,
-      changeAmount: -1450.23,
-      holdings: 12,
-      lastUpdated: '2 minutes ago',
-      riskLevel: 'MODERATE',
-      allocation: { stocks: 70, bonds: 20, cash: 10 }
-    },
-    {
-      id: 'portfolio-2', 
-      name: 'Portfolio 2',
-      value: '$89,230.00',
-      change: 0.54,
-      changeAmount: 481.64,
-      holdings: 8,
-      lastUpdated: '1 minute ago',
-      riskLevel: 'LOW',
-      allocation: { stocks: 60, bonds: 30, cash: 10 }
-    },
-    {
-      id: 'portfolio-3',
-      name: 'Portfolio 3', 
-      value: '$205,890.00',
-      change: 1.39,
-      changeAmount: 2828.36,
-      holdings: 18,
-      lastUpdated: '5 minutes ago',
-      riskLevel: 'HIGH',
-      allocation: { stocks: 85, bonds: 10, cash: 5 }
-    },
-    {
-      id: 'portfolio-htech',
+      id: 'htech-15t',
       name: 'HTech 15T',
-      value: '$310,675.00',
-      change: -0.07,
-      changeAmount: -217.49,
+      value: '$139,902.60',
+      change: 0.28,
+      changeAmount: 111.80,
       holdings: 15,
-      lastUpdated: '3 minutes ago',
-      riskLevel: 'HIGH',
-      allocation: { stocks: 90, bonds: 5, cash: 5 }
+      lastUpdated: '1 minute ago',
+      riskLevel: 'MODERATE-HIGH',
+      allocation: { stocks: 65, options: 25, cash: 10 }
     }
   ]);
 
