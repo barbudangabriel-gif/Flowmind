@@ -123,10 +123,20 @@ const IndividualPortfolio = () => {
       const portfolio = portfolios.find(p => p.id === portfolioId);
       setCurrentPortfolio(portfolio);
       
-      fetchPortfolioPositions(portfolioId);
-      fetchAvailablePortfolios(portfolioId);
+      // Use hook positions for non-TradeStation portfolios
+      const loadOtherPortfolioData = async () => {
+        try {
+          await fetchPortfolioPositions(portfolioId);
+          await fetchAvailablePortfolios(portfolioId);
+          setPositions(hookPositions);
+        } catch (error) {
+          setError(error.message);
+        }
+      };
+      
+      loadOtherPortfolioData();
     }
-  }, [portfolioId, portfolios]);
+  }, [portfolioId, portfolios, hookPositions]);
 
   // Handle right-click context menu
   const handleContextMenu = (event, position) => {
