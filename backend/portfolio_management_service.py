@@ -206,7 +206,8 @@ class PortfolioManagementService:
             await self._initialize_mock_positions_fallback()
 
     async def _initialize_mock_positions_fallback(self):
-        """Initialize mock positions in TradeStation Main portfolio"""
+        """Initialize mock positions in TradeStation Main portfolio as fallback"""
+        logger.info("Using mock positions as fallback")
         mock_positions = [
             {
                 'symbol': 'AAPL',
@@ -214,7 +215,7 @@ class PortfolioManagementService:
                 'avg_cost': 185.50,
                 'current_price': 189.25,
                 'position_type': 'stock',
-                'metadata': {'sector': 'Technology'}
+                'metadata': {'sector': 'Technology', 'source': 'mock'}
             },
             {
                 'symbol': 'MSFT',
