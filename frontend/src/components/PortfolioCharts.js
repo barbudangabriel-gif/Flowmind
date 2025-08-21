@@ -729,7 +729,7 @@ const PortfolioCharts = () => {
               </div>
             </div>
           </div>
-          )}
+        )}
           
         {/* Trade List Tab */}
         {activeTab === 'tradelist' && (
