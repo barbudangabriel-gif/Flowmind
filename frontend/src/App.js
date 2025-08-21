@@ -6864,10 +6864,7 @@ function AppContent() {
             <CreatePortfolio />
           </Suspense>
         );
-      case 'portfolio-1':
-      case 'portfolio-2':
-      case 'portfolio-3':
-      case 'portfolio-htech':
+      case 'htech-15t':
         return (
           <Suspense fallback={<LoadingFallback componentName="Portfolio" />}>
             <IndividualPortfolio />
