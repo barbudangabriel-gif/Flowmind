@@ -175,7 +175,7 @@ class PortfolioManagementTester:
             
             print(f"📊 Analyzing Position Types:")
             
-            for i, position in enumerate(positions[:10]):  # Analyze first 10 positions
+            for i, position in enumerate(positions[:20]):  # Analyze first 20 positions to find options
                 symbol = position.get('symbol', 'N/A')
                 position_type = position.get('type', 'Unknown')
                 quantity = position.get('quantity', 0)
