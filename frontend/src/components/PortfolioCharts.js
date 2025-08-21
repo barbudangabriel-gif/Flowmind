@@ -425,37 +425,6 @@ const PortfolioCharts = () => {
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-xl shadow-sm mb-6">
-          <div className="border-b border-gray-200">
-            <div className="flex space-x-8 px-6">
-              <button
-                onClick={() => setActiveTab('performance')}
-                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'performance'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                📊 <span>Performance Charts</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('tradelist')}
-                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'tradelist'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                📋 <span>Trade List</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Performance Charts Tab */}
-        {activeTab === 'performance' && (
-          <div>
         {/* Main Chart Area */}
         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
           <div className="flex items-center justify-between mb-6">
