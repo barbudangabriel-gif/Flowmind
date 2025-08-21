@@ -286,9 +286,9 @@ const IndividualPortfolio = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-900">
       {/* Header */}
-      <div className="bg-blue-500 px-6 py-4">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
         <div className="flex items-center space-x-2">
           <h1 className="text-2xl font-bold text-white flex items-center">
             Portfolio {displayPortfolio.name}
