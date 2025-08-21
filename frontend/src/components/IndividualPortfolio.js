@@ -500,63 +500,6 @@ const IndividualPortfolio = () => {
         </div>
       </div>
 
-      {/* Portfolio Statistics Cards */}
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Stocks Positions Card */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Stock Positions</p>
-                  <p className="text-2xl font-bold text-gray-900">{portfolioStats.stocksCount}</p>
-                  <p className="text-sm text-gray-500">
-                    ${portfolioStats.stocksValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <BarChart3 className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </div>
-
-            {/* Options Positions Card */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Options Positions</p>
-                  <p className="text-2xl font-bold text-gray-900">{portfolioStats.optionsCount}</p>
-                  <p className="text-sm text-gray-500">
-                    ${portfolioStats.optionsValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <Target className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-            </div>
-
-            {/* Cash Balance Card - Ultimul din dreapta */}
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Cash Balance</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    ${portfolioStats.cashBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </p>
-                  <p className="text-sm text-gray-500">Available Cash</p>
-                </div>
-                <div className="p-3 bg-green-100 rounded-full">
-                  <DollarSign className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
       {/* Context Menu */}
       <ContextMenu
         isVisible={contextMenu.isVisible}
