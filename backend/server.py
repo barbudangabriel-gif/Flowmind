@@ -4397,14 +4397,18 @@ async def get_portfolio_positions(portfolio_id: str):
         positions = await portfolio_management_service.get_portfolio_positions(portfolio_id)
         
         positions_data = []
+        total_value = 0
+        total_pnl = 0
+        
         for position in positions:
-            positions_data.append({
+            position_data = {
                 "id": position.id,
                 "symbol": position.symbol,
                 "quantity": position.quantity,
                 "avg_cost": position.avg_cost,
                 "current_price": position.current_price,
-                "position_type": position.position_type,
+                "type": position.position_type,  # Use 'type' for frontend compatibility
+                "position_type": position.position_type,  # Keep both for compatibility
                 "market_value": position.market_value,
                 "unrealized_pnl": position.unrealized_pnl,
                 "unrealized_pnl_percent": (position.unrealized_pnl / (position.quantity * position.avg_cost)) * 100 if position.avg_cost > 0 else 0,
@@ -4412,12 +4416,24 @@ async def get_portfolio_positions(portfolio_id: str):
                 "added_date": position.added_date.isoformat(),
                 "last_updated": position.last_updated.isoformat(),
                 "metadata": position.metadata
-            })
+            }
+            positions_data.append(position_data)
+            total_value += position.market_value
+            total_pnl += position.unrealized_pnl
+        
+        # Calculate portfolio summary
+        portfolio_summary = {
+            "total_value": total_value,
+            "total_pnl": total_pnl,
+            "total_pnl_percent": (total_pnl / (total_value - total_pnl)) * 100 if (total_value - total_pnl) > 0 else 0,
+            "positions_count": len(positions_data)
+        }
         
         return {
             "status": "success",
             "portfolio_id": portfolio_id,
             "positions": positions_data,
+            "portfolio_summary": portfolio_summary,
             "count": len(positions_data),
             "timestamp": datetime.utcnow().isoformat()
         }
