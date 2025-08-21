@@ -300,22 +300,42 @@ class TradeStationConnectivityTester:
         print("⚙️ PHASE 5: Frontend Backend URL Configuration")
         print("-" * 50)
         
-        # The frontend/.env shows REACT_APP_BACKEND_URL=https://None.preview.emergentagent.com
-        # This "None" might be the issue
+        # Check the actual frontend .env file
+        try:
+            with open('/app/frontend/.env', 'r') as f:
+                env_content = f.read()
+            
+            if 'REACT_APP_BACKEND_URL=' in env_content:
+                # Extract the URL
+                for line in env_content.split('\n'):
+                    if line.startswith('REACT_APP_BACKEND_URL='):
+                        frontend_url = line.split('=', 1)[1]
+                        break
+                else:
+                    frontend_url = "NOT_FOUND"
+            else:
+                frontend_url = "NOT_FOUND"
+                
+        except Exception as e:
+            self.log_test("Frontend URL Configuration", False, f"Cannot read frontend/.env: {str(e)}")
+            return False
         
         expected_url = "https://market-pulse-139.preview.emergentagent.com"
-        frontend_env_url = "https://None.preview.emergentagent.com"
         
-        if "None" in frontend_env_url:
+        if "None" in frontend_url:
             self.log_test("Frontend URL Configuration", False, 
-                f"Frontend .env has 'None' in URL: {frontend_env_url}")
+                f"Frontend .env has 'None' in URL: {frontend_url}")
             print(f"   Expected URL: {expected_url}")
-            print(f"   Actual URL in frontend/.env: {frontend_env_url}")
+            print(f"   Actual URL in frontend/.env: {frontend_url}")
             print(f"   🔧 RECOMMENDATION: Update frontend/.env REACT_APP_BACKEND_URL to correct URL")
             return False
-        else:
-            self.log_test("Frontend URL Configuration", True, "Frontend URL looks correct")
+        elif frontend_url == expected_url:
+            self.log_test("Frontend URL Configuration", True, f"Frontend URL is correct: {frontend_url}")
             return True
+        else:
+            self.log_test("Frontend URL Configuration", False, 
+                f"Frontend URL mismatch - Expected: {expected_url}, Got: {frontend_url}")
+            return False
 
     def run_connectivity_test(self):
         """Run complete TradeStation connectivity test"""
