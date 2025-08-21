@@ -230,7 +230,15 @@ class TradeStationConnectivityTester:
             return False
         
         try:
-            accounts = accounts_response.json()
+            accounts_data = accounts_response.json()
+            
+            # Handle the correct response format
+            if isinstance(accounts_data, dict) and 'accounts' in accounts_data:
+                accounts = accounts_data['accounts']
+            else:
+                self.log_test("TradeStation Positions", False, "Invalid accounts response format")
+                return False
+                
             if not accounts or len(accounts) == 0:
                 self.log_test("TradeStation Positions", False, "No accounts available for position test")
                 return False
