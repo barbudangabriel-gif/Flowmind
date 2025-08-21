@@ -20,6 +20,7 @@ const IndividualPortfolio = () => {
   const navigate = useNavigate();
   const { portfolioId } = useParams();
   const [activeTab, setActiveTab] = useState('holdings');
+  const [loading, setLoading] = useState(false);
   
   // Context menu state
   const [contextMenu, setContextMenu] = useState({
@@ -33,7 +34,7 @@ const IndividualPortfolio = () => {
     portfolios,
     positions,
     availablePortfolios,
-    loading,
+    loading: apiLoading,
     error,
     fetchPortfolioPositions,
     fetchAvailablePortfolios,
