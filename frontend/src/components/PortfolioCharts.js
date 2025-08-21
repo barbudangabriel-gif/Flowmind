@@ -434,7 +434,13 @@ const PortfolioCharts = () => {
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={filteredPerformanceData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid 
+                  strokeDasharray="3 3" 
+                  stroke="#e2e8f0" 
+                  strokeWidth={1}
+                  horizontal={true}
+                  vertical={false}
+                />
                 <XAxis 
                   dataKey="date" 
                   axisLine={false}
