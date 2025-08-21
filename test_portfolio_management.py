@@ -171,7 +171,8 @@ class PortfolioManagementTester:
             print("❌ Get available portfolios endpoint failed")
             return False
         
-        available_portfolios = available_data if isinstance(available_data, list) else []
+        # Extract available portfolios from nested response
+        available_portfolios = available_data.get('available_portfolios', []) if isinstance(available_data, dict) else []
         print(f"📊 Found {len(available_portfolios)} available portfolios for move")
         
         # Should return 3 portfolios (excluding tradestation-main)
