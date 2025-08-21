@@ -223,59 +223,60 @@ class PortfolioManagementService:
                 'avg_cost': 385.20,
                 'current_price': 392.45,
                 'position_type': 'stock',
-                'metadata': {'sector': 'Technology'}
+                'metadata': {'sector': 'Technology', 'source': 'mock'}
+            },
+            {
+                'symbol': 'QQQ',
+                'quantity': 200,
+                'avg_cost': 365.75,
+                'current_price': 372.80,
+                'position_type': 'stock',
+                'metadata': {'sector': 'ETF', 'source': 'mock'}
             },
             {
                 'symbol': 'TSLA',
                 'quantity': 25,
-                'avg_cost': 245.80,
-                'current_price': 251.30,
+                'avg_cost': 235.60,
+                'current_price': 248.45,
                 'position_type': 'stock',
-                'metadata': {'sector': 'Automotive'}
+                'metadata': {'sector': 'Automotive', 'source': 'mock'}
             },
             {
-                'symbol': 'NVDA Jan2026 LEAPS',
+                'symbol': 'NVDA',
                 'quantity': 5,
-                'avg_cost': 45.20,
-                'current_price': 52.80,
+                'avg_cost': 875.30,
+                'current_price': 925.65,
                 'position_type': 'option',
                 'metadata': {
+                    'option_type': 'CALL',
+                    'strike': 900,
                     'expiry': '2026-01-15',
-                    'strike': 400,
-                    'option_type': 'CALL',
-                    'is_leap': True
+                    'source': 'mock'
                 }
             },
             {
-                'symbol': 'SPY Weekly Calls',
+                'symbol': 'SPY',
                 'quantity': 10,
-                'avg_cost': 3.20,
-                'current_price': 2.95,
+                'avg_cost': 15.25,
+                'current_price': 12.80,
                 'position_type': 'option',
                 'metadata': {
-                    'expiry': '2025-01-03',
-                    'strike': 595,
                     'option_type': 'CALL',
-                    'is_leap': False
+                    'strike': 645,
+                    'expiry': '2024-12-31',
+                    'source': 'mock'
                 }
-            },
-            {
-                'symbol': 'QQQ',
-                'quantity': 75,
-                'avg_cost': 485.60,
-                'current_price': 491.20,
-                'position_type': 'stock',
-                'metadata': {'sector': 'ETF'}
             }
         ]
-
+        
         for pos_data in mock_positions:
-            market_value = pos_data['quantity'] * pos_data['current_price']
-            cost_basis = pos_data['quantity'] * pos_data['avg_cost']
+            position_id = str(uuid.uuid4())
+            market_value = abs(pos_data['quantity']) * pos_data['current_price']
+            cost_basis = abs(pos_data['quantity']) * pos_data['avg_cost']
             unrealized_pnl = market_value - cost_basis
-
+            
             position = Position(
-                id=str(uuid.uuid4()),
+                id=position_id,
                 symbol=pos_data['symbol'],
                 quantity=pos_data['quantity'],
                 avg_cost=pos_data['avg_cost'],
@@ -288,10 +289,30 @@ class PortfolioManagementService:
                 last_updated=datetime.now(),
                 metadata=pos_data['metadata']
             )
-            self.positions[position.id] = position
+            
+            self.positions[position_id] = position
+        
+        # Update portfolio totals
+        await self._update_portfolio_totals('tradestation-main')
 
-        # Update TradeStation portfolio totals
-        self._update_portfolio_totals('tradestation-main')
+    async def _update_portfolio_totals(self, portfolio_id: str):
+        """Update portfolio total value and P&L based on positions"""
+        if portfolio_id not in self.portfolios:
+            return
+        
+        portfolio_positions = [pos for pos in self.positions.values() 
+                             if pos.portfolio_id == portfolio_id]
+        
+        total_value = sum(pos.market_value for pos in portfolio_positions)
+        total_pnl = sum(pos.unrealized_pnl for pos in portfolio_positions)
+        positions_count = len(portfolio_positions)
+        
+        self.portfolios[portfolio_id].total_value = total_value
+        self.portfolios[portfolio_id].total_pnl = total_pnl
+        self.portfolios[portfolio_id].positions_count = positions_count
+        self.portfolios[portfolio_id].last_updated = datetime.now()
+        
+        logger.info(f"Updated portfolio {portfolio_id}: ${total_value:.2f} value, {positions_count} positions")
 
     async def get_all_portfolios(self) -> List[Portfolio]:
         """Get all portfolios with their current totals"""
