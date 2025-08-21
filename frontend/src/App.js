@@ -7083,7 +7083,6 @@ function AppContent() {
             
             {/* Default Route - renders based on activeTab */}
             <Route path="/" element={renderContent()} />
-            <Route path="*" element={renderContent()} />
           </Routes>
         </div>
       </main>
