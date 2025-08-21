@@ -453,9 +453,9 @@ const PortfolioCharts = () => {
           </div>
         </div>
 
-        {/* Tab Content */}
+        {/* Performance Charts Tab */}
         {activeTab === 'performance' && (
-          <>
+          <div>
         {/* Main Chart Area */}
         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
           <div className="flex items-center justify-between mb-6">
