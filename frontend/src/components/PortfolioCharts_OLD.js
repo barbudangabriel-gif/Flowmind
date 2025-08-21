@@ -39,6 +39,7 @@ const PortfolioCharts = () => {
   
   // State management
   const [activeFilter, setActiveFilter] = useState('closed'); // 'open' | 'closed' | 'all'
+  const [activeTab, setActiveTab] = useState('performance'); // 'performance' | 'tradelist'
   const [assetFilter, setAssetFilter] = useState('combined'); // 'stocks' | 'options' | 'combined'
   const [allocationView, setAllocationView] = useState('stocks'); // 'stocks' | 'options' for pie chart
   const [timeFilter, setTimeFilter] = useState('all'); // 'daily' | 'weekly' | 'monthly' | 'all' | 'custom'
@@ -80,6 +81,47 @@ const PortfolioCharts = () => {
 
   const currentPortfolio = portfolioInfo[portfolioId] || portfolioInfo['htech-15t'];
 
+  // Fetch portfolio charts data
+  const fetchPortfolioChartsData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = {
+        filter: activeFilter,
+        asset_type: assetFilter,
+        timeframe: timeFilter,
+        ...(timeFilter === 'custom' && customDateRange.start && customDateRange.end ? {
+          start_date: customDateRange.start,
+          end_date: customDateRange.end
+        } : {})
+      };
+
+      // Fetch performance data
+      const performanceResponse = await axios.get(`${API}/portfolio/${portfolioId}/performance`, { params });
+      setPerformanceData(performanceResponse.data?.performance_data || []);
+
+      // Fetch allocation data  
+      const allocationResponse = await axios.get(`${API}/portfolio/${portfolioId}/allocation`, { params });
+      setAllocationData(allocationResponse.data?.allocation_data || []);
+
+      // Set portfolio summary
+      setPortfolioData({
+        total_value: performanceResponse.data?.portfolio_summary?.total_value || currentPortfolio.value,
+        total_pnl: performanceResponse.data?.portfolio_summary?.total_pnl || 0,
+        cash_balance: performanceResponse.data?.portfolio_summary?.cash_balance || currentPortfolio.cash
+      });
+
+    } catch (err) {
+      console.error('Error fetching portfolio charts data:', err);
+      setError('Failed to load portfolio charts data');
+      // Use mock data for development
+      generateMockData();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generate mock data for development
   const generateMockData = () => {
     const dates = [];
     const performanceData = [];
@@ -144,8 +186,7 @@ const PortfolioCharts = () => {
   };
 
   useEffect(() => {
-    generateMockData();
-    setLoading(false);
+    fetchPortfolioChartsData();
   }, [portfolioId, activeFilter, assetFilter, timeFilter, customDateRange]);
 
   // Filter performance data for display
@@ -219,7 +260,7 @@ const PortfolioCharts = () => {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate(`/portfolios/view/${portfolioId}`)}
+                onClick={() => navigate(`/portfolios/${portfolioId}`)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <ArrowLeft size={20} className="text-gray-600" />
@@ -233,7 +274,10 @@ const PortfolioCharts = () => {
             </div>
             
             <div className="flex items-center space-x-3">
-              <button className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button
+                onClick={fetchPortfolioChartsData}
+                className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 <RefreshCw size={16} />
                 <span>Refresh</span>
               </button>
@@ -381,13 +425,44 @@ const PortfolioCharts = () => {
           </div>
         )}
 
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-xl shadow-sm mb-6">
+          <div className="border-b border-gray-200">
+            <div className="flex space-x-8 px-6">
+              <button
+                onClick={() => setActiveTab('performance')}
+                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'performance'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📊 <span>Performance Charts</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('tradelist')}
+                className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'tradelist'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                📋 <span>Trade List</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Performance Charts Tab */}
+        {activeTab === 'performance' && (
+          <div>
         {/* Main Chart Area */}
         <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-bold text-gray-900">P&L Performance</h2>
               <p className="text-gray-600">
-                {activeFilter === 'closed' ? 'Closed trades only' : activeFilter === 'open' ? 'Open positions only' : 'All positions'} • 
+                {activeFilter === 'closed' ? 'Closed trades only' : 'All positions'} • 
                 {assetFilter === 'combined' ? ' Stocks + Options' : ` ${assetFilter.charAt(0).toUpperCase() + assetFilter.slice(1)} only`}
               </p>
             </div>
@@ -660,7 +735,7 @@ const PortfolioCharts = () => {
                 </div>
                 <div className="text-sm text-gray-600">Total P&L</div>
                 <div className="text-xs text-gray-500 mt-1">
-                  {activeFilter === 'closed' ? 'Closed positions only' : activeFilter === 'open' ? 'Open positions only' : 'All positions'}
+                  {activeFilter === 'closed' ? 'Closed positions only' : 'All positions'}
                 </div>
               </div>
               
