@@ -320,7 +320,7 @@ class PortfolioManagementService:
         
         # Update totals for each portfolio
         for portfolio in portfolios:
-            self._update_portfolio_totals(portfolio.id)
+            await self._update_portfolio_totals(portfolio.id)
         
         return portfolios
 
