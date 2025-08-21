@@ -42,9 +42,6 @@ const SmartRebalancingAgent = () => {
 
   // Portfolio information
   const portfolioInfo = {
-    'portfolio-1': { name: 'Portfolio 1', value: 125450.00 },
-    'portfolio-2': { name: 'Portfolio 2', value: 89230.00 },
-    'portfolio-3': { name: 'Portfolio 3', value: 205890.00 },
     'htech-15t': { name: 'HTech 15T', value: 139902.60 }
   };
 
