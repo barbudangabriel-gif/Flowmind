@@ -65,6 +65,7 @@ const PortfolioCharts = () => {
   const getAllocationColor = (item, index) => {
     if (item.type === 'cash') return COLORS.cash;
     if (item.type === 'margin') return COLORS.margin;
+    if (item.type === 'margin_used') return '#EF4444'; // Red for used margin
     if (item.type === 'stocks') return COLORS.stocks;
     if (item.type === 'options') return COLORS.options;
     // Fallback colors for mixed items
