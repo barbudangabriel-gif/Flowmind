@@ -62,8 +62,12 @@ class PortfolioManagementService:
         self.portfolios: Dict[str, Portfolio] = {}
         self.positions: Dict[str, Position] = {}
         self.position_moves: List[PositionMove] = []
+        
+        # TradeStation client for real data
+        self.ts_client = TradeStationClient()
+        
         self._initialize_default_portfolios()
-        self._initialize_mock_positions()
+        # Note: We'll load real positions from TradeStation instead of mock data
 
     def _initialize_default_portfolios(self):
         """Initialize default portfolio structure"""
