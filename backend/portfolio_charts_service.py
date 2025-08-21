@@ -178,7 +178,7 @@ class PortfolioChartsService:
         Generate mock allocation data for development
         In production, this would fetch real position data
         """
-        # Mock positions data
+        # Mock positions data with cash and margin
         all_positions = [
             {'name': 'AAPL', 'value': 25000, 'type': 'stocks', 'count': 5, 'sector': 'Technology'},
             {'name': 'MSFT', 'value': 20000, 'type': 'stocks', 'count': 3, 'sector': 'Technology'},
@@ -189,7 +189,9 @@ class PortfolioChartsService:
             {'name': 'TSLA Calls', 'value': 8000, 'type': 'options', 'count': 10, 'expiry': '2024-12-20'},
             {'name': 'SPY Puts', 'value': 5000, 'type': 'options', 'count': 5, 'expiry': '2024-11-15'},
             {'name': 'AAPL Calls', 'value': 6000, 'type': 'options', 'count': 8, 'expiry': '2024-12-15'},
-            {'name': 'QQQ Calls', 'value': 4000, 'type': 'options', 'count': 6, 'expiry': '2025-01-17'}
+            {'name': 'QQQ Calls', 'value': 4000, 'type': 'options', 'count': 6, 'expiry': '2025-01-17'},
+            {'name': 'Cash', 'value': 100000, 'type': 'cash', 'count': 1, 'sector': 'Cash'},
+            {'name': 'Margin Available', 'value': 25000, 'type': 'margin', 'count': 1, 'sector': 'Margin'}
         ]
         
         # Apply asset type filter
