@@ -4335,6 +4335,211 @@ async def run_comprehensive_rebalancing_analysis(request: RebalancingRequest):
         logger.error(f"Error in comprehensive rebalancing analysis: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to run comprehensive analysis: {str(e)}")
 
+# ==================== PORTFOLIO MANAGEMENT ENDPOINTS ====================
+
+@api_router.get("/portfolio-management/portfolios")
+async def get_all_portfolios():
+    """Get all portfolios with their current totals"""
+    try:
+        portfolios = await portfolio_management_service.get_all_portfolios()
+        
+        portfolios_data = []
+        for portfolio in portfolios:
+            portfolios_data.append({
+                "id": portfolio.id,
+                "name": portfolio.name,
+                "description": portfolio.description,
+                "category": portfolio.category,
+                "total_value": portfolio.total_value,
+                "total_pnl": portfolio.total_pnl,
+                "positions_count": portfolio.positions_count,
+                "created_date": portfolio.created_date.isoformat(),
+                "last_updated": portfolio.last_updated.isoformat(),
+                "settings": portfolio.settings
+            })
+        
+        return {
+            "status": "success",
+            "portfolios": portfolios_data,
+            "count": len(portfolios_data),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching portfolios: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch portfolios: {str(e)}")
+
+@api_router.get("/portfolio-management/portfolios/{portfolio_id}/positions")
+async def get_portfolio_positions(portfolio_id: str):
+    """Get all positions for a specific portfolio"""
+    try:
+        positions = await portfolio_management_service.get_portfolio_positions(portfolio_id)
+        
+        positions_data = []
+        for position in positions:
+            positions_data.append({
+                "id": position.id,
+                "symbol": position.symbol,
+                "quantity": position.quantity,
+                "avg_cost": position.avg_cost,
+                "current_price": position.current_price,
+                "position_type": position.position_type,
+                "market_value": position.market_value,
+                "unrealized_pnl": position.unrealized_pnl,
+                "unrealized_pnl_percent": (position.unrealized_pnl / (position.quantity * position.avg_cost)) * 100 if position.avg_cost > 0 else 0,
+                "portfolio_id": position.portfolio_id,
+                "added_date": position.added_date.isoformat(),
+                "last_updated": position.last_updated.isoformat(),
+                "metadata": position.metadata
+            })
+        
+        return {
+            "status": "success",
+            "portfolio_id": portfolio_id,
+            "positions": positions_data,
+            "count": len(positions_data),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching positions for portfolio {portfolio_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch positions: {str(e)}")
+
+class PortfolioMoveRequest(BaseModel):
+    position_id: str
+    to_portfolio_id: str
+    quantity_to_move: Optional[float] = None
+    reason: Optional[str] = "Manual move"
+
+@api_router.post("/portfolio-management/move-position")
+async def move_position(request: PortfolioMoveRequest):
+    """Move a position or partial position to another portfolio"""
+    try:
+        result = await portfolio_management_service.move_position(
+            position_id=request.position_id,
+            to_portfolio_id=request.to_portfolio_id,
+            quantity_to_move=request.quantity_to_move,
+            reason=request.reason
+        )
+        
+        return {
+            "status": "success" if result["success"] else "error",
+            "result": result,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error moving position: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to move position: {str(e)}")
+
+@api_router.get("/portfolio-management/available-portfolios/{current_portfolio_id}")
+async def get_available_portfolios_for_move(current_portfolio_id: str):
+    """Get list of portfolios available for moving positions to"""
+    try:
+        portfolios = await portfolio_management_service.get_available_portfolios_for_move(current_portfolio_id)
+        
+        portfolios_data = []
+        for portfolio in portfolios:
+            portfolios_data.append({
+                "id": portfolio.id,
+                "name": portfolio.name,
+                "description": portfolio.description,
+                "category": portfolio.category,
+                "positions_count": portfolio.positions_count
+            })
+        
+        return {
+            "status": "success",
+            "available_portfolios": portfolios_data,
+            "count": len(portfolios_data),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching available portfolios: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch available portfolios: {str(e)}")
+
+@api_router.post("/portfolio-management/create-portfolio")
+async def create_custom_portfolio(request: dict):
+    """Create a new custom portfolio"""
+    try:
+        name = request.get("name")
+        description = request.get("description", "")
+        category = request.get("category", "custom")
+        
+        if not name:
+            raise HTTPException(status_code=400, detail="Portfolio name is required")
+        
+        portfolio = await portfolio_management_service.create_custom_portfolio(
+            name=name,
+            description=description,
+            category=category
+        )
+        
+        return {
+            "status": "success",
+            "portfolio": {
+                "id": portfolio.id,
+                "name": portfolio.name,
+                "description": portfolio.description,
+                "category": portfolio.category,
+                "created_date": portfolio.created_date.isoformat()
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating portfolio: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create portfolio: {str(e)}")
+
+@api_router.get("/portfolio-management/aggregate-view")
+async def get_aggregate_portfolio_view():
+    """Get aggregated view of all portfolios"""
+    try:
+        aggregate_data = await portfolio_management_service.get_aggregate_view()
+        
+        return {
+            "status": "success",
+            "aggregate_data": aggregate_data,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching aggregate view: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch aggregate view: {str(e)}")
+
+@api_router.get("/portfolio-management/move-history/{portfolio_id}")
+async def get_portfolio_move_history(portfolio_id: Optional[str] = None):
+    """Get move history, optionally filtered by portfolio"""
+    try:
+        moves = await portfolio_management_service.get_move_history(portfolio_id)
+        
+        moves_data = []
+        for move in moves:
+            moves_data.append({
+                "id": move.id,
+                "position_id": move.position_id,
+                "from_portfolio_id": move.from_portfolio_id,
+                "to_portfolio_id": move.to_portfolio_id,
+                "move_date": move.move_date.isoformat(),
+                "quantity_moved": move.quantity_moved,
+                "reason": move.reason,
+                "metadata": move.metadata
+            })
+        
+        return {
+            "status": "success",
+            "move_history": moves_data,
+            "count": len(moves_data),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching move history: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch move history: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
