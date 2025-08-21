@@ -1,6 +1,7 @@
 """
 Portfolio Management Service
 Advanced portfolio management system with position movement capabilities
+Integrated with TradeStation API for real-time data
 """
 
 import logging
@@ -9,6 +10,9 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 import asyncio
+
+# Import TradeStation client for real data
+from tradestation_client import TradeStationClient
 
 logger = logging.getLogger(__name__)
 
