@@ -328,7 +328,7 @@ const IndividualPortfolio = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-slate-700 bg-slate-800">
         <div className="flex space-x-8 px-6">
           {tabs.map((tab) => (
             <button
@@ -343,19 +343,19 @@ const IndividualPortfolio = () => {
               }}
               className={`py-4 px-2 border-b-2 font-medium text-sm flex items-center ${
                 activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-400 text-blue-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-600'
               }`}
             >
               {tab.label}
-              {tab.hasArrow && <span className="ml-1 text-red-500">→</span>}
+              {tab.hasArrow && <span className="ml-1 text-red-400">→</span>}
             </button>
           ))}
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="p-6">
+      <div className="p-6 bg-slate-900">
         
         {/* Portfolio Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
