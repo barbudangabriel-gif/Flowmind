@@ -148,9 +148,11 @@ const PortfolioCharts = () => {
       { name: 'AAPL', value: 25000, type: 'stocks', count: 5 },
       { name: 'MSFT', value: 20000, type: 'stocks', count: 3 },
       { name: 'GOOGL', value: 15000, type: 'stocks', count: 2 },
+      { name: 'NVDA', value: 12000, type: 'stocks', count: 4 },
       { name: 'TSLA Calls', value: 8000, type: 'options', count: 10 },
       { name: 'SPY Puts', value: 5000, type: 'options', count: 5 },
-      { name: 'NVDA', value: 12000, type: 'stocks', count: 4 }
+      { name: 'Cash', value: 100000, type: 'cash', count: 1 },
+      { name: 'Margin Available', value: 25000, type: 'margin', count: 1 }
     ];
 
     setPerformanceData(performanceData);
