@@ -420,11 +420,11 @@ const IndividualPortfolio = () => {
           )}
           
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-              <span className="text-red-700">Error: {error}</span>
+            <div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-4">
+              <span className="text-red-300">Error: {error}</span>
               <button
                 onClick={clearError}
-                className="ml-2 text-red-600 hover:text-red-800"
+                className="ml-2 text-red-400 hover:text-red-200"
               >
                 Dismiss
               </button>
@@ -432,23 +432,23 @@ const IndividualPortfolio = () => {
           )}
           
           {!loading && positions.length === 0 && !error && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-slate-400">
               No positions found in this portfolio.
             </div>
           )}
 
           {!loading && positions.length > 0 && (
-            <table className="w-full text-sm">
+            <table className="w-full text-sm bg-slate-800 rounded-lg">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-2 font-medium text-gray-600">Symbol</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-600">Quantity</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-600">Avg Cost</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-600">Current Price</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-600">Market Value</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-600">Unrealized P&L</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-600">P&L %</th>
-                  <th className="text-center py-3 px-2 font-medium text-gray-600">Type</th>
+                <tr className="border-b border-slate-700">
+                  <th className="text-left py-3 px-2 font-medium text-slate-300">Symbol</th>
+                  <th className="text-right py-3 px-2 font-medium text-slate-300">Quantity</th>
+                  <th className="text-right py-3 px-2 font-medium text-slate-300">Avg Cost</th>
+                  <th className="text-right py-3 px-2 font-medium text-slate-300">Current Price</th>
+                  <th className="text-right py-3 px-2 font-medium text-slate-300">Market Value</th>
+                  <th className="text-right py-3 px-2 font-medium text-slate-300">Unrealized P&L</th>
+                  <th className="text-right py-3 px-2 font-medium text-slate-300">P&L %</th>
+                  <th className="text-center py-3 px-2 font-medium text-slate-300">Type</th>
                 </tr>
               </thead>
               <tbody>
