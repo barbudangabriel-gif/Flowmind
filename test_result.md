@@ -267,6 +267,8 @@ test_plan:
     - "Smart Rebalancing Agent Component"
   test_all: false
   test_priority: "high_first"
+  completed_testing:
+    - "Move to Portfolio X Context Menu Functionality - PASSED"
 
   - task: "Trading Chart Component Integration - RESOLVED"
     implemented: true
