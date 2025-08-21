@@ -122,9 +122,9 @@ backend:
 
   - task: "Portfolio Management Service API"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py, /app/backend/portfolio_management_service.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -137,6 +137,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "🎉 PORTFOLIO MANAGEMENT SERVICE WITH TRADESTATION INTEGRATION - COMPREHENSIVE TESTING COMPLETE - EXCELLENT RESULTS: Successfully tested updated Portfolio Management Service with real TradeStation integration as requested in review. ✅ GET /api/portfolio-management/portfolios WORKING PERFECTLY: Returns TradeStation Main portfolio with real integration status, total value $790,173.50, 84 positions count matching expected live account data, data source clearly identified as 'TradeStation API Integration'. ✅ GET /api/portfolio-management/portfolios/tradestation-main/positions WORKING EXCELLENTLY: Returns 84 positions with complete data structure including both stocks (19) and options (65) as expected from live TradeStation account. Portfolio summary shows accurate totals: $790,173.50 total value, -$3,365.00 total P&L (-0.42%). ✅ POSITION DATA STRUCTURE VERIFIED: All positions include required fields (symbol, quantity, avg_cost, current_price, type, market_value, unrealized_pnl) with proper stock/option identification. Options include metadata with underlying_symbol, option_type, strike_price, expiration_date. ✅ PORTFOLIO TOTALS CALCULATED CORRECTLY: Individual position values sum exactly to portfolio totals with 0.00% difference, confirming accurate real-time calculations from TradeStation data. ✅ FALLBACK FUNCTIONALITY CONFIRMED: Service properly uses TradeStation API integration when available, falls back to comprehensive mock data (84 positions: 19 stocks, 65 options) when TradeStation unavailable, maintaining data structure compatibility. ✅ FRONTEND COMPATIBILITY VERIFIED: Response structure matches expected format with 'type' field for position identification, portfolio_summary included, all required fields present for Move to Portfolio X functionality. SUCCESS RATE: 100% (9/9 phases passed). REQUIREMENTS SATISFACTION: 5/5 requirements met. Portfolio Management Service with TradeStation integration is production-ready and fully supports the Move to Portfolio X functionality with real live account data."
+        - working: false
+          agent: "testing"
+          comment: "🚨 CRITICAL PORTFOLIO VALUES DISCREPANCY IDENTIFIED - MAJOR ISSUE FOUND: Comprehensive testing of TradeStation portfolio values revealed a critical discrepancy between data sources. ✅ ENDPOINTS TESTED: All 3 endpoints working (GET /api/tradestation/accounts, GET /api/tradestation/accounts/11775499/positions, GET /api/portfolio-management/portfolios/tradestation-main/positions). ✅ TARGET ACCOUNT VERIFIED: Account 11775499 found (Margin account, Active status, USD currency). ❌ CRITICAL VALUE DISCREPANCY: TradeStation Direct API shows $969,473.90 total portfolio value vs Portfolio Management Service shows $790,173.50 - a difference of $179,300.40 (18.5%). ❌ USER ISSUE CONFIRMED: User reported seeing $790,174 which matches Portfolio Management Service values, but these are INCORRECT. The true portfolio value from TradeStation Direct API is $969,473.90. ❌ P&L DISCREPANCY: TradeStation shows -$98,670.74 (-10.18%) vs Portfolio Management shows -$3,365.00 (-0.42%). ✅ ROOT CAUSE IDENTIFIED: Portfolio Management Service is not correctly calculating or retrieving values from TradeStation API. The service appears to be using stale, cached, or incorrectly calculated data. 🚨 URGENT ACTION REQUIRED: Fix Portfolio Management Service to use correct TradeStation Direct API values, update frontend to display accurate portfolio values, implement data validation to prevent such discrepancies."
     implemented: true
     working: true
     file: "/app/backend/smart_rebalancing_service.py"
