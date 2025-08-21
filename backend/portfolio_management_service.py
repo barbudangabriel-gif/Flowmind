@@ -56,15 +56,22 @@ class PositionMove:
     metadata: Dict[str, Any]
 
 class PortfolioManagementService:
-    def __init__(self):
+    def __init__(self, ts_auth=None):
         self.logger = logger
         # In-memory storage for MVP (will be replaced with MongoDB)
         self.portfolios: Dict[str, Portfolio] = {}
         self.positions: Dict[str, Position] = {}
         self.position_moves: List[PositionMove] = []
         
-        # TradeStation client for real data
-        self.ts_client = TradeStationClient()
+        # TradeStation client for real data (optional)
+        self.ts_client = None
+        if ts_auth:
+            try:
+                from tradestation_client import TradeStationClient
+                self.ts_client = TradeStationClient(ts_auth)
+            except Exception as e:
+                logger.warning(f"Failed to initialize TradeStation client: {e}")
+        
         self._initialized = False
         
         self._initialize_default_portfolios()
