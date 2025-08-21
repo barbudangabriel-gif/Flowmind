@@ -504,59 +504,115 @@ const IndividualPortfolio = () => {
                 </tr>
               </thead>
               <tbody>
-                {positions.map((position, index) => {
-                  const pnlPercent = position.unrealized_pnl_percent || 0;
-                  const accountPercent = displayPortfolio?.total_value > 0 
-                    ? (position.market_value / displayPortfolio.total_value) * 100 
-                    : 0;
-                  
+                {Object.keys(groupedPositions).sort().map((symbol) => {
+                  const symbolPositions = groupedPositions[symbol];
+                  const aggregate = symbolPositions._aggregate;
+                  const isExpanded = expandedTickers.has(symbol);
+                  const pnlPercentAggregate = aggregate.totalValue > 0 ? (aggregate.totalPnL / (aggregate.totalValue - aggregate.totalPnL)) * 100 : 0;
+
                   return (
-                    <tr 
-                      key={position.id} 
-                      className="border-b border-slate-700 hover:bg-slate-700 cursor-context-menu"
-                      onContextMenu={(e) => handleContextMenu(e, position)}
-                      title="Right-click to move position to another portfolio"
-                    >
-                      <td className="py-3 px-2">
-                        <div>
-                          <span className="text-blue-400 font-medium cursor-pointer hover:underline">
-                            {position.symbol}
-                          </span>
-                          {position.position_type === 'option' && (
-                            <div className="text-xs text-slate-400">
-                              {position.metadata?.option_type} {position.metadata?.strike} {position.metadata?.expiry}
+                    <React.Fragment key={symbol}>
+                      {/* Parent Row - Ticker Summary */}
+                      <tr 
+                        className="border-b border-slate-600 bg-slate-750 hover:bg-slate-700 cursor-pointer"
+                        onClick={() => toggleTicker(symbol)}
+                        title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}
+                      >
+                        <td className="py-4 px-2">
+                          <div className="flex items-center">
+                            {isExpanded ? (
+                              <ChevronDown className="h-4 w-4 text-slate-400 mr-2" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-slate-400 mr-2" />
+                            )}
+                            <span className="text-blue-300 font-bold text-lg">
+                              {symbol}
+                            </span>
+                            <div className="ml-3 flex gap-1">
+                              {aggregate.hasStock && (
+                                <span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>
+                              )}
+                              {aggregate.hasOptions && (
+                                <span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="text-right py-3 px-2 font-medium text-slate-200">{position.quantity}</td>
-                      <td className="text-right py-3 px-2 text-slate-200">${position.avg_cost.toFixed(2)}</td>
-                      <td className="text-right py-3 px-2 font-medium text-slate-200">${position.current_price.toFixed(2)}</td>
-                      <td className="text-right py-3 px-2 font-medium text-slate-200">${position.market_value.toFixed(2)}</td>
-                      <td className="text-right py-3 px-2 font-medium text-blue-400">{accountPercent.toFixed(2)}%</td>
-                      <td className={`text-right py-3 px-2 font-medium ${getChangeColor(position.unrealized_pnl)}`}>
-                        {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
-                      </td>
-                      <td className={`text-right py-3 px-2 font-medium ${getChangeColor(pnlPercent)}`}>
-                        {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
-                      </td>
-                      <td className="text-center py-3 px-2">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          position.position_type === 'stock' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-purple-600 text-white'
-                        }`}>
-                          {position.position_type.toUpperCase()}
-                        </span>
-                      </td>
-                    </tr>
+                          </div>
+                        </td>
+                        <td className="text-right py-4 px-2 font-bold text-slate-200">{aggregate.totalQuantity.toLocaleString()}</td>
+                        <td className="text-right py-4 px-2 text-slate-200">${aggregate.avgCost.toFixed(2)}</td>
+                        <td className="text-right py-4 px-2 text-slate-400">-</td>
+                        <td className="text-right py-4 px-2 font-bold text-white">${aggregate.totalValue.toFixed(2)}</td>
+                        <td className="text-right py-4 px-2 font-bold text-blue-300">{aggregate.accountPercent.toFixed(2)}%</td>
+                        <td className={`text-right py-4 px-2 font-bold ${getChangeColor(aggregate.totalPnL)}`}>
+                          {aggregate.totalPnL >= 0 ? '+' : ''}${aggregate.totalPnL.toFixed(2)}
+                        </td>
+                        <td className={`text-right py-4 px-2 font-bold ${getChangeColor(pnlPercentAggregate)}`}>
+                          {pnlPercentAggregate >= 0 ? '+' : ''}{pnlPercentAggregate.toFixed(2)}%
+                        </td>
+                        <td className="text-center py-4 px-2">
+                          <span className="px-2 py-1 rounded text-xs font-medium bg-slate-600 text-white">
+                            {aggregate.positionCount} POS
+                          </span>
+                        </td>
+                      </tr>
+
+                      {/* Child Rows - Individual Positions */}
+                      {isExpanded && symbolPositions.map((position, index) => {
+                        const pnlPercent = position.unrealized_pnl_percent || 0;
+                        const accountPercent = displayPortfolio?.total_value > 0 
+                          ? (position.market_value / displayPortfolio.total_value) * 100 
+                          : 0;
+                        
+                        return (
+                          <tr 
+                            key={position.id} 
+                            className="border-b border-slate-700 hover:bg-slate-700 cursor-context-menu bg-slate-800"
+                            onContextMenu={(e) => handleContextMenu(e, position)}
+                            title="Right-click to move position to another portfolio"
+                          >
+                            <td className="py-3 px-2 pl-8">
+                              <div>
+                                <span className="text-slate-300 font-medium">
+                                  ↳ {position.position_type === 'stock' ? 'Stock' : 'Option'}
+                                </span>
+                                {position.position_type === 'option' && (
+                                  <div className="text-xs text-slate-400 ml-3">
+                                    {position.metadata?.option_type} {position.metadata?.strike} {position.metadata?.expiry}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="text-right py-3 px-2 text-slate-200">{position.quantity}</td>
+                            <td className="text-right py-3 px-2 text-slate-200">${position.avg_cost.toFixed(2)}</td>
+                            <td className="text-right py-3 px-2 text-slate-200">${position.current_price.toFixed(2)}</td>
+                            <td className="text-right py-3 px-2 text-slate-200">${position.market_value.toFixed(2)}</td>
+                            <td className="text-right py-3 px-2 text-blue-400">{accountPercent.toFixed(2)}%</td>
+                            <td className={`text-right py-3 px-2 ${getChangeColor(position.unrealized_pnl)}`}>
+                              {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
+                            </td>
+                            <td className={`text-right py-3 px-2 ${getChangeColor(pnlPercent)}`}>
+                              {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
+                            </td>
+                            <td className="text-center py-3 px-2">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                position.position_type === 'stock' 
+                                  ? 'bg-blue-600 text-white' 
+                                  : 'bg-purple-600 text-white'
+                              }`}>
+                                {position.position_type.toUpperCase()}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </React.Fragment>
                   );
                 })}
                 
                 {/* Total Row */}
                 {positions.length > 0 && (
                   <tr className="border-t-2 border-slate-600 bg-slate-700">
-                    <td className="py-3 px-2 font-bold text-slate-200">TOTAL</td>
+                    <td className="py-3 px-2 font-bold text-slate-200">TOTAL PORTFOLIO</td>
                     <td className="text-right py-3 px-2 font-bold text-slate-200">
                       {positions.reduce((sum, pos) => sum + Math.abs(pos.quantity), 0).toLocaleString()}
                     </td>
@@ -577,7 +633,7 @@ const IndividualPortfolio = () => {
                     </td>
                     <td className="text-center py-3 px-2">
                       <span className="px-2 py-1 rounded text-xs font-medium bg-slate-600 text-white">
-                        {positions.length} POS
+                        {Object.keys(groupedPositions).length} SYMBOLS
                       </span>
                     </td>
                   </tr>
