@@ -276,22 +276,36 @@ const IndividualPortfolio = () => {
       groups[symbol].push(position);
     });
     
-    // Calculate aggregate data for each ticker
+    // Sort positions within each group: stock first, then options
     Object.keys(groups).forEach(symbol => {
+      groups[symbol].sort((a, b) => {
+        // Stock always comes first
+        if (a.position_type === 'stock' && b.position_type !== 'stock') return -1;
+        if (a.position_type !== 'stock' && b.position_type === 'stock') return 1;
+        return 0;
+      });
+      
+      // Calculate aggregate data for the ticker
       const symbolPositions = groups[symbol];
       const totalValue = symbolPositions.reduce((sum, pos) => sum + pos.market_value, 0);
       const totalPnL = symbolPositions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
       const totalQuantity = symbolPositions.reduce((sum, pos) => sum + Math.abs(pos.quantity), 0);
-      const avgCost = symbolPositions.reduce((sum, pos) => sum + (pos.avg_cost * Math.abs(pos.quantity)), 0) / totalQuantity;
       const accountPercent = displayPortfolio?.total_value > 0 ? (totalValue / displayPortfolio.total_value) * 100 : 0;
+      const pnlPercent = totalValue > 0 ? (totalPnL / (totalValue - totalPnL)) * 100 : 0;
       
-      groups[symbol]._aggregate = {
+      // Get current price from the first stock position, or average if no stock
+      const stockPosition = symbolPositions.find(p => p.position_type === 'stock');
+      const currentPrice = stockPosition ? stockPosition.current_price : 
+        symbolPositions.reduce((sum, pos) => sum + pos.current_price, 0) / symbolPositions.length;
+      
+      groups[symbol]._summary = {
         symbol,
         totalValue,
         totalPnL,
         totalQuantity,
-        avgCost,
         accountPercent,
+        pnlPercent,
+        currentPrice,
         positionCount: symbolPositions.length,
         hasStock: symbolPositions.some(p => p.position_type === 'stock'),
         hasOptions: symbolPositions.some(p => p.position_type === 'option')
