@@ -446,6 +446,7 @@ const IndividualPortfolio = () => {
                   <th className="text-right py-3 px-2 font-medium text-slate-300">Avg Cost</th>
                   <th className="text-right py-3 px-2 font-medium text-slate-300">Current Price</th>
                   <th className="text-right py-3 px-2 font-medium text-slate-300">Market Value</th>
+                  <th className="text-right py-3 px-2 font-medium text-slate-300">% din Cont</th>
                   <th className="text-right py-3 px-2 font-medium text-slate-300">Unrealized P&L</th>
                   <th className="text-right py-3 px-2 font-medium text-slate-300">P&L %</th>
                   <th className="text-center py-3 px-2 font-medium text-slate-300">Type</th>
