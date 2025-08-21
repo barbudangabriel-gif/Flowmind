@@ -40,6 +40,7 @@ const PortfolioCharts = () => {
   // State management
   const [activeFilter, setActiveFilter] = useState('closed'); // 'closed' | 'all'
   const [assetFilter, setAssetFilter] = useState('combined'); // 'stocks' | 'options' | 'combined'
+  const [allocationView, setAllocationView] = useState('stocks'); // 'stocks' | 'options' for pie chart
   const [timeFilter, setTimeFilter] = useState('all'); // 'daily' | 'weekly' | 'monthly' | 'all' | 'custom'
   const [showCalendar, setShowCalendar] = useState(false);
   const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
