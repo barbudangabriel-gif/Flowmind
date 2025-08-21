@@ -517,12 +517,12 @@ const IndividualPortfolio = () => {
           
           <div className="bg-red-900 border border-red-700 rounded-lg p-4 flex items-center justify-between">
             <div className="flex items-center">
-              <AlertTriangle className="text-red-500 mr-3" size={20} />
-              <span className="text-red-700">
-                <strong>Warning:</strong> IT is at high risk of performing badly. <span className="text-blue-600 underline cursor-pointer">Learn why »</span>
+              <AlertTriangle className="text-red-400 mr-3" size={20} />
+              <span className="text-red-300">
+                <strong>Warning:</strong> IT is at high risk of performing badly. <span className="text-blue-400 underline cursor-pointer">Learn why »</span>
               </span>
             </div>
-            <button className="text-red-500 hover:text-red-700">
+            <button className="text-red-400 hover:text-red-300">
               <X size={20} />
             </button>
           </div>
