@@ -112,27 +112,33 @@ class TradeStationConnectivityTester:
             try:
                 data = response.json()
                 
-                # Check if we have account data
-                if isinstance(data, list) and len(data) > 0:
-                    account_count = len(data)
-                    first_account = data[0]
-                    account_id = first_account.get('AccountID', 'Unknown')
-                    account_type = first_account.get('TypeDescription', 'Unknown')
+                # Check for the correct response format: {"status": "success", "accounts": [...]}
+                if isinstance(data, dict) and 'accounts' in data and data.get('status') == 'success':
+                    accounts = data['accounts']
+                    account_count = len(accounts)
                     
-                    self.log_test("TradeStation Accounts API", True, 
-                        f"Found {account_count} accounts, First: {account_id} ({account_type})")
-                    
-                    # Print account details for debugging
-                    print("   📊 Account Details:")
-                    for i, account in enumerate(data[:2]):  # Show first 2 accounts
-                        print(f"     Account {i+1}:")
-                        print(f"       - ID: {account.get('AccountID', 'N/A')}")
-                        print(f"       - Type: {account.get('TypeDescription', 'N/A')}")
-                        print(f"       - Status: {account.get('Status', 'N/A')}")
-                        print(f"       - Currency: {account.get('Currency', 'N/A')}")
-                    
-                    return True
-                    
+                    if account_count > 0:
+                        first_account = accounts[0]
+                        account_id = first_account.get('AccountID', 'Unknown')
+                        account_type = first_account.get('AccountType', 'Unknown')
+                        
+                        self.log_test("TradeStation Accounts API", True, 
+                            f"Found {account_count} accounts, First: {account_id} ({account_type})")
+                        
+                        # Print account details for debugging
+                        print("   📊 Account Details:")
+                        for i, account in enumerate(accounts[:2]):  # Show first 2 accounts
+                            print(f"     Account {i+1}:")
+                            print(f"       - ID: {account.get('AccountID', 'N/A')}")
+                            print(f"       - Type: {account.get('AccountType', 'N/A')}")
+                            print(f"       - Status: {account.get('Status', 'N/A')}")
+                            print(f"       - Currency: {account.get('Currency', 'N/A')}")
+                        
+                        return True
+                    else:
+                        self.log_test("TradeStation Accounts API", False, "No accounts found in response")
+                        return False
+                        
                 elif isinstance(data, dict):
                     # Check if it's an error response
                     if 'error' in data or 'message' in data:
@@ -140,7 +146,7 @@ class TradeStationConnectivityTester:
                         self.log_test("TradeStation Accounts API", False, f"API Error: {error_msg}")
                         return False
                     else:
-                        self.log_test("TradeStation Accounts API", False, "Unexpected response format")
+                        self.log_test("TradeStation Accounts API", False, f"Unexpected response format: {data}")
                         return False
                 else:
                     self.log_test("TradeStation Accounts API", False, "Empty or invalid response")
