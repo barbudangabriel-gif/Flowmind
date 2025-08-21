@@ -76,6 +76,7 @@ trading_service = TradingService(ts_client)
 # Initialize new services
 portfolio_charts_service = PortfolioChartsService()
 smart_rebalancing_service = SmartRebalancingService()
+portfolio_management_service = PortfolioManagementService()
 
 # Create the main app without a prefix
 app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
