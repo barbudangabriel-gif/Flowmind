@@ -55,8 +55,21 @@ const PortfolioCharts = () => {
     stocks: '#10B981', // Green
     options: '#3B82F6', // Blue  
     combined: '#F59E0B', // Orange
+    cash: '#8B5CF6', // Purple
+    margin: '#F59E0B', // Orange
     profit: '#10B981',
     loss: '#EF4444'
+  };
+
+  // Get color for allocation pie chart
+  const getAllocationColor = (item, index) => {
+    if (item.type === 'cash') return COLORS.cash;
+    if (item.type === 'margin') return COLORS.margin;
+    if (item.type === 'stocks') return COLORS.stocks;
+    if (item.type === 'options') return COLORS.options;
+    // Fallback colors for mixed items
+    const fallbackColors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'];
+    return fallbackColors[index % fallbackColors.length];
   };
 
   // Portfolio information
