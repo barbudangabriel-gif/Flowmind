@@ -44,17 +44,83 @@ const IndividualPortfolio = () => {
   // Current portfolio data
   const [currentPortfolio, setCurrentPortfolio] = useState(null);
 
-  // Load portfolio and positions data
+  // Load portfolio and positions data directly from TradeStation API
   useEffect(() => {
-    if (portfolioId && portfolios.length > 0) {
-      // Find current portfolio
+    if (portfolioId === 'tradestation-main') {
+      // For TradeStation Main, load REAL data directly from TradeStation API
+      const loadRealTradeStationData = async () => {
+        try {
+          setLoading(true);
+          
+          // Get accounts first
+          const accountsResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts`);
+          const accountsData = await accountsResponse.json();
+          
+          if (accountsData.status === 'success' && accountsData.accounts.length > 0) {
+            const mainAccount = accountsData.accounts.find(acc => acc.Type === 'Margin') || accountsData.accounts[0];
+            
+            // Get real positions from TradeStation
+            const positionsResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/positions`);
+            const positionsData = await positionsResponse.json();
+            
+            if (positionsData.positions) {
+              // Transform TradeStation positions to match frontend format
+              const transformedPositions = positionsData.positions.map(pos => ({
+                id: `ts-${pos.symbol}-${Math.random()}`,
+                symbol: pos.symbol,
+                quantity: pos.quantity,
+                avg_cost: pos.average_price || 0,
+                current_price: pos.mark_price || pos.current_price || 0,
+                market_value: pos.market_value || Math.abs(pos.quantity * (pos.mark_price || pos.current_price || 0)),
+                unrealized_pnl: pos.unrealized_pnl || 0,
+                unrealized_pnl_percent: pos.unrealized_pnl_percent || 0,
+                portfolio_id: 'tradestation-main',
+                position_type: pos.asset_type === 'STOCK' ? 'stock' : 'option',
+                metadata: {
+                  asset_type: pos.asset_type,
+                  source: 'tradestation_direct_api',
+                  ...pos
+                }
+              }));
+              
+              // Calculate portfolio totals
+              const totalValue = transformedPositions.reduce((sum, pos) => sum + pos.market_value, 0);
+              const totalPnl = transformedPositions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
+              
+              setPositions(transformedPositions);
+              setCurrentPortfolio({
+                id: 'tradestation-main',
+                name: 'TradeStation Main',
+                total_value: totalValue,
+                total_pnl: totalPnl,
+                positions_count: transformedPositions.length,
+                description: `Live TradeStation Account ${mainAccount.AccountID}`
+              });
+              
+              console.log('✅ Loaded REAL TradeStation positions:', {
+                count: transformedPositions.length,
+                symbols: transformedPositions.map(p => p.symbol),
+                totalValue,
+                totalPnl
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error loading real TradeStation data:', error);
+          setError(error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      loadRealTradeStationData();
+      
+    } else if (portfolioId && portfolios.length > 0) {
+      // For other portfolios, use Portfolio Management Service
       const portfolio = portfolios.find(p => p.id === portfolioId);
       setCurrentPortfolio(portfolio);
       
-      // Load positions for this portfolio
       fetchPortfolioPositions(portfolioId);
-      
-      // Load available portfolios for moving
       fetchAvailablePortfolios(portfolioId);
     }
   }, [portfolioId, portfolios]);
