@@ -232,69 +232,64 @@ class PortfolioManagementService:
 
     async def _initialize_mock_positions_fallback(self):
         """Initialize mock positions in TradeStation Main portfolio as fallback"""
-        logger.info("Using mock positions as fallback")
-        mock_positions = [
-            {
-                'symbol': 'AAPL',
-                'quantity': 100,
-                'avg_cost': 185.50,
-                'current_price': 189.25,
-                'position_type': 'stock',
-                'metadata': {'sector': 'Technology', 'source': 'mock'}
-            },
-            {
-                'symbol': 'MSFT',
-                'quantity': 50,
-                'avg_cost': 385.20,
-                'current_price': 392.45,
-                'position_type': 'stock',
-                'metadata': {'sector': 'Technology', 'source': 'mock'}
-            },
-            {
-                'symbol': 'QQQ',
-                'quantity': 200,
-                'avg_cost': 365.75,
-                'current_price': 372.80,
-                'position_type': 'stock',
-                'metadata': {'sector': 'ETF', 'source': 'mock'}
-            },
-            {
-                'symbol': 'TSLA',
-                'quantity': 25,
-                'avg_cost': 235.60,
-                'current_price': 248.45,
-                'position_type': 'stock',
-                'metadata': {'sector': 'Automotive', 'source': 'mock'}
-            },
-            {
-                'symbol': 'NVDA',
-                'quantity': 5,
-                'avg_cost': 875.30,
-                'current_price': 925.65,
-                'position_type': 'option',
-                'metadata': {
-                    'option_type': 'CALL',
-                    'strike': 900,
-                    'expiry': '2026-01-15',
-                    'source': 'mock'
-                }
-            },
-            {
-                'symbol': 'SPY',
-                'quantity': 10,
-                'avg_cost': 15.25,
-                'current_price': 12.80,
-                'position_type': 'option',
-                'metadata': {
-                    'option_type': 'CALL',
-                    'strike': 645,
-                    'expiry': '2024-12-31',
-                    'source': 'mock'
-                }
-            }
+        logger.info("Using mock positions as fallback - simulating 84 positions (19 stocks, 65 options)")
+        
+        # Clear existing positions first
+        existing_ts_positions = [pos_id for pos_id, pos in self.positions.items() 
+                               if pos.portfolio_id == 'tradestation-main']
+        for pos_id in existing_ts_positions:
+            del self.positions[pos_id]
+        
+        # Mock stock positions (19 stocks)
+        stock_positions = [
+            {'symbol': 'AAPL', 'quantity': 100, 'avg_cost': 185.50, 'current_price': 189.25},
+            {'symbol': 'MSFT', 'quantity': 50, 'avg_cost': 385.20, 'current_price': 392.45},
+            {'symbol': 'GOOGL', 'quantity': 25, 'avg_cost': 2750.00, 'current_price': 2820.30},
+            {'symbol': 'AMZN', 'quantity': 30, 'avg_cost': 3200.00, 'current_price': 3350.75},
+            {'symbol': 'TSLA', 'quantity': 40, 'avg_cost': 235.60, 'current_price': 248.45},
+            {'symbol': 'NVDA', 'quantity': 20, 'avg_cost': 875.30, 'current_price': 925.65},
+            {'symbol': 'META', 'quantity': 35, 'avg_cost': 485.20, 'current_price': 502.80},
+            {'symbol': 'NFLX', 'quantity': 15, 'avg_cost': 625.40, 'current_price': 645.90},
+            {'symbol': 'QQQ', 'quantity': 200, 'avg_cost': 365.75, 'current_price': 372.80},
+            {'symbol': 'SPY', 'quantity': 150, 'avg_cost': 435.20, 'current_price': 442.15},
+            {'symbol': 'IWM', 'quantity': 100, 'avg_cost': 218.30, 'current_price': 224.75},
+            {'symbol': 'DIA', 'quantity': 75, 'avg_cost': 445.60, 'current_price': 448.90},
+            {'symbol': 'VTI', 'quantity': 80, 'avg_cost': 245.80, 'current_price': 251.20},
+            {'symbol': 'ARKK', 'quantity': 60, 'avg_cost': 68.90, 'current_price': 72.45},
+            {'symbol': 'XLK', 'quantity': 45, 'avg_cost': 185.30, 'current_price': 192.80},
+            {'symbol': 'JPM', 'quantity': 25, 'avg_cost': 165.40, 'current_price': 172.90},
+            {'symbol': 'JNJ', 'quantity': 30, 'avg_cost': 158.70, 'current_price': 162.45},
+            {'symbol': 'PG', 'quantity': 40, 'avg_cost': 145.20, 'current_price': 148.90},
+            {'symbol': 'KO', 'quantity': 50, 'avg_cost': 58.30, 'current_price': 61.75}
         ]
         
-        for pos_data in mock_positions:
+        # Mock option positions (65 options)
+        option_positions = []
+        option_symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'QQQ', 'SPY']
+        option_types = ['CALL', 'PUT']
+        
+        for i in range(65):
+            symbol = option_symbols[i % len(option_symbols)]
+            option_type = option_types[i % 2]
+            strike_base = {'AAPL': 190, 'MSFT': 390, 'GOOGL': 2800, 'AMZN': 3300, 'TSLA': 250, 
+                          'NVDA': 900, 'META': 500, 'NFLX': 640, 'QQQ': 370, 'SPY': 440}
+            
+            strike = strike_base.get(symbol, 100) + (i % 10 - 5) * 5  # Vary strikes
+            expiry_months = ['2024-12-20', '2025-01-17', '2025-02-21', '2025-03-21', '2025-06-20', '2026-01-15']
+            
+            option_positions.append({
+                'symbol': f"{symbol}_{expiry_months[i % len(expiry_months)]}_{strike}_{option_type}",
+                'underlying': symbol,
+                'quantity': 1 + (i % 5),  # 1-5 contracts
+                'avg_cost': 5.50 + (i % 20),  # $5.50 - $24.50 per contract
+                'current_price': 6.25 + (i % 18),  # Current option price
+                'option_type': option_type,
+                'strike': strike,
+                'expiry': expiry_months[i % len(expiry_months)]
+            })
+        
+        # Add stock positions
+        for pos_data in stock_positions:
             position_id = str(uuid.uuid4())
             market_value = abs(pos_data['quantity']) * pos_data['current_price']
             cost_basis = abs(pos_data['quantity']) * pos_data['avg_cost']
@@ -306,16 +301,49 @@ class PortfolioManagementService:
                 quantity=pos_data['quantity'],
                 avg_cost=pos_data['avg_cost'],
                 current_price=pos_data['current_price'],
-                position_type=pos_data['position_type'],
+                position_type='stock',
                 market_value=market_value,
                 unrealized_pnl=unrealized_pnl,
                 portfolio_id='tradestation-main',
                 added_date=datetime.now(),
                 last_updated=datetime.now(),
-                metadata=pos_data['metadata']
+                metadata={'sector': 'Various', 'source': 'mock_fallback', 'asset_type': 'STOCK'}
             )
             
             self.positions[position_id] = position
+        
+        # Add option positions
+        for pos_data in option_positions:
+            position_id = str(uuid.uuid4())
+            market_value = abs(pos_data['quantity']) * pos_data['current_price'] * 100  # Options are per 100 shares
+            cost_basis = abs(pos_data['quantity']) * pos_data['avg_cost'] * 100
+            unrealized_pnl = market_value - cost_basis
+            
+            position = Position(
+                id=position_id,
+                symbol=pos_data['symbol'],
+                quantity=pos_data['quantity'],
+                avg_cost=pos_data['avg_cost'],
+                current_price=pos_data['current_price'],
+                position_type='option',
+                market_value=market_value,
+                unrealized_pnl=unrealized_pnl,
+                portfolio_id='tradestation-main',
+                added_date=datetime.now(),
+                last_updated=datetime.now(),
+                metadata={
+                    'underlying_symbol': pos_data['underlying'],
+                    'option_type': pos_data['option_type'],
+                    'strike_price': pos_data['strike'],
+                    'expiration_date': pos_data['expiry'],
+                    'source': 'mock_fallback',
+                    'asset_type': 'OPTION'
+                }
+            )
+            
+            self.positions[position_id] = position
+        
+        logger.info(f"Initialized {len(stock_positions)} stock positions and {len(option_positions)} option positions")
         
         # Update portfolio totals
         await self._update_portfolio_totals('tradestation-main')
