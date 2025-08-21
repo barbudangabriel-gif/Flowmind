@@ -65,6 +65,7 @@ const CreatePortfolio = React.lazy(() => import("./components/CreatePortfolio"))
 const AddSymbolsToPortfolio = React.lazy(() => import("./components/AddSymbolsToPortfolio"));
 const AddLotsToPortfolio = React.lazy(() => import("./components/AddLotsToPortfolio"));
 const IndividualPortfolio = React.lazy(() => import("./components/IndividualPortfolio"));
+const TradeStationMainPortfolio = React.lazy(() => import("./components/TradeStationMainPortfolio"));
 const PortfolioCharts = React.lazy(() => import("./components/PortfolioCharts"));
 const SmartRebalancingAgent = React.lazy(() => import("./components/SmartRebalancingAgent"));
 const PortfolioTradeList = React.lazy(() => import("./components/PortfolioTradeList"));
