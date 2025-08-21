@@ -262,8 +262,8 @@ class TradeStationConnectivityTester:
                 try:
                     positions_data = positions_response.json()
                     
-                    if isinstance(positions_data, dict) and 'data' in positions_data:
-                        positions = positions_data['data']
+                    if isinstance(positions_data, dict) and 'positions' in positions_data:
+                        positions = positions_data['positions']
                         position_count = len(positions) if isinstance(positions, list) else 0
                         
                         self.log_test("TradeStation Positions", True, 
@@ -273,9 +273,9 @@ class TradeStationConnectivityTester:
                         if positions and len(positions) > 0:
                             print("   📊 Sample Positions:")
                             for i, pos in enumerate(positions[:3]):  # Show first 3
-                                symbol = pos.get('Symbol', 'N/A')
-                                quantity = pos.get('Quantity', 0)
-                                market_value = pos.get('MarketValue', 0)
+                                symbol = pos.get('symbol', 'N/A')
+                                quantity = pos.get('quantity', 0)
+                                market_value = pos.get('market_value', 0)
                                 print(f"     {i+1}. {symbol}: {quantity} shares, ${market_value:.2f}")
                         
                         return True
