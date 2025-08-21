@@ -11,7 +11,9 @@ import {
   BarChart3,
   FileText,
   Brain,
-  PieChart as PieChartIcon
+  PieChart as PieChartIcon,
+  Target,
+  DollarSign
 } from 'lucide-react';
 import ContextMenu from './ContextMenu';
 import usePortfolioManagement from '../hooks/usePortfolioManagement';
