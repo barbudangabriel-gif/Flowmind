@@ -76,7 +76,7 @@ trading_service = TradingService(ts_client)
 # Initialize new services
 portfolio_charts_service = PortfolioChartsService()
 smart_rebalancing_service = SmartRebalancingService()
-portfolio_management_service = PortfolioManagementService()
+portfolio_management_service = PortfolioManagementService(ts_auth)
 
 # Global flag to track initialization
 portfolio_service_initialized = False
