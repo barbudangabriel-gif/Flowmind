@@ -65,9 +65,22 @@ class PortfolioManagementService:
         
         # TradeStation client for real data
         self.ts_client = TradeStationClient()
+        self._initialized = False
         
         self._initialize_default_portfolios()
-        # Note: We'll load real positions from TradeStation instead of mock data
+        # Note: We'll load real positions from TradeStation via initialize() method
+
+    async def initialize(self):
+        """Initialize the service with real TradeStation data"""
+        if not self._initialized:
+            try:
+                await self._load_tradestation_positions()
+                self._initialized = True
+                logger.info("Portfolio management service initialized with TradeStation data")
+            except Exception as e:
+                logger.error(f"Failed to initialize with TradeStation data: {str(e)}")
+                await self._initialize_mock_positions_fallback()
+                self._initialized = True
 
     def _initialize_default_portfolios(self):
         """Initialize default portfolio structure"""
