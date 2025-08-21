@@ -458,26 +458,26 @@ const IndividualPortfolio = () => {
                   return (
                     <tr 
                       key={position.id} 
-                      className="border-b border-gray-100 hover:bg-gray-50 cursor-context-menu"
+                      className="border-b border-slate-700 hover:bg-slate-700 cursor-context-menu"
                       onContextMenu={(e) => handleContextMenu(e, position)}
                       title="Right-click to move position to another portfolio"
                     >
                       <td className="py-3 px-2">
                         <div>
-                          <span className="text-blue-600 font-medium cursor-pointer hover:underline">
+                          <span className="text-blue-400 font-medium cursor-pointer hover:underline">
                             {position.symbol}
                           </span>
                           {position.position_type === 'option' && (
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-slate-400">
                               {position.metadata?.option_type} {position.metadata?.strike} {position.metadata?.expiry}
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="text-right py-3 px-2 font-medium">{position.quantity}</td>
-                      <td className="text-right py-3 px-2">${position.avg_cost.toFixed(2)}</td>
-                      <td className="text-right py-3 px-2 font-medium">${position.current_price.toFixed(2)}</td>
-                      <td className="text-right py-3 px-2 font-medium">${position.market_value.toFixed(2)}</td>
+                      <td className="text-right py-3 px-2 font-medium text-slate-200">{position.quantity}</td>
+                      <td className="text-right py-3 px-2 text-slate-200">${position.avg_cost.toFixed(2)}</td>
+                      <td className="text-right py-3 px-2 font-medium text-slate-200">${position.current_price.toFixed(2)}</td>
+                      <td className="text-right py-3 px-2 font-medium text-slate-200">${position.market_value.toFixed(2)}</td>
                       <td className={`text-right py-3 px-2 font-medium ${getChangeColor(position.unrealized_pnl)}`}>
                         {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
                       </td>
@@ -487,8 +487,8 @@ const IndividualPortfolio = () => {
                       <td className="text-center py-3 px-2">
                         <span className={`px-2 py-1 rounded text-xs font-medium ${
                           position.position_type === 'stock' 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-purple-100 text-purple-800'
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-purple-600 text-white'
                         }`}>
                           {position.position_type.toUpperCase()}
                         </span>
