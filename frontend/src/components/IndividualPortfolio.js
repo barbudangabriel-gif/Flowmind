@@ -218,8 +218,8 @@ const IndividualPortfolio = () => {
         stocksValue: 0,
         optionsCount: 0,
         optionsValue: 0,
-        totalAccountValue: displayPortfolio?.total_value || 0,
-        cashBalance: 0 // Will be fetched from TradeStation API
+        totalAccountValue: (displayPortfolio?.total_value || 0) + cashBalance,
+        cashBalance: cashBalance
       };
     }
 
@@ -229,8 +229,7 @@ const IndividualPortfolio = () => {
     const stocksValue = stocks.reduce((sum, pos) => sum + (pos.market_value || 0), 0);
     const optionsValue = options.reduce((sum, pos) => sum + (pos.market_value || 0), 0);
     
-    // For now, cash balance will be 0, but we can fetch it from TradeStation API later
-    const cashBalance = 0;
+    // Total account value includes positions + cash balance
     const totalAccountValue = (displayPortfolio?.total_value || 0) + cashBalance;
 
     return {
@@ -239,9 +238,9 @@ const IndividualPortfolio = () => {
       optionsCount: options.length,
       optionsValue,
       totalAccountValue,
-      cashBalance
+      cashBalance: cashBalance
     };
-  }, [positions, displayPortfolio?.total_value]);
+  }, [positions, displayPortfolio?.total_value, cashBalance]);
 
   const getRatingColor = (rating) => {
     if (rating >= 4) return 'bg-green-500 text-white';
