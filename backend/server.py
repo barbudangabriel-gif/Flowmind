@@ -4391,6 +4391,9 @@ async def get_all_portfolios():
 async def get_portfolio_positions(portfolio_id: str):
     """Get all positions for a specific portfolio"""
     try:
+        # Ensure service is initialized with TradeStation data
+        await initialize_portfolio_service()
+        
         positions = await portfolio_management_service.get_portfolio_positions(portfolio_id)
         
         positions_data = []
