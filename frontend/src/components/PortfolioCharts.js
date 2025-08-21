@@ -157,10 +157,19 @@ const PortfolioCharts = () => {
 
     setPerformanceData(performanceData);
     setAllocationData(allocationData);
+    // Calculate margin usage based on cash availability
+    const cashAvailable = currentPortfolio.cash || 100000;
+    const totalPortfolioValue = currentPortfolio.value;
+    const marginUsed = Math.max(0, totalPortfolioValue - cashAvailable);
+    const marginAvailable = cashAvailable > 0 ? 0 : 25000; // Only show margin if no cash
+
     setPortfolioData({
       total_value: currentPortfolio.value,
       total_pnl: 2500.75,
-      cash_balance: currentPortfolio.cash
+      cash_balance: cashAvailable,
+      margin_used: marginUsed,
+      margin_available: marginAvailable,
+      buying_power: cashAvailable + (cashAvailable > 0 ? 0 : 25000)
     });
   };
 
