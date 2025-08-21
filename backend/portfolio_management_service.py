@@ -130,7 +130,82 @@ class PortfolioManagementService:
             )
             self.portfolios[portfolio.id] = portfolio
 
-    def _initialize_mock_positions(self):
+    async def _load_tradestation_positions(self, account_id: str = None):
+        """Load real positions from TradeStation API"""
+        try:
+            if not account_id:
+                # Get first available account
+                accounts_response = await self.ts_client.get_accounts()
+                if not accounts_response or not accounts_response.get('accounts'):
+                    logger.warning("No TradeStation accounts found")
+                    return
+                account_id = accounts_response['accounts'][0]['AccountID']
+                logger.info(f"Using TradeStation account: {account_id}")
+            
+            # Get positions from TradeStation
+            ts_positions = await self.ts_client.get_positions(account_id)
+            logger.info(f"Loaded {len(ts_positions)} positions from TradeStation")
+            
+            # Clear existing positions in TradeStation Main portfolio
+            existing_ts_positions = [pos_id for pos_id, pos in self.positions.items() 
+                                   if pos.portfolio_id == 'tradestation-main']
+            for pos_id in existing_ts_positions:
+                del self.positions[pos_id]
+            
+            # Convert TradeStation positions to our format
+            for ts_pos in ts_positions:
+                position_id = str(uuid.uuid4())
+                
+                # Calculate market value and P&L
+                market_value = abs(ts_pos.quantity * ts_pos.mark_price)
+                cost_basis = abs(ts_pos.quantity * ts_pos.average_price)
+                unrealized_pnl = market_value - cost_basis
+                
+                # Determine position type
+                position_type = 'stock' if ts_pos.asset_type == 'STOCK' else 'option'
+                
+                # Create metadata based on position type
+                metadata = {
+                    'asset_type': ts_pos.asset_type,
+                    'account_id': account_id,
+                    'ts_position_id': getattr(ts_pos, 'position_id', None)
+                }
+                
+                if position_type == 'option':
+                    # Add option-specific metadata if available
+                    metadata.update({
+                        'option_type': getattr(ts_pos, 'option_type', 'Unknown'),
+                        'strike': getattr(ts_pos, 'strike_price', None),
+                        'expiry': getattr(ts_pos, 'expiry_date', None)
+                    })
+                
+                position = Position(
+                    id=position_id,
+                    symbol=ts_pos.symbol,
+                    quantity=ts_pos.quantity,
+                    avg_cost=ts_pos.average_price,
+                    current_price=ts_pos.mark_price,
+                    position_type=position_type,
+                    market_value=market_value,
+                    unrealized_pnl=unrealized_pnl,
+                    portfolio_id='tradestation-main',
+                    added_date=datetime.now(),
+                    last_updated=datetime.now(),
+                    metadata=metadata
+                )
+                
+                self.positions[position_id] = position
+            
+            # Update TradeStation portfolio totals
+            await self._update_portfolio_totals('tradestation-main')
+            logger.info(f"Successfully loaded {len(ts_positions)} TradeStation positions")
+            
+        except Exception as e:
+            logger.error(f"Error loading TradeStation positions: {str(e)}")
+            # Fall back to mock data if TradeStation fails
+            await self._initialize_mock_positions_fallback()
+
+    async def _initialize_mock_positions_fallback(self):
         """Initialize mock positions in TradeStation Main portfolio"""
         mock_positions = [
             {
