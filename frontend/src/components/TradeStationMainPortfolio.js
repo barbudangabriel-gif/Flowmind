@@ -122,10 +122,10 @@ const TradeStationMainPortfolio = () => {
         totalMarketValue,
         totalUnrealizedPnL,
         percentChange,
-        totalPositions: positionsArray.length,
+        totalPositions: positions.length,
         stocks: stocks.length,
         options: options.length,
-        positions: positionsArray
+        positions: positions
       });
       
       setLastUpdated(new Date());
