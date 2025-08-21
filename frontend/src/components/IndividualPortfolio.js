@@ -262,6 +262,55 @@ const IndividualPortfolio = () => {
     return num.toString();
   };
 
+  // Group positions by ticker symbol
+  const groupedPositions = React.useMemo(() => {
+    if (!positions || positions.length === 0) return {};
+    
+    const groups = {};
+    positions.forEach(position => {
+      const symbol = position.symbol;
+      if (!groups[symbol]) {
+        groups[symbol] = [];
+      }
+      groups[symbol].push(position);
+    });
+    
+    // Calculate aggregate data for each ticker
+    Object.keys(groups).forEach(symbol => {
+      const symbolPositions = groups[symbol];
+      const totalValue = symbolPositions.reduce((sum, pos) => sum + pos.market_value, 0);
+      const totalPnL = symbolPositions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
+      const totalQuantity = symbolPositions.reduce((sum, pos) => sum + Math.abs(pos.quantity), 0);
+      const avgCost = symbolPositions.reduce((sum, pos) => sum + (pos.avg_cost * Math.abs(pos.quantity)), 0) / totalQuantity;
+      const accountPercent = displayPortfolio?.total_value > 0 ? (totalValue / displayPortfolio.total_value) * 100 : 0;
+      
+      groups[symbol]._aggregate = {
+        symbol,
+        totalValue,
+        totalPnL,
+        totalQuantity,
+        avgCost,
+        accountPercent,
+        positionCount: symbolPositions.length,
+        hasStock: symbolPositions.some(p => p.position_type === 'stock'),
+        hasOptions: symbolPositions.some(p => p.position_type === 'option')
+      };
+    });
+    
+    return groups;
+  }, [positions, displayPortfolio?.total_value]);
+
+  // Toggle ticker expansion
+  const toggleTicker = (symbol) => {
+    const newExpanded = new Set(expandedTickers);
+    if (newExpanded.has(symbol)) {
+      newExpanded.delete(symbol);
+    } else {
+      newExpanded.add(symbol);
+    }
+    setExpandedTickers(newExpanded);
+  };
+
   const tabs = [
     { id: 'summary', label: 'Summary' },
     { id: 'health-score', label: 'Health Score' },
