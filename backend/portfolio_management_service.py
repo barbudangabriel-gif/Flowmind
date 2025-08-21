@@ -484,20 +484,6 @@ class PortfolioManagementService:
         
         return sorted(moves, key=lambda x: x.move_date, reverse=True)
 
-    def _update_portfolio_totals(self, portfolio_id: str):
-        """Update portfolio totals based on current positions"""
-        if portfolio_id not in self.portfolios:
-            return
-        
-        portfolio_positions = [pos for pos in self.positions.values() if pos.portfolio_id == portfolio_id]
-        
-        total_value = sum(pos.market_value for pos in portfolio_positions)
-        total_pnl = sum(pos.unrealized_pnl for pos in portfolio_positions)
-        
-        self.portfolios[portfolio_id].total_value = total_value
-        self.portfolios[portfolio_id].total_pnl = total_pnl
-        self.portfolios[portfolio_id].positions_count = len(portfolio_positions)
-        self.portfolios[portfolio_id].last_updated = datetime.now()
 
     async def get_available_portfolios_for_move(self, current_portfolio_id: str) -> List[Portfolio]:
         """Get list of portfolios available for moving positions to"""
