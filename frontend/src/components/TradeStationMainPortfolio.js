@@ -145,6 +145,7 @@ const TradeStationMainPortfolio = () => {
       });
       
       setLastUpdated(new Date());
+      setError(null); // Clear any previous errors since we successfully loaded data
       
     } catch (err) {
       setError(err.message);
