@@ -151,25 +151,34 @@ class PortfolioManagementService:
             self.portfolios[portfolio.id] = portfolio
 
     async def _load_tradestation_positions(self, account_id: str = None):
-        """Load real positions from TradeStation API"""
+        """Load real positions from TradeStation API - NO MOCK DATA ALLOWED"""
         try:
-            if not self.ts_client:
-                logger.warning("TradeStation client not available, using fallback data")
-                await self._initialize_mock_positions_fallback()
-                return
-                
+            logger.info("🔄 Loading REAL TradeStation positions (NO MOCK DATA)")
+            
             if not account_id:
                 # Get first available account
                 accounts_response = await self.ts_client.get_accounts()
                 if not accounts_response or not accounts_response.get('accounts'):
-                    logger.warning("No TradeStation accounts found")
-                    return
+                    logger.error("❌ No TradeStation accounts found - CANNOT USE MOCK DATA")
+                    raise Exception("No TradeStation accounts available and mock data is disabled")
                 account_id = accounts_response['accounts'][0]['AccountID']
-                logger.info(f"Using TradeStation account: {account_id}")
+                logger.info(f"✅ Using TradeStation account: {account_id}")
             
-            # Get positions from TradeStation
-            ts_positions = await self.ts_client.get_positions(account_id)
-            logger.info(f"Loaded {len(ts_positions)} positions from TradeStation")
+            # Get positions from TradeStation - DIRECT API CALL
+            ts_positions_response = await self.ts_client.get_positions(account_id, simple=False)
+            
+            # Extract positions from response structure
+            if hasattr(ts_positions_response, 'positions'):
+                ts_positions = ts_positions_response.positions
+            elif isinstance(ts_positions_response, dict) and 'positions' in ts_positions_response:
+                ts_positions = ts_positions_response['positions']
+            elif isinstance(ts_positions_response, list):
+                ts_positions = ts_positions_response
+            else:
+                logger.error(f"❌ Unexpected TradeStation response structure: {type(ts_positions_response)}")
+                raise Exception("Invalid TradeStation API response structure")
+            
+            logger.info(f"✅ Retrieved {len(ts_positions)} REAL positions from TradeStation API")
             
             # Clear existing positions in TradeStation Main portfolio
             existing_ts_positions = [pos_id for pos_id, pos in self.positions.items() 
@@ -177,39 +186,44 @@ class PortfolioManagementService:
             for pos_id in existing_ts_positions:
                 del self.positions[pos_id]
             
-            # Convert TradeStation positions to our format
+            # Convert TradeStation positions to our format - REAL DATA ONLY
             for ts_pos in ts_positions:
                 position_id = str(uuid.uuid4())
                 
-                # Calculate market value and P&L
-                market_value = abs(ts_pos.quantity * ts_pos.mark_price)
-                cost_basis = abs(ts_pos.quantity * ts_pos.average_price)
-                unrealized_pnl = market_value - cost_basis
+                # Use real TradeStation data fields
+                market_value = abs(getattr(ts_pos, 'market_value', 0) or 
+                                 (getattr(ts_pos, 'quantity', 0) * getattr(ts_pos, 'mark_price', 0)))
+                cost_basis = abs(getattr(ts_pos, 'quantity', 0) * getattr(ts_pos, 'average_price', 0))
+                unrealized_pnl = getattr(ts_pos, 'unrealized_pnl', market_value - cost_basis)
                 
-                # Determine position type
-                position_type = 'stock' if ts_pos.asset_type == 'STOCK' else 'option'
+                # Determine position type from TradeStation data
+                asset_type = getattr(ts_pos, 'asset_type', 'UNKNOWN')
+                position_type = 'stock' if asset_type == 'STOCK' else 'option' if asset_type in ['STOCKOPTION', 'OPTION'] else 'unknown'
                 
-                # Create metadata based on position type
+                # Create metadata with REAL TradeStation source
                 metadata = {
-                    'asset_type': ts_pos.asset_type,
+                    'asset_type': asset_type,
                     'account_id': account_id,
-                    'ts_position_id': getattr(ts_pos, 'position_id', None)
+                    'ts_position_id': getattr(ts_pos, 'position_id', None),
+                    'source': 'tradestation_live_api',  # MARK AS REAL DATA
+                    'last_sync': datetime.now().isoformat()
                 }
                 
+                # Add option-specific metadata if available
                 if position_type == 'option':
-                    # Add option-specific metadata if available
                     metadata.update({
                         'option_type': getattr(ts_pos, 'option_type', 'Unknown'),
                         'strike': getattr(ts_pos, 'strike_price', None),
-                        'expiry': getattr(ts_pos, 'expiry_date', None)
+                        'expiry': getattr(ts_pos, 'expiry_date', None),
+                        'underlying': getattr(ts_pos, 'underlying_symbol', None)
                     })
                 
                 position = Position(
                     id=position_id,
-                    symbol=ts_pos.symbol,
-                    quantity=ts_pos.quantity,
-                    avg_cost=ts_pos.average_price,
-                    current_price=ts_pos.mark_price,
+                    symbol=getattr(ts_pos, 'symbol', 'UNKNOWN'),
+                    quantity=getattr(ts_pos, 'quantity', 0),
+                    avg_cost=getattr(ts_pos, 'average_price', 0),
+                    current_price=getattr(ts_pos, 'mark_price', 0) or getattr(ts_pos, 'last_price', 0),
                     position_type=position_type,
                     market_value=market_value,
                     unrealized_pnl=unrealized_pnl,
@@ -220,15 +234,16 @@ class PortfolioManagementService:
                 )
                 
                 self.positions[position_id] = position
+                logger.debug(f"✅ Added REAL position: {position.symbol} ({position.quantity} {position.position_type})")
             
-            # Update TradeStation portfolio totals
+            # Update TradeStation portfolio totals with REAL data
             await self._update_portfolio_totals('tradestation-main')
-            logger.info(f"Successfully loaded {len(ts_positions)} TradeStation positions")
+            logger.info(f"🎉 Successfully loaded {len(ts_positions)} REAL TradeStation positions - NO MOCK DATA USED")
             
         except Exception as e:
-            logger.error(f"Error loading TradeStation positions: {str(e)}")
-            # Fall back to mock data if TradeStation fails
-            await self._initialize_mock_positions_fallback()
+            logger.error(f"❌ CRITICAL ERROR loading TradeStation positions: {str(e)}")
+            # DO NOT FALL BACK TO MOCK DATA - RAISE ERROR INSTEAD
+            raise Exception(f"Failed to load real TradeStation positions: {str(e)}. Mock data is disabled.")
 
     async def _initialize_mock_positions_fallback(self):
         """Initialize mock positions in TradeStation Main portfolio as fallback"""
