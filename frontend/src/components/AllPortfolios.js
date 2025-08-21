@@ -115,11 +115,11 @@ const AllPortfolios = () => {
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Best Performer</p>
-                <p className="text-xl font-bold text-white">Portfolio 3</p>
-                <p className="text-sm text-green-400">+1.39%</p>
+                <p className="text-gray-400 text-sm">Active Portfolio</p>
+                <p className="text-xl font-bold text-white">HTech 15T</p>
+                <p className="text-sm text-green-400">+0.28%</p>
               </div>
-              <Target className="text-orange-400" size={32} />
+              <Target className="text-blue-400" size={32} />
             </div>
           </div>
         </div>
