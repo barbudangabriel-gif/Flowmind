@@ -535,7 +535,7 @@ const IndividualPortfolio = () => {
                     <React.Fragment key={symbol}>
                       {/* Ticker Row - Always shows aggregated data */}
                       <tr 
-                        className="border-b border-slate-600 bg-slate-750 hover:bg-slate-700 cursor-pointer"
+                        className="border-b border-slate-600 bg-slate-800 hover:bg-slate-700 cursor-pointer"
                         onClick={() => toggleTicker(symbol)}
                         title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}
                       >
