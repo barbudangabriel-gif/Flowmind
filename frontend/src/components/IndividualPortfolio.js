@@ -279,8 +279,9 @@ const IndividualPortfolio = () => {
         <div className="flex items-center mt-2">
           <Eye className="text-white mr-2" size={16} />
           <span className="text-3xl font-bold text-white">
-            ${displayPortfolio.total_value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ${portfolioStats.totalAccountValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
+          <span className="text-sm text-blue-200 ml-2">(Total Account Value)</span>
           <span className={`ml-4 text-lg font-medium ${displayPortfolio.total_pnl >= 0 ? 'text-green-300' : 'text-red-300'}`}>
             {displayPortfolio.total_pnl >= 0 ? '+' : ''}${Math.abs(displayPortfolio.total_pnl).toFixed(2)} ({changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%)
           </span>
