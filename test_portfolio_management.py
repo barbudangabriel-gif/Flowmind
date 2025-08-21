@@ -75,7 +75,8 @@ class PortfolioManagementTester:
             print("❌ Get portfolios endpoint failed")
             return False
         
-        portfolios = portfolios_data if isinstance(portfolios_data, list) else []
+        # Extract portfolios from nested response
+        portfolios = portfolios_data.get('portfolios', []) if isinstance(portfolios_data, dict) else []
         print(f"📊 Found {len(portfolios)} portfolios")
         
         # Verify we have 4 default portfolios
