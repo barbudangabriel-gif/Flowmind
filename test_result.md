@@ -6,7 +6,7 @@
 # PORTFOLIO CHARTS & SMART REBALANCING AGENT - IMPLEMENTATION IN PROGRESS
 #====================================================================================================
 
-user_current_task: "Implement Portfolio Charts with P&L visualization (excluding cash from charts) and Smart Rebalancing Agent with AI/ML capabilities for portfolio optimization. Features include performance tracking, allocation charts, Smart DCA with bottom-finding algorithms, and comprehensive risk analysis."
+user_current_task: "Implement 'Move to Portfolio X' functionality allowing users to categorize and transfer holdings from primary TradeStation portfolio into custom-defined portfolios via right-click context menu with aggregated dashboard view."
 
 ## Current Implementation Status: Portfolio Charts & Smart Rebalancing Agent
 
