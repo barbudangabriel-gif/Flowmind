@@ -34,7 +34,6 @@ const IndividualPortfolio = () => {
   // Portfolio management hook
   const {
     portfolios,
-    positions: hookPositions,
     availablePortfolios,
     loading: apiLoading,
     error: hookError,
