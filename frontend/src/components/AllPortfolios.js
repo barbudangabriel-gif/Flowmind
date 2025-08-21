@@ -86,7 +86,7 @@ const AllPortfolios = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Value</p>
-                <p className="text-2xl font-bold text-white">$731,245</p>
+                <p className="text-2xl font-bold text-white">$139,903</p>
               </div>
               <DollarSign className="text-green-400" size={32} />
             </div>
@@ -96,7 +96,7 @@ const AllPortfolios = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Portfolios</p>
-                <p className="text-2xl font-bold text-white">4</p>
+                <p className="text-2xl font-bold text-white">1</p>
               </div>
               <Briefcase className="text-blue-400" size={32} />
             </div>
@@ -106,7 +106,7 @@ const AllPortfolios = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Daily P&L</p>
-                <p className="text-2xl font-bold text-green-400">+$1,642</p>
+                <p className="text-2xl font-bold text-green-400">+$112</p>
               </div>
               <TrendingUp className="text-green-400" size={32} />
             </div>
