@@ -186,7 +186,7 @@ const IndividualPortfolio = () => {
         stocksValue: 0,
         optionsCount: 0,
         optionsValue: 0,
-        totalAccountValue: displayPortfolio.total_value,
+        totalAccountValue: displayPortfolio?.total_value || 0,
         cashBalance: 0 // Will be fetched from TradeStation API
       };
     }
@@ -199,7 +199,7 @@ const IndividualPortfolio = () => {
     
     // For now, cash balance will be 0, but we can fetch it from TradeStation API later
     const cashBalance = 0;
-    const totalAccountValue = displayPortfolio.total_value + cashBalance;
+    const totalAccountValue = (displayPortfolio?.total_value || 0) + cashBalance;
 
     return {
       stocksCount: stocks.length,
@@ -209,7 +209,7 @@ const IndividualPortfolio = () => {
       totalAccountValue,
       cashBalance
     };
-  }, [positions, displayPortfolio.total_value]);
+  }, [positions, displayPortfolio?.total_value]);
 
   // Default to TradeStation Main if no portfolio found
   const displayPortfolio = currentPortfolio || {
