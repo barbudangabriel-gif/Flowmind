@@ -8,7 +8,7 @@ import json
 import time
 
 def test_price_fix():
-    base_url = "https://market-pulse-139.preview.emergentagent.com"
+    base_url = "https://stockflow-ui.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔧 TESTING PRICE FIX...")

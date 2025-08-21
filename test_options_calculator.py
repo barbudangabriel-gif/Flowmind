@@ -14,7 +14,7 @@ def main():
     print("🎯 OPTIONS CALCULATOR COMPREHENSIVE TESTING")
     print("=" * 80)
     print("🔑 Testing expanded Options Calculator with new strategies")
-    print("🌐 Backend URL: https://market-pulse-139.preview.emergentagent.com")
+    print("🌐 Backend URL: https://stockflow-ui.preview.emergentagent.com")
     
     tester = StockMarketAPITester()
     

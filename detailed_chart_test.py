@@ -10,7 +10,7 @@ import sys
 
 def test_chart_data_details():
     """Test detailed chart data structure"""
-    url = "https://market-pulse-139.preview.emergentagent.com/api/unusual-whales/trading-strategies"
+    url = "https://stockflow-ui.preview.emergentagent.com/api/unusual-whales/trading-strategies"
     
     try:
         response = requests.get(url, timeout=30)
