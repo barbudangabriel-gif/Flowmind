@@ -87,13 +87,27 @@ const TradeStationMainPortfolio = () => {
       let totalUnrealizedPnL = 0;
       
       positions.forEach(position => {
-        const marketValue = Math.abs(position.quantity * position.mark_price);
+        // Log full position structure for first position to see available fields
+        if (positions.indexOf(position) === 0) {
+          console.log('🔍 First position full structure:', position);
+          console.log('🔍 Available price fields:', {
+            mark_price: position.mark_price,
+            current_price: position.current_price,
+            last_price: position.last_price,
+            market_price: position.market_price,
+            price: position.price
+          });
+        }
+        
+        // Try different price field names
+        const currentPrice = position.mark_price || position.current_price || position.last_price || position.market_price || position.price || 0;
+        const marketValue = Math.abs(position.quantity * currentPrice);
         const unrealizedPnL = position.unrealized_pnl || 0;
         
         console.log('📊 Processing position:', {
           symbol: position.symbol,
           quantity: position.quantity,
-          markPrice: position.mark_price,
+          currentPrice,
           marketValue,
           unrealizedPnL
         });
