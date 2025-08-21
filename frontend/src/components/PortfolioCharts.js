@@ -494,12 +494,38 @@ const PortfolioCharts = () => {
           
           {/* Allocation Pie Chart */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-gray-900">Portfolio Allocation</h3>
                 <p className="text-gray-600">Active positions distribution</p>
               </div>
               <PieChartIcon size={20} className="text-gray-400" />
+            </div>
+
+            {/* Stocks/Options Toggle Switch */}
+            <div className="flex justify-center mb-4">
+              <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-gray-50">
+                <button
+                  onClick={() => setAllocationView('stocks')}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    allocationView === 'stocks'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-transparent text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  📊 Stocks
+                </button>
+                <button
+                  onClick={() => setAllocationView('options')}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    allocationView === 'options'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-transparent text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  ⚡ Options
+                </button>
+              </div>
             </div>
 
             <div className="h-64">
@@ -515,12 +541,32 @@ const PortfolioCharts = () => {
                     label={({name, value}) => `${name}: $${(value/1000).toFixed(1)}k`}
                   >
                     {filteredAllocationData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.type === 'stocks' ? COLORS.stocks : COLORS.options} />
+                      <Cell key={`cell-${index}`} fill={getAllocationColor(entry, index)} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Value']} />
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
+            </div>
+
+            {/* Cash and Margin Information */}
+            <div className="mt-4 grid grid-cols-2 gap-4">
+              <div className="bg-purple-50 p-3 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-purple-700">💰 Cash Available</span>
+                  <span className="text-lg font-bold text-purple-900">$100k</span>
+                </div>
+                <p className="text-xs text-purple-600 mt-1">Available for withdrawal</p>
+              </div>
+              
+              <div className="bg-orange-50 p-3 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-orange-700">📈 Margin Use</span>
+                  <span className="text-lg font-bold text-orange-900">$25k</span>
+                </div>
+                <p className="text-xs text-orange-600 mt-1">Available margin capacity</p>
+              </div>
             </div>
           </div>
 
