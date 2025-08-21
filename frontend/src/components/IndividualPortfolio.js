@@ -177,6 +177,39 @@ const IndividualPortfolio = () => {
     }
   };
 
+  // Calculate portfolio statistics for cards
+  const portfolioStats = React.useMemo(() => {
+    if (!positions || positions.length === 0) {
+      return {
+        stocksCount: 0,
+        stocksValue: 0,
+        optionsCount: 0,
+        optionsValue: 0,
+        totalAccountValue: displayPortfolio.total_value,
+        cashBalance: 0 // Will be fetched from TradeStation API
+      };
+    }
+
+    const stocks = positions.filter(p => p.position_type === 'stock');
+    const options = positions.filter(p => p.position_type === 'option');
+    
+    const stocksValue = stocks.reduce((sum, pos) => sum + (pos.market_value || 0), 0);
+    const optionsValue = options.reduce((sum, pos) => sum + (pos.market_value || 0), 0);
+    
+    // For now, cash balance will be 0, but we can fetch it from TradeStation API later
+    const cashBalance = 0;
+    const totalAccountValue = displayPortfolio.total_value + cashBalance;
+
+    return {
+      stocksCount: stocks.length,
+      stocksValue,
+      optionsCount: options.length,
+      optionsValue,
+      totalAccountValue,
+      cashBalance
+    };
+  }, [positions, displayPortfolio.total_value]);
+
   // Default to TradeStation Main if no portfolio found
   const displayPortfolio = currentPortfolio || {
     name: 'TradeStation Main',
