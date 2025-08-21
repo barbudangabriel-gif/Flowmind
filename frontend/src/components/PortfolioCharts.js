@@ -300,24 +300,34 @@ const PortfolioCharts = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Trade Status</label>
               <div className="flex rounded-lg border border-gray-300 overflow-hidden">
                 <button
+                  onClick={() => setActiveFilter('open')}
+                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
+                    activeFilter === 'open'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Open
+                </button>
+                <button
                   onClick={() => setActiveFilter('closed')}
-                  className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
                     activeFilter === 'closed'
                       ? 'bg-blue-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  Closed Trades
+                  Closed
                 </button>
                 <button
                   onClick={() => setActiveFilter('all')}
-                  className={`flex-1 px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
                     activeFilter === 'all'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-purple-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  All
+                  Combined
                 </button>
               </div>
             </div>
