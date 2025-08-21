@@ -155,17 +155,44 @@ class PortfolioManagementService:
         try:
             logger.info("🔄 Loading REAL TradeStation positions (NO MOCK DATA)")
             
+            # Use the existing TradeStation client instance from server.py
+            import requests
+            import os
+            
+            # Get accounts using direct API call (same pattern as IndividualPortfolio component)
+            base_url = os.environ.get('REACT_APP_BACKEND_URL', 'http://localhost:8001')
+            
+            # Try direct API call first
+            accounts_response = requests.get(f"{base_url}/api/tradestation/accounts", timeout=30)
+            if accounts_response.status_code != 200:
+                logger.error(f"❌ TradeStation accounts API failed: {accounts_response.status_code}")
+                raise Exception("TradeStation accounts API not accessible")
+                
+            accounts_data = accounts_response.json()
+            if not accounts_data.get('accounts'):
+                logger.error("❌ No TradeStation accounts found")
+                raise Exception("No TradeStation accounts available")
+                
             if not account_id:
-                # Get first available account
-                accounts_response = await self.ts_client.get_accounts()
-                if not accounts_response or not accounts_response.get('accounts'):
-                    logger.error("❌ No TradeStation accounts found - CANNOT USE MOCK DATA")
-                    raise Exception("No TradeStation accounts available and mock data is disabled")
-                account_id = accounts_response['accounts'][0]['AccountID']
-                logger.info(f"✅ Using TradeStation account: {account_id}")
+                # Use first margin account or first available
+                target_account = None
+                for acc in accounts_data['accounts']:
+                    if acc.get('Type') == 'Margin':
+                        target_account = acc
+                        break
+                if not target_account:
+                    target_account = accounts_data['accounts'][0]
+                account_id = target_account['AccountID']
+                
+            logger.info(f"✅ Using TradeStation account: {account_id}")
             
             # Get positions from TradeStation - DIRECT API CALL
-            ts_positions_response = await self.ts_client.get_positions(account_id, simple=False)
+            positions_response = requests.get(f"{base_url}/api/tradestation/accounts/{account_id}/positions", timeout=30)
+            if positions_response.status_code != 200:
+                logger.error(f"❌ TradeStation positions API failed: {positions_response.status_code}")
+                raise Exception("TradeStation positions API not accessible")
+                
+            ts_positions_response = positions_response.json()
             
             # Extract positions from response structure
             if hasattr(ts_positions_response, 'positions'):
