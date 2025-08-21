@@ -385,6 +385,16 @@ const IndividualPortfolio = () => {
           ))}
         </div>
       </div>
+
+      {/* Context Menu */}
+      <ContextMenu
+        isVisible={contextMenu.isVisible}
+        position={contextMenu.position}
+        selectedPosition={contextMenu.selectedPosition}
+        availablePortfolios={availablePortfolios}
+        onClose={closeContextMenu}
+        onMovePosition={handleMovePosition}
+      />
     </div>
   );
 };
