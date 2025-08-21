@@ -10,24 +10,62 @@ import {
   Target,
   DollarSign,
   Clock,
-  Shield
+  Shield,
+  RefreshCw
 } from 'lucide-react';
+import usePortfolioManagement from '../hooks/usePortfolioManagement';
 
 const AllPortfolios = () => {
   const navigate = useNavigate();
-  const [portfolios] = useState([
-    {
-      id: 'htech-15t',
-      name: 'HTech 15T',
-      value: '$139,902.60',
-      change: 0.28,
-      changeAmount: 111.80,
-      holdings: 15,
-      lastUpdated: '1 minute ago',
-      riskLevel: 'MODERATE-HIGH',
-      allocation: { stocks: 65, options: 25, cash: 10 }
+  const [loading, setLoading] = useState(true);
+  
+  // Use real portfolio management hook
+  const {
+    portfolios,
+    loading: apiLoading,
+    error,
+    fetchPortfolios,
+    clearError
+  } = usePortfolioManagement();
+
+  // Load portfolios on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        await fetchPortfolios();
+      } catch (err) {
+        console.error('Error loading portfolios:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
+
+  // Calculate aggregate stats from real data
+  const aggregateStats = React.useMemo(() => {
+    if (!portfolios || portfolios.length === 0) {
+      return {
+        totalValue: 0,
+        totalPnl: 0,
+        totalPortfolios: 0,
+        activePortfolio: 'No Portfolios'
+      };
     }
-  ]);
+    
+    const totalValue = portfolios.reduce((sum, p) => sum + (p.total_value || 0), 0);
+    const totalPnl = portfolios.reduce((sum, p) => sum + (p.total_pnl || 0), 0);
+    const mainPortfolio = portfolios.find(p => p.id === 'tradestation-main');
+    
+    return {
+      totalValue,
+      totalPnl,
+      totalPortfolios: portfolios.length,
+      activePortfolio: mainPortfolio ? mainPortfolio.name : portfolios[0]?.name || 'No Portfolio'
+    };
+  }, [portfolios]);
 
   const getTrendIcon = (change) => {
     return change >= 0 ? TrendingUp : TrendingDown;
@@ -46,8 +84,28 @@ const AllPortfolios = () => {
       case 'LOW': return 'bg-green-100 text-green-800';
       case 'MODERATE': return 'bg-yellow-100 text-yellow-800';  
       case 'HIGH': return 'bg-red-100 text-red-800';
+      case 'MODERATE-HIGH': return 'bg-orange-100 text-orange-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleRefresh = async () => {
+    setLoading(true);
+    try {
+      await fetchPortfolios();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || apiLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading portfolios...</span>
+      </div>
+    );
+  }
   };
 
   return (
