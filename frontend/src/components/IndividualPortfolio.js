@@ -325,13 +325,17 @@ const IndividualPortfolio = () => {
 
   // Toggle ticker expansion
   const toggleTicker = (symbol) => {
+    console.log('🔄 Toggling ticker:', symbol, 'Currently expanded:', expandedTickers.has(symbol));
     const newExpanded = new Set(expandedTickers);
     if (newExpanded.has(symbol)) {
       newExpanded.delete(symbol);
+      console.log('➖ Collapsed:', symbol);
     } else {
       newExpanded.add(symbol);
+      console.log('➕ Expanded:', symbol);
     }
     setExpandedTickers(newExpanded);
+    console.log('📊 New expanded tickers:', Array.from(newExpanded));
   };
 
   const tabs = [
