@@ -309,7 +309,8 @@ const TradeStationMainPortfolio = () => {
   }
 
   const ChangeIcon = getChangeIcon(portfolioData?.totalUnrealizedPnL);
-  const accountValue = (portfolioData?.totalMarketValue || 0) + (cashBalance || 0);
+  // Prefer TS-provided account value from balances; fallback to MV + Cash
+  const accountValue = accountValueTS != null ? accountValueTS : ((portfolioData?.totalMarketValue || 0) + (cashBalance || 0));
   const stocksValue = (positionsNormalized || []).filter(p => p.position_type === 'stock').reduce((s,p)=> s + (p.market_value || 0), 0);
   const optionsValue = (positionsNormalized || []).filter(p => p.position_type === 'option').reduce((s,p)=> s + (p.market_value || 0), 0);
 
