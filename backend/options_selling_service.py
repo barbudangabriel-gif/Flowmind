@@ -42,7 +42,7 @@ class ConfigIn(BaseModel):
 
 class ComputeRequest(BaseModel):
     positions: List[PositionIn]
-    config: Optional(ConfigIn) = None
+    config: Optional[ConfigIn] = None
     mode: Optional[str] = Field(default="both", description="equal|greedy|both")
     watchlist: Optional[List[str]] = None
 
