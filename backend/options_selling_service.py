@@ -247,6 +247,9 @@ class _MonitorService:
             self._task.cancel()
             try:
                 await self._task
+            except asyncio.CancelledError:
+                # This is expected when cancelling a task
+                pass
             except Exception:
                 pass
         self._task = None
