@@ -5,7 +5,7 @@ const ContextMenu = ({
   isVisible, 
   position, 
   onClose, 
-  position: selectedPosition,
+  selectedPosition,
   availablePortfolios,
   onMovePosition
 }) => {
