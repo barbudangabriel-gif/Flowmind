@@ -41,12 +41,12 @@ const IndividualPortfolio = () => {
     const key = `expandedTickers:${portfolioId}`;
     const saved = localStorage.getItem(key);
     if (saved) {
-      try { setExpandedTickers(new Set(JSON.parse(saved))); } catch {}
-    } else { setExpandedTickers(new Set()); }
+      try { setExpandedTickers(JSON.parse(saved) || {}); } catch { setExpandedTickers({}); }
+    } else { setExpandedTickers({}); }
   }, [portfolioId]);
   useEffect(() => {
     const key = `expandedTickers:${portfolioId}`;
-    try { localStorage.setItem(key, JSON.stringify(Array.from(expandedTickers))); } catch {}
+    try { localStorage.setItem(key, JSON.stringify(expandedTickers || {})); } catch {}
   }, [expandedTickers, portfolioId]);
 
   // Load data (force LIVE for TradeStation Main)
