@@ -366,17 +366,16 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Options Selling Module UI - Routing Issues"
     - "Portfolio Charts Component - Routing Issues"
     - "Smart Rebalancing Agent Component - Routing Issues"
   stuck_tasks:
-    - "Options Selling Module UI"
     - "Portfolio Charts Component"
     - "Smart Rebalancing Agent Component"
   test_all: false
   test_priority: "high_first"
   completed_testing:
     - "Move to Portfolio X Context Menu Functionality - PASSED"
+    - "Options Selling Module UI - PASSED"
 
   - task: "Trading Chart Component Integration - RESOLVED"
     implemented: true
