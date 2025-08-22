@@ -21,7 +21,7 @@ class TradeStationConnectivityTester:
     def __init__(self):
         # Use the correct backend URL from frontend/.env
         # Note: The frontend/.env shows "None" which might be the issue
-        self.base_url = "https://tradedash-14.preview.emergentagent.com"
+        self.base_url = "https://portfolio-view-9.preview.emergentagent.com"
         self.api_url = f"{self.base_url}/api"
         self.tests_run = 0
         self.tests_passed = 0
@@ -320,7 +320,7 @@ class TradeStationConnectivityTester:
             self.log_test("Frontend URL Configuration", False, f"Cannot read frontend/.env: {str(e)}")
             return False
         
-        expected_url = "https://tradedash-14.preview.emergentagent.com"
+        expected_url = "https://portfolio-view-9.preview.emergentagent.com"
         
         if "None" in frontend_url:
             self.log_test("Frontend URL Configuration", False, 
@@ -403,8 +403,8 @@ class TradeStationConnectivityTester:
         
         if not config_ok:
             print("1. 🚨 HIGH PRIORITY: Fix frontend/.env REACT_APP_BACKEND_URL")
-            print("   - Change from: https://tradedash-14.preview.emergentagent.com")
-            print("   - Change to: https://tradedash-14.preview.emergentagent.com")
+            print("   - Change from: https://portfolio-view-9.preview.emergentagent.com")
+            print("   - Change to: https://portfolio-view-9.preview.emergentagent.com")
             
         if not auth_ok:
             print("2. 🔐 Authenticate with TradeStation:")
