@@ -21,7 +21,7 @@ def final_validation_test():
     print("5. Error handling")
     print("=" * 80)
     
-    url = "https://stockflow-ui.preview.emergentagent.com/api/unusual-whales/trading-strategies"
+    url = "https://tradedash-14.preview.emergentagent.com/api/unusual-whales/trading-strategies"
     
     try:
         response = requests.get(url, timeout=30)

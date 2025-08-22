@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://stockflow-ui.preview.emergentagent.com/api"
+BACKEND_URL = "https://tradedash-14.preview.emergentagent.com/api"
 
 def run_test(test_name, method, endpoint, expected_status=200, params=None, data=None):
     """Run a single API test"""

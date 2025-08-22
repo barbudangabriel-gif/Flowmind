@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 def debug_tradestation_endpoints():
-    base_url = "https://stockflow-ui.preview.emergentagent.com"
+    base_url = "https://tradedash-14.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     print("🔍 TRADESTATION DEBUG TEST")

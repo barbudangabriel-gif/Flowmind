@@ -11,7 +11,7 @@ from datetime import datetime
 
 class AIInvestmentScoringTester:
     def __init__(self):
-        self.base_url = "https://stockflow-ui.preview.emergentagent.com/api"
+        self.base_url = "https://tradedash-14.preview.emergentagent.com/api"
         self.tests_run = 0
         self.tests_passed = 0
 
@@ -376,7 +376,7 @@ def main():
     print("🤖 AI INVESTMENT SCORING AGENT COMPREHENSIVE TEST")
     print("=" * 80)
     print("🎯 Review Request: Test Investment Scoring Agent endpoint")
-    print("🌐 Backend URL: https://stockflow-ui.preview.emergentagent.com")
+    print("🌐 Backend URL: https://tradedash-14.preview.emergentagent.com")
     
     tester = AIInvestmentScoringTester()
     
