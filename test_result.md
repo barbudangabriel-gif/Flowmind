@@ -1,4 +1,17 @@
 #====================================================================================================
+# === Update: Options Selling Monitor - Backend Integration & Tests (2025-06-22) ===
+- Implemented asynchronous in-memory monitor in backend (options_selling_service.py) with 15s compute loop and diffing logic (added/removed/changed) based on key (ticker, signal, strike, dte). Added endpoints:
+  - POST /api/options/selling/monitor/start
+  - POST /api/options/selling/monitor/stop
+  - GET /api/options/selling/monitor/status
+- Confirmed POST /api/options/selling/compute still works.
+- BACKEND TESTING (deep_testing_backend_v2): 100% pass
+  - Start returns {status: started, interval_seconds: 15, mode: equal}
+  - Status returns running=true, last_run_at ISO string, cycles incrementing, signals_current present
+  - Stop returns {status: stopped} and running=false afterwards
+- Notes: All routes under /api. No hardcoded URLs. Budget default 500,000.
+
+
 # OPTIONS MODULE IMPLEMENTATION - PHASE 1.1 COMPLETED
 #====================================================================================================
 
