@@ -289,7 +289,7 @@ const IndividualPortfolio = () => {
               </thead>
               <tbody>
                 {Object.keys(groupedPositions).sort().map((symbol) => {
-                  const arr = groupedPositions[symbol]; const summary = arr._summary; const isExpanded = expandedTickers.has(symbol);
+                  const arr = groupedPositions[symbol]; const summary = arr._summary; const isExpanded = !!expandedTickers[symbol];
                   return (
                     <React.Fragment key={symbol}>
                       <tr className="border-b border-slate-600 bg-slate-800 hover:bg-slate-700 cursor-pointer" onClick={() => toggleTicker(symbol)} title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}>
