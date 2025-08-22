@@ -58,45 +58,54 @@ const IndividualPortfolio = () => {
       const loadRealTradeStationData = async () => {
         try {
           setLoading(true);
+          console.log('🔄 Starting TradeStation data load...');
           
           // Get accounts first
           const accountsResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts`);
           const accountsData = await accountsResponse.json();
+          console.log('📊 Accounts response:', accountsData.status, accountsData.accounts?.length);
           
           if (accountsData.status === 'success' && accountsData.accounts.length > 0) {
             const mainAccount = accountsData.accounts.find(acc => acc.Type === 'Margin') || accountsData.accounts[0];
+            console.log('💼 Using account:', mainAccount.AccountID);
             
-            // Get positions
-            const positionsResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/positions`);
+            // Get positions - add timeout
+            const positionsResponse = await Promise.race([
+              fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/positions`),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Positions timeout')), 15000))
+            ]);
             const positionsData = await positionsResponse.json();
+            console.log('📈 Positions response:', positionsData.status, positionsData.positions?.length);
             
-            // Get cash balance from account balances API - using CashBalance field
+            // Get cash balance - add timeout
             try {
-              const balancesResponse = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/balances`);
+              const balancesResponse = await Promise.race([
+                fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/balances`),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Balances timeout')), 10000))
+              ]);
               const balancesData = await balancesResponse.json();
               
               if (balancesData.status === 'success' && balancesData.balances) {
-                // Extract CashBalance - this is the cash available to withdraw
                 const cashAvailable = balancesData.balances.Balances?.[0]?.CashBalance || 
                                     balancesData.balances.CashBalance || 
                                     0;
                 setCashBalance(parseFloat(cashAvailable));
-                console.log('✅ Loaded CashBalance (available to withdraw) from TradeStation:', cashAvailable);
+                console.log('💰 Cash balance loaded:', cashAvailable);
               }
             } catch (balanceError) {
-              console.warn('⚠️ Could not fetch cash balance:', balanceError.message);
+              console.warn('⚠️ Balance error:', balanceError.message);
               setCashBalance(0);
             }
             
             if (positionsData.positions && positionsData.positions.length > 0) {
-              // Transform TradeStation positions to match frontend format
+              // Transform positions
               const transformedPositions = positionsData.positions.map(pos => ({
                 id: `ts-${pos.symbol}-${Math.random()}`,
                 symbol: pos.symbol,
                 quantity: pos.quantity,
                 avg_cost: pos.average_price || 0,
-                current_price: pos.mark_price || pos.current_price || 0,
-                market_value: pos.market_value || Math.abs(pos.quantity * (pos.mark_price || pos.current_price || 0)),
+                current_price: pos.current_price || 0,
+                market_value: pos.market_value || 0,
                 unrealized_pnl: pos.unrealized_pnl || 0,
                 unrealized_pnl_percent: pos.unrealized_pnl_percent || 0,
                 portfolio_id: 'tradestation-main',
@@ -110,7 +119,6 @@ const IndividualPortfolio = () => {
                 }
               }));
               
-              // Calculate portfolio totals
               const totalValue = transformedPositions.reduce((sum, pos) => sum + pos.market_value, 0);
               const totalPnl = transformedPositions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
               
@@ -124,9 +132,9 @@ const IndividualPortfolio = () => {
                 description: `Live TradeStation Account ${mainAccount.AccountID}`
               });
               
-              console.log('✅ Loaded REAL TradeStation positions:', transformedPositions.length);
+              console.log('✅ Loaded positions:', transformedPositions.length, 'Total value:', totalValue);
             } else {
-              console.log('⚠️ No positions found in TradeStation account');
+              console.log('⚠️ No positions found');
               setPositions([]);
               setCurrentPortfolio({
                 id: 'tradestation-main',
@@ -137,12 +145,15 @@ const IndividualPortfolio = () => {
                 description: 'No positions in TradeStation account'
               });
             }
+          } else {
+            throw new Error('No TradeStation accounts found');
           }
         } catch (error) {
-          console.error('Error loading TradeStation data:', error);
+          console.error('❌ TradeStation error:', error);
           setError(error.message);
           setPositions([]);
         } finally {
+          console.log('🏁 Loading complete, setting loading to false');
           setLoading(false);
         }
       };
