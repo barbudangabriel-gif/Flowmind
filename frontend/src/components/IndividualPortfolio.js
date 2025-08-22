@@ -579,67 +579,55 @@ const IndividualPortfolio = () => {
                       </tr>
 
                       {/* Expanded Positions - Only show if expanded, like sidebar items */}
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan="9" className="p-0">
-                            <div className="bg-slate-900 border-l-4 border-blue-400">
-                              <table className="w-full">
-                                <tbody>
-                                  {symbolPositions.map((position, index) => {
-                                    const pnlPercent = position.unrealized_pnl_percent || 0;
-                                    const accountPercent = displayPortfolio?.total_value > 0 
-                                      ? (position.market_value / displayPortfolio.total_value) * 100 
-                                      : 0;
-                                    
-                                    return (
-                                      <tr 
-                                        key={position.id}
-                                        className="border-b border-slate-700 hover:bg-slate-700 cursor-context-menu"
-                                        onContextMenu={(e) => handleContextMenu(e, position)}
-                                        title="Right-click to move position to another portfolio"
-                                      >
-                                        <td className="py-3 px-6">
-                                          <div className="flex items-center">
-                                            <span className="text-slate-400 text-sm mr-2">├──</span>
-                                            <span className="text-slate-300 font-medium">
-                                              {position.position_type === 'stock' ? '📈 Stock' : '⚡ Option'}
-                                            </span>
-                                            {position.position_type === 'option' && (
-                                              <div className="text-xs text-slate-400 ml-2">
-                                                {position.metadata?.option_type} ${position.metadata?.strike_price} {position.metadata?.expiration_date}
-                                              </div>
-                                            )}
-                                          </div>
-                                        </td>
-                                        <td className="text-right py-3 px-2 text-slate-200">{position.quantity}</td>
-                                        <td className="text-right py-3 px-2 text-slate-200">${position.avg_cost.toFixed(2)}</td>
-                                        <td className="text-right py-3 px-2 text-slate-200">${position.current_price.toFixed(2)}</td>
-                                        <td className="text-right py-3 px-2 text-slate-200">${position.market_value.toFixed(2)}</td>
-                                        <td className="text-right py-3 px-2 text-blue-400">{accountPercent.toFixed(2)}%</td>
-                                        <td className={`text-right py-3 px-2 ${getChangeColor(position.unrealized_pnl)}`}>
-                                          {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
-                                        </td>
-                                        <td className={`text-right py-3 px-2 ${getChangeColor(pnlPercent)}`}>
-                                          {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
-                                        </td>
-                                        <td className="text-center py-3 px-2">
-                                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                            position.position_type === 'stock' 
-                                              ? 'bg-blue-600 text-white' 
-                                              : 'bg-purple-600 text-white'
-                                          }`}>
-                                            {position.position_type.toUpperCase()}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
+                      {isExpanded && symbolPositions.map((position, index) => {
+                        const pnlPercent = position.unrealized_pnl_percent || 0;
+                        const accountPercent = displayPortfolio?.total_value > 0 
+                          ? (position.market_value / displayPortfolio.total_value) * 100 
+                          : 0;
+                        
+                        return (
+                          <tr 
+                            key={position.id}
+                            className="border-b border-slate-700 hover:bg-slate-700 cursor-context-menu bg-slate-900 border-l-4 border-blue-400"
+                            onContextMenu={(e) => handleContextMenu(e, position)}
+                            title="Right-click to move position to another portfolio"
+                          >
+                            <td className="py-3 px-6">
+                              <div className="flex items-center">
+                                <span className="text-slate-400 text-sm mr-2">├──</span>
+                                <span className="text-slate-300 font-medium">
+                                  {position.position_type === 'stock' ? '📈 Stock' : '⚡ Option'}
+                                </span>
+                                {position.position_type === 'option' && (
+                                  <div className="text-xs text-slate-400 ml-2">
+                                    {position.metadata?.option_type} ${position.metadata?.strike_price} {position.metadata?.expiration_date}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="text-right py-3 px-2 text-slate-200">{position.quantity}</td>
+                            <td className="text-right py-3 px-2 text-slate-200">${position.avg_cost.toFixed(2)}</td>
+                            <td className="text-right py-3 px-2 text-slate-200">${position.current_price.toFixed(2)}</td>
+                            <td className="text-right py-3 px-2 text-slate-200">${position.market_value.toFixed(2)}</td>
+                            <td className="text-right py-3 px-2 text-blue-400">{accountPercent.toFixed(2)}%</td>
+                            <td className={`text-right py-3 px-2 ${getChangeColor(position.unrealized_pnl)}`}>
+                              {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
+                            </td>
+                            <td className={`text-right py-3 px-2 ${getChangeColor(pnlPercent)}`}>
+                              {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
+                            </td>
+                            <td className="text-center py-3 px-2">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                position.position_type === 'stock' 
+                                  ? 'bg-blue-600 text-white' 
+                                  : 'bg-purple-600 text-white'
+                              }`}>
+                                {position.position_type.toUpperCase()}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </React.Fragment>
                   );
                 })}
