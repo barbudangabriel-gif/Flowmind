@@ -548,97 +548,95 @@ const IndividualPortfolio = () => {
 
                   return (
                     <React.Fragment key={symbol}>
-                      {/* Ticker Header Row - Like sidebar section header */}
-                      <tr 
-                        className="border-b border-slate-600 bg-slate-800 hover:bg-slate-700 cursor-pointer"
-                        onClick={() => toggleTicker(symbol)}
-                        title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}
-                      >
-                        <td className="py-4 px-2">
-                          <div className="flex items-center">
-                            {/* Chevron exactly like in sidebar */}
-                            <ChevronDown className={`w-4 h-4 text-slate-400 mr-2 transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
-                            <span className="text-blue-300 font-bold text-lg">
-                              {symbol}
-                            </span>
-                            <div className="ml-3 flex gap-1">
-                              {summary.hasStock && (
-                                <span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>
-                              )}
-                              {summary.hasOptions && (
-                                <span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>
-                              )}
-                            </div>
+                      {/* Ticker Header Row - EXACT ca sidebar section header */}
+                      <tr className="border-b border-slate-600 bg-slate-800">
+                        <td className="py-4 px-2" colSpan="9">
+                          <div className="flex items-center justify-between w-full">
+                            <button
+                              onClick={() => toggleTicker(symbol)}
+                              className="flex items-center gap-2 hover:text-slate-200 transition-colors flex-1"
+                            >
+                              <span className="text-blue-300 font-bold text-lg">{symbol}</span>
+                              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                              <div className="ml-3 flex gap-1">
+                                {summary.hasStock && (
+                                  <span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>
+                                )}
+                                {summary.hasOptions && (
+                                  <span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>
+                                )}
+                              </div>
+                              <div className="ml-auto flex gap-4 text-slate-200">
+                                <span>{summary.totalQuantity.toLocaleString()}</span>
+                                <span>${summary.currentPrice.toFixed(2)}</span>
+                                <span className="font-bold">${summary.totalValue.toFixed(2)}</span>
+                                <span className="text-blue-300">{summary.accountPercent.toFixed(2)}%</span>
+                                <span className={getChangeColor(summary.totalPnL)}>
+                                  {summary.totalPnL >= 0 ? '+' : ''}${summary.totalPnL.toFixed(2)}
+                                </span>
+                                <span className="bg-slate-600 px-2 py-1 rounded text-xs">{summary.positionCount} POS</span>
+                              </div>
+                            </button>
                           </div>
-                        </td>
-                        <td className="text-right py-4 px-2 font-bold text-slate-200">{summary.totalQuantity.toLocaleString()}</td>
-                        <td className="text-right py-4 px-2 text-slate-400">-</td>
-                        <td className="text-right py-4 px-2 font-medium text-slate-200">${summary.currentPrice.toFixed(2)}</td>
-                        <td className="text-right py-4 px-2 font-bold text-white">${summary.totalValue.toFixed(2)}</td>
-                        <td className="text-right py-4 px-2 font-bold text-blue-300">{summary.accountPercent.toFixed(2)}%</td>
-                        <td className={`text-right py-4 px-2 font-bold ${getChangeColor(summary.totalPnL)}`}>
-                          {summary.totalPnL >= 0 ? '+' : ''}${summary.totalPnL.toFixed(2)}
-                        </td>
-                        <td className={`text-right py-4 px-2 font-bold ${getChangeColor(summary.pnlPercent)}`}>
-                          {summary.pnlPercent >= 0 ? '+' : ''}{summary.pnlPercent.toFixed(2)}%
-                        </td>
-                        <td className="text-center py-4 px-2">
-                          <span className="px-2 py-1 rounded text-xs font-medium bg-slate-600 text-white">
-                            {summary.positionCount} POS
-                          </span>
                         </td>
                       </tr>
 
-                      {/* Expanded Positions - Only show if expanded, like sidebar items */}
-                      {isExpanded && symbolPositions.map((position, index) => {
-                        const pnlPercent = position.unrealized_pnl_percent || 0;
-                        const accountPercent = displayPortfolio?.total_value > 0 
-                          ? (position.market_value / displayPortfolio.total_value) * 100 
-                          : 0;
-                        
-                        return (
-                          <tr 
-                            key={position.id}
-                            className="border-b border-slate-700 hover:bg-slate-700 cursor-context-menu bg-slate-900 border-l-4 border-blue-400"
-                            onContextMenu={(e) => handleContextMenu(e, position)}
-                            title="Right-click to move position to another portfolio"
-                          >
-                            <td className="py-3 px-6">
-                              <div className="flex items-center">
-                                <span className="text-slate-400 text-sm mr-2">├──</span>
-                                <span className="text-slate-300 font-medium">
-                                  {position.position_type === 'stock' ? '📈 Stock' : '⚡ Option'}
-                                </span>
-                                {position.position_type === 'option' && (
-                                  <div className="text-xs text-slate-400 ml-2">
-                                    {position.metadata?.option_type} ${position.metadata?.strike_price} {position.metadata?.expiration_date}
+                      {/* Show positions only if expanded - EXACT ca sidebar items */}
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan="9" className="p-0">
+                            <div className="space-y-1 bg-slate-900 border-l-4 border-blue-400 pl-4">
+                              {symbolPositions.map((position, index) => {
+                                const pnlPercent = position.unrealized_pnl_percent || 0;
+                                const accountPercent = displayPortfolio?.total_value > 0 
+                                  ? (position.market_value / displayPortfolio.total_value) * 100 
+                                  : 0;
+                                
+                                return (
+                                  <div
+                                    key={position.id}
+                                    className="flex items-center justify-between py-2 px-3 hover:bg-slate-700 rounded cursor-context-menu"
+                                    onContextMenu={(e) => handleContextMenu(e, position)}
+                                    title="Right-click to move position to another portfolio"
+                                  >
+                                    <div className="flex items-center space-x-3">
+                                      <div className="flex items-center justify-center w-6 h-6 rounded bg-slate-600">
+                                        <span className="text-xs text-white">
+                                          {position.position_type === 'stock' ? 'S' : 'O'}
+                                        </span>
+                                      </div>
+                                      <div>
+                                        <span className="text-slate-300 font-medium">
+                                          {position.position_type === 'stock' ? 'Stock' : 'Option'}
+                                        </span>
+                                        {position.position_type === 'option' && (
+                                          <div className="text-xs text-slate-400">
+                                            {position.metadata?.option_type} ${position.metadata?.strike_price} {position.metadata?.expiration_date}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="flex gap-4 text-sm text-slate-200">
+                                      <span>{position.quantity}</span>
+                                      <span>${position.avg_cost.toFixed(2)}</span>
+                                      <span>${position.current_price.toFixed(2)}</span>
+                                      <span>${position.market_value.toFixed(2)}</span>
+                                      <span className="text-blue-400">{accountPercent.toFixed(2)}%</span>
+                                      <span className={getChangeColor(position.unrealized_pnl)}>
+                                        {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
+                                      </span>
+                                      <span className={getChangeColor(pnlPercent)}>
+                                        {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
+                                      </span>
+                                    </div>
                                   </div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="text-right py-3 px-2 text-slate-200">{position.quantity}</td>
-                            <td className="text-right py-3 px-2 text-slate-200">${position.avg_cost.toFixed(2)}</td>
-                            <td className="text-right py-3 px-2 text-slate-200">${position.current_price.toFixed(2)}</td>
-                            <td className="text-right py-3 px-2 text-slate-200">${position.market_value.toFixed(2)}</td>
-                            <td className="text-right py-3 px-2 text-blue-400">{accountPercent.toFixed(2)}%</td>
-                            <td className={`text-right py-3 px-2 ${getChangeColor(position.unrealized_pnl)}`}>
-                              {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
-                            </td>
-                            <td className={`text-right py-3 px-2 ${getChangeColor(pnlPercent)}`}>
-                              {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
-                            </td>
-                            <td className="text-center py-3 px-2">
-                              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                position.position_type === 'stock' 
-                                  ? 'bg-blue-600 text-white' 
-                                  : 'bg-purple-600 text-white'
-                              }`}>
-                                {position.position_type.toUpperCase()}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                                );
+                              })}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
                     </React.Fragment>
                   );
                 })}
