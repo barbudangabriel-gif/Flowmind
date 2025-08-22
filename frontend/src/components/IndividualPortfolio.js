@@ -47,8 +47,38 @@ const IndividualPortfolio = () => {
   const [expandedTickers, setExpandedTickers] = useState(new Set()); // EXACT sidebar pattern
   const [error, setError] = useState(null);
 
-  // Format helpers
+  // TradeStation live/demo toggle (persisted)
+  const [dataMode, setDataMode] = useState(() => {
+    const saved = localStorage.getItem('tsDataMode') || 'live';
+    return saved === 'demo' ? 'demo' : 'live';
+  });
+
   const getChangeColor = (change) => (change >= 0 ? 'text-green-400' : 'text-red-400');
+
+  // Persistence for expanded tickers per-portfolio
+  useEffect(() => {
+    const key = `expandedTickers:${portfolioId}`;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        const arr = JSON.parse(saved);
+        setExpandedTickers(new Set(Array.isArray(arr) ? arr : []));
+      } catch (e) {
+        // ignore
+      }
+    } else {
+      setExpandedTickers(new Set());
+    }
+  }, [portfolioId]);
+
+  useEffect(() => {
+    const key = `expandedTickers:${portfolioId}`;
+    try {
+      localStorage.setItem(key, JSON.stringify(Array.from(expandedTickers)));
+    } catch (e) {
+      // ignore quota errors
+    }
+  }, [expandedTickers, portfolioId]);
 
   // Load portfolio and positions data
   useEffect(() => {
@@ -179,14 +209,12 @@ const IndividualPortfolio = () => {
             description: `Live TradeStation Account ${mainAccount.AccountID}`
           });
         } else {
-          // Fallback to demo if no positions returned
           setDemoData();
         }
 
         // Ensure context menu has targets
         await fetchAvailablePortfolios('tradestation-main');
       } catch (e) {
-        // Use demo data on any failure to keep UI testable
         setError(e.message);
         setDemoData();
         await fetchAvailablePortfolios('tradestation-main');
@@ -198,26 +226,68 @@ const IndividualPortfolio = () => {
     const loadOtherPortfolioData = async () => {
       try {
         setLoading(true);
-        const portfolio = portfolios.find((p) => p.id === portfolioId);
-        setCurrentPortfolio(portfolio || null);
-        await fetchPortfolioPositions(portfolioId);
+        const portfolio = portfolios.find((p) => p.id === portfolioId) || null;
+        setCurrentPortfolio(portfolio);
+        const fetched = await fetchPortfolioPositions(portfolioId);
         await fetchAvailablePortfolios(portfolioId);
+
+        const transformed = (fetched || []).map((pos) => {
+          const avg = pos.avg_cost ?? pos.average_price ?? 0;
+          const price = pos.current_price ?? pos.mark_price ?? 0;
+          const mv = pos.market_value ?? Math.abs((pos.quantity || 0) * price);
+          const ptype = pos.position_type || pos.type || 'stock';
+          return {
+            id: pos.id || `${pos.symbol}-${Math.random()}`,
+            symbol: pos.symbol,
+            quantity: pos.quantity || 0,
+            avg_cost: avg,
+            current_price: price,
+            market_value: mv,
+            unrealized_pnl: pos.unrealized_pnl ?? 0,
+            unrealized_pnl_percent: pos.unrealized_pnl_percent ?? 0,
+            portfolio_id: portfolioId,
+            position_type: ptype,
+            metadata: {
+              ...(pos.metadata || {}),
+              source: pos.metadata?.source || 'portfolio_management_service'
+            }
+          };
+        });
+
+        const totalValue = transformed.reduce((s, p) => s + (p.market_value || 0), 0);
+        const totalPnl = transformed.reduce((s, p) => s + (p.unrealized_pnl || 0), 0);
+
+        setPositions(transformed);
+        setCurrentPortfolio((prev) => ({
+          id: portfolioId,
+          name: portfolio?.name || portfolioId,
+          total_value: totalValue,
+          total_pnl: totalPnl,
+          positions_count: transformed.length,
+          description: portfolio?.description || ''
+        }));
       } catch (e) {
         setError(e.message);
+        setPositions([]);
       } finally {
         setLoading(false);
       }
     };
 
     if (isTradeStation) {
-      loadRealTradeStationData();
+      if (dataMode === 'demo') {
+        setDemoData();
+        fetchAvailablePortfolios('tradestation-main');
+      } else {
+        loadRealTradeStationData();
+      }
     } else if (portfolioId && portfolios.length > 0) {
       loadOtherPortfolioData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [portfolioId]);
+  }, [portfolioId, dataMode]);
 
-  // Handle right-click context menu
+  // Context menu handlers
   const handleContextMenu = (event, position) => {
     event.preventDefault();
     setContextMenu({
@@ -246,8 +316,8 @@ const IndividualPortfolio = () => {
   };
 
   const displayPortfolio = currentPortfolio || {
-    id: 'tradestation-main',
-    name: 'TradeStation Main',
+    id: portfolioId,
+    name: portfolioId === 'tradestation-main' ? 'TradeStation Main' : (portfolios.find((p) => p.id === portfolioId)?.name || 'Portfolio'),
     total_value: 0,
     total_pnl: 0,
     positions_count: 0
@@ -300,13 +370,20 @@ const IndividualPortfolio = () => {
     return groups;
   }, [positions, displayPortfolio?.total_value]);
 
-  // EXACTLY the sidebar-style toggle (Set state and chevron rotation)
+  // EXACT sidebar-style toggle
   const toggleTicker = (symbol) => {
     const next = new Set(expandedTickers);
     if (next.has(symbol)) next.delete(symbol);
     else next.add(symbol);
     setExpandedTickers(next);
   };
+
+  // Expand/Collapse All
+  const expandAll = () => {
+    const keys = Object.keys(groupedPositions);
+    setExpandedTickers(new Set(keys));
+  };
+  const collapseAll = () => setExpandedTickers(new Set());
 
   // Cards stats
   const portfolioStats = React.useMemo(() => {
@@ -329,11 +406,21 @@ const IndividualPortfolio = () => {
     <div className="min-h-screen bg-slate-900">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-        <div className="flex items-center space-x-2">
-          <h1 className="text-2xl font-bold text-white flex items-center">
-            Portfolio {displayPortfolio.name}
-            <ChevronDown className="ml-2" size={20} />
-          </h1>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <h1 className="text-2xl font-bold text-white flex items-center">
+              Portfolio {displayPortfolio.name}
+              <ChevronDown className="ml-2" size={20} />
+            </h1>
+          </div>
+          {/* TradeStation live/demo toggle */}
+          {portfolioId === 'tradestation-main' && (
+            <div className="flex items-center gap-3 text-white text-sm">
+              <span className={`px-2 py-1 rounded ${dataMode === 'live' ? 'bg-emerald-600' : 'bg-slate-600'} cursor-pointer`} onClick={() => { setDataMode('live'); localStorage.setItem('tsDataMode', 'live'); }}>Live</span>
+              <span className="opacity-60">/</span>
+              <span className={`px-2 py-1 rounded ${dataMode === 'demo' ? 'bg-amber-600' : 'bg-slate-600'} cursor-pointer`} onClick={() => { setDataMode('demo'); localStorage.setItem('tsDataMode', 'demo'); }}>Demo</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center mt-2">
           <Eye className="text-white mr-2" size={16} />
@@ -432,12 +519,23 @@ const IndividualPortfolio = () => {
 
         {/* Holdings Table - Sidebar-style expandable groups */}
         <div className="overflow-x-auto">
-          {loading && (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-slate-300">Loading positions...</span>
-            </div>
-          )}
+          <div className="flex items-center justify-between mb-3">
+            {loading ? (
+              <div className="flex items-center py-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-slate-300">Loading positions...</span>
+              </div>
+            ) : (
+              <div />
+            )}
+            {/* Expand/Collapse controls */}
+            {positions.length > 0 && (
+              <div className="flex gap-2">
+                <button onClick={expandAll} className="px-3 py-1 bg-slate-700 text-slate-200 rounded hover:bg-slate-600">Expand All</button>
+                <button onClick={collapseAll} className="px-3 py-1 bg-slate-700 text-slate-200 rounded hover:bg-slate-600">Collapse All</button>
+              </div>
+            )}
+          </div>
 
           {error && (
             <div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-4 text-red-300">
@@ -615,7 +713,7 @@ const IndividualPortfolio = () => {
           )}
         </div>
 
-        {/* Warnings (kept) */}
+        {/* Warnings */}
         <div className="mt-6 space-y-3">
           <div className="bg-red-900 border border-red-700 rounded-lg p-4 flex items-center justify-between">
             <div className="flex items-center">
