@@ -31,7 +31,7 @@ const IndividualPortfolio = () => {
   const [currentPortfolio, setCurrentPortfolio] = useState(null);
   const [positions, setPositions] = useState([]);
   const [cashBalance, setCashBalance] = useState(0);
-  const [expandedTickers, setExpandedTickers] = useState(new Set());
+  const [expandedTickers, setExpandedTickers] = useState({});
   const [error, setError] = useState(null);
 
   const getChangeColor = (change) => (change >= 0 ? 'text-green-400' : 'text-red-400');
