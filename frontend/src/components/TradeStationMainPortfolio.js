@@ -24,6 +24,7 @@ const TradeStationMainPortfolio = () => {
   const [positionsNormalized, setPositionsNormalized] = useState([]);
   const [expandedTickers, setExpandedTickers] = useState({}); // expand/collapse per symbol
   const [cashBalance, setCashBalance] = useState(0);
+  const [accountValueTS, setAccountValueTS] = useState(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
