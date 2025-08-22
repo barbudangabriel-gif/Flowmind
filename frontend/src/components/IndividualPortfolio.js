@@ -270,7 +270,7 @@ const IndividualPortfolio = () => {
         <div className="overflow-x-auto">
           <div className="flex items-center justify-between mb-3">
             {loading ? (<div className="flex items-center py-2"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div><span className="ml-2 text-slate-300">Loading positions...</span></div>) : (<div />)}
-            {positions.length > 0 && (<div className="flex gap-2"><button onClick={() => setExpandedTickers(new Set(Object.keys(groupedPositions)))} className="px-3 py-1 bg-slate-700 text-slate-200 rounded hover:bg-slate-600">Expand All</button><button onClick={() => setExpandedTickers(new Set())} className="px-3 py-1 bg-slate-700 text-slate-200 rounded hover:bg-slate-600">Collapse All</button></div>)}
+            {positions.length > 0 && (<div className="flex gap-2"><button onClick={() => setExpandedTickers(Object.keys(groupedPositions).reduce((acc, s) => ({...acc, [s]: true}), {}))} className="px-3 py-1 bg-slate-700 text-slate-200 rounded hover:bg-slate-600">Expand All</button><button onClick={() => setExpandedTickers({})} className="px-3 py-1 bg-slate-700 text-slate-200 rounded hover:bg-slate-600">Collapse All</button></div>)}
           </div>
 
           {error && (<div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-4 text-red-300">Error: {error}<button onClick={clearError} className="ml-2 text-red-400 hover:text-red-200">Dismiss</button></div>)}
