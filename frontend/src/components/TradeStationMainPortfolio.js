@@ -349,14 +349,14 @@ const TradeStationMainPortfolio = () => {
 
       {/* Summary Cards moved under header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <p className="text-gray-400 text-sm">Account Value</p>
             <p className="text-3xl font-bold text-white">{formatCurrency(accountValue, 0)}</p>
           </div>
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-            <p className="text-gray-400 text-sm">Unrealized P&amp;L</p>
-            <p className={`text-3xl font-bold ${portfolioData?.totalUnrealizedPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>{portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(Math.abs(portfolioData?.totalUnrealizedPnL || 0), 0)}</p>
+            <p className="text-gray-400 text-sm">Cash</p>
+            <p className="text-3xl font-bold text-white">{formatCurrency(cashBalance || 0, 0)}</p>
           </div>
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <p className="text-gray-400 text-sm">Stocks</p>
@@ -365,10 +365,6 @@ const TradeStationMainPortfolio = () => {
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <p className="text-gray-400 text-sm">Options</p>
             <p className="text-3xl font-bold text-white">{formatCurrency(optionsValue, 0)}</p>
-          </div>
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-            <p className="text-gray-400 text-sm">Cash</p>
-            <p className="text-3xl font-bold text-white">{formatCurrency(cashBalance || 0, 0)}</p>
           </div>
         </div>
       </div>
