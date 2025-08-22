@@ -172,7 +172,7 @@ export default function OptionsSelling() {
           </div>
           <div className="bg-slate-800 border border-slate-700 rounded p-4">
             <div className="text-slate-300 text-sm">Signals</div>
-            <div className="text-2xl font-bold">SELL PUT: {summary.signals_SELL PUT ?? 0} • ROLL: {summary.signals_ROLL ?? 0} • CC: {summary.signals_COVERED CALL ?? 0}</div>
+            <div className="text-2xl font-bold">SELL PUT: {summary["signals_SELL PUT"] ?? 0} • ROLL: {summary.signals_ROLL ?? 0} • CC: {summary["signals_COVERED CALL"] ?? 0}</div>
           </div>
         </div>
       )}
