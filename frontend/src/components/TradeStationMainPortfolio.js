@@ -194,10 +194,15 @@ const TradeStationMainPortfolio = () => {
           const balancesData = await balancesResponse.json();
           const cashAvailable = balancesData?.balances?.Balances?.[0]?.CashBalance || balancesData?.balances?.CashBalance || 0;
           setCashBalance(parseFloat(cashAvailable) || 0);
+          // Try to map TS Account Value directly if present
+          const bv = balancesData?.balances?.Balances?.[0] || balancesData?.balances || {};
+          const totalAccountValue = bv.AccountValue || bv.NetLiquidatingValue || bv.TotalNetValue || bv.TotalAccountValue;
+          if (totalAccountValue != null) setAccountValueTS(parseFloat(totalAccountValue));
         } else {
           setCashBalance(0);
+          setAccountValueTS(null);
         }
-      } catch { setCashBalance(0); }
+      } catch { setCashBalance(0); setAccountValueTS(null); }
 
       // Set top-level portfolio summary
       setPortfolioData({
