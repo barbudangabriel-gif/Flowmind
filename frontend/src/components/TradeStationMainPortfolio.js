@@ -217,7 +217,8 @@ const TradeStationMainPortfolio = () => {
       const totalValue = arr.reduce((s, p) => s + (p.market_value || 0), 0);
       const totalPnl = arr.reduce((s, p) => s + (p.unrealized_pnl || 0), 0);
       const totalQty = arr.reduce((s, p) => s + Math.abs(p.quantity || 0), 0);
-      const accountPercent = (portfolioData?.totalMarketValue || 0) > 0 ? (totalValue / (portfolioData?.totalMarketValue || 0)) * 100 : 0;
+      const acctValue = (portfolioData?.totalMarketValue || 0) + (cashBalance || 0);
+      const accountPercent = acctValue > 0 ? (totalValue / acctValue) * 100 : 0;
       const stock = arr.find((p) => p.position_type === 'stock');
       const currentPrice = stock ? stock.current_price : arr.reduce((s, p) => s + (p.current_price || 0), 0) / arr.length;
       groups[symbol]._summary = { symbol, totalValue, totalPnL: totalPnl, totalQuantity: totalQty, accountPercent, currentPrice, positionCount: arr.length, hasStock: arr.some((p) => p.position_type === 'stock'), hasOptions: arr.some((p) => p.position_type === 'option') };
