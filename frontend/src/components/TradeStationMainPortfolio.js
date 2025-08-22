@@ -48,6 +48,12 @@ const TradeStationMainPortfolio = () => {
       let option_type = pos.option_type;
       let strike_price = pos.strike_price;
       let expiration_date = pos.expiration_date;
+      // TS often provides option detail under different fields too
+      if (isOption) {
+        option_type = option_type || pos.right || pos.optionRight || pos.put_call || pos.CallPut; // CALL/PUT variants
+        strike_price = strike_price || pos.strike || pos.strikePrice;
+        expiration_date = expiration_date || pos.expiration || pos.expirationDate || pos.Expiry;
+      }
       if (isOption && (!option_type || !strike_price || !expiration_date)) {
         try {
           if (!optionMatch) {
