@@ -290,8 +290,27 @@ const IndividualPortfolio = () => {
                   const arr = groupedPositions[symbol]; const summary = arr._summary; const isExpanded = expandedTickers.has(symbol);
                   return (
                     <React.Fragment key={symbol}>
-                      <tr className="border-b border-slate-600 bg-slate-800 hover:bg-slate-700 cursor-pointer" onClick={() => toggleTicker(symbol)}>
-                        <td className="py-4 px-2"><div className="flex items-center"><ChevronDown className={`w-4 h-4 text-slate-400 mr-2 transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} /><span className="text-blue-300 font-bold text-lg">{symbol}</span><div className="ml-3 flex gap-1">{summary.hasStock && (<span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>)}{summary.hasOptions && (<span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>)}</div></div></td>
+                      <tr className="border-b border-slate-600 bg-slate-800 hover:bg-slate-700" title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}>
+                        <td className="py-4 px-2">
+                          <button
+                            type="button"
+                            aria-expanded={isExpanded}
+                            onClick={() => toggleTicker(symbol)}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTicker(symbol); } }}
+                            className="w-full text-left flex items-center focus:outline-none cursor-pointer"
+                          >
+                            <ChevronDown className={`w-4 h-4 text-slate-400 mr-2 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
+                            <span className="text-blue-300 font-bold text-lg">{symbol}</span>
+                            <div className="ml-3 flex gap-1">
+                              {summary.hasStock && (
+                                <span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>
+                              )}
+                              {summary.hasOptions && (
+                                <span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>
+                              )}
+                            </div>
+                          </button>
+                        </td>
                         <td className="text-right py-4 px-2 font-bold text-slate-200">{summary.totalQuantity.toLocaleString()}</td>
                         <td className="text-right py-4 px-2 text-slate-400">-</td>
                         <td className="text-right py-4 px-2 font-medium text-slate-200">${summary.currentPrice.toFixed(2)}</td>
