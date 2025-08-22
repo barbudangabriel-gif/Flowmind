@@ -7,7 +7,7 @@ const usePortfolioManagement = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
   // Fetch all portfolios
   const fetchPortfolios = async () => {
