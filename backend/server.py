@@ -47,8 +47,11 @@ from smart_rebalancing_service import SmartRebalancingService
 # Portfolio Management
 from portfolio_management_service import PortfolioManagementService
 
-# NEW: Option Selling compute service
-from options_selling_service import ComputeRequest, compute_selling
+# NEW: Option Selling compute + monitor service
+from options_selling_service import (
+    ComputeRequest, compute_selling,
+    MonitorStartRequest, monitor_start, monitor_stop, monitor_status
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -111,6 +114,31 @@ async def options_selling_compute(req: ComputeRequest):
         return {"status": "success", "data": result.dict()}
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Options selling compute failed: {str(e)}")
+
+# NEW: Option Selling Monitor endpoints
+@api_router.post("/options/selling/monitor/start")
+async def options_selling_monitor_start(req: MonitorStartRequest):
+    try:
+        res = await monitor_start(req)
+        return {"status": "success", "data": res}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Monitor start failed: {str(e)}")
+
+@api_router.post("/options/selling/monitor/stop")
+async def options_selling_monitor_stop():
+    try:
+        res = await monitor_stop()
+        return {"status": "success", "data": res}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Monitor stop failed: {str(e)}")
+
+@api_router.get("/options/selling/monitor/status")
+async def options_selling_monitor_status():
+    try:
+        res = await monitor_status()
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Monitor status failed: {str(e)}")
 
 # Mount router
 app.include_router(api_router)

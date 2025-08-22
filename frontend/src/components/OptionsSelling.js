@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { ChevronDown, Settings, RefreshCw, AlertTriangle, ToggleRight, Database, Zap } from "lucide-react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
+import { ChevronDown, Settings, RefreshCw, AlertTriangle, Database, Zap, Play, Square, Clock } from "lucide-react";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -54,6 +54,14 @@ export default function OptionsSelling() {
   const [cashTS, setCashTS] = useState(0);
   const [positionsLive, setPositionsLive] = useState([]);
   const [expandedLive, setExpandedLive] = useState({});
+
+  // Monitor state
+  const [monitorRunning, setMonitorRunning] = useState(false);
+  const [monitorStatus, setMonitorStatus] = useState(null);
+  const [monitorError, setMonitorError] = useState("");
+  const statusTimerRef = useRef(null);
+  const MONITOR_INTERVAL = 15; // seconds (backend loop)
+  const STATUS_POLL_MS = 5000; // UI refresh for status
 
   // Build table for engine output
   const table = useMemo(() => {
@@ -121,6 +129,85 @@ export default function OptionsSelling() {
       setLoading(false);
     }
   };
+
+  // Monitor controls
+  const startMonitor = async () => {
+    try {
+      setMonitorError("");
+      let payloadPositions = [];
+      try {
+        const parsed = JSON.parse(positionsText);
+        payloadPositions = parsed.positions || parsed || [];
+      } catch (e) {
+        throw new Error("Positions JSON invalid");
+      }
+      const body = {
+        positions: payloadPositions,
+        config,
+        mode,
+        watchlist,
+        interval_seconds: MONITOR_INTERVAL,
+      };
+      const resp = await fetch(`${backendUrl}/api/options/selling/monitor/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await resp.json();
+      if (!resp.ok || json.status !== 'success') throw new Error(json.detail || 'Failed to start monitor');
+      setMonitorRunning(true);
+      // Kick an immediate status fetch
+      await fetchStatus();
+      // Start polling status
+      if (statusTimerRef.current) clearInterval(statusTimerRef.current);
+      statusTimerRef.current = setInterval(fetchStatus, STATUS_POLL_MS);
+    } catch (e) {
+      setMonitorError(e.message);
+      setMonitorRunning(false);
+      if (statusTimerRef.current) {
+        clearInterval(statusTimerRef.current);
+        statusTimerRef.current = null;
+      }
+    }
+  };
+
+  const stopMonitor = async () => {
+    try {
+      setMonitorError("");
+      const resp = await fetch(`${backendUrl}/api/options/selling/monitor/stop`, { method: 'POST' });
+      const json = await resp.json();
+      if (!resp.ok || json.status !== 'success') throw new Error(json.detail || 'Failed to stop monitor');
+    } catch (e) {
+      setMonitorError(e.message);
+    } finally {
+      setMonitorRunning(false);
+      if (statusTimerRef.current) {
+        clearInterval(statusTimerRef.current);
+        statusTimerRef.current = null;
+      }
+      // Final status pull
+      await fetchStatus();
+    }
+  };
+
+  const fetchStatus = async () => {
+    try {
+      const resp = await fetch(`${backendUrl}/api/options/selling/monitor/status`);
+      const json = await resp.json();
+      if (!resp.ok || json.status !== 'success') throw new Error(json.detail || 'Status failed');
+      setMonitorStatus(json.data);
+      setMonitorRunning(!!json.data?.running);
+    } catch (e) {
+      setMonitorError(e.message);
+    }
+  };
+
+  useEffect(() => {
+    // Clean up on unmount
+    return () => {
+      if (statusTimerRef.current) clearInterval(statusTimerRef.current);
+    };
+  }, []);
 
   // TS Live fetcher (options only)
   const parseIsOption = (rawSymbol, assetType) => {
@@ -284,7 +371,7 @@ export default function OptionsSelling() {
       </div>
 
       <div className="bg-slate-800 border border-slate-700 rounded p-4">
-        <div className="mb-2 text-slate-200">Mode & Watchlist</div>
+        <div className="mb-2 text-slate-200">Mode &amp; Watchlist</div>
         <div className="flex items-center gap-3 text-sm">
           {['equal','greedy','both'].map(m => (
             <label key={m} className="flex items-center gap-1"><input type="radio" name="mode" value={m} checked={mode===m} onChange={()=>setMode(m)}/> {m}</label>
@@ -298,70 +385,137 @@ export default function OptionsSelling() {
     </div>
   );
 
-  // Trade list tab
-  const TradeList = () => (
-    <div className="p-6">
-      {!summary && (
-        <div className="text-slate-400">Run Compute to generate trade list.</div>
-      )}
-      {summary && (
-        <>
+  // Trade list tab with Monitor panel
+  const TradeList = () => {
+    const diffs = monitorStatus?.diffs || { added: [], removed: [], changed: [] };
+    const lastRun = monitorStatus?.last_run_at ? new Date(monitorStatus.last_run_at).toLocaleTimeString() : '-';
+    return (
+      <div className="p-6 space-y-4">
+        {/* Monitor Panel */}
+        <div className="bg-slate-800 border border-slate-700 rounded p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-slate-300 text-sm">Grouping: 
-              <button onClick={()=>setGroupBy('signal')} className={`ml-2 px-2 py-1 rounded ${groupBy==='signal'?'bg-blue-600':'bg-slate-700'}`}>by Signal</button>
-              <button onClick={()=>setGroupBy('ticker')} className={`ml-2 px-2 py-1 rounded ${groupBy==='ticker'?'bg-blue-600':'bg-slate-700'}`}>by Ticker</button>
+            <div className="flex items-center gap-2 text-slate-200">
+              <Clock size={16} /> Monitor • Interval {monitorStatus?.interval_seconds || MONITOR_INTERVAL}s • Last run: <span className="font-semibold">{lastRun}</span> • Cycles: <span className="font-semibold">{monitorStatus?.cycles || 0}</span>
             </div>
-            <div className="flex gap-2">
-              <button onClick={expandAll} className="px-3 py-1 bg-slate-700 rounded">Expand All</button>
-              <button onClick={collapseAll} className="px-3 py-1 bg-slate-700 rounded">Collapse All</button>
-              <button disabled className="px-3 py-1 bg-slate-800 text-slate-500 rounded" title="Coming soon">Export JSON</button>
-              <button disabled className="px-3 py-1 bg-slate-800 text-slate-500 rounded" title="Coming soon">Export CSV</button>
+            <div className="flex items-center gap-2">
+              <button onClick={startMonitor} disabled={monitorRunning} className={`px-3 py-1 rounded flex items-center gap-1 ${monitorRunning ? 'bg-slate-700 text-slate-400' : 'bg-emerald-600 hover:bg-emerald-700'}`}>
+                <Play size={14}/> Start
+              </button>
+              <button onClick={stopMonitor} disabled={!monitorRunning} className={`px-3 py-1 rounded flex items-center gap-1 ${!monitorRunning ? 'bg-slate-700 text-slate-400' : 'bg-red-600 hover:bg-red-700'}`}>
+                <Square size={14}/> Stop
+              </button>
             </div>
           </div>
-          <table className="w-full text-sm bg-slate-800 rounded">
-            <thead>
-              <tr className="border-b border-slate-700 text-slate-300">
-                <th className="text-left py-2 px-2">Group</th>
-                <th className="text-right py-2 px-2">Items</th>
-                <th className="text-right py-2 px-2">Contracts</th>
-                <th className="text-right py-2 px-2">Cap (sum)</th>
-                <th className="text-right py-2 px-2">Risk (sum)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.keys(groupedTrade).sort().map((key) => {
-                const rows = groupedTrade[key];
-                const isExpanded = !!expanded[key];
-                const totalContracts = rows.reduce((s,r)=> s + (r.contracts||0), 0);
-                const capSum = rows.reduce((s,r)=> s + (r.capital_per_contract||0), 0);
-                const riskSum = rows.reduce((s,r)=> s + (r.risk_per_contract||0), 0);
-                return (
-                  <React.Fragment key={key}>
-                    <tr className="border-b border-slate-700 bg-slate-800 hover:bg-slate-700 cursor-pointer" onClick={()=>toggle(key)}>
-                      <td className="py-3 px-2"><div className="flex items-center"><ChevronDown className={`w-4 h-4 text-slate-400 mr-2 transition-transform ${isExpanded ? 'rotate-180':'rotate-0'}`}/><span className="text-blue-300 font-bold">{key}</span></div></td>
-                      <td className="text-right py-3 px-2 text-slate-300">{rows.length}</td>
-                      <td className="text-right py-3 px-2 text-slate-300">{totalContracts}</td>
-                      <td className="text-right py-3 px-2 text-slate-300">${capSum.toLocaleString()}</td>
-                      <td className="text-right py-3 px-2 text-slate-300">${riskSum.toLocaleString()}</td>
-                    </tr>
-                    {isExpanded && rows.map((r, idx) => (
-                      <tr key={`${key}-${idx}`} className="border-b border-slate-800">
-                        <td className="py-2 px-2 text-slate-200">└ {r.ticker} • {r.signal}</td>
-                        <td className="text-right py-2 px-2">Δ {Number(r.delta).toFixed(2)} • DTE {r.dte} • Strike {r.strike} • Prem {r.premium}</td>
-                        <td className="text-right py-2 px-2">{r.contracts}</td>
-                        <td className="text-right py-2 px-2">${(r.capital_per_contract||0).toLocaleString()}</td>
-                        <td className="text-right py-2 px-2">${(r.risk_per_contract||0).toLocaleString()}</td>
+          {monitorError && (
+            <div className="bg-red-900/60 border border-red-700 text-red-200 px-3 py-2 rounded mb-3"><AlertTriangle size={16} className="inline mr-2"/>{monitorError}</div>
+          )}
+          {/* Diffs */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-sm">
+            <div className="bg-slate-900/60 border border-slate-700 rounded p-3">
+              <div className="font-semibold text-emerald-400 mb-2">Added ({diffs.added.length})</div>
+              <div className="space-y-2 max-h-48 overflow-auto pr-1">
+                {diffs.added.map((s, i) => (
+                  <div key={`add-${i}`} className={`p-2 rounded border ${s.signal === 'ROLL' ? 'border-amber-500 bg-amber-500/10' : 'border-emerald-700 bg-emerald-500/10'}`}>
+                    <div className="font-bold">{s.ticker} • {s.signal}</div>
+                    <div className="text-slate-300">Δ {Number(s.delta).toFixed(2)} • DTE {s.dte} • Strike {s.strike} • C {s.contracts} • Prem {s.premium}</div>
+                  </div>
+                ))}
+                {diffs.added.length === 0 && <div className="text-slate-500">No additions</div>}
+              </div>
+            </div>
+            <div className="bg-slate-900/60 border border-slate-700 rounded p-3">
+              <div className="font-semibold text-red-400 mb-2">Removed ({diffs.removed.length})</div>
+              <div className="space-y-2 max-h-48 overflow-auto pr-1">
+                {diffs.removed.map((s, i) => (
+                  <div key={`rem-${i}`} className={`p-2 rounded border ${s.signal === 'ROLL' ? 'border-amber-500 bg-amber-500/10' : 'border-red-700 bg-red-500/10'}`}>
+                    <div className="font-bold">{s.ticker} • {s.signal}</div>
+                    <div className="text-slate-300">Δ {Number(s.delta).toFixed(2)} • DTE {s.dte} • Strike {s.strike} • C {s.contracts} • Prem {s.premium}</div>
+                  </div>
+                ))}
+                {diffs.removed.length === 0 && <div className="text-slate-500">No removals</div>}
+              </div>
+            </div>
+            <div className="bg-slate-900/60 border border-slate-700 rounded p-3">
+              <div className="font-semibold text-blue-400 mb-2">Changed ({diffs.changed.length})</div>
+              <div className="space-y-2 max-h-48 overflow-auto pr-1">
+                {diffs.changed.map((c, i) => {
+                  const from = c.from || {}; const to = c.to || {};
+                  const isRoll = (to.signal || '').toUpperCase() === 'ROLL' || (from.signal || '').toUpperCase() === 'ROLL';
+                  return (
+                    <div key={`chg-${i}`} className={`p-2 rounded border ${isRoll ? 'border-amber-500 bg-amber-500/10' : 'border-blue-700 bg-blue-500/10'}`}>
+                      <div className="font-bold">{to.ticker || from.ticker} • {to.signal || from.signal}</div>
+                      <div className="text-slate-300">C {from.contracts}→{to.contracts} • Prem {from.premium}→{to.premium} • Δ {Number(from.delta).toFixed(2)}→{Number(to.delta).toFixed(2)} • DTE {from.dte}→{to.dte}</div>
+                    </div>
+                  );
+                })}
+                {diffs.changed.length === 0 && <div className="text-slate-500">No changes</div>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {!summary && (
+          <div className="text-slate-400">Run Compute to generate trade list.</div>
+        )}
+        {summary && (
+          <>
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-slate-300 text-sm">Grouping:
+                <button onClick={()=>setGroupBy('signal')} className={`ml-2 px-2 py-1 rounded ${groupBy==='signal'?'bg-blue-600':'bg-slate-700'}`}>by Signal</button>
+                <button onClick={()=>setGroupBy('ticker')} className={`ml-2 px-2 py-1 rounded ${groupBy==='ticker'?'bg-blue-600':'bg-slate-700'}`}>by Ticker</button>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={expandAll} className="px-3 py-1 bg-slate-700 rounded">Expand All</button>
+                <button onClick={collapseAll} className="px-3 py-1 bg-slate-700 rounded">Collapse All</button>
+                <button disabled className="px-3 py-1 bg-slate-800 text-slate-500 rounded" title="Coming soon">Export JSON</button>
+                <button disabled className="px-3 py-1 bg-slate-800 text-slate-500 rounded" title="Coming soon">Export CSV</button>
+              </div>
+            </div>
+            <table className="w-full text-sm bg-slate-800 rounded">
+              <thead>
+                <tr className="border-b border-slate-700 text-slate-300">
+                  <th className="text-left py-2 px-2">Group</th>
+                  <th className="text-right py-2 px-2">Items</th>
+                  <th className="text-right py-2 px-2">Contracts</th>
+                  <th className="text-right py-2 px-2">Cap (sum)</th>
+                  <th className="text-right py-2 px-2">Risk (sum)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.keys(groupedTrade).sort().map((key) => {
+                  const rows = groupedTrade[key];
+                  const isExpanded = !!expanded[key];
+                  const totalContracts = rows.reduce((s,r)=> s + (r.contracts||0), 0);
+                  const capSum = rows.reduce((s,r)=> s + (r.capital_per_contract||0), 0);
+                  const riskSum = rows.reduce((s,r)=> s + (r.risk_per_contract||0), 0);
+                  return (
+                    <React.Fragment key={key}>
+                      <tr className="border-b border-slate-700 bg-slate-800 hover:bg-slate-700 cursor-pointer" onClick={()=>toggle(key)}>
+                        <td className="py-3 px-2"><div className="flex items-center"><ChevronDown className={`w-4 h-4 text-slate-400 mr-2 transition-transform ${isExpanded ? 'rotate-180':'rotate-0'}`}/><span className="text-blue-300 font-bold">{key}</span></div></td>
+                        <td className="text-right py-3 px-2 text-slate-300">{rows.length}</td>
+                        <td className="text-right py-3 px-2 text-slate-300">{totalContracts}</td>
+                        <td className="text-right py-3 px-2 text-slate-300">${capSum.toLocaleString()}</td>
+                        <td className="text-right py-3 px-2 text-slate-300">${riskSum.toLocaleString()}</td>
                       </tr>
-                    ))}
-                  </React.Fragment>
-                );
-              })}
-            </tbody>
-          </table>
-        </>
-      )}
-    </div>
-  );
+                      {isExpanded && rows.map((r, idx) => (
+                        <tr key={`${key}-${idx}`} className="border-b border-slate-800">
+                          <td className="py-2 px-2 text-slate-200">└ {r.ticker} • {r.signal}</td>
+                          <td className="text-right py-2 px-2">Δ {Number(r.delta).toFixed(2)} • DTE {r.dte} • Strike {r.strike} • Prem {r.premium}</td>
+                          <td className="text-right py-2 px-2">{r.contracts}</td>
+                          <td className="text-right py-2 px-2">${(r.capital_per_contract||0).toLocaleString()}</td>
+                          <td className="text-right py-2 px-2">${(r.risk_per_contract||0).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </>
+        )}
+      </div>
+    );
+  };
 
   // Live positions tab (TS)
   const LivePositions = () => {
