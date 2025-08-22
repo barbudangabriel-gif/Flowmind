@@ -323,7 +323,7 @@ metadata:
   created_by: "main_agent"
   version: "1.1"
   test_sequence: 1
-  run_ui: false
+  run_ui: true
   implementation_phase: "Phase 1.1 - Strategy Engine Foundation"
   next_phase: "Phase 2.1 - Interactive P&L Charts cu Plotly.js"
 
