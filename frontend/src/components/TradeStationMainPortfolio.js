@@ -23,6 +23,7 @@ const TradeStationMainPortfolio = () => {
 
   const [positionsNormalized, setPositionsNormalized] = useState([]);
   const [expandedTickers, setExpandedTickers] = useState({}); // expand/collapse per symbol
+  const [cashBalance, setCashBalance] = useState(0);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -32,9 +33,9 @@ const TradeStationMainPortfolio = () => {
       const asset = (pos.asset_type || '').toUpperCase();
       let isStock = asset.includes('EQ') || asset.includes('STOCK');
       let isOption = asset.includes('OP') || asset.includes('OPTION');
-      // If both flags true (e.g., STOCKOPTION), treat as option
-      if (isOption) isStock = false;
+      if (isOption) isStock = false; // STOCKOPTION treated as option
 
+      // Detect option from symbol if needed: e.g., AAPL 271217C195 or AAPL_271217C195
       let baseSymbol = (rawSymbol.split(' ')[0] || rawSymbol).split('_')[0];
       const symbolTail = rawSymbol.replace(baseSymbol, '').replace(/^[ _]/, '');
       const pattern = /(\d{6})([CP])([0-9]+(?:\.[0-9]+)?)/i;
@@ -145,6 +146,18 @@ const TradeStationMainPortfolio = () => {
       const stocks = positions.filter(p => (p.asset_type || '').toUpperCase().includes('STOCK') || (p.asset_type || '').toUpperCase().includes('EQ'));
       const options = positions.filter(p => (p.asset_type || '').toUpperCase().includes('OPTION') || (p.asset_type || '').toUpperCase().includes('OP'));
 
+      // Balances (Cash)
+      try {
+        const balancesResponse = await fetch(`${backendUrl}/api/tradestation/accounts/${mainAccount.AccountID}/balances`);
+        if (balancesResponse.ok) {
+          const balancesData = await balancesResponse.json();
+          const cashAvailable = balancesData?.balances?.Balances?.[0]?.CashBalance || balancesData?.balances?.CashBalance || 0;
+          setCashBalance(parseFloat(cashAvailable) || 0);
+        } else {
+          setCashBalance(0);
+        }
+      } catch { setCashBalance(0); }
+
       // Set top-level portfolio summary
       setPortfolioData({
         account: mainAccount,
@@ -176,8 +189,8 @@ const TradeStationMainPortfolio = () => {
     fetchTradeStationData();
   }, []);
 
-  const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
-  const getChangeColor = (value) => (value >= 0 ? 'text-green-500' : 'text-red-500');
+  const formatCurrency = (value, digits = 2) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
+  const getChangeColor = (value) => (value >= 0 ? 'text-green-400' : 'text-red-400');
   const getChangeIcon = (value) => (value >= 0 ? TrendingUp : TrendingDown);
 
   // Group positions for detailed table
@@ -273,11 +286,11 @@ const TradeStationMainPortfolio = () => {
           <div className="mt-6">
             <div className="flex items-center space-x-2">
               <Eye className="text-white" size={20} />
-              <span className="text-4xl font-bold text-white">{formatCurrency(portfolioData?.totalMarketValue || 0)}</span>
+              <span className="text-4xl font-bold text-white">{formatCurrency(portfolioData?.totalMarketValue || 0, 0)}</span>
             </div>
             <div className={`flex items-center mt-2 space-x-2 ${getChangeColor(portfolioData?.totalUnrealizedPnL)}`}>
               <ChangeIcon size={24} />
-              <span className="text-2xl font-semibold">{portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(portfolioData?.totalUnrealizedPnL || 0)}</span>
+              <span className="text-2xl font-semibold">{portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(portfolioData?.totalUnrealizedPnL || 0, 0)}</span>
               <span className="text-lg">({portfolioData?.percentChange >= 0 ? '+' : ''}{(portfolioData?.percentChange || 0).toFixed(2)}%)</span>
             </div>
             <p className="text-blue-100 text-sm mt-1">Last updated: {lastUpdated.toLocaleString()}</p>
@@ -285,23 +298,150 @@ const TradeStationMainPortfolio = () => {
         </div>
       </div>
 
-      {/* Portfolio Stats */}
+      {/* Detailed Holdings - inline, LIVE only */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-sm text-gray-300">Positions: <span className="font-semibold text-white">{portfolioData?.totalPositions || 0}</span></div>
+          {positionsNormalized.length > 0 && (
+            <div className="flex gap-2">
+              <button onClick={expandAll} className="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600">Expand All</button>
+              <button onClick={collapseAll} className="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600">Collapse All</button>
+            </div>
+          )}
+        </div>
+
+        {error && (
+          <div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-4 text-red-300">Error: {error}</div>
+        )}
+
+        {positionsNormalized.length === 0 && !error && (
+          <div className="text-center py-8 text-gray-400">No positions found.</div>
+        )}
+
+        {positionsNormalized.length > 0 && (
+          <table className="w-full text-sm bg-gray-800 rounded-lg">
+            <thead>
+              <tr className="border-b border-gray-700">
+                <th className="text-left py-3 px-2 font-medium text-gray-300">Symbol</th>
+                <th className="text-left py-3 px-2 font-medium text-gray-300">Description</th>
+                <th className="text-left py-3 px-2 font-medium text-gray-300">Position</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Open P/L</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Avg Price</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Today's Open P/L</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Open P/L / Qty</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Open P/L %</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Total Cost</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Market Value</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Qty</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Last</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-300">Contract Exp Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(groupedPositions).sort().map((symbol) => {
+                const arr = groupedPositions[symbol];
+                const summary = arr._summary;
+                const isExpanded = !!expandedTickers[symbol];
+                return (
+                  <React.Fragment key={symbol}>
+                    {/* Group header - click entire row to toggle */}
+                    <tr
+                      className="border-b border-gray-600 bg-gray-800 hover:bg-gray-700 cursor-pointer"
+                      onClick={() => toggleTicker(symbol)}
+                      title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}
+                    >
+                      <td className="py-4 px-2">
+                        <div className="flex items-center">
+                          <ChevronDown className={`w-4 h-4 text-gray-400 mr-2 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
+                          <span className="text-blue-300 font-bold text-lg">{symbol}</span>
+                          <div className="ml-3 flex gap-1">
+                            {summary.hasStock && (<span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>)}
+                            {summary.hasOptions && (<span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>)}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="text-left py-4 px-2 text-gray-400">-</td>
+                      <td className="text-left py-4 px-2 text-gray-400">-</td>
+                      <td className={`text-right py-4 px-2 font-bold ${summary.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>{summary.totalPnL >= 0 ? '+' : ''}{formatCurrency(Math.abs(summary.totalPnL), 0)}</td>
+                      <td className="text-right py-4 px-2 text-gray-400">-</td>
+                      <td className="text-right py-4 px-2 text-gray-400">-</td>
+                      <td className="text-right py-4 px-2 text-gray-400">-</td>
+                      <td className="text-right py-4 px-2 text-gray-400">-</td>
+                      <td className="text-right py-4 px-2 text-gray-400">-</td>
+                      <td className="text-right py-4 px-2 font-bold text-white">{formatCurrency(summary.totalValue, 0)}</td>
+                      <td className="text-right py-4 px-2 font-bold text-gray-200">{summary.totalQuantity.toLocaleString()}</td>
+                      <td className="text-right py-4 px-2 font-medium text-gray-200">{formatCurrency(summary.currentPrice, 2)}</td>
+                      <td className="text-right py-4 px-2 text-gray-400">-</td>
+                    </tr>
+
+                    {/* Expanded children */}
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan="13" className="p-0">
+                          <div className="bg-gray-900 border-l-4 border-blue-400">
+                            <table className="w-full">
+                              <tbody>
+                                {arr.map((p) => {
+                                  const qty = Math.abs(p.quantity || 0);
+                                  const isLong = (p.quantity || 0) >= 0;
+                                  const openPL = p.unrealized_pnl || 0;
+                                  const openPLPerQty = qty > 0 ? openPL / qty : 0;
+                                  const openPLPct = p.unrealized_pnl_percent || (qty > 0 && p.avg_cost > 0 ? (openPL / (qty * p.avg_cost)) * 100 : 0);
+                                  const totalCost = qty * (p.avg_cost || 0);
+                                  const expDate = p.position_type === 'option' ? (p.metadata?.expiration_date || '-') : '-';
+                                  const positionLabel = `${qty} ${isLong ? 'Long' : 'Short'}`;
+                                  return (
+                                    <tr key={p.id} className="border-b border-gray-700 hover:bg-gray-700">
+                                      <td className="py-3 px-6">
+                                        <div className="flex items-center">
+                                          <span className="text-gray-400 text-sm mr-2">├──</span>
+                                          <span className="text-gray-300 font-medium">{p.symbol}</span>
+                                        </div>
+                                      </td>
+                                      <td className="text-left py-3 px-2 text-gray-300">-</td>
+                                      <td className="text-left py-3 px-2 text-gray-300">{positionLabel}</td>
+                                      <td className={`text-right py-3 px-2 ${openPL >= 0 ? 'text-green-400' : 'text-red-400'}`}>{openPL >= 0 ? '+' : ''}{formatCurrency(Math.abs(openPL), 0)}</td>
+                                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(p.avg_cost, 2)}</td>
+                                      <td className="text-right py-3 px-2 text-gray-400">-</td>
+                                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(openPLPerQty, 2)}</td>
+                                      <td className={`text-right py-3 px-2 ${openPLPct >= 0 ? 'text-green-400' : 'text-red-400'}`}>{openPLPct >= 0 ? '+' : ''}{openPLPct.toFixed(2)}%</td>
+                                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(totalCost, 0)}</td>
+                                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(p.market_value, 0)}</td>
+                                      <td className="text-right py-3 px-2 text-gray-200">{qty}</td>
+                                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(p.current_price, 2)}</td>
+                                      <td className="text-right py-3 px-2 text-gray-200">{expDate}</td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+
+        {/* Bottom Cards (moved here) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Total Positions</p>
-                <p className="text-3xl font-bold text-white">{portfolioData?.totalPositions || 0}</p>
+                <p className="text-gray-400 text-sm">Market Value</p>
+                <p className="text-3xl font-bold text-white">{formatCurrency(portfolioData?.totalMarketValue || 0, 0)}</p>
               </div>
-              <Target className="text-blue-400" size={32} />
+              <DollarSign className="text-yellow-400" size={32} />
             </div>
           </div>
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Stock Positions</p>
-                <p className="text-3xl font-bold text-white">{(positionsNormalized.filter((p) => p.position_type === 'stock')).length}</p>
+                <p className="text-gray-400 text-sm">Unrealized P&amp;L</p>
+                <p className={`text-3xl font-bold ${portfolioData?.totalUnrealizedPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>{portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(Math.abs(portfolioData?.totalUnrealizedPnL || 0), 0)}</p>
               </div>
               <BarChart3 className="text-green-400" size={32} />
             </div>
@@ -309,156 +449,12 @@ const TradeStationMainPortfolio = () => {
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Options Positions</p>
-                <p className="text-3xl font-bold text-white">{(positionsNormalized.filter((p) => p.position_type === 'option')).length}</p>
+                <p className="text-gray-400 text-sm">Cash Balance</p>
+                <p className="text-3xl font-bold text-white">{formatCurrency(cashBalance || 0, 0)}</p>
               </div>
-              <PieChartIcon className="text-purple-400" size={32} />
+              <Target className="text-blue-400" size={32} />
             </div>
           </div>
-          <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm">Portfolio Value</p>
-                <p className="text-2xl font-bold text-white">{formatCurrency(portfolioData?.totalMarketValue || 0)}</p>
-              </div>
-              <DollarSign className="text-yellow-400" size={32} />
-            </div>
-          </div>
-        </div>
-
-        {/* Detailed Holdings - inline, LIVE only */}
-        <div className="overflow-x-auto">
-          <div className="flex items-center justify-between mb-3">
-            {loading ? (
-              <div className="flex items-center py-2">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <span className="ml-2 text-gray-300">Loading positions...</span>
-              </div>
-            ) : (<div />)}
-            {positionsNormalized.length > 0 && (
-              <div className="flex gap-2">
-                <button onClick={expandAll} className="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600">Expand All</button>
-                <button onClick={collapseAll} className="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600">Collapse All</button>
-              </div>
-            )}
-          </div>
-
-          {error && (
-            <div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-4 text-red-300">
-              Error: {error}
-            </div>
-          )}
-
-          {positionsNormalized.length === 0 && !error && (
-            <div className="text-center py-8 text-gray-400">No positions found.</div>
-          )}
-
-          {positionsNormalized.length > 0 && (
-            <table className="w-full text-sm bg-gray-800 rounded-lg">
-              <thead>
-                <tr className="border-b border-gray-700">
-                  <th className="text-left py-3 px-2 font-medium text-gray-300">Symbol</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-300">Quantity</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-300">Avg Cost</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-300">Current Price</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-300">Market Value</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-300">% din Cont</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-300">Unrealized P&amp;L</th>
-                  <th className="text-right py-3 px-2 font-medium text-gray-300">P&amp;L %</th>
-                  <th className="text-center py-3 px-2 font-medium text-gray-300">Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.keys(groupedPositions).sort().map((symbol) => {
-                  const arr = groupedPositions[symbol];
-                  const summary = arr._summary;
-                  const isExpanded = !!expandedTickers[symbol];
-                  return (
-                    <React.Fragment key={symbol}>
-                      {/* Group header - click entire row to toggle */}
-                      <tr
-                        className="border-b border-gray-600 bg-gray-800 hover:bg-gray-700 cursor-pointer"
-                        onClick={() => toggleTicker(symbol)}
-                        title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}
-                      >
-                        <td className="py-4 px-2">
-                          <div className="flex items-center">
-                            <ChevronDown className={`w-4 h-4 text-gray-400 mr-2 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
-                            <span className="text-blue-300 font-bold text-lg">{symbol}</span>
-                            <div className="ml-3 flex gap-1">
-                              {summary.hasStock && (<span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>)}
-                              {summary.hasOptions && (<span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>)}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="text-right py-4 px-2 font-bold text-gray-200">{summary.totalQuantity.toLocaleString()}</td>
-                        <td className="text-right py-4 px-2 text-gray-400">-</td>
-                        <td className="text-right py-4 px-2 font-medium text-gray-200">${summary.currentPrice.toFixed(2)}</td>
-                        <td className="text-right py-4 px-2 font-bold text-white">${summary.totalValue.toFixed(2)}</td>
-                        <td className="text-right py-4 px-2 font-bold text-blue-300">{summary.accountPercent.toFixed(2)}%</td>
-                        <td className={`text-right py-4 px-2 font-bold ${summary.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>{summary.totalPnL >= 0 ? '+' : ''}${summary.totalPnL.toFixed(2)}</td>
-                        <td className="text-right py-4 px-2 text-gray-400">-</td>
-                        <td className="text-center py-4 px-2"><span className="px-2 py-1 rounded text-xs font-medium bg-gray-600 text-white">{summary.positionCount} POS</span></td>
-                      </tr>
-
-                      {/* Expanded children */}
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan="9" className="p-0">
-                            <div className="bg-gray-900 border-l-4 border-blue-400">
-                              <table className="w-full">
-                                <tbody>
-                                  {arr.map((p) => {
-                                    const pnlPercent = p.unrealized_pnl_percent || 0;
-                                    const accountPercent = (portfolioData?.totalMarketValue || 0) > 0 ? (p.market_value / (portfolioData?.totalMarketValue || 0)) * 100 : 0;
-                                    return (
-                                      <tr key={p.id} className="border-b border-gray-700 hover:bg-gray-700">
-                                        <td className="py-3 px-6">
-                                          <div className="flex items-center">
-                                            <span className="text-gray-400 text-sm mr-2">├──</span>
-                                            <span className="text-gray-300 font-medium">{p.position_type === 'stock' ? '📈 Stock' : '⚡ Option'}</span>
-                                            {p.position_type === 'option' && (
-                                              <div className="text-xs text-gray-400 ml-2">{p.metadata?.option_type} ${p.metadata?.strike_price} {p.metadata?.expiration_date}</div>
-                                            )}
-                                          </div>
-                                        </td>
-                                        <td className="text-right py-3 px-2 text-gray-200">{p.quantity}</td>
-                                        <td className="text-right py-3 px-2 text-gray-200">${p.avg_cost.toFixed(2)}</td>
-                                        <td className="text-right py-3 px-2 text-gray-200">${p.current_price.toFixed(2)}</td>
-                                        <td className="text-right py-3 px-2 text-gray-200">${p.market_value.toFixed(2)}</td>
-                                        <td className="text-right py-3 px-2 text-blue-400">{accountPercent.toFixed(2)}%</td>
-                                        <td className={`text-right py-3 px-2 ${p.unrealized_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>{p.unrealized_pnl >= 0 ? '+' : ''}${p.unrealized_pnl.toFixed(2)}</td>
-                                        <td className={`text-right py-3 px-2 ${pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>{pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%</td>
-                                        <td className="text-center py-3 px-2"><span className={`px-2 py-1 rounded text-xs font-medium ${p.position_type === 'stock' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'}`}>{p.position_type.toUpperCase()}</span></td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-                {/* Total row */}
-                {positionsNormalized.length > 0 && (
-                  <tr className="border-t-2 border-gray-600 bg-gray-700">
-                    <td className="py-3 px-2 font-bold text-gray-200">TOTAL PORTFOLIO</td>
-                    <td className="text-right py-3 px-2 font-bold text-gray-200">{positionsNormalized.reduce((sum, pos) => sum + Math.abs(pos.quantity || 0), 0).toLocaleString()}</td>
-                    <td className="text-right py-3 px-2 text-gray-400">-</td>
-                    <td className="text-right py-3 px-2 text-gray-400">-</td>
-                    <td className="text-right py-3 px-2 font-bold text-white">${positionsNormalized.reduce((sum, pos) => sum + (pos.market_value || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                    <td className="text-right py-3 px-2 font-bold text-blue-300">100.00%</td>
-                    <td className="text-right py-3 px-2 font-bold text-gray-200">{(positionsNormalized.reduce((s, p) => s + (p.unrealized_pnl || 0), 0) >= 0 ? '+' : '') + positionsNormalized.reduce((s, p) => s + (p.unrealized_pnl || 0), 0).toFixed(2)}</td>
-                    <td className="text-right py-3 px-2 font-bold text-gray-200">{(portfolioData?.totalMarketValue || 0) > 0 ? `${(((positionsNormalized.reduce((s, p) => s + (p.unrealized_pnl || 0), 0)) / ((portfolioData?.totalMarketValue || 0) - (positionsNormalized.reduce((s, p) => s + (p.unrealized_pnl || 0), 0)))) * 100).toFixed(2)}%` : '0.00%'}</td>
-                    <td className="text-center py-3 px-2"><span className="px-2 py-1 rounded text-xs font-medium bg-gray-600 text-white">{Object.keys(groupedPositions).length} SYMBOLS</span></td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
         </div>
       </div>
     </div>
