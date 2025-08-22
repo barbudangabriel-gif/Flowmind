@@ -20,7 +20,7 @@ const TradeStationMainPortfolio = () => {
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
   // Fetch real TradeStation data directly from TradeStation API (not Portfolio Management Service)
   const fetchTradeStationData = async () => {
