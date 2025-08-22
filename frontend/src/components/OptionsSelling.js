@@ -107,7 +107,7 @@ export default function OptionsSelling() {
     <div className="min-h-screen bg-slate-900 text-white">
       <div className="px-6 py-4 border-b border-slate-800">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Option Selling — Sell Puts Toolkit</h1>
+          <h1 className="text-2xl font-bold">Puts Options Selling</h1>
           <div className="flex items-center gap-2">
             <button onClick={compute} disabled={loading} className="px-3 py-2 bg-blue-600 rounded hover:bg-blue-700 flex items-center gap-2">
               <RefreshCw className={loading ? 'animate-spin' : ''} size={16} /> Compute
