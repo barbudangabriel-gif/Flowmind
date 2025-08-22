@@ -27,6 +27,35 @@ const TradeStationMainPortfolio = () => {
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  const formatOptionDescription = (p) => {
+    const base = (p.symbol || "").toUpperCase();
+    const strike = p.metadata?.strike_price ? String(p.metadata.strike_price) : "";
+    // YYYY-MM-DD -> Mon DD
+    let descDate = "";
+    const ed = p.metadata?.expiration_date;
+    if (ed && /^\d{4}-\d{2}-\d{2}$/.test(ed)) {
+      const [Y, M, D] = ed.split('-');
+      const mon = monthNames[parseInt(M, 10) - 1] || M;
+      descDate = `${mon} ${parseInt(D, 10)}`;
+    } else if (p.metadata?.contract_symbol) {
+      // Try to parse YYMMDD from contract symbol tail
+      const parts = p.metadata.contract_symbol.split(' ');
+      if (parts.length > 1) {
+        const tail = parts[1];
+        const yymmdd = tail.slice(0, 6);
+        const yy = parseInt(yymmdd.slice(0, 2), 10);
+        const mm = yymmdd.slice(2, 4);
+        const dd = yymmdd.slice(4, 6);
+        const mon = monthNames[parseInt(mm, 10) - 1] || mm;
+        descDate = `${mon} ${parseInt(dd, 10)}`;
+      }
+    }
+    const cp = (p.metadata?.option_type || "").toUpperCase() === 'PUT' ? 'Put' : 'Call';
+    return `${base} ${descDate} ${strike} ${p.position_type === 'option' ? cp : 'Stock'}`.trim();
+  };
+
   const normalizePositions = (rawPositions) => {
     return (rawPositions || []).map((pos) => {
       const rawSymbol = (pos.symbol || '').trim();
@@ -48,12 +77,13 @@ const TradeStationMainPortfolio = () => {
       let option_type = pos.option_type;
       let strike_price = pos.strike_price;
       let expiration_date = pos.expiration_date;
-      // TS often provides option detail under different fields too
+      // TS variants
       if (isOption) {
         option_type = option_type || pos.right || pos.optionRight || pos.put_call || pos.CallPut; // CALL/PUT variants
         strike_price = strike_price || pos.strike || pos.strikePrice;
         expiration_date = expiration_date || pos.expiration || pos.expirationDate || pos.Expiry;
       }
+
       if (isOption && (!option_type || !strike_price || !expiration_date)) {
         try {
           if (!optionMatch) {
@@ -67,7 +97,7 @@ const TradeStationMainPortfolio = () => {
             const dd = yymmdd.slice(4, 6);
             const fullYear = yy >= 70 ? 1900 + yy : 2000 + yy;
             expiration_date = `${fullYear}-${mm}-${dd}`;
-            option_type = cp.toUpperCase() === 'P' ? 'PUT' : 'CALL';
+            option_type = (cp || '').toUpperCase() === 'P' ? 'PUT' : 'CALL';
             strike_price = parseFloat(strikeStr);
           }
         } catch {}
@@ -77,6 +107,9 @@ const TradeStationMainPortfolio = () => {
       const symbolField = position_type === 'option' ? baseSymbol : rawSymbol;
       const price = pos.mark_price || pos.current_price || pos.last_price || pos.market_price || pos.price || 0;
       const mv = pos.market_value || Math.abs((pos.quantity || 0) * price);
+
+      // Potential numeric identifiers from TS (for future trade list)
+      const symbol_number = pos.SymbolId || pos.SymbolID || pos.PositionID || pos.position_id || pos.id;
 
       return {
         id: `ts-${rawSymbol}-${Math.random()}`,
@@ -95,6 +128,7 @@ const TradeStationMainPortfolio = () => {
           strike_price,
           expiration_date,
           contract_symbol: rawSymbol,
+          symbol_number: symbol_number || null,
           source: 'tradestation_direct_api'
         }
       };
@@ -231,7 +265,7 @@ const TradeStationMainPortfolio = () => {
     });
 
     return groups;
-  }, [positionsNormalized, portfolioData?.totalMarketValue]);
+  }, [positionsNormalized, portfolioData?.totalMarketValue, cashBalance]);
 
   const toggleTicker = (symbol) => {
     setExpandedTickers((prev) => ({ ...prev, [symbol]: !prev[symbol] }));
@@ -269,6 +303,7 @@ const TradeStationMainPortfolio = () => {
   }
 
   const ChangeIcon = getChangeIcon(portfolioData?.totalUnrealizedPnL);
+  const accountValue = (portfolioData?.totalMarketValue || 0) + (cashBalance || 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -289,15 +324,20 @@ const TradeStationMainPortfolio = () => {
             </button>
           </div>
 
-          {/* Portfolio Value Display */}
+          {/* Account Value with breakdown */}
           <div className="mt-6">
             <div className="flex items-center space-x-2">
               <Eye className="text-white" size={20} />
-              <span className="text-4xl font-bold text-white">{formatCurrency(portfolioData?.totalMarketValue || 0, 0)}</span>
+              <span className="text-4xl font-bold text-white">{formatCurrency(accountValue, 0)}</span>
+              <span className="text-blue-100">(Account Value)</span>
+            </div>
+            <div className="mt-2 flex items-center gap-4 text-sm text-blue-100">
+              <span>Market Value: <strong>{formatCurrency(portfolioData?.totalMarketValue || 0, 0)}</strong></span>
+              <span>Cash: <strong>{formatCurrency(cashBalance || 0, 0)}</strong></span>
             </div>
             <div className={`flex items-center mt-2 space-x-2 ${getChangeColor(portfolioData?.totalUnrealizedPnL)}`}>
               <ChangeIcon size={24} />
-              <span className="text-2xl font-semibold">{portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(portfolioData?.totalUnrealizedPnL || 0, 0)}</span>
+              <span className="text-2xl font-semibold">{portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(Math.abs(portfolioData?.totalUnrealizedPnL || 0), 0)}</span>
               <span className="text-lg">({portfolioData?.percentChange >= 0 ? '+' : ''}{(portfolioData?.percentChange || 0).toFixed(2)}%)</span>
             </div>
             <p className="text-blue-100 text-sm mt-1">Last updated: {lastUpdated.toLocaleString()}</p>
@@ -349,6 +389,38 @@ const TradeStationMainPortfolio = () => {
                 const arr = groupedPositions[symbol];
                 const summary = arr._summary;
                 const isExpanded = !!expandedTickers[symbol];
+
+                // Case 1: Single stock only -> render leaf row with full details (no expand)
+                if (summary.hasStock && !summary.hasOptions && summary.positionCount === 1) {
+                  const p = arr[0];
+                  const qty = Math.abs(p.quantity || 0);
+                  const isLong = (p.quantity || 0) >= 0;
+                  const openPL = p.unrealized_pnl || 0;
+                  const openPLPerQty = qty > 0 ? openPL / qty : 0;
+                  const openPLPct = p.unrealized_pnl_percent || (qty > 0 && p.avg_cost > 0 ? (openPL / (qty * p.avg_cost)) * 100 : 0);
+                  const totalCost = qty * (p.avg_cost || 0);
+                  const symbolNumber = p.metadata?.symbol_number ? `#${p.metadata.symbol_number}` : '';
+
+                  return (
+                    <tr key={p.id} className="border-b border-gray-700 hover:bg-gray-700">
+                      <td className="py-3 px-2 text-gray-200">{symbolNumber && (<span className="text-gray-400 mr-2">{symbolNumber}</span>)}{p.symbol}</td>
+                      <td className="py-3 px-2 text-gray-200">{`${p.symbol} Stock`}</td>
+                      <td className="py-3 px-2 text-gray-200">{`${qty} ${isLong ? 'Long' : 'Short'}`}</td>
+                      <td className={`text-right py-3 px-2 ${openPL >= 0 ? 'text-green-400' : 'text-red-400'}`}>{openPL >= 0 ? '+' : ''}{formatCurrency(Math.abs(openPL), 0)}</td>
+                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(p.avg_cost, 2)}</td>
+                      <td className="text-right py-3 px-2 text-gray-400">-</td>
+                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(openPLPerQty, 2)}</td>
+                      <td className={`text-right py-3 px-2 ${openPLPct >= 0 ? 'text-green-400' : 'text-red-400'}`}>{openPLPct >= 0 ? '+' : ''}{openPLPct.toFixed(2)}%</td>
+                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(totalCost, 0)}</td>
+                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(p.market_value, 0)}</td>
+                      <td className="text-right py-3 px-2 text-gray-200">{qty}</td>
+                      <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(p.current_price, 2)}</td>
+                      <td className="text-right py-3 px-2 text-gray-200">-</td>
+                    </tr>
+                  );
+                }
+
+                // Case 2: Grouped (stock + options or options only) -> header + expandable children
                 return (
                   <React.Fragment key={symbol}>
                     {/* Group header - click entire row to toggle */}
@@ -367,8 +439,8 @@ const TradeStationMainPortfolio = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="text-left py-4 px-2 text-gray-400">-</td>
-                      <td className="text-left py-4 px-2 text-gray-400">-</td>
+                      <td className="text-left py-4 px-2 text-gray-200">-</td>
+                      <td className="text-left py-4 px-2 text-gray-200">-</td>
                       <td className={`text-right py-4 px-2 font-bold ${summary.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>{summary.totalPnL >= 0 ? '+' : ''}{formatCurrency(Math.abs(summary.totalPnL), 0)}</td>
                       <td className="text-right py-4 px-2 text-gray-400">-</td>
                       <td className="text-right py-4 px-2 text-gray-400">-</td>
@@ -397,16 +469,13 @@ const TradeStationMainPortfolio = () => {
                                   const totalCost = qty * (p.avg_cost || 0);
                                   const expDate = p.position_type === 'option' ? (p.metadata?.expiration_date || '-') : '-';
                                   const positionLabel = `${qty} ${isLong ? 'Long' : 'Short'}`;
+                                  const symbolNumber = p.metadata?.symbol_number ? `#${p.metadata.symbol_number}` : '';
+                                  const description = p.position_type === 'option' ? formatOptionDescription(p) : `${p.symbol} Stock`;
                                   return (
                                     <tr key={p.id} className="border-b border-gray-700 hover:bg-gray-700">
-                                      <td className="py-3 px-6">
-                                        <div className="flex items-center">
-                                          <span className="text-gray-400 text-sm mr-2">├──</span>
-                                          <span className="text-gray-300 font-medium">{p.symbol}</span>
-                                        </div>
-                                      </td>
-                                      <td className="text-left py-3 px-2 text-gray-300">-</td>
-                                      <td className="text-left py-3 px-2 text-gray-300">{positionLabel}</td>
+                                      <td className="py-3 px-2 text-gray-200">{symbolNumber && (<span className="text-gray-400 mr-2">{symbolNumber}</span>)}{p.symbol}</td>
+                                      <td className="text-left py-3 px-2 text-gray-200">{description}</td>
+                                      <td className="text-left py-3 px-2 text-gray-200">{positionLabel}</td>
                                       <td className={`text-right py-3 px-2 ${openPL >= 0 ? 'text-green-400' : 'text-red-400'}`}>{openPL >= 0 ? '+' : ''}{formatCurrency(Math.abs(openPL), 0)}</td>
                                       <td className="text-right py-3 px-2 text-gray-200">{formatCurrency(p.avg_cost, 2)}</td>
                                       <td className="text-right py-3 px-2 text-gray-400">-</td>
@@ -438,8 +507,8 @@ const TradeStationMainPortfolio = () => {
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Market Value</p>
-                <p className="text-3xl font-bold text-white">{formatCurrency(portfolioData?.totalMarketValue || 0, 0)}</p>
+                <p className="text-gray-400 text-sm">Account Value</p>
+                <p className="text-3xl font-bold text-white">{formatCurrency(accountValue, 0)}</p>
               </div>
               <DollarSign className="text-yellow-400" size={32} />
             </div>
