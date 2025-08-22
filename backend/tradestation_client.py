@@ -81,17 +81,15 @@ class TradeStationClient:
         logger.info(f"Base URL: {self.base_url}")
     
     async def __aenter__(self):
-        """Async context manager entry"""
-        self.session = httpx.AsyncClient(timeout=30.0)
+        """Async context manager entry (no-op to avoid shared session conflicts)"""
         return self
         
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit"""
-        if self.session:
-            await self.session.aclose()
+        """Async context manager exit (no-op)"""
+        return False
     
     async def _make_request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
-        """Make authenticated request to TradeStation API"""
+        """Make authenticated request to TradeStation API (per-call client to avoid 'client closed' errors)"""
         try:
             # Construct URL
             url = f"{self.base_url}{endpoint}"
@@ -99,19 +97,16 @@ class TradeStationClient:
             # Get headers with auto-refresh (includes ensure_valid_token)
             headers = await self.auth.get_auth_headers()
             
-            # Initialize session if needed
-            if self.session is None:
-                self.session = httpx.AsyncClient(timeout=30.0)
-            
             logger.debug(f"Making {method} request to {url}")
             
-            # Make request
-            response = await self.session.request(
-                method=method,
-                url=url,
-                headers=headers,
-                **kwargs
-            )
+            # Use a fresh client per request to avoid cross-request close issues
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.request(
+                    method=method,
+                    url=url,
+                    headers=headers,
+                    **kwargs
+                )
             
             # Handle response
             if response.status_code == 200:
