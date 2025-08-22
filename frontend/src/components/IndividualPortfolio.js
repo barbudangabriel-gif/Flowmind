@@ -526,154 +526,93 @@ const IndividualPortfolio = () => {
           )}
 
           {!loading && positions.length > 0 && (
-            <table className="w-full text-sm bg-slate-800 rounded-lg">
-              <thead>
-                <tr className="border-b border-slate-700">
-                  <th className="text-left py-3 px-2 font-medium text-slate-300">Symbol</th>
-                  <th className="text-right py-3 px-2 font-medium text-slate-300">Quantity</th>
-                  <th className="text-right py-3 px-2 font-medium text-slate-300">Avg Cost</th>
-                  <th className="text-right py-3 px-2 font-medium text-slate-300">Current Price</th>
-                  <th className="text-right py-3 px-2 font-medium text-slate-300">Market Value</th>
-                  <th className="text-right py-3 px-2 font-medium text-slate-300">% din Cont</th>
-                  <th className="text-right py-3 px-2 font-medium text-slate-300">Unrealized P&L</th>
-                  <th className="text-right py-3 px-2 font-medium text-slate-300">P&L %</th>
-                  <th className="text-center py-3 px-2 font-medium text-slate-300">Type</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.keys(groupedPositions).sort().map((symbol) => {
-                  const symbolPositions = groupedPositions[symbol];
-                  const summary = symbolPositions._summary;
-                  const isExpanded = expandedTickers.has(symbol);
+            <>
+              {Object.keys(groupedPositions).sort().map((symbol) => {
+                const symbolPositions = groupedPositions[symbol];
+                const summary = symbolPositions._summary;
+                const isExpanded = expandedTickers.has(symbol);
 
-                  return (
-                    <React.Fragment key={symbol}>
-                      {/* Ticker Header Row */}
-                      <tr 
-                        className="border-b border-slate-600 bg-slate-800 hover:bg-slate-700 cursor-pointer"
-                        onClick={() => toggleTicker(symbol)}
-                      >
-                        <td className="py-4 px-2">
-                          <div className="flex items-center">
-                            {isExpanded ? (
-                              <ChevronDown className="h-4 w-4 text-slate-400 mr-2" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 text-slate-400 mr-2" />
+                return (
+                  <div key={symbol} className="mb-4">
+                    {/* Ticker Header - EXACT ca în sidebar */}
+                    <div className="flex items-center justify-between mb-3 px-3">
+                      <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        <button
+                          onClick={() => toggleTicker(symbol)}
+                          className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                        >
+                          <span className="text-blue-300 font-bold text-lg">{symbol}</span>
+                          <div className="ml-3 flex gap-1">
+                            {summary.hasStock && (
+                              <span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>
                             )}
-                            <span className="text-blue-300 font-bold text-lg">
-                              {symbol}
-                            </span>
-                            <div className="ml-3 flex gap-1">
-                              {summary.hasStock && (
-                                <span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>
-                              )}
-                              {summary.hasOptions && (
-                                <span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>
-                              )}
-                            </div>
+                            {summary.hasOptions && (
+                              <span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>
+                            )}
                           </div>
-                        </td>
-                        <td className="text-right py-4 px-2 font-bold text-slate-200">{summary.totalQuantity.toLocaleString()}</td>
-                        <td className="text-right py-4 px-2 text-slate-400">-</td>
-                        <td className="text-right py-4 px-2 font-medium text-slate-200">${summary.currentPrice.toFixed(2)}</td>
-                        <td className="text-right py-4 px-2 font-bold text-white">${summary.totalValue.toFixed(2)}</td>
-                        <td className="text-right py-4 px-2 font-bold text-blue-300">{summary.accountPercent.toFixed(2)}%</td>
-                        <td className={`text-right py-4 px-2 font-bold ${getChangeColor(summary.totalPnL)}`}>
-                          {summary.totalPnL >= 0 ? '+' : ''}${summary.totalPnL.toFixed(2)}
-                        </td>
-                        <td className={`text-right py-4 px-2 font-bold ${getChangeColor(summary.pnlPercent)}`}>
-                          {summary.pnlPercent >= 0 ? '+' : ''}{summary.pnlPercent.toFixed(2)}%
-                        </td>
-                        <td className="text-center py-4 px-2">
-                          <span className="px-2 py-1 rounded text-xs font-medium bg-slate-600 text-white">
-                            {summary.positionCount} POS
-                          </span>
-                        </td>
-                      </tr>
+                          <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                        </button>
+                      </h3>
+                    </div>
 
-                      {/* Expanded Positions */}
-                      {isExpanded && symbolPositions.map((position, index) => {
-                        const pnlPercent = position.unrealized_pnl_percent || 0;
-                        const accountPercent = displayPortfolio?.total_value > 0 
-                          ? (position.market_value / displayPortfolio.total_value) * 100 
-                          : 0;
-                        
-                        return (
-                          <tr 
-                            key={position.id} 
-                            className="border-b border-slate-700 hover:bg-slate-700 cursor-context-menu bg-slate-900"
-                            onContextMenu={(e) => handleContextMenu(e, position)}
-                          >
-                            <td className="py-3 px-2 pl-8">
-                              <div>
-                                <span className="text-slate-300 font-medium">
-                                  ↳ {position.position_type === 'stock' ? 'Stock' : 'Option'}
-                                </span>
-                                {position.position_type === 'option' && (
-                                  <div className="text-xs text-slate-400 ml-3">
-                                    {position.metadata?.option_type} ${position.metadata?.strike_price} {position.metadata?.expiration_date}
+                    {/* Show positions only if expanded - EXACT ca în sidebar */}
+                    {isExpanded && (
+                      <div className="space-y-1">
+                        {symbolPositions.map((position, index) => {
+                          const pnlPercent = position.unrealized_pnl_percent || 0;
+                          const accountPercent = displayPortfolio?.total_value > 0 
+                            ? (position.market_value / displayPortfolio.total_value) * 100 
+                            : 0;
+                          
+                          return (
+                            <div key={position.id} className="relative group">
+                              <button
+                                onContextMenu={(e) => handleContextMenu(e, position)}
+                                className="w-full group flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-200 relative text-slate-300 hover:text-white hover:bg-slate-700/50 hover:transform hover:scale-102"
+                              >
+                                {/* Icon with background */}
+                                <div className="flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 bg-slate-600/30 group-hover:bg-slate-600/50">
+                                  <span className="text-xs text-white">
+                                    {position.position_type === 'stock' ? 'S' : 'O'}
+                                  </span>
+                                </div>
+                                
+                                {/* Position details */}
+                                <div className="flex-1 text-left">
+                                  <div className="text-slate-300 font-medium">
+                                    {position.position_type === 'stock' ? 'Stock' : 'Option'}
                                   </div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="text-right py-3 px-2 text-slate-200">{position.quantity}</td>
-                            <td className="text-right py-3 px-2 text-slate-200">${position.avg_cost.toFixed(2)}</td>
-                            <td className="text-right py-3 px-2 text-slate-200">${position.current_price.toFixed(2)}</td>
-                            <td className="text-right py-3 px-2 text-slate-200">${position.market_value.toFixed(2)}</td>
-                            <td className="text-right py-3 px-2 text-blue-400">{accountPercent.toFixed(2)}%</td>
-                            <td className={`text-right py-3 px-2 ${getChangeColor(position.unrealized_pnl)}`}>
-                              {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
-                            </td>
-                            <td className={`text-right py-3 px-2 ${getChangeColor(pnlPercent)}`}>
-                              {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
-                            </td>
-                            <td className="text-center py-3 px-2">
-                              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                position.position_type === 'stock' 
-                                  ? 'bg-blue-600 text-white' 
-                                  : 'bg-purple-600 text-white'
-                              }`}>
-                                {position.position_type.toUpperCase()}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </React.Fragment>
-                  );
-                })}
-                
-                {/* Total Row */}
-                {positions.length > 0 && (
-                  <tr className="border-t-2 border-slate-600 bg-slate-700">
-                    <td className="py-3 px-2 font-bold text-slate-200">TOTAL PORTFOLIO</td>
-                    <td className="text-right py-3 px-2 font-bold text-slate-200">
-                      {positions.reduce((sum, pos) => sum + Math.abs(pos.quantity), 0).toLocaleString()}
-                    </td>
-                    <td className="text-right py-3 px-2 text-slate-400">-</td>
-                    <td className="text-right py-3 px-2 text-slate-400">-</td>
-                    <td className="text-right py-3 px-2 font-bold text-white">
-                      ${positions.reduce((sum, pos) => sum + pos.market_value, 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </td>
-                    <td className="text-right py-3 px-2 font-bold text-blue-400">100.00%</td>
-                    <td className={`text-right py-3 px-2 font-bold ${getChangeColor(positions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0))}`}>
-                      {positions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0) >= 0 ? '+' : ''}${positions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0).toFixed(2)}
-                    </td>
-                    <td className={`text-right py-3 px-2 font-bold ${getChangeColor(displayPortfolio.total_pnl || 0)}`}>
-                      {displayPortfolio?.total_value > 0 
-                        ? `${((displayPortfolio.total_pnl || 0) / (displayPortfolio.total_value - (displayPortfolio.total_pnl || 0)) * 100).toFixed(2)}%`
-                        : '0.00%'
-                      }
-                    </td>
-                    <td className="text-center py-3 px-2">
-                      <span className="px-2 py-1 rounded text-xs font-medium bg-slate-600 text-white">
-                        {Object.keys(groupedPositions).length} SYMBOLS
-                      </span>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                                  {position.position_type === 'option' && (
+                                    <div className="text-xs text-slate-400">
+                                      {position.metadata?.option_type} ${position.metadata?.strike_price} {position.metadata?.expiration_date}
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Position values */}
+                                <div className="flex gap-4 text-sm text-slate-200">
+                                  <span>{position.quantity}</span>
+                                  <span>${position.avg_cost.toFixed(2)}</span>
+                                  <span>${position.current_price.toFixed(2)}</span>
+                                  <span>${position.market_value.toFixed(2)}</span>
+                                  <span className="text-blue-400">{accountPercent.toFixed(2)}%</span>
+                                  <span className={getChangeColor(position.unrealized_pnl)}>
+                                    {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
+                                  </span>
+                                  <span className={getChangeColor(pnlPercent)}>
+                                    {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
+                                  </span>
+                                </div>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </>
           )}
         </div>
 
