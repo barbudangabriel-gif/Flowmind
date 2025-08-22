@@ -632,7 +632,7 @@ const IndividualPortfolio = () => {
                           </tr>
                         );
                       })}
-                    </>
+                    </React.Fragment>
                   );
                 })}
                 
