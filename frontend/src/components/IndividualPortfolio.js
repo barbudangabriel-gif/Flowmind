@@ -290,13 +290,13 @@ const IndividualPortfolio = () => {
                   const arr = groupedPositions[symbol]; const summary = arr._summary; const isExpanded = expandedTickers.has(symbol);
                   return (
                     <React.Fragment key={symbol}>
-                      <tr className="border-b border-slate-600 bg-slate-800 hover:bg-slate-700" title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}>
+                      <tr className="border-b border-slate-600 bg-slate-800 hover:bg-slate-700 cursor-pointer" onClick={() => toggleTicker(symbol)} title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}>
                         <td className="py-4 px-2">
                           <button
                             type="button"
                             aria-expanded={isExpanded}
-                            onClick={() => toggleTicker(symbol)}
-                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTicker(symbol); } }}
+                            onClick={(e) => { e.stopPropagation(); toggleTicker(symbol); }}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); toggleTicker(symbol); } }}
                             className="w-full text-left flex items-center focus:outline-none cursor-pointer"
                           >
                             <ChevronDown className={`w-4 h-4 text-slate-400 mr-2 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
