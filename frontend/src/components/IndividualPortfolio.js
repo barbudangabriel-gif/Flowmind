@@ -141,11 +141,16 @@ const IndividualPortfolio = () => {
           new Promise((_, rej) => setTimeout(() => rej(new Error('Accounts timeout')), 12000))
         ]);
         const accountsData = await accountsResp.json();
-        if (accountsData.status !== 'success' || !accountsData.accounts?.length) {
+        const accounts = accountsData.accounts || accountsData;
+        let mainAccount = null;
+        if (Array.isArray(accounts)) {
+          mainAccount = accounts.find((acc) => acc.Type === 'Margin') || accounts[0];
+        } else if (accounts && typeof accounts === 'object') {
+          mainAccount = accounts;
+        }
+        if (!mainAccount || !mainAccount.AccountID) {
           throw new Error('No TradeStation accounts found');
         }
-        const mainAccount =
-          accountsData.accounts.find((acc) => acc.Type === 'Margin') || accountsData.accounts[0];
 
         // Positions
         const positionsResp = await Promise.race([
