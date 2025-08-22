@@ -547,7 +547,7 @@ const IndividualPortfolio = () => {
                   const isExpanded = expandedTickers.has(symbol);
 
                   return (
-                    <React.Fragment key={symbol}>
+                    <>
                       {/* Ticker Header Row - EXACT ca sidebar section header */}
                       <tr className="border-b border-slate-600 bg-slate-800">
                         <td className="py-4 px-2" colSpan="9">
@@ -581,63 +581,58 @@ const IndividualPortfolio = () => {
                         </td>
                       </tr>
 
-                      {/* Show positions only if expanded - EXACT ca sidebar items */}
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan="9" className="p-0">
-                            <div className="space-y-1 bg-slate-900 border-l-4 border-blue-400 pl-4">
-                              {symbolPositions.map((position, index) => {
-                                const pnlPercent = position.unrealized_pnl_percent || 0;
-                                const accountPercent = displayPortfolio?.total_value > 0 
-                                  ? (position.market_value / displayPortfolio.total_value) * 100 
-                                  : 0;
-                                
-                                return (
-                                  <div
-                                    key={position.id}
-                                    className="flex items-center justify-between py-2 px-3 hover:bg-slate-700 rounded cursor-context-menu"
-                                    onContextMenu={(e) => handleContextMenu(e, position)}
-                                    title="Right-click to move position to another portfolio"
-                                  >
-                                    <div className="flex items-center space-x-3">
-                                      <div className="flex items-center justify-center w-6 h-6 rounded bg-slate-600">
-                                        <span className="text-xs text-white">
-                                          {position.position_type === 'stock' ? 'S' : 'O'}
-                                        </span>
-                                      </div>
-                                      <div>
-                                        <span className="text-slate-300 font-medium">
-                                          {position.position_type === 'stock' ? 'Stock' : 'Option'}
-                                        </span>
-                                        {position.position_type === 'option' && (
-                                          <div className="text-xs text-slate-400">
-                                            {position.metadata?.option_type} ${position.metadata?.strike_price} {position.metadata?.expiration_date}
-                                          </div>
-                                        )}
-                                      </div>
+                      {/* Show positions only if expanded - DIRECT SUB TICKER-ul specific */}
+                      {isExpanded && symbolPositions.map((position, index) => {
+                        const pnlPercent = position.unrealized_pnl_percent || 0;
+                        const accountPercent = displayPortfolio?.total_value > 0 
+                          ? (position.market_value / displayPortfolio.total_value) * 100 
+                          : 0;
+                        
+                        return (
+                          <tr key={`${symbol}-${position.id}`} className="bg-slate-900 border-l-4 border-blue-400">
+                            <td className="py-2 px-6">
+                              <div className="flex items-center space-x-3">
+                                <div className="flex items-center justify-center w-6 h-6 rounded bg-slate-600">
+                                  <span className="text-xs text-white">
+                                    {position.position_type === 'stock' ? 'S' : 'O'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-slate-300 font-medium">
+                                    {position.position_type === 'stock' ? 'Stock' : 'Option'}
+                                  </span>
+                                  {position.position_type === 'option' && (
+                                    <div className="text-xs text-slate-400">
+                                      {position.metadata?.option_type} ${position.metadata?.strike_price} {position.metadata?.expiration_date}
                                     </div>
-                                    
-                                    <div className="flex gap-4 text-sm text-slate-200">
-                                      <span>{position.quantity}</span>
-                                      <span>${position.avg_cost.toFixed(2)}</span>
-                                      <span>${position.current_price.toFixed(2)}</span>
-                                      <span>${position.market_value.toFixed(2)}</span>
-                                      <span className="text-blue-400">{accountPercent.toFixed(2)}%</span>
-                                      <span className={getChangeColor(position.unrealized_pnl)}>
-                                        {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
-                                      </span>
-                                      <span className={getChangeColor(pnlPercent)}>
-                                        {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
-                                      </span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="text-right py-2 px-2 text-slate-200">{position.quantity}</td>
+                            <td className="text-right py-2 px-2 text-slate-200">${position.avg_cost.toFixed(2)}</td>
+                            <td className="text-right py-2 px-2 text-slate-200">${position.current_price.toFixed(2)}</td>
+                            <td className="text-right py-2 px-2 text-slate-200">${position.market_value.toFixed(2)}</td>
+                            <td className="text-right py-2 px-2 text-blue-400">{accountPercent.toFixed(2)}%</td>
+                            <td className={`text-right py-2 px-2 ${getChangeColor(position.unrealized_pnl)}`}>
+                              {position.unrealized_pnl >= 0 ? '+' : ''}${position.unrealized_pnl.toFixed(2)}
+                            </td>
+                            <td className={`text-right py-2 px-2 ${getChangeColor(pnlPercent)}`}>
+                              {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%
+                            </td>
+                            <td className="text-center py-2 px-2">
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                position.position_type === 'stock' 
+                                  ? 'bg-blue-600 text-white' 
+                                  : 'bg-purple-600 text-white'
+                              }`}>
+                                {position.position_type.toUpperCase()}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </>
                   );
                 })}
                 
