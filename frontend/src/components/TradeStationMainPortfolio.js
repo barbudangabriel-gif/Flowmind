@@ -331,7 +331,7 @@ const TradeStationMainPortfolio = () => {
             <div className="flex items-center space-x-2">
               <Eye className="text-white" size={20} />
               <span className="text-4xl font-bold text-white">{formatCurrency(accountValue, 0)}</span>
-              <span className="text-blue-100">(Account Value)</span>
+              <span className="text-blue-100">(Market Value + Cash)</span>
             </div>
             <div className="mt-2 flex items-center gap-4 text-sm text-blue-100">
               <span>Market Value: <strong>{formatCurrency(portfolioData?.totalMarketValue || 0, 0)}</strong></span>
