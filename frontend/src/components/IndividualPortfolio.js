@@ -176,32 +176,49 @@ const IndividualPortfolio = () => {
 
         if (positionsData?.positions?.length) {
           const transformed = positionsData.positions.map((pos) => {
-            const rawSymbol = pos.symbol || '';
+            const rawSymbol = (pos.symbol || '').trim();
             const asset = (pos.asset_type || '').toUpperCase();
-            const isStock = asset.includes('EQ') || asset.includes('STOCK');
-            const isOption = asset.includes('OP') || asset.includes('OPTION');
-            const baseSymbol = (rawSymbol.split(' ')[0] || rawSymbol).split('_')[0];
+            let isStock = asset.includes('EQ') || asset.includes('STOCK');
+            let isOption = asset.includes('OP') || asset.includes('OPTION');
 
-            // Try to infer option metadata if missing
+            // Detect option by symbol pattern as fallback: "AAPL 271217C195" or "AAPL_271217C195"
+            let baseSymbol = (rawSymbol.split(' ')[0] || rawSymbol).split('_')[0];
+            const symbolTail = rawSymbol.replace(baseSymbol, '').replace(/^[ _]/, '');
+            const pattern = /^(\d{6})([CP])([0-9]+(?:\.[0-9]+)?)$/i;
+            let optionMatch = null;
+            if (!isOption && symbolTail) {
+              optionMatch = symbolTail.match(pattern);
+              if (optionMatch) {
+                isOption = true;
+                isStock = false;
+              }
+            }
+
+            // Build option metadata (from fields or from parsed symbol)
             let option_type = pos.option_type;
             let strike_price = pos.strike_price;
             let expiration_date = pos.expiration_date;
-            if (isOption && (!option_type || !strike_price || !expiration_date)) {
+            if (isOption) {
               try {
-                // Common TS format: "AAPL 271217C195" => underlying, YYMMDD, C/P, strike
-                const parts = rawSymbol.trim().split(' ');
-                if (parts.length > 1) {
-                  const tail = parts[1];
-                  const datePart = tail.slice(0, 6);
-                  const typeChar = tail.slice(6, 7);
-                  const strikePart = tail.slice(7);
-                  const yy = parseInt(datePart.slice(0, 2), 10);
-                  const mm = datePart.slice(2, 4);
-                  const dd = datePart.slice(4, 6);
-                  const fullYear = yy >= 70 ? 1900 + yy : 2000 + yy; // naive conversion
-                  expiration_date = `${fullYear}-${mm}-${dd}`;
-                  option_type = typeChar.toUpperCase() === 'P' ? 'PUT' : 'CALL';
-                  strike_price = parseFloat(strikePart);
+                if (!option_type || !strike_price || !expiration_date) {
+                  if (!optionMatch) {
+                    // Attempt to create tail like YYMMDDC123 if space-delimited
+                    const parts = rawSymbol.split(' ');
+                    if (parts.length > 1) {
+                      const tail = parts[1];
+                      optionMatch = tail.match(pattern);
+                    }
+                  }
+                  if (optionMatch) {
+                    const [, yymmdd, cp, strikeStr] = optionMatch;
+                    const yy = parseInt(yymmdd.slice(0, 2), 10);
+                    const mm = yymmdd.slice(2, 4);
+                    const dd = yymmdd.slice(4, 6);
+                    const fullYear = yy >= 70 ? 1900 + yy : 2000 + yy;
+                    expiration_date = `${fullYear}-${mm}-${dd}`;
+                    option_type = cp.toUpperCase() === 'P' ? 'PUT' : 'CALL';
+                    strike_price = parseFloat(strikeStr);
+                  }
                 }
               } catch {}
             }
