@@ -245,6 +245,18 @@ backend:
           comment: "✅ Smart Rebalancing Agent API endpoints tested and working perfectly. All endpoints return comprehensive analysis data, AI recommendations work correctly, Smart DCA algorithms functional, and comprehensive analysis combines all modules successfully."
 
 frontend:
+  - task: "Options Selling Module UI"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/OptionsSelling.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ OPTIONS SELLING MODULE UI TESTING - CRITICAL ROUTING ISSUE IDENTIFIED: Conducted comprehensive automated UI testing of Options Selling module at route /options/selling as specifically requested in review. ✅ COMPONENT IMPLEMENTATION VERIFIED: OptionsSelling component exists at /app/frontend/src/components/OptionsSelling.js with complete implementation including header 'Puts Options Selling', three tabs (Candidates, Trade List, Live Positions), config fields (delta_min, delta_max, dte_min, dte_max, iv_rank_min, vix_min, vix_max, roll_delta_threshold, roll_dte_threshold, capital_base), dynamic_risk checkbox, Positions JSON editor with demo positions, Monitor panel with Start/Stop buttons, grouping controls (by Signal, by Ticker), Expand All/Collapse All buttons, and TradeStation integration for Live Positions. ✅ ROUTING CONFIGURATION CORRECT: Route defined correctly in App.js at lines 7098-7105 with path='/options/selling' and proper Suspense wrapper. Component imported correctly at line 74. Sidebar navigation configured with route '/options/selling' for 'Puts Options Selling' menu item. ✅ BACKEND API INTEGRATION WORKING: All backend endpoints operational - POST /api/options/selling/compute returns proper response structure with status=success, GET /api/options/selling/monitor/status returns correct monitor data with running=false, cycles=0, interval_seconds=15. API prefix usage correct with https://portfolio-view-9.preview.emergentagent.com/api. ❌ CRITICAL ROUTING ISSUE: Navigation to /options/selling redirects to root path (/) and displays Market Dashboard instead of Options Selling component. URL changes from /options/selling back to / indicating client-side routing problem. This prevents access to all Options Selling functionality including Candidates tab config inputs, Trade List Monitor panel, and Live Positions TradeStation integration. ❌ FUNCTIONALITY NOT TESTABLE: Due to routing redirection, unable to test header validation, tab switching, config field editing, Compute button functionality, Monitor Start/Stop operations, grouping controls, or Live Positions authentication. All core review requirements blocked by routing issue. 🎯 ROOT CAUSE: Similar to Portfolio Charts and Smart Rebalancing Agent components mentioned in test_result.md, there appears to be a client-side routing conflict causing automatic redirection to dashboard. The route definition is correct but something is intercepting navigation. SUCCESS RATE: 0% (routing prevents component access). URGENT FIX REQUIRED: Investigate and resolve client-side routing redirection issue before Options Selling module can be properly tested and used."
+
   - task: "Portfolio Charts Component"
     implemented: true
     working: false
