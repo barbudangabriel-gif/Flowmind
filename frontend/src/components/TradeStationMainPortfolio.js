@@ -10,7 +10,8 @@ import {
   BarChart3,
   PieChart as PieChartIcon,
   Eye,
-  AlertCircle
+  AlertCircle,
+  ChevronDown
 } from 'lucide-react';
 
 const TradeStationMainPortfolio = () => {
@@ -20,7 +21,76 @@ const TradeStationMainPortfolio = () => {
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
+  const [positionsNormalized, setPositionsNormalized] = useState([]);
+  const [expandedTickers, setExpandedTickers] = useState({}); // expand/collapse per symbol
+
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
+  const normalizePositions = (rawPositions) => {
+    return (rawPositions || []).map((pos) => {
+      const rawSymbol = (pos.symbol || '').trim();
+      const asset = (pos.asset_type || '').toUpperCase();
+      let isStock = asset.includes('EQ') || asset.includes('STOCK');
+      let isOption = asset.includes('OP') || asset.includes('OPTION');
+
+      let baseSymbol = (rawSymbol.split(' ')[0] || rawSymbol).split('_')[0];
+      const symbolTail = rawSymbol.replace(baseSymbol, '').replace(/^[ _]/, '');
+      const pattern = /(\d{6})([CP])([0-9]+(?:\.[0-9]+)?)/i;
+      let optionMatch = null;
+      if (!isOption && symbolTail) {
+        optionMatch = symbolTail.match(pattern);
+        if (optionMatch) { isOption = true; isStock = false; }
+      }
+
+      let option_type = pos.option_type;
+      let strike_price = pos.strike_price;
+      let expiration_date = pos.expiration_date;
+      if (isOption && (!option_type || !strike_price || !expiration_date)) {
+        try {
+          if (!optionMatch) {
+            const parts = rawSymbol.split(' ');
+            if (parts.length > 1) optionMatch = parts[1].match(pattern);
+          }
+          if (optionMatch) {
+            const [, yymmdd, cp, strikeStr] = optionMatch;
+            const yy = parseInt(yymmdd.slice(0, 2), 10);
+            const mm = yymmdd.slice(2, 4);
+            const dd = yymmdd.slice(4, 6);
+            const fullYear = yy >= 70 ? 1900 + yy : 2000 + yy;
+            expiration_date = `${fullYear}-${mm}-${dd}`;
+            option_type = cp.toUpperCase() === 'P' ? 'PUT' : 'CALL';
+            strike_price = parseFloat(strikeStr);
+          }
+        } catch {}
+      }
+
+      const position_type = isStock ? 'stock' : (isOption ? 'option' : 'stock');
+      const symbolField = position_type === 'option' ? baseSymbol : rawSymbol;
+      const price = pos.mark_price || pos.current_price || pos.last_price || pos.market_price || pos.price || 0;
+      const mv = pos.market_value || Math.abs((pos.quantity || 0) * price);
+
+      return {
+        id: `ts-${rawSymbol}-${Math.random()}`,
+        symbol: symbolField,
+        quantity: pos.quantity || 0,
+        avg_cost: pos.average_price || 0,
+        current_price: price,
+        market_value: mv,
+        unrealized_pnl: pos.unrealized_pnl || 0,
+        unrealized_pnl_percent: pos.unrealized_pnl_percent || 0,
+        portfolio_id: 'tradestation-main',
+        position_type,
+        metadata: {
+          asset_type: pos.asset_type,
+          option_type,
+          strike_price,
+          expiration_date,
+          contract_symbol: rawSymbol,
+          source: 'tradestation_direct_api'
+        }
+      };
+    });
+  };
 
   // Fetch real TradeStation data directly from TradeStation API (not Portfolio Management Service)
   const fetchTradeStationData = async () => {
@@ -73,6 +143,7 @@ const TradeStationMainPortfolio = () => {
       const stocks = positions.filter(p => (p.asset_type || '').toUpperCase().includes('STOCK') || (p.asset_type || '').toUpperCase().includes('EQ'));
       const options = positions.filter(p => (p.asset_type || '').toUpperCase().includes('OPTION') || (p.asset_type || '').toUpperCase().includes('OP'));
 
+      // Set top-level portfolio summary
       setPortfolioData({
         account: mainAccount,
         totalMarketValue,
@@ -83,11 +154,17 @@ const TradeStationMainPortfolio = () => {
         options: options.length,
         positions
       });
+
+      // Build normalized positions for detailed table
+      const normalized = normalizePositions(positions);
+      setPositionsNormalized(normalized);
+
       setLastUpdated(new Date());
       setError(null);
     } catch (err) {
       setError(err.message);
       console.error('Error fetching TradeStation data:', err);
+      setPositionsNormalized([]);
     } finally {
       setLoading(false);
     }
@@ -100,6 +177,49 @@ const TradeStationMainPortfolio = () => {
   const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
   const getChangeColor = (value) => (value >= 0 ? 'text-green-500' : 'text-red-500');
   const getChangeIcon = (value) => (value >= 0 ? TrendingUp : TrendingDown);
+
+  // Group positions for detailed table
+  const groupedPositions = React.useMemo(() => {
+    if (!positionsNormalized || positionsNormalized.length === 0) return {};
+
+    const getBaseSymbol = (p) => {
+      if (p.metadata?.underlying_symbol) return (p.metadata.underlying_symbol || '').toUpperCase();
+      const raw = (p.symbol || '').trim();
+      const first = (raw.split(' ')[0] || raw).split('_')[0];
+      return (first || raw).toUpperCase();
+    };
+
+    const groups = {};
+    positionsNormalized.forEach((pos) => {
+      const key = pos.position_type === 'option' ? getBaseSymbol(pos) : (pos.symbol || '').toUpperCase();
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(pos);
+    });
+
+    Object.keys(groups).forEach((symbol) => {
+      const arr = groups[symbol];
+      arr.sort((a, b) => (a.position_type === 'stock' && b.position_type !== 'stock' ? -1 : a.position_type !== 'stock' && b.position_type === 'stock' ? 1 : 0));
+      const totalValue = arr.reduce((s, p) => s + (p.market_value || 0), 0);
+      const totalPnl = arr.reduce((s, p) => s + (p.unrealized_pnl || 0), 0);
+      const totalQty = arr.reduce((s, p) => s + Math.abs(p.quantity || 0), 0);
+      const accountPercent = (portfolioData?.totalMarketValue || 0) > 0 ? (totalValue / (portfolioData?.totalMarketValue || 0)) * 100 : 0;
+      const stock = arr.find((p) => p.position_type === 'stock');
+      const currentPrice = stock ? stock.current_price : arr.reduce((s, p) => s + (p.current_price || 0), 0) / arr.length;
+      groups[symbol]._summary = { symbol, totalValue, totalPnL: totalPnl, totalQuantity: totalQty, accountPercent, currentPrice, positionCount: arr.length, hasStock: arr.some((p) => p.position_type === 'stock'), hasOptions: arr.some((p) => p.position_type === 'option') };
+    });
+
+    return groups;
+  }, [positionsNormalized, portfolioData?.totalMarketValue]);
+
+  const toggleTicker = (symbol) => {
+    setExpandedTickers((prev) => ({ ...prev, [symbol]: !prev[symbol] }));
+  };
+  const expandAll = () => {
+    const keys = Object.keys(groupedPositions);
+    const next = keys.reduce((acc, s) => ({ ...acc, [s]: true }), {});
+    setExpandedTickers(next);
+  };
+  const collapseAll = () => setExpandedTickers({});
 
   if (loading) {
     return (
@@ -179,7 +299,7 @@ const TradeStationMainPortfolio = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Stock Positions</p>
-                <p className="text-3xl font-bold text-white">{portfolioData?.stocks || 0}</p>
+                <p className="text-3xl font-bold text-white">{(positionsNormalized.filter((p) => p.position_type === 'stock')).length}</p>
               </div>
               <BarChart3 className="text-green-400" size={32} />
             </div>
@@ -188,7 +308,7 @@ const TradeStationMainPortfolio = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Options Positions</p>
-                <p className="text-3xl font-bold text-white">{portfolioData?.options || 0}</p>
+                <p className="text-3xl font-bold text-white">{(positionsNormalized.filter((p) => p.position_type === 'option')).length}</p>
               </div>
               <PieChartIcon className="text-purple-400" size={32} />
             </div>
@@ -204,46 +324,139 @@ const TradeStationMainPortfolio = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <button onClick={() => navigate('/portfolios/view/tradestation-main')} className="bg-blue-600 text-white p-4 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center space-x-3">
-            <Eye size={24} />
-            <span className="text-lg font-medium">View Detailed Positions</span>
-          </button>
-          <button onClick={() => navigate('/portfolios/tradestation-main/charts')} className="bg-green-600 text-white p-4 rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center space-x-3">
-            <BarChart3 size={24} />
-            <span className="text-lg font-medium">Portfolio Charts</span>
-          </button>
-          <button onClick={() => navigate('/portfolios/tradestation-main/rebalancing')} className="bg-purple-600 text-white p-4 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center space-x-3">
-            <Target size={24} />
-            <span className="text-lg font-medium">AI Rebalancing</span>
-          </button>
-        </div>
+        {/* Detailed Holdings - inline, LIVE only */}
+        <div className="overflow-x-auto">
+          <div className="flex items-center justify-between mb-3">
+            {loading ? (
+              <div className="flex items-center py-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-300">Loading positions...</span>
+              </div>
+            ) : (<div />)}
+            {positionsNormalized.length > 0 && (
+              <div className="flex gap-2">
+                <button onClick={expandAll} className="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600">Expand All</button>
+                <button onClick={collapseAll} className="px-3 py-1 bg-gray-700 text-gray-200 rounded hover:bg-gray-600">Collapse All</button>
+              </div>
+            )}
+          </div>
 
-        {/* Recent Activity */}
-        <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700 p-6">
-          <h3 className="text-xl font-bold text-white mb-4">Portfolio Summary</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-lg font-semibold text-gray-300 mb-2">Performance</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-gray-400">Market Value:</span><span className="text-white font-medium">{formatCurrency(portfolioData?.totalMarketValue || 0)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Unrealized P&amp;L:</span><span className={`font-medium ${getChangeColor(portfolioData?.totalUnrealizedPnL)}`}>{portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(portfolioData?.totalUnrealizedPnL || 0)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Percentage Change:</span><span className={`font-medium ${getChangeColor(portfolioData?.totalUnrealizedPnL)}`}>{portfolioData?.percentChange >= 0 ? '+' : ''}{(portfolioData?.percentChange || 0).toFixed(2)}%</span></div>
-              </div>
+          {error && (
+            <div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-4 text-red-300">
+              Error: {error}
             </div>
-            <div>
-              <h4 className="text-lg font-semibold text-gray-300 mb-2">Asset Allocation</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-gray-400">Stock Positions:</span><span className="text-white font-medium">{portfolioData?.stocks || 0}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Options Positions:</span><span className="text-white font-medium">{portfolioData?.options || 0}</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">Total Positions:</span><span className="text-white font-medium">{portfolioData?.totalPositions || 0}</span></div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 pt-4 border-t border-gray-700">
-            <p className="text-sm text-gray-400">Data source: TradeStation Direct API • Account: {portfolioData?.account?.AccountID} • Last refresh: {lastUpdated.toLocaleString()}</p>
-          </div>
+          )}
+
+          {positionsNormalized.length === 0 && !error && (
+            <div className="text-center py-8 text-gray-400">No positions found.</div>
+          )}
+
+          {positionsNormalized.length > 0 && (
+            <table className="w-full text-sm bg-gray-800 rounded-lg">
+              <thead>
+                <tr className="border-b border-gray-700">
+                  <th className="text-left py-3 px-2 font-medium text-gray-300">Symbol</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-300">Quantity</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-300">Avg Cost</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-300">Current Price</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-300">Market Value</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-300">% din Cont</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-300">Unrealized P&amp;L</th>
+                  <th className="text-right py-3 px-2 font-medium text-gray-300">P&amp;L %</th>
+                  <th className="text-center py-3 px-2 font-medium text-gray-300">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.keys(groupedPositions).sort().map((symbol) => {
+                  const arr = groupedPositions[symbol];
+                  const summary = arr._summary;
+                  const isExpanded = !!expandedTickers[symbol];
+                  return (
+                    <React.Fragment key={symbol}>
+                      {/* Group header - click entire row to toggle */}
+                      <tr
+                        className="border-b border-gray-600 bg-gray-800 hover:bg-gray-700 cursor-pointer"
+                        onClick={() => toggleTicker(symbol)}
+                        title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}
+                      >
+                        <td className="py-4 px-2">
+                          <div className="flex items-center">
+                            <ChevronDown className={`w-4 h-4 text-gray-400 mr-2 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
+                            <span className="text-blue-300 font-bold text-lg">{symbol}</span>
+                            <div className="ml-3 flex gap-1">
+                              {summary.hasStock && (<span className="px-1 py-0.5 rounded text-xs bg-blue-600 text-white">S</span>)}
+                              {summary.hasOptions && (<span className="px-1 py-0.5 rounded text-xs bg-purple-600 text-white">O</span>)}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="text-right py-4 px-2 font-bold text-gray-200">{summary.totalQuantity.toLocaleString()}</td>
+                        <td className="text-right py-4 px-2 text-gray-400">-</td>
+                        <td className="text-right py-4 px-2 font-medium text-gray-200">${summary.currentPrice.toFixed(2)}</td>
+                        <td className="text-right py-4 px-2 font-bold text-white">${summary.totalValue.toFixed(2)}</td>
+                        <td className="text-right py-4 px-2 font-bold text-blue-300">{summary.accountPercent.toFixed(2)}%</td>
+                        <td className={`text-right py-4 px-2 font-bold ${summary.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>{summary.totalPnL >= 0 ? '+' : ''}${summary.totalPnL.toFixed(2)}</td>
+                        <td className="text-right py-4 px-2 text-gray-400">-</td>
+                        <td className="text-center py-4 px-2"><span className="px-2 py-1 rounded text-xs font-medium bg-gray-600 text-white">{summary.positionCount} POS</span></td>
+                      </tr>
+
+                      {/* Expanded children */}
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan="9" className="p-0">
+                            <div className="bg-gray-900 border-l-4 border-blue-400">
+                              <table className="w-full">
+                                <tbody>
+                                  {arr.map((p) => {
+                                    const pnlPercent = p.unrealized_pnl_percent || 0;
+                                    const accountPercent = (portfolioData?.totalMarketValue || 0) > 0 ? (p.market_value / (portfolioData?.totalMarketValue || 0)) * 100 : 0;
+                                    return (
+                                      <tr key={p.id} className="border-b border-gray-700 hover:bg-gray-700">
+                                        <td className="py-3 px-6">
+                                          <div className="flex items-center">
+                                            <span className="text-gray-400 text-sm mr-2">├──</span>
+                                            <span className="text-gray-300 font-medium">{p.position_type === 'stock' ? '📈 Stock' : '⚡ Option'}</span>
+                                            {p.position_type === 'option' && (
+                                              <div className="text-xs text-gray-400 ml-2">{p.metadata?.option_type} ${p.metadata?.strike_price} {p.metadata?.expiration_date}</div>
+                                            )}
+                                          </div>
+                                        </td>
+                                        <td className="text-right py-3 px-2 text-gray-200">{p.quantity}</td>
+                                        <td className="text-right py-3 px-2 text-gray-200">${p.avg_cost.toFixed(2)}</td>
+                                        <td className="text-right py-3 px-2 text-gray-200">${p.current_price.toFixed(2)}</td>
+                                        <td className="text-right py-3 px-2 text-gray-200">${p.market_value.toFixed(2)}</td>
+                                        <td className="text-right py-3 px-2 text-blue-400">{accountPercent.toFixed(2)}%</td>
+                                        <td className={`text-right py-3 px-2 ${p.unrealized_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>{p.unrealized_pnl >= 0 ? '+' : ''}${p.unrealized_pnl.toFixed(2)}</td>
+                                        <td className={`text-right py-3 px-2 ${pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>{pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%</td>
+                                        <td className="text-center py-3 px-2"><span className={`px-2 py-1 rounded text-xs font-medium ${p.position_type === 'stock' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'}`}>{p.position_type.toUpperCase()}</span></td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+                {/* Total row */}
+                {positionsNormalized.length > 0 && (
+                  <tr className="border-t-2 border-gray-600 bg-gray-700">
+                    <td className="py-3 px-2 font-bold text-gray-200">TOTAL PORTFOLIO</td>
+                    <td className="text-right py-3 px-2 font-bold text-gray-200">{positionsNormalized.reduce((sum, pos) => sum + Math.abs(pos.quantity || 0), 0).toLocaleString()}</td>
+                    <td className="text-right py-3 px-2 text-gray-400">-</td>
+                    <td className="text-right py-3 px-2 text-gray-400">-</td>
+                    <td className="text-right py-3 px-2 font-bold text-white">${positionsNormalized.reduce((sum, pos) => sum + (pos.market_value || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td className="text-right py-3 px-2 font-bold text-blue-300">100.00%</td>
+                    <td className="text-right py-3 px-2 font-bold text-gray-200">{(positionsNormalized.reduce((s, p) => s + (p.unrealized_pnl || 0), 0) >= 0 ? '+' : '') + positionsNormalized.reduce((s, p) => s + (p.unrealized_pnl || 0), 0).toFixed(2)}</td>
+                    <td className="text-right py-3 px-2 font-bold text-gray-200">{(portfolioData?.totalMarketValue || 0) > 0 ? `${(((positionsNormalized.reduce((s, p) => s + (p.unrealized_pnl || 0), 0)) / ((portfolioData?.totalMarketValue || 0) - (positionsNormalized.reduce((s, p) => s + (p.unrealized_pnl || 0), 0)))) * 100).toFixed(2)}%` : '0.00%'}</td>
+                    <td className="text-center py-3 px-2"><span className="px-2 py-1 rounded text-xs font-medium bg-gray-600 text-white">{Object.keys(groupedPositions).length} SYMBOLS</span></td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
