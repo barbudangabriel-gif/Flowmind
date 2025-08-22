@@ -33,106 +33,46 @@ const TradeStationMainPortfolio = () => {
       if (!accountsResponse.ok) throw new Error(`Failed to fetch accounts: ${accountsResponse.status}`);
       const accountsData = await accountsResponse.json();
       
-      console.log('🔍 Raw accounts response:', accountsData);
-      
       // Find the margin account (usually the main trading account)
-      // The accounts are directly in the response, not under .accounts
       const accounts = accountsData.accounts || accountsData;
-      console.log('🔍 Parsed accounts:', accounts);
-      
       let mainAccount;
       if (Array.isArray(accounts)) {
         mainAccount = accounts.find(acc => acc.Type === 'Margin') || accounts[0];
       } else if (accounts && typeof accounts === 'object') {
-        // If accounts is an object, check if it has account properties
         mainAccount = accounts;
       }
-      
-      console.log('🎯 Selected account:', mainAccount);
-      
       if (!mainAccount || !mainAccount.AccountID) {
         throw new Error(`No valid TradeStation account found. Accounts structure: ${JSON.stringify(accounts)}`);
       }
-      
-      console.log('🎯 Using account:', mainAccount.AccountID);
-      
+
       // Get positions for the main account
       const positionsResponse = await fetch(`${backendUrl}/api/tradestation/accounts/${mainAccount.AccountID}/positions`);
       if (!positionsResponse.ok) throw new Error(`Failed to fetch positions: ${positionsResponse.status}`);
       const positionsData = await positionsResponse.json();
-      
-      console.log('🔍 Raw positions response:', positionsData);
-      console.log('🔍 Positions response keys:', Object.keys(positionsData || {}));
-      console.log('🔍 Positions array:', positionsData.positions);
-      
-      // Calculate portfolio totals from real TradeStation data
+
+      // Parse positions array from payload
       let positions;
-      if (positionsData.positions && Array.isArray(positionsData.positions)) {
-        positions = positionsData.positions;
-      } else if (positionsData.data && Array.isArray(positionsData.data)) {
-        positions = positionsData.data;
-      } else if (Array.isArray(positionsData)) {
-        positions = positionsData;
-      } else {
-        positions = [];
-      }
-      
-      console.log('🔍 Final positions array:', {
-        isArray: Array.isArray(positions),
-        count: positions.length,
-        firstPosition: positions[0]
-      });
-      
+      if (positionsData.positions && Array.isArray(positionsData.positions)) positions = positionsData.positions;
+      else if (positionsData.data && Array.isArray(positionsData.data)) positions = positionsData.data;
+      else if (Array.isArray(positionsData)) positions = positionsData;
+      else positions = [];
+
+      // Calculate portfolio totals
       let totalMarketValue = 0;
       let totalUnrealizedPnL = 0;
-      
       positions.forEach(position => {
-        // Log full position structure for first position to see available fields
-        if (positions.indexOf(position) === 0) {
-          console.log('🔍 First position full structure:', position);
-          console.log('🔍 Available price fields:', {
-            mark_price: position.mark_price,
-            current_price: position.current_price,
-            last_price: position.last_price,
-            market_price: position.market_price,
-            price: position.price
-          });
-        }
-        
-        // Try different price field names
         const currentPrice = position.mark_price || position.current_price || position.last_price || position.market_price || position.price || 0;
-        const marketValue = Math.abs(position.quantity * currentPrice);
+        const marketValue = Math.abs((position.quantity || 0) * currentPrice);
         const unrealizedPnL = position.unrealized_pnl || 0;
-        
-        console.log('📊 Processing position:', {
-          symbol: position.symbol,
-          quantity: position.quantity,
-          currentPrice,
-          marketValue,
-          unrealizedPnL
-        });
-        
         totalMarketValue += marketValue;
         totalUnrealizedPnL += unrealizedPnL;
       });
-      
-      // Calculate percentage change
       const costBasis = totalMarketValue - totalUnrealizedPnL;
       const percentChange = costBasis !== 0 ? (totalUnrealizedPnL / costBasis) * 100 : 0;
-      
-      // Group positions by asset type
-      const stocks = positions.filter(p => p.asset_type === 'STOCK');
-      const options = positions.filter(p => p.asset_type === 'STOCKOPTION');
-      
-      console.log('🎯 Final portfolio calculated:', {
-        totalMarketValue,
-        totalUnrealizedPnL,
-        percentChange,
-        totalPositions: positions.length,
-        stocks: stocks.length,
-        options: options.length
-      });
-      
+
+      const stocks = positions.filter(p => (p.asset_type || '').toUpperCase().includes('STOCK') || (p.asset_type || '').toUpperCase().includes('EQ'));
+      const options = positions.filter(p => (p.asset_type || '').toUpperCase().includes('OPTION') || (p.asset_type || '').toUpperCase().includes('OP'));
+
       setPortfolioData({
         account: mainAccount,
         totalMarketValue,
@@ -141,12 +81,10 @@ const TradeStationMainPortfolio = () => {
         totalPositions: positions.length,
         stocks: stocks.length,
         options: options.length,
-        positions: positions
+        positions
       });
-      
       setLastUpdated(new Date());
-      setError(null); // Clear any previous errors since we successfully loaded data
-      
+      setError(null);
     } catch (err) {
       setError(err.message);
       console.error('Error fetching TradeStation data:', err);
@@ -159,22 +97,9 @@ const TradeStationMainPortfolio = () => {
     fetchTradeStationData();
   }, []);
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
-  const getChangeColor = (value) => {
-    return value >= 0 ? 'text-green-500' : 'text-red-500';
-  };
-
-  const getChangeIcon = (value) => {
-    return value >= 0 ? TrendingUp : TrendingDown;
-  };
+  const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+  const getChangeColor = (value) => (value >= 0 ? 'text-green-500' : 'text-red-500');
+  const getChangeIcon = (value) => (value >= 0 ? TrendingUp : TrendingDown);
 
   if (loading) {
     return (
@@ -195,12 +120,7 @@ const TradeStationMainPortfolio = () => {
           <AlertCircle className="mx-auto h-16 w-16 text-red-500 mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Error Loading Portfolio</h2>
           <p className="text-gray-400 mb-6">{error}</p>
-          <button
-            onClick={fetchTradeStationData}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Retry
-          </button>
+          <button onClick={fetchTradeStationData} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">Retry</button>
         </div>
       </div>
     );
@@ -219,41 +139,26 @@ const TradeStationMainPortfolio = () => {
                 <Activity className="mr-3" size={32} />
                 TradeStation Main Portfolio
               </h1>
-              <p className="text-blue-100 mt-2">
-                Account: {portfolioData?.account?.AccountID} • Live Trading Account
-              </p>
+              <p className="text-blue-100 mt-2">Account: {portfolioData?.account?.AccountID} • Live Trading Account</p>
             </div>
-            
-            <button 
-              onClick={fetchTradeStationData}
-              className="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors flex items-center space-x-2"
-              disabled={loading}
-            >
+            <button onClick={fetchTradeStationData} className="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors flex items-center space-x-2" disabled={loading}>
               <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
               <span>Refresh</span>
             </button>
           </div>
-          
+
           {/* Portfolio Value Display */}
           <div className="mt-6">
             <div className="flex items-center space-x-2">
               <Eye className="text-white" size={20} />
-              <span className="text-4xl font-bold text-white">
-                {formatCurrency(portfolioData?.totalMarketValue || 0)}
-              </span>
+              <span className="text-4xl font-bold text-white">{formatCurrency(portfolioData?.totalMarketValue || 0)}</span>
             </div>
             <div className={`flex items-center mt-2 space-x-2 ${getChangeColor(portfolioData?.totalUnrealizedPnL)}`}>
               <ChangeIcon size={24} />
-              <span className="text-2xl font-semibold">
-                {portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(portfolioData?.totalUnrealizedPnL || 0)}
-              </span>
-              <span className="text-lg">
-                ({portfolioData?.percentChange >= 0 ? '+' : ''}{(portfolioData?.percentChange || 0).toFixed(2)}%)
-              </span>
+              <span className="text-2xl font-semibold">{portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(portfolioData?.totalUnrealizedPnL || 0)}</span>
+              <span className="text-lg">({portfolioData?.percentChange >= 0 ? '+' : ''}{(portfolioData?.percentChange || 0).toFixed(2)}%)</span>
             </div>
-            <p className="text-blue-100 text-sm mt-1">
-              Last updated: {lastUpdated.toLocaleString()}
-            </p>
+            <p className="text-blue-100 text-sm mt-1">Last updated: {lastUpdated.toLocaleString()}</p>
           </div>
         </div>
       </div>
@@ -270,7 +175,6 @@ const TradeStationMainPortfolio = () => {
               <Target className="text-blue-400" size={32} />
             </div>
           </div>
-          
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
@@ -280,7 +184,6 @@ const TradeStationMainPortfolio = () => {
               <BarChart3 className="text-green-400" size={32} />
             </div>
           </div>
-          
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
@@ -290,14 +193,11 @@ const TradeStationMainPortfolio = () => {
               <PieChartIcon className="text-purple-400" size={32} />
             </div>
           </div>
-          
           <div className="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Portfolio Value</p>
-                <p className="text-2xl font-bold text-white">
-                  {formatCurrency(portfolioData?.totalMarketValue || 0)}
-                </p>
+                <p className="text-2xl font-bold text-white">{formatCurrency(portfolioData?.totalMarketValue || 0)}</p>
               </div>
               <DollarSign className="text-yellow-400" size={32} />
             </div>
@@ -306,26 +206,15 @@ const TradeStationMainPortfolio = () => {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <button 
-            onClick={() => navigate('/portfolios/tradestation-main')}
-            className="bg-blue-600 text-white p-4 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center space-x-3"
-          >
+          <button onClick={() => navigate('/portfolios/view/tradestation-main')} className="bg-blue-600 text-white p-4 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center space-x-3">
             <Eye size={24} />
             <span className="text-lg font-medium">View Detailed Positions</span>
           </button>
-          
-          <button 
-            onClick={() => navigate('/portfolios/tradestation-main/charts')}
-            className="bg-green-600 text-white p-4 rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center space-x-3"
-          >
+          <button onClick={() => navigate('/portfolios/tradestation-main/charts')} className="bg-green-600 text-white p-4 rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center space-x-3">
             <BarChart3 size={24} />
             <span className="text-lg font-medium">Portfolio Charts</span>
           </button>
-          
-          <button 
-            onClick={() => navigate('/portfolios/tradestation-main/rebalancing')}
-            className="bg-purple-600 text-white p-4 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center space-x-3"
-          >
+          <button onClick={() => navigate('/portfolios/tradestation-main/rebalancing')} className="bg-purple-600 text-white p-4 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center space-x-3">
             <Target size={24} />
             <span className="text-lg font-medium">AI Rebalancing</span>
           </button>
@@ -338,49 +227,22 @@ const TradeStationMainPortfolio = () => {
             <div>
               <h4 className="text-lg font-semibold text-gray-300 mb-2">Performance</h4>
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Market Value:</span>
-                  <span className="text-white font-medium">{formatCurrency(portfolioData?.totalMarketValue || 0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Unrealized P&L:</span>
-                  <span className={`font-medium ${getChangeColor(portfolioData?.totalUnrealizedPnL)}`}>
-                    {portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(portfolioData?.totalUnrealizedPnL || 0)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Percentage Change:</span>
-                  <span className={`font-medium ${getChangeColor(portfolioData?.totalUnrealizedPnL)}`}>
-                    {portfolioData?.percentChange >= 0 ? '+' : ''}{(portfolioData?.percentChange || 0).toFixed(2)}%
-                  </span>
-                </div>
+                <div className="flex justify-between"><span className="text-gray-400">Market Value:</span><span className="text-white font-medium">{formatCurrency(portfolioData?.totalMarketValue || 0)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Unrealized P&amp;L:</span><span className={`font-medium ${getChangeColor(portfolioData?.totalUnrealizedPnL)}`}>{portfolioData?.totalUnrealizedPnL >= 0 ? '+' : ''}{formatCurrency(portfolioData?.totalUnrealizedPnL || 0)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Percentage Change:</span><span className={`font-medium ${getChangeColor(portfolioData?.totalUnrealizedPnL)}`}>{portfolioData?.percentChange >= 0 ? '+' : ''}{(portfolioData?.percentChange || 0).toFixed(2)}%</span></div>
               </div>
             </div>
-            
             <div>
               <h4 className="text-lg font-semibold text-gray-300 mb-2">Asset Allocation</h4>
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Stock Positions:</span>
-                  <span className="text-white font-medium">{portfolioData?.stocks || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Options Positions:</span>
-                  <span className="text-white font-medium">{portfolioData?.options || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Total Positions:</span>
-                  <span className="text-white font-medium">{portfolioData?.totalPositions || 0}</span>
-                </div>
+                <div className="flex justify-between"><span className="text-gray-400">Stock Positions:</span><span className="text-white font-medium">{portfolioData?.stocks || 0}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Options Positions:</span><span className="text-white font-medium">{portfolioData?.options || 0}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Total Positions:</span><span className="text-white font-medium">{portfolioData?.totalPositions || 0}</span></div>
               </div>
             </div>
           </div>
-          
           <div className="mt-6 pt-4 border-t border-gray-700">
-            <p className="text-sm text-gray-400">
-              Data source: TradeStation Direct API • Account: {portfolioData?.account?.AccountID} • 
-              Last refresh: {lastUpdated.toLocaleString()}
-            </p>
+            <p className="text-sm text-gray-400">Data source: TradeStation Direct API • Account: {portfolioData?.account?.AccountID} • Last refresh: {lastUpdated.toLocaleString()}</p>
           </div>
         </div>
       </div>
