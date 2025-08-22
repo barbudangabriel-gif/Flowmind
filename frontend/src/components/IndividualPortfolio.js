@@ -384,11 +384,22 @@ const IndividualPortfolio = () => {
   // Group positions by ticker symbol with summaries
   const groupedPositions = React.useMemo(() => {
     if (!positions || positions.length === 0) return {};
+
+    const getBaseSymbol = (p) => {
+      // Prefer explicit underlying symbol if present
+      if (p.metadata?.underlying_symbol) return (p.metadata.underlying_symbol || '').toUpperCase();
+      const raw = (p.symbol || '').trim();
+      // If it's an option-like contract symbol, try to extract base
+      // Formats seen: "AAPL 271217C195", "AAPL_271217C195"
+      const first = (raw.split(' ')[0] || raw).split('_')[0];
+      return (first || raw).toUpperCase();
+    };
+
     const groups = {};
     positions.forEach((pos) => {
-      const s = pos.symbol;
-      if (!groups[s]) groups[s] = [];
-      groups[s].push(pos);
+      const key = pos.position_type === 'option' ? getBaseSymbol(pos) : (pos.symbol || '').toUpperCase();
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(pos);
     });
 
     Object.keys(groups).forEach((symbol) => {
