@@ -71,6 +71,7 @@ const SmartRebalancingAgent = React.lazy(() => import("./components/SmartRebalan
 const PortfolioTradeList = React.lazy(() => import("./components/PortfolioTradeList"));
 const StockAnalysisPageEnhanced = React.lazy(() => import("./components/StockAnalysisPageEnhanced"));
 const OptionsModule = React.lazy(() => import("./components/OptionsModule"));
+const OptionsSelling = React.lazy(() => import("./components/OptionsSelling"));
 const ChartTestPage = React.lazy(() => import("./components/ChartTestPage"));
 const ProfessionalChartTest = React.lazy(() => import("./components/ProfessionalChartTest"));
 const SettingsPage = React.lazy(() => import("./components/SettingsPage"));
