@@ -32,6 +32,8 @@ const TradeStationMainPortfolio = () => {
       const asset = (pos.asset_type || '').toUpperCase();
       let isStock = asset.includes('EQ') || asset.includes('STOCK');
       let isOption = asset.includes('OP') || asset.includes('OPTION');
+      // If both flags true (e.g., STOCKOPTION), treat as option
+      if (isOption) isStock = false;
 
       let baseSymbol = (rawSymbol.split(' ')[0] || rawSymbol).split('_')[0];
       const symbolTail = rawSymbol.replace(baseSymbol, '').replace(/^[ _]/, '');
