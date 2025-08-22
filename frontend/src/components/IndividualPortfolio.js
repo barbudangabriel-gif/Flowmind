@@ -186,7 +186,7 @@ const IndividualPortfolio = () => {
             unrealized_pnl: pos.unrealized_pnl || 0,
             unrealized_pnl_percent: pos.unrealized_pnl_percent || 0,
             portfolio_id: 'tradestation-main',
-            position_type: pos.asset_type === 'STOCK' ? 'stock' : 'option',
+            position_type: ((pos.asset_type || '').toUpperCase().includes('EQ') || (pos.asset_type || '').toUpperCase().includes('STOCK')) ? 'stock' : ((pos.asset_type || '').toUpperCase().includes('OP') || (pos.asset_type || '').toUpperCase().includes('OPTION')) ? 'option' : 'stock',
             metadata: {
               asset_type: pos.asset_type,
               option_type: pos.option_type,
