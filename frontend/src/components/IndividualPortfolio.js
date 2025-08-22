@@ -213,7 +213,11 @@ const IndividualPortfolio = () => {
   }, [positions, displayPortfolio?.total_value]);
 
   const toggleTicker = (symbol) => {
-    setExpandedTickers((prev) => ({ ...prev, [symbol]: !prev[symbol] }));
+    setExpandedTickers((prev) => {
+      const next = { ...(prev || {}) };
+      next[symbol] = !next[symbol];
+      return next;
+    });
   };
   const expandAll = () => setExpandedTickers(new Set(Object.keys(groupedPositions)));
   const collapseAll = () => setExpandedTickers(new Set());
