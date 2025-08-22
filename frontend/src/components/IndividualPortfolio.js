@@ -262,14 +262,28 @@ const IndividualPortfolio = () => {
             description: `Live TradeStation Account ${mainAccount.AccountID}`
           });
         } else {
-          setDemoData();
+          // In LIVE mode, do not silently fallback to demo; surface empty state
+          setPositions([]);
+          setCurrentPortfolio({
+            id: 'tradestation-main',
+            name: 'TradeStation Main',
+            total_value: 0,
+            total_pnl: 0,
+            positions_count: 0,
+            description: `Live TradeStation Account ${mainAccount.AccountID}`
+          });
         }
 
         // Ensure context menu has targets
         await fetchAvailablePortfolios('tradestation-main');
       } catch (e) {
         setError(e.message);
-        setDemoData();
+        if (dataMode === 'demo') {
+          setDemoData();
+        } else {
+          // LIVE mode: show error, do not fallback to demo
+          setPositions([]);
+        }
         await fetchAvailablePortfolios('tradestation-main');
       } finally {
         setLoading(false);
