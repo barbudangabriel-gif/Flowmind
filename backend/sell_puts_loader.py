@@ -23,7 +23,7 @@ def positions_from_dataframe(df: pd.DataFrame) -> List[Position]:
     rows: List[Position] = []
     for _, r in df.iterrows():
         rows.append(Position(
-            ticker=str(r.get("ticker",""))).upper(),
+            ticker=str(r.get("ticker","" )).upper(),
             price=float(r.get("price",0) or 0),
             strike=float(r.get("strike",0) or 0),
             delta=float(r.get("delta",0) or 0),
