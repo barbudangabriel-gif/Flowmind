@@ -547,7 +547,7 @@ const IndividualPortfolio = () => {
                   const isExpanded = expandedTickers.has(symbol);
 
                   return (
-                    <>
+                    <React.Fragment key={symbol}>
                       {/* Ticker Header Row - EXACT ca sidebar section header */}
                       <tr className="border-b border-slate-600 bg-slate-800">
                         <td className="py-4 px-2" colSpan="9">
