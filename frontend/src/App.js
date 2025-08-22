@@ -272,7 +272,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     {
       title: "Options Module ⚡",
       items: [
-        { id: 'options-module', label: 'Options Strategy Builder', icon: Zap, color: 'from-purple-500 to-indigo-600', badge: '⚡', shortLabel: 'Options', route: '/options' }
+        { id: 'options-module', label: 'Options Strategy Builder', icon: Zap, color: 'from-purple-500 to-indigo-600', badge: '⚡', shortLabel: 'Options', route: '/options' },
+        { id: 'puts-selling', label: 'Puts Options Selling', icon: Zap, color: 'from-purple-600 to-indigo-700', badge: '🧮', shortLabel: 'Puts', route: '/options/selling' }
       ]
     },
     {
