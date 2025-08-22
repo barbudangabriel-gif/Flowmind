@@ -582,7 +582,7 @@ const IndividualPortfolio = () => {
                       {isExpanded && (
                         <tr>
                           <td colSpan="9" className="p-0">
-                            <div className="bg-slate-850 border-l-4 border-blue-400">
+                            <div className="bg-slate-900 border-l-4 border-blue-400">
                               <table className="w-full">
                                 <tbody>
                                   {symbolPositions.map((position, index) => {
