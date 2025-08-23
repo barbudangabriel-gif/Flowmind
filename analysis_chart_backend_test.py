@@ -81,24 +81,42 @@ class AnalysisChartBackendTester:
             "positions": [
                 {
                     "ticker": "AAPL",
-                    "shares": 100,
-                    "avg_cost": 150.0
+                    "price": 150.0,
+                    "strike": 145.0,
+                    "delta": 0.28,
+                    "dte": 30,
+                    "premium": 2.50,
+                    "iv_rank": 45.0,
+                    "vix": 20.0,
+                    "selected": True
                 },
                 {
                     "ticker": "MSFT", 
-                    "shares": 50,
-                    "avg_cost": 300.0
+                    "price": 300.0,
+                    "strike": 290.0,
+                    "delta": 0.25,
+                    "dte": 35,
+                    "premium": 3.00,
+                    "iv_rank": 50.0,
+                    "vix": 20.0,
+                    "selected": True
                 },
                 {
                     "ticker": "TSLA",
-                    "shares": 25,
-                    "avg_cost": 200.0
+                    "price": 200.0,
+                    "strike": 190.0,
+                    "delta": 0.30,
+                    "dte": 25,
+                    "premium": 4.00,
+                    "iv_rank": 55.0,
+                    "vix": 20.0,
+                    "selected": True
                 }
             ],
             "config": {
-                "capital_base": 500000,
-                "mode": "equal"
+                "capital_base": 500000
             },
+            "mode": "equal",
             "interval_seconds": 15
         }
         
