@@ -811,6 +811,9 @@ export default function OptionsSelling() {
               </div>
               {chartData.length === 0 && <div className="text-slate-500 text-sm">No closed trades in selected range.</div>}
               {chartData.length > 0 && (
+                <div className="text-slate-400 text-xs mb-2">Points: {chartData.length} • Min: ${Math.min(...chartData.map(p=>p.cum_closed_pl)).toFixed(2)} • Max: ${Math.max(...chartData.map(p=>p.cum_closed_pl)).toFixed(2)}</div>
+              )}
+              {chartData.length > 0 && (
                 <div style={{ width: '100%', height: 220 }}>
                   <ResponsiveContainer key={`${xAxisMode}-${chartData.length}-${analysisTheme}`}>
                     <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
