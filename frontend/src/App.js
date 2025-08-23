@@ -222,7 +222,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       items: [
         { id: 'simple-screener', label: 'Stock Search', icon: Search, color: 'from-pink-500 to-rose-500', shortLabel: 'Search' },
         { id: 'news', label: 'Market News', icon: Globe, color: 'from-slate-500 to-gray-500', shortLabel: 'News' },
-        { id: 'icon-preview', label: 'Icon Preview (temp)', icon: Eye, color: 'from-slate-500 to-gray-600', shortLabel: 'Icons', route: '/icon-preview' }
+        { id: 'icon-preview', label: 'Icon Preview (temp)', icon: Eye, color: 'from-slate-500 to-gray-600', shortLabel: 'Icons', route: '/icon-preview' },
+        { id: 'summary-report', label: 'Project Report (PDF) – temp', icon: null, color: 'from-slate-500 to-gray-600', shortLabel: 'Report', route: '/reports/flowmind_summary.html' }
       ]
     },
     {
