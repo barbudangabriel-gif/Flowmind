@@ -338,7 +338,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               const isDashboard = group.title === 'Home';
               const isAdvancedScreener = group.title === 'Advanced Screener 🔍';
               const isAutoTrading = group.title === 'Auto Options Trading 🤖';
-              const hasDropdown = isTradeStation || isUnusualWhales || isDashboard || isAdvancedScreener || isAutoTrading || (group.title === 'Investment Scoring 🎯') || (group.title === 'Options Module ⚡');
+              const hasDropdown = isTradeStation || isUnusualWhales || isDashboard || isAdvancedScreener || isAutoTrading || (group.title === 'Investment Scoring 🎯') || (group.title === 'Options Module ⚡') || (group.title === 'Portfolios 💼');
               const isExpanded = expandedSections.has(group.title);
               
               return (
