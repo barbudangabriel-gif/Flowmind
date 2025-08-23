@@ -820,8 +820,8 @@ export default function OptionsSelling() {
                           <stop offset="95%" stopColor="#34d399" stopOpacity={0.1}/>
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey={xAxisMode === 'time' ? 'tsLabel' : 'xIndex'} hide={false} tick={{ fill: '#94a3b8' }} />
-                      <YAxis hide={true} domain={[ -maxAbs, maxAbs ]} />
+                      <XAxis dataKey={xAxisMode === 'time' ? 'tsLabel' : 'xIndex'} hide={false} tick={{ fill: '#94a3b8' }} allowDuplicatedCategory={false} />
+                      <YAxis hide={false} domain={[ -maxAbs, maxAbs ]} tick={{ fill: '#94a3b8' }} />
                       <Tooltip 
                         formatter={(val)=>`$${Number(val||0).toFixed(2)}`}
                         labelFormatter={(label, payload)=>{
@@ -831,7 +831,7 @@ export default function OptionsSelling() {
                           return xAxisMode === 'time' ? `Time: ${ts}` : `Point #${(idx||0)+1} • ${ts}`;
                         }}
                       />
-                      <Area type="monotone" dataKey="cum_closed_pl" stroke="#34d399" strokeWidth={2} dot={{ r: 3, stroke: '#34d399', fill: '#34d399' }} fillOpacity={1} fill="url(#plGradient)" />
+                      <Area type="linear" dataKey="cum_closed_pl" stroke="#34d399" strokeWidth={3} dot={{ r: 4, stroke: '#34d399', fill: '#34d399' }} fillOpacity={1} fill="url(#plGradient)" isAnimationActive={false} connectNulls={true} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
