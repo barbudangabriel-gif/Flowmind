@@ -67,7 +67,7 @@ export default function OptionsSelling() {
 
   // Covered Calls config & inputs
   const [includeCC, setIncludeCC] = useState(true);
-  the analysis tab , please const [ccConfig, setCCConfig] = useState(defaultCCConfig);
+  const [ccConfig, setCCConfig] = useState(defaultCCConfig);
   const [ccInputsText, setCCInputsText] = useState(JSON.stringify(demoCCInputs, null, 2));
 
   // Compute request/response state
