@@ -1,4 +1,19 @@
 @import 'tailwindcss/base';
+/* Envato Data Analyzer (vanilla) theme tokens scoped to Analyze tab */
+.envato-theme .bg-slate-800 { background-color: #0f1220 !important; }
+.envato-theme .border-slate-700 { border-color: #262a40 !important; }
+.envato-theme .text-slate-200 { color: #e6e8f2 !important; }
+.envato-theme .text-slate-300 { color: #c7c9d6 !important; }
+.envato-theme .text-slate-400 { color: #a8abbc !important; }
+.envato-theme .bg-emerald-700\/30 { background-color: rgba(34,197,94,0.15) !important; }
+.envato-theme .bg-blue-700\/30 { background-color: rgba(59,130,246,0.15) !important; }
+.envato-theme .bg-purple-700\/30 { background-color: rgba(168,85,247,0.15) !important; }
+.envato-theme .bg-amber-700\/30 { background-color: rgba(245,158,11,0.15) !important; }
+.envato-theme .bg-indigo-600 { background-color: #5b6bff !important; }
+.envato-theme .hover\:bg-indigo-700:hover { background-color: #4958ff !important; }
+.envato-theme .bg-slate-700 { background-color: #1b1f35 !important; }
+.envato-theme .bg-slate-900 { background-color: #0b0e1a !important; }
+
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
