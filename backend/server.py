@@ -144,6 +144,7 @@ async def options_selling_monitor_status():
 async def options_selling_analysis(
     range: str = Query(default="3M"),
     strategies: Optional[str] = Query(default=None, description="Comma separated list of signals to include"),
+    ticker: Optional[str] = Query(default=None),
     fill: str = Query(default="mid"),
     slippage: float = Query(default=0.05),
     commission: float = Query(default=0.65),
@@ -152,6 +153,7 @@ async def options_selling_analysis(
         q = AnalysisQuery(
             range=range,
             strategies=[s.strip() for s in strategies.split(',')] if strategies else None,
+            ticker=ticker,
             fill=fill,
             slippage=slippage,
             commission=commission,

@@ -446,6 +446,7 @@ monitor_service = _MonitorService()
 class AnalysisQuery(BaseModel):
     range: Optional[str] = Field(default="3M", description="1M|3M|6M|1Y|ALL")
     strategies: Optional[List[str]] = None  # e.g., ["SELL PUT","ROLL","SELL CALL","ROLL CC","TAKE PROFIT","COVERED CALL"]
+    ticker: Optional[str] = None
     fill: Optional[str] = Field(default="mid", description="mid|bid|last (informational)")
     slippage: float = 0.05  # $ per contract per side
     commission: float = 0.65  # $ per contract per side
@@ -474,22 +475,9 @@ async def options_analysis(q: AnalysisQuery) -> Dict[str, Any]:
     open_put: Dict[str, List[Dict[str, Any]]] = {} # per ticker list of short puts
     closed_trades: List[Dict[str, Any]] = []
 
-    def record_open_cc(sig: Dict[str, Any]):
-        sym = (sig.get("ticker") or "").upper()
-        open_cc.setdefault(sym, [])
-        open_cc[sym].append({
-            "opened_at": sig.get("_ts"),
-            "contracts": int(sig.get("contracts") or 0),
-            "premium_sold": float(sig.get("premium") or 0.0),
-            "strike": sig.get("strike"),
-            "dte": sig.get("dte"),
-            "delta": sig.get("delta"),
-        })
-
-    def record_open_put(sig: Dict[str, Any]):
-        sym = (sig.get("ticker") or "").upper()
-        open_put.setdefault(sym, [])
-        open_put[sym].append({
+    def record_open(sym: str, book: Dict[str, List[Dict[str, Any]]], sig: Dict[str, Any]):
+        book.setdefault(sym, [])
+        book[sym].append({
             "opened_at": sig.get("_ts"),
             "contracts": int(sig.get("contracts") or 0),
             "premium_sold": float(sig.get("premium") or 0.0),
@@ -527,6 +515,9 @@ async def options_analysis(q: AnalysisQuery) -> Dict[str, Any]:
         })
 
     # Iterate snapshots and build events using diffs.added
+    ticker_filter = (q.ticker or "").upper().strip() if q.ticker else None
+    strategy_set = set([st.upper() for st in (q.strategies or [])]) if q.strategies else None
+
     for s in snaps:
         ts = s.get("ts")
         diffs = (s.get("diffs") or {})
@@ -535,16 +526,16 @@ async def options_analysis(q: AnalysisQuery) -> Dict[str, Any]:
             sig["_ts"] = ts
             sig_type = (sig.get("signal") or "").upper()
             sym = (sig.get("ticker") or "").upper()
-            if q.strategies:
-                # Filter by strategies if provided
-                if sig_type not in [st.upper() for st in q.strategies]:
-                    continue
+            if ticker_filter and sym != ticker_filter:
+                continue
+            if strategy_set and sig_type not in strategy_set:
+                continue
             if sig_type == "SELL CALL":
-                record_open_cc(sig)
+                record_open(sym, open_cc, sig)
             elif sig_type in ("TAKE PROFIT", "ROLL CC"):
                 close_from_open(sym, open_cc, sig, sig_type)
             elif sig_type == "SELL PUT":
-                record_open_put(sig)
+                record_open(sym, open_put, sig)
             elif sig_type == "ROLL":
                 close_from_open(sym, open_put, sig, sig_type)
             # Optionally: handle COVERED CALL elsewhere
@@ -584,6 +575,8 @@ async def options_analysis(q: AnalysisQuery) -> Dict[str, Any]:
             "slippage": q.slippage,
             "commission": q.commission,
             "range": q.range,
+            "ticker": q.ticker,
+            "strategies": list(strategy_set) if strategy_set else None,
         }
     }
     return result
