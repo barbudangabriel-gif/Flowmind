@@ -764,6 +764,27 @@ export default function OptionsSelling() {
                 <div>Avg P/L: <span className="font-semibold">${Number(metrics.avg_pnl||0).toFixed(2)}</span></div>
                 <div>Avg ROR: <span className="font-semibold">{Number(metrics.avg_ror||0).toFixed(2)}%</span></div>
               </div>
+              {/* Win/Loss Donut */}
+              {analysisData && (
+                <div className="mt-4" style={{ width: '100%', height: 180 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie dataKey="value" data={[
+                        { name: 'Wins', value: Number(metrics.wins||0), color: '#34d399' },
+                        { name: 'Losses', value: Number(metrics.losses||0), color: '#ef4444' },
+                      ]} innerRadius={40} outerRadius={70} paddingAngle={2}>
+                        {[
+                          { name: 'Wins', value: Number(metrics.wins||0), color: '#34d399' },
+                          { name: 'Losses', value: Number(metrics.losses||0), color: '#ef4444' },
+                        ].map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(v, n)=> [v, n]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
             <div className="bg-slate-800 border border-slate-700 rounded p-4 lg:col-span-2">
               <div className="flex items-center justify-between mb-2">
