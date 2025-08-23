@@ -7265,6 +7265,16 @@ function AppContent() {
               } 
             />
 
+            {/* Project Report Viewer (temporary) */}
+            <Route 
+              path="/project-report" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Project Report" />}>
+                  <ReportViewer />
+                </Suspense>
+              } 
+            />
+
             {/* Professional Chart Test Route */}
             <Route 
               path="/professional-charts" 
