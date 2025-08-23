@@ -351,9 +351,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             onClick={() => toggleSection(group.title)}
                             className="flex items-center gap-2 hover:text-slate-200 transition-colors"
                           >
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                             <Settings className="w-4 h-4 text-slate-300" />
                             <span>TradeStation 🏛️</span>
-                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </button>
                         ) : isUnusualWhales ? (
                           <button
