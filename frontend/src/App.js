@@ -476,7 +476,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                         </div>
                         
                         {/* Dark Mode Toggle - Show after Market News */}
-                        {isNewsItem && !isCollapsed && (
+                        {false && (
                           <div className="mt-3">
                             <button
                               onClick={toggleDarkMode}
