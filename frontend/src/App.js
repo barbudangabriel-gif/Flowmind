@@ -7233,6 +7233,40 @@ function AppContent() {
               } 
             />
             
+            {/* Portfolios Routes */}
+            <Route 
+              path="/portfolios" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="All Portfolios" />}>
+                  <AllPortfolios />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/portfolios/create" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Create Portfolio" />}>
+                  <CreatePortfolio />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/portfolios/:portfolioId" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolio" />}>
+                  <IndividualPortfolio />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/portfolios/:portfolioId/charts" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolio Charts" />}>
+                  <PortfolioCharts />
+                </Suspense>
+              } 
+            />
+
             {/* Options Module Route */}
             <Route 
               path="/options" 
