@@ -329,7 +329,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               const isDashboard = group.title === 'Dashboard 🏠';
               const isAdvancedScreener = group.title === 'Advanced Screener 🔍';
               const isAutoTrading = group.title === 'Auto Options Trading 🤖';
-              const hasDropdown = isTradeStation || isUnusualWhales || isDashboard || isAdvancedScreener || isAutoTrading;
+              const hasDropdown = isTradeStation || isUnusualWhales || isDashboard || isAdvancedScreener || isAutoTrading || (group.title === 'Investment Scoring 🎯');
               const isExpanded = expandedSections.has(group.title);
               
               return (
