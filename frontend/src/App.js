@@ -343,7 +343,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             className="flex items-center gap-2 hover:text-slate-200 transition-colors"
                           >
                             <span>TradeStation 🏛️</span>
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                             <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </button>
                         ) : isUnusualWhales ? (
