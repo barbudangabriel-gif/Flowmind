@@ -17,6 +17,8 @@
 
 
 - Frontend tests (2025-06-23): Analyze chart visibility fix — verify Index X-axis default, dots, thicker stroke, tooltip timestamps; start Monitor, run Analysis, confirm chart renders or show informative fallback when no closed trades.
+- Initiating automated FRONTEND tests (2025-06-23): OptionsSelling Analyze chart visibility — navigate to /options/selling, start monitor (wait 20s), stop, run analysis (ALL), verify chart renders with Index X-axis, dots, thicker stroke, tooltip timestamps.
+
 
 # OPTIONS MODULE IMPLEMENTATION - PHASE 1.1 COMPLETED
 #====================================================================================================
