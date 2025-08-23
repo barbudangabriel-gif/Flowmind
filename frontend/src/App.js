@@ -7285,6 +7285,17 @@ function AppContent() {
               } 
             />
 
+            {/* Icon Preview (temporary) */}
+            <Route 
+              path="/icon-preview" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Icon Preview" />}>
+                  <IconPreview />
+                </Suspense>
+              } 
+            />
+
+
             {/* Options Module Route */}
             <Route 
               path="/options" 
