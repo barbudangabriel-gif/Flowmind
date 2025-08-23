@@ -435,9 +435,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                               <div className="flex-1 text-left">
                                 <div className="flex items-center justify-between">
                                   <span className="font-medium text-sm">{item.label}</span>
-                                  {item.badge && (
-                                    <span className="text-xs opacity-70">{item.badge}</span>
-                                  )}
+                                  {/* badge removed for cleaner look */}
                                 </div>
                                 {/* System Active indicator for Auto Options Trading */}
                                 {item.systemActive && (
