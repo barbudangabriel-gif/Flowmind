@@ -377,7 +377,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                               {group.title === 'Investment Scoring 🎯' && (<Award className="w-4 h-4 text-slate-300" />)}
                               {group.title === 'Auto Options Trading 🤖' && (<Bot className="w-4 h-4 text-slate-300" />)}
                               <span>{group.title}</span>
-                              {group.title !== 'Portfolios 💼' && (
+                              {!group.title.startsWith('Portfolios') && (
                                 <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                               )}
                             </button>
