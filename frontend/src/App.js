@@ -7268,6 +7268,16 @@ function AppContent() {
               } 
             />
 
+            {/* TS MAIN direct route to Individual Portfolio by id */}
+            <Route 
+              path="/portfolios/tradestation-main" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="TS MAIN" />}>
+                  <IndividualPortfolio />
+                </Suspense>
+              } 
+            />
+
             {/* Options Module Route */}
             <Route 
               path="/options" 
