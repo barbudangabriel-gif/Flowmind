@@ -170,13 +170,12 @@ export default function OptionsSelling() {
         ...(includeCC ? { cc_config: ccConfig, cc_inputs } : {}),
       };
       const resp = await fetch(`${backendUrl}/api/options/selling/compute`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
       });
-      if (!resp.ok) throw new Error(`Request failed: ${resp.status}`);
       const json = await resp.json();
-      if (json.status !== "success") throw new Error(json.detail || "Compute failed");
+      if (!resp.ok || json.status !== 'success') throw new Error(json.detail || 'Compute failed');
       setData(json.data);
     } catch (e) {
       setError(e.message);
@@ -186,10 +185,10 @@ export default function OptionsSelling() {
     }
   };
 
-  // Monitor controls
   const startMonitor = async () => {
     try {
       setMonitorError("");
+      // Build start payload similarly to compute
       let payloadPositions = [];
       try {
         const parsed = JSON.parse(positionsText);
@@ -216,25 +215,18 @@ export default function OptionsSelling() {
         ...(includeCC ? { cc_config: ccConfig, cc_inputs } : {}),
       };
       const resp = await fetch(`${backendUrl}/api/options/selling/monitor/start`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
       });
       const json = await resp.json();
       if (!resp.ok || json.status !== 'success') throw new Error(json.detail || 'Failed to start monitor');
       setMonitorRunning(true);
-      // Kick an immediate status fetch
-      await fetchStatus();
       // Start polling status
-      if (statusTimerRef.current) clearInterval(statusTimerRef.current);
+      await fetchStatus();
       statusTimerRef.current = setInterval(fetchStatus, STATUS_POLL_MS);
     } catch (e) {
       setMonitorError(e.message);
-      setMonitorRunning(false);
-      if (statusTimerRef.current) {
-        clearInterval(statusTimerRef.current);
-        statusTimerRef.current = null;
-      }
     }
   };
 
@@ -428,7 +420,6 @@ export default function OptionsSelling() {
     if (source === 'TS' && activeTab === 'live') {
       loadTSLive();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, activeTab]);
 
   // Header bar with source & tabs
@@ -685,7 +676,24 @@ export default function OptionsSelling() {
     const series = analysisData?.series || [];
     const trades = analysisData?.closed_trades || [];
 
-    const maxAbs = series.reduce((m, p) => Math.max(m, Math.abs(p.cum_closed_pl||0)), 1);
+    // Local UI state for chart controls
+    const [xAxisMode, setXAxisMode] = useState('index'); // 'index' | 'time'
+    const [deOverlapPoints, setDeOverlapPoints] = useState(false);
+
+    // Prepare chart data with client-side sort and index fallback
+    const chartData = useMemo(() => {
+      const src = Array.isArray(series) ? series.slice() : [];
+      // Sort by timestamp ascending, keep stability
+      src.sort((a, b) => String(a.ts || '').localeCompare(String(b.ts || '')));
+      return src.map((p, idx) => ({
+        ...p,
+        xIndex: typeof p.xIndex === 'number' ? p.xIndex : idx,
+        tsOriginal: p.ts,
+        tsLabel: deOverlapPoints ? `${p.ts || ''} • #${idx + 1}` : (p.ts || ''),
+      }));
+    }, [series, deOverlapPoints]);
+
+    const maxAbs = chartData.reduce((m, p) => Math.max(m, Math.abs(p.cum_closed_pl||0)), 1);
 
     return (
       <div className={`p-6 space-y-4 ${analysisTheme==='envato' ? 'envato-theme' : ''}`}>
@@ -712,6 +720,17 @@ export default function OptionsSelling() {
                 <option value="envato">Envato – Data Analyzer (vanilla)</option>
               </select>
             </div>
+            {/* New: Chart controls */}
+            <div>
+              <div className="text-slate-300 text-sm mb-1">X-axis</div>
+              <select value={xAxisMode} onChange={e=>setXAxisMode(e.target.value)} className="bg-slate-700 text-slate-100 px-2 py-1 rounded">
+                <option value="index">Index</option>
+                <option value="time">Time</option>
+              </select>
+            </div>
+            <label className="flex items-center gap-2 text-slate-300 text-sm">
+              <input type="checkbox" checked={deOverlapPoints} onChange={(e)=>setDeOverlapPoints(e.target.checked)} /> De-overlap points
+            </label>
             <div>
               <button onClick={runAnalysis} disabled={analysisLoading} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white flex items-center gap-2">
                 <RefreshCw className={analysisLoading ? 'animate-spin' : ''} size={16}/> Run Analysis
@@ -790,21 +809,29 @@ export default function OptionsSelling() {
               <div className="flex items-center justify-between mb-2">
                 <div className="text-slate-200 font-semibold">Closed P/L Over Time</div>
               </div>
-              {series.length === 0 && <div className="text-slate-500 text-sm">No closed trades in selected range.</div>}
-              {series.length > 0 && (
+              {chartData.length === 0 && <div className="text-slate-500 text-sm">No closed trades in selected range.</div>}
+              {chartData.length > 0 && (
                 <div style={{ width: '100%', height: 220 }}>
                   <ResponsiveContainer>
-                    <AreaChart data={series} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                    <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="plGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#34d399" stopOpacity={0.8}/>
                           <stop offset="95%" stopColor="#34d399" stopOpacity={0.1}/>
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="ts" hide={true} />
-                      <YAxis hide={true} />
-                      <Tooltip formatter={(val)=>`$${Number(val||0).toFixed(2)}`} labelFormatter={(l)=>`Time: ${l}`}/>
-                      <Area type="monotone" dataKey="cum_closed_pl" stroke="#34d399" fillOpacity={1} fill="url(#plGradient)" />
+                      <XAxis dataKey={xAxisMode === 'time' ? 'tsLabel' : 'xIndex'} hide={false} tick={{ fill: '#94a3b8' }} />
+                      <YAxis hide={true} domain={[ -maxAbs, maxAbs ]} />
+                      <Tooltip 
+                        formatter={(val)=>`$${Number(val||0).toFixed(2)}`}
+                        labelFormatter={(label, payload)=>{
+                          const p = payload && payload[0] && payload[0].payload;
+                          const idx = p?.xIndex;
+                          const ts = p?.tsOriginal || p?.ts || '';
+                          return xAxisMode === 'time' ? `Time: ${ts}` : `Point #${(idx||0)+1} • ${ts}`;
+                        }}
+                      />
+                      <Area type="monotone" dataKey="cum_closed_pl" stroke="#34d399" strokeWidth={2} dot={{ r: 3, stroke: '#34d399', fill: '#34d399' }} fillOpacity={1} fill="url(#plGradient)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
