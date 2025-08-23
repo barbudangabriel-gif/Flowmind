@@ -16,6 +16,8 @@
 - Notes: All routes under /api. No hardcoded URLs. Budget default 500,000.
 
 
+- Frontend tests (2025-06-23): Analyze chart visibility fix — verify Index X-axis default, dots, thicker stroke, tooltip timestamps; start Monitor, run Analysis, confirm chart renders or show informative fallback when no closed trades.
+
 # OPTIONS MODULE IMPLEMENTATION - PHASE 1.1 COMPLETED
 #====================================================================================================
 
