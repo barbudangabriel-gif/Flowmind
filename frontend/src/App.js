@@ -265,7 +265,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       ]
     },
     {
-      title: "Options Module ⚡",
+      title: "Options Module",
       items: [
         { id: 'options-module', label: 'Options Strategy Builder', icon: Zap, color: 'from-purple-500 to-indigo-600', badge: '⚡', shortLabel: 'Options', route: '/options' },
         { id: 'options-selling', label: 'Puts Options Selling', icon: TrendingUp, color: 'from-orange-500 to-red-600', badge: '🎯', shortLabel: 'Selling', route: '/options/selling' }
