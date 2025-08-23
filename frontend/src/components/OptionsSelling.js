@@ -70,9 +70,10 @@ export default function OptionsSelling() {
     if (mode === "greedy") src = data?.table_greedy || [];
     else if (mode === "equal") src = data?.table_equal || [];
     else src = [...(data?.table_equal || []), ...(data?.table_greedy || [])];
-    const allowed = new Set(["SELL PUT", "ROLL", "COVERED CALL"]);
-    const arr = Array.isArray(src) ? src : [];
-    return arr.filter(r => allowed.has(String(r.signal || '').toUpperCase()));
+    // Include Covered Calls table if present
+    const all = [...(Array.isArray(src) ? src : []), ...((data?.cc_table ?? []))];
+    const allowed = new Set(["SELL PUT", "ROLL", "COVERED CALL", "SELL CALL", "ROLL CC", "TAKE PROFIT"]);
+    return all.filter(r => allowed.has(String(r.signal || '').toUpperCase()));
   }, [data, mode]);
 
   const summary = useMemo(() => {
