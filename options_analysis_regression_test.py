@@ -235,7 +235,14 @@ class OptionsAnalysisRegressionTester:
                 {
                     "ticker": "AAPL",
                     "shares": 100,
-                    "avg_cost": 150.0
+                    "avg_cost": 150.0,
+                    "price": 150.0,
+                    "strike": 145.0,
+                    "delta": 0.25,
+                    "dte": 30,
+                    "premium": 2.5,
+                    "iv_rank": 50.0,
+                    "vix": 20.0
                 }
             ],
             "config": {
