@@ -66,6 +66,7 @@ const OptionsSelling = React.lazy(() => import("./components/OptionsSelling"));
 const ChartTestPage = React.lazy(() => import("./components/ChartTestPage"));
 const ProfessionalChartTest = React.lazy(() => import("./components/ProfessionalChartTest"));
 const SettingsPage = React.lazy(() => import("./components/SettingsPage"));
+const IconPreview = React.lazy(() => import("./components/IconPreview"));
 const AllPortfolios = React.lazy(() => import("./components/AllPortfolios"));
 const CreatePortfolio = React.lazy(() => import("./components/CreatePortfolio"));
 const IndividualPortfolio = React.lazy(() => import("./components/IndividualPortfolio"));
