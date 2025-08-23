@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List, Dict, Any, Optional, Tuple
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timedelta
 import asyncio
 import os
 
@@ -441,6 +441,135 @@ class _MonitorService:
 
 # Singleton instance
 monitor_service = _MonitorService()
+
+# --------- Analysis (simulated from monitor logs) ---------
+class AnalysisQuery(BaseModel):
+    range: Optional[str] = Field(default="3M", description="1M|3M|6M|1Y|ALL")
+    strategies: Optional[List[str]] = None  # e.g., ["SELL PUT","ROLL","SELL CALL","ROLL CC","TAKE PROFIT","COVERED CALL"]
+    fill: Optional[str] = Field(default="mid", description="mid|bid|last (informational)")
+    slippage: float = 0.05  # $ per contract per side
+    commission: float = 0.65  # $ per contract per side
+
+async def options_analysis(q: AnalysisQuery) -> Dict[str, Any]:
+    if _db is None:
+        return {"kpi": {}, "series": [], "metrics": {}, "notes": "analysis disabled: no Mongo connection"}
+
+    # Time window
+    now = datetime.utcnow()
+    ranges = {
+        "1M": now - timedelta(days=30),
+        "3M": now - timedelta(days=90),
+        "6M": now - timedelta(days=180),
+        "1Y": now - timedelta(days=365),
+        "ALL": datetime(1970,1,1),
+    }
+    start = ranges.get((q.range or "3M").upper(), ranges["3M"])
+
+    # Fetch snapshots
+    cur = _db["options_monitor_snapshots"].find({"ts": {"$gte": start.isoformat() + "Z"}}).sort("ts", 1)
+    snaps: List[Dict[str, Any]] = [s async for s in cur]
+
+    # Trade simulation
+    open_cc: Dict[str, List[Dict[str, Any]]] = {}  # per ticker list of open calls
+    closed_trades: List[Dict[str, Any]] = []
+
+    def record_open_cc(sig: Dict[str, Any]):
+        sym = (sig.get("ticker") or "").upper()
+        open_cc.setdefault(sym, [])
+        open_cc[sym].append({
+            "opened_at": sig.get("_ts"),
+            "contracts": int(sig.get("contracts") or 0),
+            "premium_sold": float(sig.get("premium") or 0.0),
+            "strike": sig.get("strike"),
+            "dte": sig.get("dte"),
+            "delta": sig.get("delta"),
+        })
+
+    def close_from_open(sym: str, close_sig: Dict[str, Any], reason: str):
+        lst = open_cc.get(sym, [])
+        if not lst:
+            return
+        # FIFO close
+        op = lst.pop(0)
+        btc = float(close_sig.get("premium") or 0.0)
+        contracts = int(close_sig.get("contracts") or op.get("contracts") or 0)
+        # Costs (per contract, both sides)
+        costs = 2.0 * (q.commission + q.slippage)
+        pnl_per_contract = (op["premium_sold"] - btc) - costs
+        pnl_total = pnl_per_contract * contracts
+        ror = 0.0
+        try:
+            if op.get("strike"):
+                ror = (op["premium_sold"] / (float(op["strike"]) * 100.0)) * 100.0
+        except Exception:
+            ror = 0.0
+        closed_trades.append({
+            "ticker": sym,
+            "strategy": reason,
+            "opened_at": op["opened_at"],
+            "closed_at": close_sig.get("_ts"),
+            "contracts": contracts,
+            "pnl": pnl_total,
+            "ror_pct": ror,
+        })
+
+    # Iterate snapshots and build events using diffs.added
+    for s in snaps:
+        ts = s.get("ts")
+        diffs = (s.get("diffs") or {})
+        added = diffs.get("added") or []
+        for sig in added:
+            sig["_ts"] = ts
+            sig_type = (sig.get("signal") or "").upper()
+            sym = (sig.get("ticker") or "").upper()
+            if q.strategies:
+                # Filter by strategies if provided
+                if sig_type not in [st.upper() for st in q.strategies]:
+                    continue
+            if sig_type == "SELL CALL":
+                record_open_cc(sig)
+            elif sig_type in ("TAKE PROFIT", "ROLL CC"):
+                close_from_open(sym, sig, sig_type)
+            # Optionally: handle SELL PUT/ROLL pairing later
+
+    # KPI & metrics
+    wins = sum(1 for t in closed_trades if t["pnl"] > 0)
+    losses = sum(1 for t in closed_trades if t["pnl"] <= 0)
+    closed_pl = sum(t["pnl"] for t in closed_trades)
+    ror_avg = (sum(t.get("ror_pct", 0.0) for t in closed_trades) / len(closed_trades)) if closed_trades else 0.0
+    profit_factor = (sum(t["pnl"] for t in closed_trades if t["pnl"] > 0) / max(1e-9, abs(sum(t["pnl"] for t in closed_trades if t["pnl"] < 0)))) if closed_trades else 0.0
+
+    # Series cumulative
+    series = []
+    cum = 0.0
+    for t in sorted(closed_trades, key=lambda x: x["closed_at"] or ""):
+        cum += t["pnl"]
+        series.append({"ts": t["closed_at"], "cum_closed_pl": cum})
+
+    result = {
+        "kpi": {
+            "closed_pl": closed_pl,
+            "positions_closed": len(closed_trades),
+            "win_rate": (wins / len(closed_trades) * 100.0) if closed_trades else 0.0,
+            "return_on_risk_avg": ror_avg,
+        },
+        "metrics": {
+            "profit_factor": profit_factor,
+            "wins": wins,
+            "losses": losses,
+            "avg_pnl": (closed_pl / len(closed_trades)) if closed_trades else 0.0,
+            "avg_ror": ror_avg,
+        },
+        "series": series,
+        "closed_trades": closed_trades[-200:],
+        "assumptions": {
+            "fill": q.fill,
+            "slippage": q.slippage,
+            "commission": q.commission,
+            "range": q.range,
+        }
+    }
+    return result
 
 # Facade functions for server.py
 async def monitor_start(req: MonitorStartRequest) -> Dict[str, Any]:

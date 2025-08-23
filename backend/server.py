@@ -47,10 +47,11 @@ from smart_rebalancing_service import SmartRebalancingService
 # Portfolio Management
 from portfolio_management_service import PortfolioManagementService
 
-# NEW: Option Selling compute + monitor service
+# NEW: Option Selling compute + monitor service + analysis
 from options_selling_service import (
     ComputeRequest, compute_selling,
-    MonitorStartRequest, monitor_start, monitor_stop, monitor_status
+    MonitorStartRequest, monitor_start, monitor_stop, monitor_status,
+    AnalysisQuery, options_analysis
 )
 
 ROOT_DIR = Path(__file__).parent
@@ -104,8 +105,6 @@ app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# ... existing routes are below (omitted for brevity in this snippet) ...
-
 # NEW: Option Selling compute endpoint
 @api_router.post("/options/selling/compute")
 async def options_selling_compute(req: ComputeRequest):
@@ -139,6 +138,28 @@ async def options_selling_monitor_status():
         return res
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Monitor status failed: {str(e)}")
+
+# NEW: Options Selling Analysis endpoint (simulated from monitor logs)
+@api_router.get("/options/selling/analysis")
+async def options_selling_analysis(
+    range: str = Query(default="3M"),
+    strategies: Optional[str] = Query(default=None, description="Comma separated list of signals to include"),
+    fill: str = Query(default="mid"),
+    slippage: float = Query(default=0.05),
+    commission: float = Query(default=0.65),
+):
+    try:
+        q = AnalysisQuery(
+            range=range,
+            strategies=[s.strip() for s in strategies.split(',')] if strategies else None,
+            fill=fill,
+            slippage=slippage,
+            commission=commission,
+        )
+        res = await options_analysis(q)
+        return {"status": "success", "data": res}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Options analysis failed: {str(e)}")
 
 # Mount router
 app.include_router(api_router)
