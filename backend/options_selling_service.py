@@ -469,8 +469,9 @@ async def options_analysis(q: AnalysisQuery) -> Dict[str, Any]:
     cur = _db["options_monitor_snapshots"].find({"ts": {"$gte": start.isoformat() + "Z"}}).sort("ts", 1)
     snaps: List[Dict[str, Any]] = [s async for s in cur]
 
-    # Trade simulation
+    # Trade simulation stores
     open_cc: Dict[str, List[Dict[str, Any]]] = {}  # per ticker list of open calls
+    open_put: Dict[str, List[Dict[str, Any]]] = {} # per ticker list of short puts
     closed_trades: List[Dict[str, Any]] = []
 
     def record_open_cc(sig: Dict[str, Any]):
@@ -485,8 +486,20 @@ async def options_analysis(q: AnalysisQuery) -> Dict[str, Any]:
             "delta": sig.get("delta"),
         })
 
-    def close_from_open(sym: str, close_sig: Dict[str, Any], reason: str):
-        lst = open_cc.get(sym, [])
+    def record_open_put(sig: Dict[str, Any]):
+        sym = (sig.get("ticker") or "").upper()
+        open_put.setdefault(sym, [])
+        open_put[sym].append({
+            "opened_at": sig.get("_ts"),
+            "contracts": int(sig.get("contracts") or 0),
+            "premium_sold": float(sig.get("premium") or 0.0),
+            "strike": sig.get("strike"),
+            "dte": sig.get("dte"),
+            "delta": sig.get("delta"),
+        })
+
+    def close_from_open(sym: str, book: Dict[str, List[Dict[str, Any]]], close_sig: Dict[str, Any], reason: str):
+        lst = book.get(sym, [])
         if not lst:
             return
         # FIFO close
@@ -529,8 +542,12 @@ async def options_analysis(q: AnalysisQuery) -> Dict[str, Any]:
             if sig_type == "SELL CALL":
                 record_open_cc(sig)
             elif sig_type in ("TAKE PROFIT", "ROLL CC"):
-                close_from_open(sym, sig, sig_type)
-            # Optionally: handle SELL PUT/ROLL pairing later
+                close_from_open(sym, open_cc, sig, sig_type)
+            elif sig_type == "SELL PUT":
+                record_open_put(sig)
+            elif sig_type == "ROLL":
+                close_from_open(sym, open_put, sig, sig_type)
+            # Optionally: handle COVERED CALL elsewhere
 
     # KPI & metrics
     wins = sum(1 for t in closed_trades if t["pnl"] > 0)
