@@ -217,7 +217,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const menuGroups = [
     {
       title: "Home",
-      items: []
+      items: [
+        { id: 'simple-screener', label: 'Stock Search', icon: Search, color: 'from-pink-500 to-rose-500', shortLabel: 'Search' },
+        { id: 'news', label: 'Market News', icon: Newspaper, color: 'from-slate-500 to-gray-500', shortLabel: 'News' }
+      ]
     },
     {
       title: "Advanced Screener 🔍",
