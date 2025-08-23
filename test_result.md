@@ -1,5 +1,7 @@
 #====================================================================================================
 # === Update: Options Selling Monitor - Backend Integration & Tests (2025-06-22) ===
+- Frontend tests (2025-06-22): OptionsSelling Analyze exports (JSON/CSV) + Sidebar navigate fallback to /options/selling. Will validate Candidates (CC UI), Trade List (monitor), Analyze (filters, run, exports).
+
 - Initiating automated FRONTEND tests for Options Selling UI (Monitor panel, Trade List grouping, Live Positions handling).
 
 - Implemented asynchronous in-memory monitor in backend (options_selling_service.py) with 15s compute loop and diffing logic (added/removed/changed) based on key (ticker, signal, strike, dte). Added endpoints:
