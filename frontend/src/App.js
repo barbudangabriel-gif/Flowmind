@@ -5291,7 +5291,6 @@ const TradeStationAuth = () => {
     </div>
   );
 };
-*/
 
 // TradeStation Live Portfolio Component
 const TradeStationPortfolio = () => {
