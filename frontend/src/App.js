@@ -272,7 +272,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       ]
     },
     {
-      title: "Auto Options Trading 🤖",
+      title: "Auto Options Trading",
       items: [
         { id: 'auto-trading', label: 'Auto Trading Engine', icon: Bot, color: 'from-purple-500 to-indigo-600', badge: '🤖', shortLabel: 'Auto', systemActive: true },
         { id: 'trading-history', label: 'Trading History', icon: History, color: 'from-blue-500 to-cyan-600', badge: '📊', shortLabel: 'History' },
