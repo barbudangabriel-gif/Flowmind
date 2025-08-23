@@ -766,19 +766,26 @@ export default function OptionsSelling() {
               </div>
             </div>
             <div className="bg-slate-800 border border-slate-700 rounded p-4 lg:col-span-2">
-              <div className="text-slate-200 font-semibold mb-2">Closed P/L Over Time</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-slate-200 font-semibold">Closed P/L Over Time</div>
+              </div>
               {series.length === 0 && <div className="text-slate-500 text-sm">No closed trades in selected range.</div>}
               {series.length > 0 && (
-                <div className="space-y-2">
-                  {series.slice(-30).map((p, idx)=> (
-                    <div key={idx} className="flex items-center gap-2 text-xs text-slate-300">
-                      <div className="w-40 text-slate-400">{p.ts}</div>
-                      <div className="flex-1 bg-slate-700 rounded h-2 overflow-hidden">
-                        <div className={`h-2 ${p.cum_closed_pl>=0 ? 'bg-emerald-500' : 'bg-red-500'}`} style={{ width: `${Math.min(100, Math.round(Math.abs(p.cum_closed_pl)/maxAbs*100))}%` }}></div>
-                      </div>
-                      <div className="w-28 text-right">${Number(p.cum_closed_pl||0).toFixed(2)}</div>
-                    </div>
-                  ))}
+                <div style={{ width: '100%', height: 220 }}>
+                  <ResponsiveContainer>
+                    <AreaChart data={series} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="plGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#34d399" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#34d399" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="ts" hide={true} />
+                      <YAxis hide={true} />
+                      <Tooltip formatter={(val)=>`$${Number(val||0).toFixed(2)}`} labelFormatter={(l)=>`Time: ${l}`}/>
+                      <Area type="monotone" dataKey="cum_closed_pl" stroke="#34d399" fillOpacity={1} fill="url(#plGradient)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               )}
             </div>
