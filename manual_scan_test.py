@@ -149,7 +149,7 @@ async def test_api_endpoints_after_scan():
     
     import requests
     
-    base_url = "https://portfolio-view-9.preview.emergentagent.com/api"
+    base_url = "https://put-selling-dash.preview.emergentagent.com/api"
     
     try:
         # Test scanner status
