@@ -19,6 +19,7 @@ import {
   Area,
   AreaChart
 } from "recharts";
+import { Globe } from 'lucide-react';
 import {
   TrendingUp,
   TrendingDown,
