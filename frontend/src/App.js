@@ -7208,6 +7208,10 @@ function AppContent() {
         return <PerformanceAnalytics />;
       case 'news':
         return <MarketNews />;
+      case 'summary-report':
+        // open the viewer route
+        navigate('/project-report');
+        return <div className="p-6 text-center text-white">Opening report…</div>;
       default:
         return <Dashboard />;
     }
