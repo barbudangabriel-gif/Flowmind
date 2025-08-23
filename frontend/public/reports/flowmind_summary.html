@@ -161,6 +161,17 @@
       <li>Meniu TS simplificat: Authentication + Account Balance</li>
     </ul>
 
+
+    <h2>Unusual Whales – Integrare</h2>
+    <ul>
+      <li>Module UI: <b>Options Flow</b>, <b>Dark Pool</b>, <b>Congressional Trades</b> (active în meniu)</li>
+      <li>Backend: rute prefixate <span class="mono">/api/unusualwhales/…</span>, cheie în env (ex.: <span class="mono">UNUSUAL_WHALES_API_KEY</span>)</li>
+      <li>Options Flow: filtre (premium minim, volum/OI ratio, limită rezultate), auto-refresh, “Last update” și sentiment/size badges</li>
+      <li>Dark Pool: filtre volum, procent dark, sumarizări și indicatori de semnificație</li>
+      <li>Congressional Trades: filtre pe perioadă (zile), sumă minimă, partid, tip tranzacție; top reprezentanți/sectoare</li>
+      <li>Respectă regulile de mediu: fără hardcodări; toate rutele backend cu prefix <span class="mono">/api</span></li>
+    </ul>
+
     <h2>Ce s-a fixat azi</h2>
     <ul>
       <li>Grafic Analyze vizibil (Plotly), axă Index, exporturi, control X-axis ascuns</li>
