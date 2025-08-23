@@ -370,16 +370,14 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                               onClick={() => toggleSection(group.title)}
                               className="flex items-center gap-2 hover:text-slate-200 transition-colors flex-1"
                             >
+                              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                               {isDashboard && (<Home className="w-4 h-4 text-slate-300" />)}
                               {isAdvancedScreener && (<Search className="w-4 h-4 text-slate-300" />)}
-                              {group.title === 'Portfolios 💼' && (<PieChartIcon className="w-4 h-4 text-slate-300" />)}
-                              {group.title === 'Options Module ⚡' && (<Zap className="w-4 h-4 text-slate-300" />)}
-                              {group.title === 'Investment Scoring 🎯' && (<Award className="w-4 h-4 text-slate-300" />)}
-                              {group.title === 'Auto Options Trading 🤖' && (<Bot className="w-4 h-4 text-slate-300" />)}
+                              {group.title.startsWith('Portfolios') && (<PieChartIcon className="w-4 h-4 text-slate-300" />)}
+                              {group.title.startsWith('Options Module') && (<Zap className="w-4 h-4 text-slate-300" />)}
+                              {group.title.startsWith('Investment Scoring') && (<Award className="w-4 h-4 text-slate-300" />)}
+                              {group.title.startsWith('Auto Options Trading') && (<Bot className="w-4 h-4 text-slate-300" />)}
                               <span>{group.title}</span>
-                              {!group.title.startsWith('Portfolios') && (
-                                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-                              )}
                             </button>
                             
                             {/* Luna subțire în marginea EXTREMĂ dreaptă */}
