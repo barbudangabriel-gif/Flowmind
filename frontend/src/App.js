@@ -402,7 +402,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             onClick={() => {
                               if (item.route) {
                                 // Navigate to specific route
-                                navigate(item.route);
+                                try { navigate(item.route); } catch(e) {}
+                                setTimeout(() => { try { if (window && window.location && window.location.pathname !== item.route) { window.location.assign(item.route); } } catch(e) {} }, 300);
                               } else {
                                 // Set active tab for in-app sections
                                 setActiveTab(item.id);
