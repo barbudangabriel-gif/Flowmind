@@ -57,7 +57,7 @@ const demoCCInputs = {
 export default function OptionsSelling() {
   // Header controls
   const [source, setSource] = useState("TS"); // TS Budget active | Tasty skeleton
-  const [activeTab, setActiveTab] = useState("candidates"); // candidates | tradelist | live
+  const [activeTab, setActiveTab] = useState("candidates"); // candidates | tradelist | live | analyze
 
   // Engine config & inputs
   const [config, setConfig] = useState(defaultConfig);
@@ -67,7 +67,7 @@ export default function OptionsSelling() {
 
   // Covered Calls config & inputs
   const [includeCC, setIncludeCC] = useState(true);
-  const [ccConfig, setCCConfig] = useState(defaultCCConfig);
+  the analysis tab , please const [ccConfig, setCCConfig] = useState(defaultCCConfig);
   const [ccInputsText, setCCInputsText] = useState(JSON.stringify(demoCCInputs, null, 2));
 
   // Compute request/response state
@@ -94,6 +94,13 @@ export default function OptionsSelling() {
   const statusTimerRef = useRef(null);
   const MONITOR_INTERVAL = 15; // seconds (backend loop)
   const STATUS_POLL_MS = 5000; // UI refresh for status
+
+  // Analysis state
+  const [analysisRange, setAnalysisRange] = useState("3M");
+  const [analysisStrategiesText, setAnalysisStrategiesText] = useState("SELL PUT,ROLL,SELL CALL,ROLL CC,TAKE PROFIT,COVERED CALL");
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState("");
+  const [analysisData, setAnalysisData] = useState(null);
 
   // Build table for engine output
   const table = useMemo(() => {
@@ -259,6 +266,25 @@ export default function OptionsSelling() {
     }
   };
 
+  // Analysis fetcher
+  const runAnalysis = async () => {
+    try {
+      setAnalysisLoading(true); setAnalysisError("");
+      const strategies = analysisStrategiesText.split(',').map(s=>s.trim()).filter(Boolean).join(',');
+      const url = `${backendUrl}/api/options/selling/analysis?range=${encodeURIComponent(analysisRange)}${strategies?`&strategies=${encodeURIComponent(strategies)}`:''}`;
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`Analysis failed: ${resp.status}`);
+      const json = await resp.json();
+      if (json.status !== 'success') throw new Error(json.detail || 'Analysis failed');
+      setAnalysisData(json.data);
+    } catch (e) {
+      setAnalysisError(e.message);
+      setAnalysisData(null);
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Clean up on unmount
     return () => {
@@ -383,9 +409,9 @@ export default function OptionsSelling() {
       </div>
       {/* Tabs */}
       <div className="mt-3 flex items-center gap-6 text-sm">
-        {['candidates','tradelist','live'].map(tab => (
+        {['candidates','tradelist','live','analyze'].map(tab => (
           <button key={tab} onClick={()=>setActiveTab(tab)} className={`pb-2 border-b-2 ${activeTab===tab ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
-            {tab === 'candidates' ? 'Candidates' : tab === 'tradelist' ? 'Trade List' : 'Live Positions'}
+            {tab === 'candidates' ? 'Candidates' : tab === 'tradelist' ? 'Trade List' : tab === 'live' ? 'Live Positions' : 'Analyze'}
           </button>
         ))}
         {source==='TS' && (
@@ -610,6 +636,128 @@ export default function OptionsSelling() {
     );
   };
 
+  // Analyze tab (simulated from monitor logs)
+  const Analyze = () => {
+    const kpi = analysisData?.kpi || {};
+    const metrics = analysisData?.metrics || {};
+    const series = analysisData?.series || [];
+    const trades = analysisData?.closed_trades || [];
+
+    const maxAbs = series.reduce((m, p) => Math.max(m, Math.abs(p.cum_closed_pl||0)), 1);
+
+    return (
+      <div className="p-6 space-y-4">
+        <div className="bg-slate-800 border border-slate-700 rounded p-4">
+          <div className="flex flex-wrap items-end gap-4">
+            <div>
+              <div className="text-slate-300 text-sm mb-1">Range</div>
+              <select value={analysisRange} onChange={e=>setAnalysisRange(e.target.value)} className="bg-slate-700 text-slate-100 px-2 py-1 rounded">
+                {['1M','3M','6M','1Y','ALL'].map(r=> <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div className="flex-1 min-w-[240px]">
+              <div className="text-slate-300 text-sm mb-1">Strategies (comma separated)</div>
+              <input value={analysisStrategiesText} onChange={e=>setAnalysisStrategiesText(e.target.value)} className="w-full bg-slate-700 text-slate-100 px-2 py-1 rounded"/>
+            </div>
+            <div>
+              <button onClick={runAnalysis} disabled={analysisLoading} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white flex items-center gap-2">
+                <RefreshCw className={analysisLoading ? 'animate-spin' : ''} size={16}/> Run Analysis
+              </button>
+            </div>
+          </div>
+          {analysisError && <div className="mt-3 bg-red-900/60 border border-red-700 text-red-200 px-3 py-2 rounded"><AlertTriangle size={16} className="inline mr-2"/> {analysisError}</div>}
+        </div>
+
+        {/* KPI Cards */}
+        {analysisData && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-emerald-700/30 border border-emerald-700 rounded p-4">
+              <div className="text-slate-300 text-xs">Closed P/L</div>
+              <div className="text-2xl font-bold text-emerald-300">${Number(kpi.closed_pl||0).toLocaleString()}</div>
+            </div>
+            <div className="bg-blue-700/30 border border-blue-700 rounded p-4">
+              <div className="text-slate-300 text-xs">Positions Closed</div>
+              <div className="text-2xl font-bold text-blue-300">{kpi.positions_closed||0}</div>
+            </div>
+            <div className="bg-purple-700/30 border border-purple-700 rounded p-4">
+              <div className="text-slate-300 text-xs">Win Rate</div>
+              <div className="text-2xl font-bold text-purple-300">{Number(kpi.win_rate||0).toFixed(1)}%</div>
+            </div>
+            <div className="bg-amber-700/30 border border-amber-700 rounded p-4">
+              <div className="text-slate-300 text-xs">Return on Risk (Avg)</div>
+              <div className="text-2xl font-bold text-amber-300">{Number(kpi.return_on_risk_avg||0).toFixed(2)}%</div>
+            </div>
+          </div>
+        )}
+
+        {/* Metrics + Series */}
+        {analysisData && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="bg-slate-800 border border-slate-700 rounded p-4 lg:col-span-1">
+              <div className="text-slate-200 font-semibold mb-2">Metrics</div>
+              <div className="text-sm text-slate-300 space-y-1">
+                <div>Profit Factor: <span className="font-semibold">{Number(metrics.profit_factor||0).toFixed(2)}</span></div>
+                <div>Wins: <span className="font-semibold">{metrics.wins||0}</span> • Losses: <span className="font-semibold">{metrics.losses||0}</span></div>
+                <div>Avg P/L: <span className="font-semibold">${Number(metrics.avg_pnl||0).toFixed(2)}</span></div>
+                <div>Avg ROR: <span className="font-semibold">{Number(metrics.avg_ror||0).toFixed(2)}%</span></div>
+              </div>
+            </div>
+            <div className="bg-slate-800 border border-slate-700 rounded p-4 lg:col-span-2">
+              <div className="text-slate-200 font-semibold mb-2">Closed P/L Over Time</div>
+              {series.length === 0 && <div className="text-slate-500 text-sm">No closed trades in selected range.</div>}
+              {series.length > 0 && (
+                <div className="space-y-2">
+                  {series.slice(-30).map((p, idx)=> (
+                    <div key={idx} className="flex items-center gap-2 text-xs text-slate-300">
+                      <div className="w-40 text-slate-400">{p.ts}</div>
+                      <div className="flex-1 bg-slate-700 rounded h-2 overflow-hidden">
+                        <div className={`h-2 ${p.cum_closed_pl>=0 ? 'bg-emerald-500' : 'bg-red-500'}`} style={{ width: `${Math.min(100, Math.round(Math.abs(p.cum_closed_pl)/maxAbs*100))}%` }}></div>
+                      </div>
+                      <div className="w-28 text-right">${Number(p.cum_closed_pl||0).toFixed(2)}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Closed Trades */}
+        {analysisData && trades.length > 0 && (
+          <div className="bg-slate-800 border border-slate-700 rounded p-4">
+            <div className="text-slate-200 font-semibold mb-2">Recent Closed Trades</div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-slate-300 border-b border-slate-700">
+                  <th className="text-left py-2">Ticker</th>
+                  <th className="text-left py-2">Strategy</th>
+                  <th className="text-left py-2">Opened</th>
+                  <th className="text-left py-2">Closed</th>
+                  <th className="text-right py-2">Contracts</th>
+                  <th className="text-right py-2">P/L</th>
+                  <th className="text-right py-2">ROR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trades.map((t, i)=> (
+                  <tr key={i} className="border-b border-slate-800">
+                    <td className="py-2">{t.ticker}</td>
+                    <td className="py-2">{t.strategy}</td>
+                    <td className="py-2">{t.opened_at}</td>
+                    <td className="py-2">{t.closed_at}</td>
+                    <td className="py-2 text-right">{t.contracts}</td>
+                    <td className={`py-2 text-right ${t.pnl>=0?'text-emerald-400':'text-red-400'}`}>${Number(t.pnl||0).toFixed(2)}</td>
+                    <td className="py-2 text-right">{Number(t.ror_pct||0).toFixed(2)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Live positions tab (TS)
   const LivePositions = () => {
     const grouped = useMemo(() => {
@@ -693,6 +841,7 @@ export default function OptionsSelling() {
       {activeTab === 'candidates' && <Candidates />}
       {activeTab === 'tradelist' && <TradeList />}
       {activeTab === 'live' && <LivePositions />}
+      {activeTab === 'analyze' && <Analyze />}
     </div>
   );
 }
