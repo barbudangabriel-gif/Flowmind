@@ -818,31 +818,31 @@ export default function OptionsSelling() {
                 <div className="text-slate-400 text-xs mb-2">Points: {chartData.length} • Min: ${Math.min(...chartData.map(p=>p.cum_closed_pl)).toFixed(2)} • Max: ${Math.max(...chartData.map(p=>p.cum_closed_pl)).toFixed(2)}</div>
               )}
               {chartData.length > 0 && (
-                <div style={{ width: '100%', height: 220 }}>
-                  <ResponsiveContainer key={`${xAxisMode}-${chartData.length}-${analysisTheme}`}>
-                    <AreaChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="plGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#34d399" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#34d399" stopOpacity={0.1}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                      <XAxis dataKey={xAxisMode === 'time' ? 'tsLabel' : 'xIndex'} hide={false} tick={{ fill: '#94a3b8' }} allowDuplicatedCategory={false} />
-                      <YAxis hide={false} domain={[ -maxAbs, maxAbs ]} tick={{ fill: '#94a3b8' }} />
-                      <Tooltip 
-                        formatter={(val)=>`$${Number(val||0).toFixed(2)}`}
-                        labelFormatter={(label, payload)=>{
-                          const p = payload && payload[0] && payload[0].payload;
-                          const idx = p?.xIndex;
-                          const ts = p?.tsOriginal || p?.ts || '';
-                          return xAxisMode === 'time' ? `Time: ${ts}` : `Point #${(idx||0)+1} • ${ts}`;
-                        }}
-                      />
-                      <Area type="linear" dataKey="cum_closed_pl" stroke="#34d399" strokeWidth={3} dot={{ r: 5, stroke: '#34d399', fill: '#34d399' }} fillOpacity={1} fill="url(#plGradient)" isAnimationActive={false} connectNulls={true} />
-                      <Line type="linear" dataKey="cum_closed_pl" stroke="#059669" strokeWidth={1} dot={false} isAnimationActive={false} />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                <div style={{ width: '100%', height: 260 }}>
+                  <Plot
+                    data={[{
+                      x: (xAxisMode === 'time' ? chartData.map(p=>p.tsLabel) : chartData.map(p=>p.xIndex)),
+                      y: chartData.map(p=>p.cum_closed_pl),
+                      type: 'scatter',
+                      mode: 'lines+markers',
+                      line: { color: '#34d399', width: 3 },
+                      marker: { color: '#34d399', size: 6 },
+                      fill: 'tozeroy',
+                      fillcolor: 'rgba(52,211,153,0.15)'
+                    }]}
+                    layout={{
+                      autosize: true,
+                      margin: { l: 40, r: 20, t: 10, b: 30 },
+                      paper_bgcolor: 'rgba(0,0,0,0)',
+                      plot_bgcolor: 'rgba(0,0,0,0)',
+                      xaxis: { title: (xAxisMode==='time'?'Time':'Index'), color: '#94a3b8', gridcolor: '#1f2937' },
+                      yaxis: { color: '#94a3b8', gridcolor: '#1f2937' },
+                      showlegend: false
+                    }}
+                    useResizeHandler={true}
+                    style={{ width: '100%', height: '100%' }}
+                    config={{ displayModeBar: false }}
+                  />
                 </div>
               )}
             </div>
