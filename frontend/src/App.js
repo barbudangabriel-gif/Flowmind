@@ -334,7 +334,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           <nav className="space-y-6">
             {menuGroups.map((group, groupIndex) => {
               const isTradeStation = group.title === 'TradeStation 🏛️';
-              const isUnusualWhales = group.title === 'Unusual Whales 🐋';
+              const isUnusualWhales = (group.title || '').startsWith('Unusual Whales');
               const isDashboard = group.title === 'Home';
               const isAdvancedScreener = (group.title || '').startsWith('Advanced Screener');
               const isAutoTrading = group.title === 'Auto Options Trading 🤖';
