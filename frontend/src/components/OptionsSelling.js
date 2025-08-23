@@ -389,7 +389,14 @@ export default function OptionsSelling() {
 
   // Trade list tab with Monitor panel
   const TradeList = () => {
-    const diffs = monitorStatus?.diffs || { added: [], removed: [], changed: [] };
+    const allowedSignals = new Set(["SELL PUT", "ROLL"]);
+    const diffsRaw = monitorStatus?.diffs || { added: [], removed: [], changed: [] };
+    const filterSignal = (s = {}) => allowedSignals.has(String(s.signal || '').toUpperCase());
+    const diffs = {
+      added: (diffsRaw.added || []).filter(filterSignal),
+      removed: (diffsRaw.removed || []).filter(filterSignal),
+      changed: (diffsRaw.changed || []).filter(c => filterSignal(c?.to) || filterSignal(c?.from)),
+    };
     const lastRun = monitorStatus?.last_run_at ? new Date(monitorStatus.last_run_at).toLocaleTimeString() : '-';
     return (
       <div className="p-6 space-y-4">
