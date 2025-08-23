@@ -236,7 +236,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     {
       title: "Investment Scoring 🎯",
       items: [
-        { id: 'investments', label: 'Investment Scoring', icon: Award, color: 'from-amber-500 to-orange-500', badge: '🎯', shortLabel: 'Score' },
+        { id: 'investments', label: 'Investment Scoring', icon: Award, color: 'from-amber-500 to-orange-500', shortLabel: 'Score' },
         { id: 'investment-scanner', label: 'Stock Scanner', icon: Search, color: 'from-green-500 to-emerald-500', badge: '🔍', shortLabel: 'Scanner', route: '/investment-scoring-scanner' }
       ]
     },
