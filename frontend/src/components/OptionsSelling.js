@@ -389,7 +389,7 @@ export default function OptionsSelling() {
 
   // Trade list tab with Monitor panel
   const TradeList = () => {
-    const allowedSignals = new Set(["SELL PUT", "ROLL"]);
+    const allowedSignals = new Set(["SELL PUT", "ROLL", "COVERED CALL"]);
     const diffsRaw = monitorStatus?.diffs || { added: [], removed: [], changed: [] };
     const filterSignal = (s = {}) => allowedSignals.has(String(s.signal || '').toUpperCase());
     const diffs = {
