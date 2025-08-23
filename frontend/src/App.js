@@ -7246,6 +7246,16 @@ function AppContent() {
               } 
             />
             
+            {/* Options Selling Route */}
+            <Route 
+              path="/options/selling" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Options Selling" />}>
+                  <OptionsSelling />
+                </Suspense>
+              } 
+            />
+            
             {/* Investment Scoring Scanner Route */}
             <Route 
               path="/investment-scoring-scanner" 
