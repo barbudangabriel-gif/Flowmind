@@ -7296,8 +7296,12 @@ function AppContent() {
               } 
             />
             
-            {/* Default Route - renders based on activeTab */}
-            <Route path="/*" element={renderContent()} />
+            {/* Default Route - renders based on activeTab, but exclude options paths */}
+            <Route path="/*" element={
+              window.location.pathname.startsWith('/options/')
+                ? (<div />)
+                : renderContent()
+            } />
           </Routes>
         </div>
       </main>
