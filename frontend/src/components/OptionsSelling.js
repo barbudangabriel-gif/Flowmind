@@ -70,7 +70,9 @@ export default function OptionsSelling() {
     if (mode === "greedy") src = data?.table_greedy || [];
     else if (mode === "equal") src = data?.table_equal || [];
     else src = [...(data?.table_equal || []), ...(data?.table_greedy || [])];
-    return Array.isArray(src) ? src : [];
+    const allowed = new Set(["SELL PUT", "ROLL"]);
+    const arr = Array.isArray(src) ? src : [];
+    return arr.filter(r => allowed.has(String(r.signal || '').toUpperCase()));
   }, [data, mode]);
 
   const summary = useMemo(() => {
