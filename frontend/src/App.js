@@ -241,7 +241,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       ]
     },
     {
-      title: "Unusual Whales 🐋",
+      title: "Unusual Whales",
       items: [
         { id: 'options-flow', label: 'Options Flow', icon: Activity, color: 'from-cyan-500 to-blue-600', badge: '📈', shortLabel: 'Flow' },
         { id: 'dark-pool', label: 'Dark Pool', icon: Eye, color: 'from-gray-600 to-slate-700', badge: '🌊', shortLabel: 'Dark' },
