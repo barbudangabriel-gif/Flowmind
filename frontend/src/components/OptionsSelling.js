@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import { ChevronDown, Settings, RefreshCw, AlertTriangle, Database, Zap, Play, Square, Clock, Download } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Line, CartesianGrid } from 'recharts';
+import Plot from 'react-plotly.js';
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
