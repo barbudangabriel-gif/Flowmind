@@ -439,9 +439,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                                 </div>
                                 {/* System Active indicator for Auto Options Trading */}
                                 {item.systemActive && (
-                                  <div className="flex items-center space-x-1 mt-1">
+                                  <div className="flex items-center space-x-1 mt-1 opacity-80">
                                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                                    <span className="text-xs text-emerald-400">System Active</span>
+                                    <span className="text-xs text-emerald-300">System Active</span>
                                   </div>
                                 )}
                               </div>
