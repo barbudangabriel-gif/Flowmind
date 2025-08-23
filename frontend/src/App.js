@@ -217,9 +217,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const menuGroups = [
     {
       title: "Home",
-      items: [
-        { id: 'dashboard', label: 'Home', icon: null, color: 'from-blue-500 to-cyan-500', shortLabel: 'Home' }
-      ]
+      items: []
     },
     {
       title: "Advanced Screener 🔍",
