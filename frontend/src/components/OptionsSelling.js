@@ -102,6 +102,7 @@ export default function OptionsSelling() {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState("");
   const [analysisData, setAnalysisData] = useState(null);
+  const [analysisTheme, setAnalysisTheme] = useState("default"); // default | envato
 
   // Build table for engine output
   const table = useMemo(() => {
