@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
-import { ChevronDown, Settings, RefreshCw, AlertTriangle, Database, Zap, Play, Square, Clock } from "lucide-react";
+import { ChevronDown, Settings, RefreshCw, AlertTriangle, Database, Zap, Play, Square, Clock, Download } from "lucide-react";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -285,6 +285,44 @@ export default function OptionsSelling() {
     } finally {
       setAnalysisLoading(false);
     }
+  };
+
+  // Export helpers
+  const exportJSON = () => {
+    if (!analysisData?.closed_trades) return;
+    const payload = analysisData.closed_trades;
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    const name = `closed_trades_${analysisRange}${analysisTicker?`_${analysisTicker}`:''}_${ts}.json`;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const toCSV = (rows) => {
+    if (!rows || rows.length === 0) return '';
+    const cols = ["ticker","strategy","opened_at","closed_at","contracts","pnl","ror_pct"];
+    const header = cols.join(',');
+    const lines = rows.map(r => cols.map(k => {
+      const v = r[k];
+      if (v === null || v === undefined) return '';
+      const s = String(v).replace(/"/g, '""');
+      return (s.includes(',') || s.includes('"') || s.includes('\n')) ? `"${s}"` : s;
+    }).join(','));
+    return [header, ...lines].join('\n');
+  };
+
+  const exportCSV = () => {
+    if (!analysisData?.closed_trades) return;
+    const csv = toCSV(analysisData.closed_trades);
+    const ts = new Date().toISOString().replace(/[:.]/g, '-');
+    const name = `closed_trades_${analysisRange}${analysisTicker?`_${analysisTicker}`:''}_${ts}.csv`;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
@@ -670,6 +708,16 @@ export default function OptionsSelling() {
                 <RefreshCw className={analysisLoading ? 'animate-spin' : ''} size={16}/> Run Analysis
               </button>
             </div>
+            {analysisData && trades.length > 0 && (
+              <div className="ml-auto flex items-center gap-2">
+                <button onClick={exportJSON} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-white flex items-center gap-2">
+                  <Download size={16}/> Export JSON
+                </button>
+                <button onClick={exportCSV} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-white flex items-center gap-2">
+                  <Download size={16}/> Export CSV
+                </button>
+              </div>
+            )}
           </div>
           {analysisError && <div className="mt-3 bg-red-900/60 border border-red-700 text-red-200 px-3 py-2 rounded"><AlertTriangle size={16} className="inline mr-2"/> {analysisError}</div>}
         </div>
@@ -732,6 +780,14 @@ export default function OptionsSelling() {
         {analysisData && trades.length > 0 && (
           <div className="bg-slate-800 border border-slate-700 rounded p-4">
             <div className="text-slate-200 font-semibold mb-2">Recent Closed Trades</div>
+            <div className="mb-2 flex items-center gap-2">
+              <button onClick={exportJSON} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-white flex items-center gap-2">
+                <Download size={16}/> Export JSON
+              </button>
+              <button onClick={exportCSV} className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-white flex items-center gap-2">
+                <Download size={16}/> Export CSV
+              </button>
+            </div>
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-slate-300 border-b border-slate-700">
