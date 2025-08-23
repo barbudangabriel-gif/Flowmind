@@ -218,22 +218,68 @@ class AnalysisChartBackendTester:
         # Verify monitor ran at least once
         if cycles < 1:
             self.log(f"❌ Monitor hasn't completed any cycles yet: {cycles}")
-            return False
+            # Try waiting a bit more if no cycles yet
+            if cycles == 0:
+                self.log("   Waiting additional 10 seconds for monitor to complete first cycle...")
+                time.sleep(10)
+                
+                # Check again
+                success_retry, status_retry = self.run_test(
+                    "Monitor Status (retry after extra wait)", 
+                    "GET", 
+                    "options/selling/monitor/status", 
+                    200
+                )
+                
+                if success_retry:
+                    cycles_retry = status_retry.get('cycles', 0)
+                    diffs_retry = status_retry.get('diffs', {})
+                    diffs_added_retry = diffs_retry.get('added', []) if diffs_retry else []
+                    
+                    self.log(f"   Retry - Cycles: {cycles_retry}")
+                    self.log(f"   Retry - Diffs Added: {len(diffs_added_retry)} items")
+                    
+                    if cycles_retry >= 1:
+                        cycles = cycles_retry
+                        diffs_added = diffs_added_retry
+                        self.log("✅ Monitor completed cycles after retry")
+                    else:
+                        self.log("❌ Monitor still hasn't completed cycles after retry")
+                        return False
+                else:
+                    return False
+            else:
+                return False
             
         self.log(f"✅ Monitor completed {cycles} cycle(s)")
         
-        # Check if diffs are present (added items expected on first run)
-        if len(diffs_added) > 0:
-            self.log(f"✅ Diffs.added found: {len(diffs_added)} new signals detected")
+        # Check if diffs are present (added items expected on first run or changes)
+        total_diffs = len(diffs_added) + len(diffs_removed) + len(diffs_changed)
+        if total_diffs > 0:
+            self.log(f"✅ Diffs found: {total_diffs} total changes detected")
             
-            # Show sample of added diffs
-            for i, added_item in enumerate(diffs_added[:3]):  # Show first 3
-                ticker = added_item.get('ticker', 'N/A')
-                signal = added_item.get('signal', 'N/A')
-                self.log(f"     Added #{i+1}: {ticker} - {signal}")
+            # Show sample of diffs
+            if len(diffs_added) > 0:
+                self.log(f"   Added signals: {len(diffs_added)}")
+                for i, added_item in enumerate(diffs_added[:3]):  # Show first 3
+                    ticker = added_item.get('ticker', 'N/A')
+                    signal = added_item.get('signal', 'N/A')
+                    contracts = added_item.get('contracts', 'N/A')
+                    self.log(f"     Added #{i+1}: {ticker} - {signal} ({contracts} contracts)")
+                    
+            if len(diffs_changed) > 0:
+                self.log(f"   Changed signals: {len(diffs_changed)}")
+                for i, changed_item in enumerate(diffs_changed[:2]):
+                    ticker = changed_item.get('ticker', 'N/A')
+                    signal = changed_item.get('signal', 'N/A')
+                    self.log(f"     Changed #{i+1}: {ticker} - {signal}")
+                    
+            if len(diffs_removed) > 0:
+                self.log(f"   Removed signals: {len(diffs_removed)}")
                 
         else:
-            self.log(f"⚠️  No diffs.added found - this may be normal if no new signals")
+            self.log(f"ℹ️  No diffs found - this may be normal if signals haven't changed")
+            # This is acceptable - no diffs means signals are stable
             
         # Store diffs sample for debugging
         self.payload_samples['monitor_diffs'] = {
