@@ -432,13 +432,15 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             )}
                             
                             {/* Icon with background */}
-                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
-                              isActive 
-                                ? 'bg-white/20' 
-                                : 'bg-slate-600/30 group-hover:bg-slate-600/50'
-                            }`}>
-                              <Icon size={18} className={isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'} />
-                            </div>
+                            {Icon && (
+                              <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
+                                isActive 
+                                  ? 'bg-white/20' 
+                                  : 'bg-slate-600/30 group-hover:bg-slate-600/50'
+                              }`}>
+                                <Icon size={18} className={isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'} />
+                              </div>
+                            )}
                             
                             {/* Label */}
                             {!isCollapsed && (
