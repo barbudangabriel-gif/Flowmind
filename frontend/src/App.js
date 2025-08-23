@@ -331,7 +331,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           </div>
 
           {/* Navigation Groups */}
-          <nav className="space-y-6">
+          <nav className="space-y-6 relative">
+            <div className="absolute left-2 top-0 bottom-0 border-l border-slate-700/60 pointer-events-none"></div>
             {menuGroups.map((group, groupIndex) => {
               const isTradeStation = group.title === 'TradeStation 🏛️';
               const isUnusualWhales = (group.title || '').startsWith('Unusual Whales');
