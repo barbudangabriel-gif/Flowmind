@@ -3,11 +3,29 @@ from typing import List, Dict, Any, Optional, Tuple
 from pydantic import BaseModel, Field
 from datetime import datetime
 import asyncio
+import os
 
 from sell_puts_engine import (
     Config, Position, allocate_contracts_equal, greedy_fill_by_risk,
     summarize, to_table, collect_signals
 )
+
+# Optional Mongo logging (simulated analysis source)
+try:
+    from motor.motor_asyncio import AsyncIOMotorClient  # type: ignore
+except Exception:  # pragma: no cover
+    AsyncIOMotorClient = None  # type: ignore
+
+_MONGO_URL = os.environ.get("MONGO_URL")
+_DB_NAME = os.environ.get("DB_NAME")
+_mongo_client = None
+_db = None
+if AsyncIOMotorClient and _MONGO_URL and _DB_NAME:
+    try:
+        _mongo_client = AsyncIOMotorClient(_MONGO_URL)
+        _db = _mongo_client[_DB_NAME]
+    except Exception:
+        _db = None
 
 # -----------------------------
 # Core compute request/response
@@ -123,6 +141,29 @@ class MonitorSnapshot(BaseModel):
     diffs: MonitorDiffs = MonitorDiffs()
     cycles: int = 0
 
+async def _log_snapshot_to_mongo(snap: MonitorSnapshot, cfg: Optional[ConfigIn]):
+    if not _db:
+        return
+    try:
+        doc = {
+            "ts": datetime.utcnow().isoformat() + "Z",
+            "mode": snap.mode,
+            "interval_seconds": snap.interval_seconds,
+            "summary": snap.summary or {},
+            "signals": snap.signals_current or [],
+            "diffs": {
+                "added": snap.diffs.added if snap.diffs else [],
+                "removed": snap.diffs.removed if snap.diffs else [],
+                "changed": snap.diffs.changed if snap.diffs else [],
+            },
+            "cycles": snap.cycles,
+            "config": cfg.dict() if cfg else {},
+        }
+        await _db["options_monitor_snapshots"].insert_one(doc)
+    except Exception:
+        # Best effort logging; do not break monitor
+        pass
+
 class _MonitorService:
     def __init__(self):
         self._task: Optional[asyncio.Task] = None
@@ -211,6 +252,9 @@ class _MonitorService:
                 )
                 async with self._lock:
                     self._snapshot = snap
+
+                # Async log to Mongo (best effort)
+                await _log_snapshot_to_mongo(snap, self._req.config)
             except Exception as e:
                 # Store error details in snapshot while keeping loop alive
                 err_snap = MonitorSnapshot(
