@@ -661,6 +661,10 @@ export default function OptionsSelling() {
               <div className="text-slate-300 text-sm mb-1">Strategies (comma separated)</div>
               <input value={analysisStrategiesText} onChange={e=>setAnalysisStrategiesText(e.target.value)} className="w-full bg-slate-700 text-slate-100 px-2 py-1 rounded"/>
             </div>
+            <div className="min-w-[160px]">
+              <div className="text-slate-300 text-sm mb-1">Ticker (optional)</div>
+              <input placeholder="AAPL" value={analysisTicker} onChange={e=>setAnalysisTicker(e.target.value.toUpperCase())} className="w-full bg-slate-700 text-slate-100 px-2 py-1 rounded"/>
+            </div>
             <div>
               <button onClick={runAnalysis} disabled={analysisLoading} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white flex items-center gap-2">
                 <RefreshCw className={analysisLoading ? 'animate-spin' : ''} size={16}/> Run Analysis
