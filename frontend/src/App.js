@@ -226,7 +226,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       ]
     },
     {
-      title: "Advanced Screener 🔍",
+      title: "Advanced Screener",
       items: [
         { id: 'screener', label: 'Advanced Screener', icon: Database, color: 'from-violet-500 to-purple-500', shortLabel: 'Screen' },
         { id: 'technical', label: 'Technical Analysis', icon: BarChart3, color: 'from-indigo-500 to-purple-500', shortLabel: 'Tech' },
