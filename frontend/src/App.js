@@ -375,7 +375,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             </button>
                             
                             {/* Luna subțire în marginea EXTREMĂ dreaptă */}
-                            {isDashboard && (
+                            {false && (
                               <div className="flex-shrink-0 ml-4">
                                 <button 
                                   onClick={(e) => {
