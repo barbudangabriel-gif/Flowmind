@@ -369,8 +369,11 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                               className="flex items-center gap-2 hover:text-slate-200 transition-colors flex-1"
                             >
                               {isDashboard && (<Home className="w-4 h-4 text-slate-300" />)}
+                              {isAdvancedScreener && (<Search className="w-4 h-4 text-slate-300" />)}
                               <span>{group.title}</span>
-                              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                              {!isAdvancedScreener && (
+                                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                              )}
                             </button>
                             
                             {/* Luna subțire în marginea EXTREMĂ dreaptă */}
