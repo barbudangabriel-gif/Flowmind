@@ -705,6 +705,13 @@ export default function OptionsSelling() {
               <input placeholder="AAPL" value={analysisTicker} onChange={e=>setAnalysisTicker(e.target.value.toUpperCase())} className="w-full bg-slate-700 text-slate-100 px-2 py-1 rounded"/>
             </div>
             <div>
+              <div className="text-slate-300 text-sm mb-1">Theme</div>
+              <select value={analysisTheme} onChange={e=>setAnalysisTheme(e.target.value)} className="bg-slate-700 text-slate-100 px-2 py-1 rounded">
+                <option value="default">Default</option>
+                <option value="envato">Envato – Data Analyzer (vanilla)</option>
+              </select>
+            </div>
+            <div>
               <button onClick={runAnalysis} disabled={analysisLoading} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white flex items-center gap-2">
                 <RefreshCw className={analysisLoading ? 'animate-spin' : ''} size={16}/> Run Analysis
               </button>
