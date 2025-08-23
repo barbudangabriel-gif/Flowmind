@@ -545,7 +545,7 @@ async def options_analysis(q: AnalysisQuery) -> Dict[str, Any]:
     losses = sum(1 for t in closed_trades if t["pnl"] <= 0)
     closed_pl = sum(t["pnl"] for t in closed_trades)
     ror_avg = (sum(t.get("ror_pct", 0.0) for t in closed_trades) / len(closed_trades)) if closed_trades else 0.0
-    profit_factor = (sum(t["pnl"] for t in closed_trades if t["pnl"] > 0) / max(1e-9, abs(sum(t["pnl"] for t in closed_trades if t["pnl"] &lt; 0)))) if closed_trades else 0.0
+    profit_factor = (sum(t["pnl"] for t in closed_trades if t["pnl"] > 0) / max(1e-9, abs(sum(t["pnl"] for t in closed_trades if t["pnl"] < 0)))) if closed_trades else 0.0
 
     # Series cumulative
     series = []
