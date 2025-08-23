@@ -377,7 +377,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                               {group.title === 'Investment Scoring 🎯' && (<Award className="w-4 h-4 text-slate-300" />)}
                               {group.title === 'Auto Options Trading 🤖' && (<Bot className="w-4 h-4 text-slate-300" />)}
                               <span>{group.title}</span>
-                              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                              {group.title !== 'Portfolios 💼' && (
+                                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                              )}
                             </button>
                             
                             {/* Luna subțire în marginea EXTREMĂ dreaptă */}
