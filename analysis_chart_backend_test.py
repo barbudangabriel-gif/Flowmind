@@ -74,6 +74,19 @@ class AnalysisChartBackendTester:
         self.log("=" * 80)
         self.log("📋 OBJECTIVE: Test monitor start → wait → check diffs → stop workflow")
         
+        # Step 0: Stop any existing monitor first
+        self.log("\n🛑 Step 0: Stop any existing monitor")
+        try:
+            stop_response = self.run_test(
+                "Monitor Stop (cleanup)", 
+                "POST", 
+                "options/selling/monitor/stop", 
+                200
+            )
+            self.log("   Existing monitor stopped (if any)")
+        except:
+            self.log("   No existing monitor to stop")
+        
         # Step 1: Start monitor with demo payload (equal mode, 15s)
         self.log("\n📊 Step 1: Starting monitor with demo payload (equal mode, 15s)")
         
