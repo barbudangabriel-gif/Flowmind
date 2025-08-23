@@ -252,7 +252,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     {
       title: "Portfolios 💼",
       items: [
-        { id: 'portfolios', label: 'All Portfolios', icon: Briefcase, color: 'from-blue-500 to-indigo-600', shortLabel: 'All', route: '/portfolios' },
+        { id: 'portfolios', label: 'All Portfolios', icon: PieChartIcon, color: 'from-blue-500 to-indigo-600', shortLabel: 'All', route: '/portfolios' },
         { id: 'ts-main', label: 'TS MAIN', icon: Briefcase, color: 'from-indigo-500 to-purple-600', shortLabel: 'Main', route: '/portfolios/tradestation-main' },
         { id: 'portfolio-create', label: 'Create Portfolio', icon: Plus, color: 'from-green-500 to-emerald-600', shortLabel: 'Create', route: '/portfolios/create' }
       ]
