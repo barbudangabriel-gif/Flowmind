@@ -268,7 +268,7 @@ class MonitorSnapshot(BaseModel):
     cycles: int = 0
 
 async def _log_snapshot_to_mongo(snap: MonitorSnapshot, cfg: Optional[ConfigIn]):
-    if not _db:
+    if _db is None:
         return
     try:
         doc = {
