@@ -725,16 +725,8 @@ export default function OptionsSelling() {
               </select>
             </div>
             {/* New: Chart controls */}
-            <div>
-              <div className="text-slate-300 text-sm mb-1">X-axis</div>
-              <select value={xAxisMode} onChange={e=>setXAxisMode(e.target.value)} className="bg-slate-700 text-slate-100 px-2 py-1 rounded">
-                <option value="index">Index</option>
-                <option value="time">Time</option>
-              </select>
-            </div>
-            <label className="flex items-center gap-2 text-slate-300 text-sm">
-              <input type="checkbox" checked={deOverlapPoints} onChange={(e)=>setDeOverlapPoints(e.target.checked)} /> De-overlap points
-            </label>
+            {/* X-axis control hidden by request; default remains Index */}
+            {/* De-overlap points hidden as well */}
             <div>
               <button onClick={runAnalysis} disabled={analysisLoading} className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white flex items-center gap-2">
                 <RefreshCw className={analysisLoading ? 'animate-spin' : ''} size={16}/> Run Analysis
