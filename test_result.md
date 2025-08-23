@@ -324,7 +324,7 @@ frontend:
     implemented: true
     working: false
     file: "/app/frontend/src/components/OptionsSelling.js"
-    stuck_count: 4
+    stuck_count: 5
     priority: "high"
     needs_retesting: false
     status_history:
