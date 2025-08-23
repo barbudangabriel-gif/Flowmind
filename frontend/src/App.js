@@ -504,7 +504,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                         )}
                         
                         {/* Dark Mode Toggle for collapsed state - Show after Market News */}
-                        {isNewsItem && isCollapsed && (
+                        {false && (
                           <div className="mt-2 flex justify-center">
                             <button
                               onClick={toggleDarkMode}
