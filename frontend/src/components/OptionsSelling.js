@@ -272,7 +272,8 @@ export default function OptionsSelling() {
     try {
       setAnalysisLoading(true); setAnalysisError("");
       const strategies = analysisStrategiesText.split(',').map(s=>s.trim()).filter(Boolean).join(',');
-      const url = `${backendUrl}/api/options/selling/analysis?range=${encodeURIComponent(analysisRange)}${strategies?`&strategies=${encodeURIComponent(strategies)}`:''}`;
+      const base = `${backendUrl}/api/options/selling/analysis?range=${encodeURIComponent(analysisRange)}${strategies?`&strategies=${encodeURIComponent(strategies)}`:''}`;
+      const url = analysisTicker ? `${base}&ticker=${encodeURIComponent(analysisTicker)}` : base;
       const resp = await fetch(url);
       if (!resp.ok) throw new Error(`Analysis failed: ${resp.status}`);
       const json = await resp.json();
