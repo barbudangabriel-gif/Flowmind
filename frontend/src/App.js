@@ -258,6 +258,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       title: "TradeStation 🏛️",
       items: [
         { id: 'ts-auth', label: 'Authentication', icon: Settings, color: 'from-blue-500 to-indigo-600', shortLabel: 'Auth' },
+        { id: 'ts-main', label: 'TS MAIN', icon: Briefcase, color: 'from-indigo-500 to-purple-600', shortLabel: 'Main', route: '/portfolios/tradestation-main' },
         { id: 'ts-portfolio', label: 'Live Portfolio', icon: Briefcase, color: 'from-emerald-500 to-green-600', shortLabel: 'Live' },
         { id: 'ts-balance', label: 'Account Balance', icon: DollarSign, color: 'from-green-500 to-emerald-600', shortLabel: 'Balance' },
         { id: 'ts-trading', label: 'Live Trading', icon: Zap, color: 'from-red-500 to-pink-600', shortLabel: 'Trade' },
