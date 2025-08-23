@@ -98,6 +98,7 @@ export default function OptionsSelling() {
   // Analysis state
   const [analysisRange, setAnalysisRange] = useState("3M");
   const [analysisStrategiesText, setAnalysisStrategiesText] = useState("SELL PUT,ROLL,SELL CALL,ROLL CC,TAKE PROFIT,COVERED CALL");
+  const [analysisTicker, setAnalysisTicker] = useState("");
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState("");
   const [analysisData, setAnalysisData] = useState(null);
