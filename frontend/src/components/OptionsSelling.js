@@ -17,6 +17,16 @@ const defaultConfig = {
   dynamic_risk: true,
 };
 
+const defaultCCConfig = {
+  cc_delta_min: 0.15,
+  cc_delta_max: 0.30,
+  cc_dte_min: 20,
+  cc_dte_max: 40,
+  cc_roll_delta_threshold: 0.35,
+  cc_roll_dte_threshold: 10,
+  cc_take_profit_remaining_threshold: 0.30,
+};
+
 const demoPositions = [
   { ticker: "TSLA", price: 329, strike: 320, delta: 0.28, dte: 30, premium: 5.5, iv_rank: 55, vix: 20, selected: true },
   { ticker: "AAPL", price: 231, strike: 230, delta: 0.27, dte: 28, premium: 2.8, iv_rank: 50, vix: 20, selected: true },
@@ -26,6 +36,23 @@ const demoPositions = [
   { ticker: "QQQ",  price: 563, strike: 560, delta: 0.27, dte: 22, premium: 7.2, iv_rank: 52, vix: 20, selected: true },
   { ticker: "PLTR", price: 156, strike: 155, delta: 0.29, dte: 29, premium: 1.8, iv_rank: 58, vix: 20, selected: true },
 ];
+
+const demoCCInputs = {
+  cc_inputs: [
+    {
+      ticker: "TSLA",
+      shares_owned: 300,
+      open_cc_contracts: 1,
+      candidate_call: { strike: 250, delta: 0.2, dte: 30, premium: 2.5 }
+    },
+    {
+      ticker: "NVDA",
+      shares_owned: 200,
+      open_cc_contracts: 2,
+      open_cc_state: { delta: 0.4, dte: 8, premium_sold: 3.0, premium_mark: 2.2 }
+    }
+  ]
+};
 
 export default function OptionsSelling() {
   // Header controls
@@ -37,6 +64,11 @@ export default function OptionsSelling() {
   const [mode, setMode] = useState("equal");
   const [positionsText, setPositionsText] = useState(JSON.stringify({ positions: demoPositions }, null, 2));
   const [watchlist, setWatchlist] = useState(["AAPL","TSLA","NVDA","AMZN","SPY","QQQ","PLTR"]);
+
+  // Covered Calls config & inputs
+  const [includeCC, setIncludeCC] = useState(true);
+  const [ccConfig, setCCConfig] = useState(defaultCCConfig);
+  const [ccInputsText, setCCInputsText] = useState(JSON.stringify(demoCCInputs, null, 2));
 
   // Compute request/response state
   const [loading, setLoading] = useState(false);
@@ -110,11 +142,22 @@ export default function OptionsSelling() {
       } catch (e) {
         throw new Error("Positions JSON invalid");
       }
+      let cc_inputs = [];
+      if (includeCC) {
+        try {
+          const parsedCC = JSON.parse(ccInputsText);
+          cc_inputs = parsedCC.cc_inputs || parsedCC || [];
+          if (!Array.isArray(cc_inputs)) throw new Error();
+        } catch {
+          throw new Error("CC Inputs JSON invalid");
+        }
+      }
       const body = {
         positions: payloadPositions,
         config,
         mode,
         watchlist,
+        ...(includeCC ? { cc_config: ccConfig, cc_inputs } : {}),
       };
       const resp = await fetch(`${backendUrl}/api/options/selling/compute`, {
         method: "POST",
@@ -144,12 +187,23 @@ export default function OptionsSelling() {
       } catch (e) {
         throw new Error("Positions JSON invalid");
       }
+      let cc_inputs = [];
+      if (includeCC) {
+        try {
+          const parsedCC = JSON.parse(ccInputsText);
+          cc_inputs = parsedCC.cc_inputs || parsedCC || [];
+          if (!Array.isArray(cc_inputs)) throw new Error();
+        } catch {
+          throw new Error("CC Inputs JSON invalid");
+        }
+      }
       const body = {
         positions: payloadPositions,
         config,
         mode,
         watchlist,
         interval_seconds: MONITOR_INTERVAL,
+        ...(includeCC ? { cc_config: ccConfig, cc_inputs } : {}),
       };
       const resp = await fetch(`${backendUrl}/api/options/selling/monitor/start`, {
         method: "POST",
@@ -385,12 +439,36 @@ export default function OptionsSelling() {
           <input value={watchlist.join(',')} onChange={e=>setWatchlist(e.target.value.split(',').map(s=>s.trim()).filter(Boolean))} className="w-full bg-slate-700 rounded px-2 py-1"/>
         </div>
       </div>
+
+      {/* Covered Calls Section */}
+      <div className="bg-slate-800 border border-slate-700 rounded p-4 lg:col-span-3">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2 text-slate-200"><Settings size={16}/> Covered Calls (post-assignment)</div>
+          <label className="flex items-center gap-2 text-sm text-slate-300">
+            <input type="checkbox" checked={includeCC} onChange={(e)=>setIncludeCC(e.target.checked)} /> Include CC
+          </label>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 text-sm">
+          <label className="flex flex-col">Δ min<input type="number" step="0.01" value={ccConfig.cc_delta_min} onChange={e=>setCCConfig({...ccConfig, cc_delta_min: parseFloat(e.target.value||0)})} className="bg-slate-700 rounded px-2 py-1"/></label>
+          <label className="flex flex-col">Δ max<input type="number" step="0.01" value={ccConfig.cc_delta_max} onChange={e=>setCCConfig({...ccConfig, cc_delta_max: parseFloat(e.target.value||0)})} className="bg-slate-700 rounded px-2 py-1"/></label>
+          <label className="flex flex-col">DTE min<input type="number" value={ccConfig.cc_dte_min} onChange={e=>setCCConfig({...ccConfig, cc_dte_min: parseInt(e.target.value||0)})} className="bg-slate-700 rounded px-2 py-1"/></label>
+          <label className="flex flex-col">DTE max<input type="number" value={ccConfig.cc_dte_max} onChange={e=>setCCConfig({...ccConfig, cc_dte_max: parseInt(e.target.value||0)})} className="bg-slate-700 rounded px-2 py-1"/></label>
+          <label className="flex flex-col">Roll Δ<input type="number" step="0.01" value={ccConfig.cc_roll_delta_threshold} onChange={e=>setCCConfig({...ccConfig, cc_roll_delta_threshold: parseFloat(e.target.value||0)})} className="bg-slate-700 rounded px-2 py-1"/></label>
+          <label className="flex flex-col">Roll DTE<input type="number" value={ccConfig.cc_roll_dte_threshold} onChange={e=>setCCConfig({...ccConfig, cc_roll_dte_threshold: parseInt(e.target.value||0)})} className="bg-slate-700 rounded px-2 py-1"/></label>
+          <label className="flex flex-col">TP remaining ≤<input type="number" step="0.01" value={ccConfig.cc_take_profit_remaining_threshold} onChange={e=>setCCConfig({...ccConfig, cc_take_profit_remaining_threshold: parseFloat(e.target.value||0)})} className="bg-slate-700 rounded px-2 py-1"/></label>
+        </div>
+        <div className="mt-3">
+          <div className="mb-1 text-slate-200 text-sm">CC Inputs JSON (shares/open CC/candidate/open state)</div>
+          <textarea value={ccInputsText} onChange={(e)=>setCCInputsText(e.target.value)} className="w-full h-40 bg-slate-900 border border-slate-700 rounded p-2 text-xs"></textarea>
+          <div className="text-xs text-slate-400 mt-2">Hint: contracts SELL CALL = (shares_owned//100) - open_cc_contracts; ROLL CC dacă Δ&gt;{ccConfig.cc_roll_delta_threshold} sau DTE&lt;{ccConfig.cc_roll_dte_threshold}; TAKE PROFIT dacă premium_mark/premium_sold ≤ {ccConfig.cc_take_profit_remaining_threshold}</div>
+        </div>
+      </div>
     </div>
   );
 
   // Trade list tab with Monitor panel
   const TradeList = () => {
-    const allowedSignals = new Set(["SELL PUT", "ROLL", "COVERED CALL"]);
+    const allowedSignals = new Set(["SELL PUT", "ROLL", "COVERED CALL", "SELL CALL", "ROLL CC", "TAKE PROFIT"]);
     const diffsRaw = monitorStatus?.diffs || { added: [], removed: [], changed: [] };
     const filterSignal = (s = {}) => allowedSignals.has(String(s.signal || '').toUpperCase());
     const diffs = {
@@ -399,6 +477,7 @@ export default function OptionsSelling() {
       changed: (diffsRaw.changed || []).filter(c => filterSignal(c?.to) || filterSignal(c?.from)),
     };
     const lastRun = monitorStatus?.last_run_at ? new Date(monitorStatus.last_run_at).toLocaleTimeString() : '-';
+    const ccSummary = monitorStatus?.summary?.cc_summary || data?.cc_summary || null;
     return (
       <div className="p-6 space-y-4">
         {/* Monitor Panel */}
@@ -419,15 +498,19 @@ export default function OptionsSelling() {
           {monitorError && (
             <div className="bg-red-900/60 border border-red-700 text-red-200 px-3 py-2 rounded mb-3"><AlertTriangle size={16} className="inline mr-2"/>{monitorError}</div>
           )}
+          {/* CC Summary quick view */}
+          {ccSummary && (
+            <div className="mb-3 text-xs text-slate-300">CC: lots_total {ccSummary.lots_total} • lots_used {ccSummary.lots_used} • lots_free {ccSummary.lots_free} • monthly_yield_avg {Number(ccSummary.monthly_yield_avg||0).toFixed(2)}%</div>
+          )}
           {/* Diffs */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-sm">
             <div className="bg-slate-900/60 border border-slate-700 rounded p-3">
               <div className="font-semibold text-emerald-400 mb-2">Added ({diffs.added.length})</div>
               <div className="space-y-2 max-h-48 overflow-auto pr-1">
                 {diffs.added.map((s, i) => (
-                  <div key={`add-${i}`} className={`p-2 rounded border ${s.signal === 'ROLL' ? 'border-amber-500 bg-amber-500/10' : 'border-emerald-700 bg-emerald-500/10'}`}>
+                  <div key={`add-${i}`} className={`p-2 rounded border ${s.signal === 'ROLL' || s.signal === 'ROLL CC' ? 'border-amber-500 bg-amber-500/10' : 'border-emerald-700 bg-emerald-500/10'}`}>
                     <div className="font-bold">{s.ticker} • {s.signal}</div>
-                    <div className="text-slate-300">Δ {Number(s.delta).toFixed(2)} • DTE {s.dte} • Strike {s.strike} • C {s.contracts} • Prem {s.premium}</div>
+                    <div className="text-slate-300">Δ {Number(s.delta).toFixed(2)} • DTE {s.dte} • Strike {String(s.strike||'-')} • C {s.contracts} • Prem {s.premium}</div>
                   </div>
                 ))}
                 {diffs.added.length === 0 && <div className="text-slate-500">No additions</div>}
@@ -437,9 +520,9 @@ export default function OptionsSelling() {
               <div className="font-semibold text-red-400 mb-2">Removed ({diffs.removed.length})</div>
               <div className="space-y-2 max-h-48 overflow-auto pr-1">
                 {diffs.removed.map((s, i) => (
-                  <div key={`rem-${i}`} className={`p-2 rounded border ${s.signal === 'ROLL' ? 'border-amber-500 bg-amber-500/10' : 'border-red-700 bg-red-500/10'}`}>
+                  <div key={`rem-${i}`} className={`p-2 rounded border ${s.signal === 'ROLL' || s.signal === 'ROLL CC' ? 'border-amber-500 bg-amber-500/10' : 'border-red-700 bg-red-500/10'}`}>
                     <div className="font-bold">{s.ticker} • {s.signal}</div>
-                    <div className="text-slate-300">Δ {Number(s.delta).toFixed(2)} • DTE {s.dte} • Strike {s.strike} • C {s.contracts} • Prem {s.premium}</div>
+                    <div className="text-slate-300">Δ {Number(s.delta).toFixed(2)} • DTE {s.dte} • Strike {String(s.strike||'-')} • C {s.contracts} • Prem {s.premium}</div>
                   </div>
                 ))}
                 {diffs.removed.length === 0 && <div className="text-slate-500">No removals</div>}
@@ -450,7 +533,7 @@ export default function OptionsSelling() {
               <div className="space-y-2 max-h-48 overflow-auto pr-1">
                 {diffs.changed.map((c, i) => {
                   const from = c.from || {}; const to = c.to || {};
-                  const isRoll = (to.signal || '').toUpperCase() === 'ROLL' || (from.signal || '').toUpperCase() === 'ROLL';
+                  const isRoll = ["ROLL","ROLL CC"].includes(String(to.signal||from.signal).toUpperCase());
                   return (
                     <div key={`chg-${i}`} className={`p-2 rounded border ${isRoll ? 'border-amber-500 bg-amber-500/10' : 'border-blue-700 bg-blue-500/10'}`}>
                       <div className="font-bold">{to.ticker || from.ticker} • {to.signal || from.signal}</div>
@@ -510,7 +593,7 @@ export default function OptionsSelling() {
                       {isExpanded && rows.map((r, idx) => (
                         <tr key={`${key}-${idx}`} className="border-b border-slate-800">
                           <td className="py-2 px-2 text-slate-200">└ {r.ticker} • {r.signal}</td>
-                          <td className="text-right py-2 px-2">Δ {Number(r.delta).toFixed(2)} • DTE {r.dte} • Strike {r.strike} • Prem {r.premium}</td>
+                          <td className="text-right py-2 px-2">Δ {Number(r.delta).toFixed(2)} • DTE {r.dte} • Strike {String(r.strike||'-')} • Prem {r.premium}</td>
                           <td className="text-right py-2 px-2">{r.contracts}</td>
                           <td className="text-right py-2 px-2">${(r.capital_per_contract||0).toLocaleString()}</td>
                           <td className="text-right py-2 px-2">${(r.risk_per_contract||0).toLocaleString()}</td>
