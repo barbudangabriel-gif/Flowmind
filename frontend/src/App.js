@@ -65,6 +65,7 @@ const OptionsModule = React.lazy(() => import("./components/OptionsModule"));
 const ChartTestPage = React.lazy(() => import("./components/ChartTestPage"));
 const ProfessionalChartTest = React.lazy(() => import("./components/ProfessionalChartTest"));
 const SettingsPage = React.lazy(() => import("./components/SettingsPage"));
+const ReportViewer = React.lazy(() => import("./components/ReportViewer"));
 
 import "./App.css";
 
