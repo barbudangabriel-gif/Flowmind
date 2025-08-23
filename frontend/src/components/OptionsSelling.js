@@ -696,6 +696,9 @@ export default function OptionsSelling() {
 
     const maxAbs = chartData.reduce((m, p) => Math.max(m, Math.abs(p.cum_closed_pl||0)), 1);
 
+    // Heuristic: if Recharts fails to render (known React 19 issue), use Plotly fallback
+    const usePlotly = true; // temporary fallback to guarantee visibility
+
     return (
       <div className={`p-6 space-y-4 ${analysisTheme==='envato' ? 'envato-theme' : ''}`}>
         <div className="bg-slate-800 border border-slate-700 rounded p-4">
