@@ -687,7 +687,7 @@ export default function OptionsSelling() {
     const maxAbs = series.reduce((m, p) => Math.max(m, Math.abs(p.cum_closed_pl||0)), 1);
 
     return (
-      <div className="p-6 space-y-4">
+      <div className={`p-6 space-y-4 ${analysisTheme==='envato' ? 'envato-theme' : ''}`}>
         <div className="bg-slate-800 border border-slate-700 rounded p-4">
           <div className="flex flex-wrap items-end gap-4">
             <div>
