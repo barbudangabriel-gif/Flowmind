@@ -1,5 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createChart, ColorType } from 'lightweight-charts';
+
+// Import lightweight-charts differently to avoid issues
+let createChart, ColorType;
+
+// Async import to handle potential module issues
+const loadLightweightCharts = async () => {
+  try {
+    const module = await import('lightweight-charts');
+    createChart = module.createChart;
+    ColorType = module.ColorType;
+    return true;
+  } catch (error) {
+    console.error('Failed to load lightweight-charts:', error);
+    return false;
+  }
+};
 
 // Demo data generator for testing
 function genDemoOHLCV(bars = 300) {
