@@ -27,7 +27,21 @@
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --max-warnings 0",
+    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "qa": "npm run lint && npm run build && npm audit --audit-level=high"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,scss}": [
+      "prettier --write"
+    ]
   },
   "browserslist": {
     "production": [
