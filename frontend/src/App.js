@@ -6248,7 +6248,7 @@ const TradeStationAccountBalance = () => {
             </div>
 
             {/* Total Equity */}
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+            <div className="border rounded-xl p-6 shadow-lg">
               <div className="text-center">
                 <div className="text-sm font-medium text-gray-600 mb-1">Total Equity</div>
                 <div className="text-3xl font-bold text-blue-600">
