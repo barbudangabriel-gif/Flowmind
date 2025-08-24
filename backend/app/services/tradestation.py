@@ -58,7 +58,7 @@ async def get_tokens(user_id: str) -> Optional[Dict[str, Any]]:
     
     # Try to load from MongoDB
     await init_db()
-    if _db:
+    if _db is not None:
         try:
             doc = await _db.ts_tokens.find_one({"user_id": user_id})
             if doc:
