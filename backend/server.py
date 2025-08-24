@@ -163,6 +163,141 @@ async def options_selling_analysis(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Options analysis failed: {str(e)}")
 
+# TradeStation Authentication Endpoints
+@api_router.get("/auth/tradestation/status")
+async def tradestation_auth_status():
+    """Get TradeStation authentication status"""
+    try:
+        status = ts_auth.get_status()
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get auth status: {str(e)}")
+
+@api_router.get("/auth/tradestation/login")
+async def tradestation_auth_login():
+    """Get TradeStation login URL"""
+    try:
+        auth_info = ts_auth.generate_auth_url()
+        return auth_info
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate login URL: {str(e)}")
+
+@api_router.post("/auth/tradestation/refresh")
+async def tradestation_token_refresh():
+    """Refresh TradeStation access token"""
+    try:
+        success = await ts_auth.refresh_access_token()
+        if success:
+            return {
+                "status": "success",
+                "message": "Token refreshed successfully",
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Token refresh failed",
+                "timestamp": datetime.now().isoformat()
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Token refresh failed: {str(e)}")
+
+@api_router.post("/auth/tradestation/callback")
+async def tradestation_auth_callback(
+    code: Optional[str] = Query(None),
+    state: Optional[str] = Query(None)
+):
+    """Handle TradeStation OAuth callback"""
+    try:
+        if not code:
+            raise HTTPException(status_code=422, detail="Authorization code is required")
+        if not state:
+            raise HTTPException(status_code=422, detail="State parameter is required")
+        
+        result = await ts_auth.exchange_code_for_tokens(code)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Callback processing failed: {str(e)}")
+
+# TradeStation API Endpoints
+@api_router.get("/tradestation/accounts")
+async def get_tradestation_accounts():
+    """Get TradeStation accounts"""
+    try:
+        accounts = await ts_client.get_accounts()
+        return {
+            "status": "success",
+            "accounts": accounts,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get accounts: {str(e)}")
+
+@api_router.get("/tradestation/accounts/{account_id}/positions")
+async def get_tradestation_positions(account_id: str):
+    """Get positions for a TradeStation account"""
+    try:
+        positions = await ts_client.get_positions(account_id)
+        
+        # Convert Position objects to dictionaries
+        positions_data = []
+        for pos in positions:
+            positions_data.append({
+                "account_id": pos.account_id,
+                "symbol": pos.symbol,
+                "asset_type": pos.asset_type,
+                "quantity": pos.quantity,
+                "average_price": pos.average_price,
+                "current_price": pos.current_price,
+                "market_value": pos.market_value,
+                "unrealized_pnl": pos.unrealized_pnl,
+                "unrealized_pnl_percent": pos.unrealized_pnl_percent,
+                "position_type": "LONG" if pos.quantity > 0 else "SHORT"
+            })
+        
+        return {
+            "status": "success",
+            "data": positions_data,
+            "count": len(positions_data),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get positions: {str(e)}")
+
+@api_router.get("/tradestation/positions/{account_id}")
+async def get_tradestation_positions_alt(account_id: str):
+    """Alternative endpoint for TradeStation positions (for compatibility)"""
+    return await get_tradestation_positions(account_id)
+
+@api_router.get("/tradestation/accounts/{account_id}/balances")
+async def get_tradestation_balances(account_id: str):
+    """Get balances for a TradeStation account"""
+    try:
+        balances = await ts_client.get_account_balances(account_id)
+        return {
+            "status": "success",
+            "data": balances,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get balances: {str(e)}")
+
+@api_router.get("/tradestation/balances/{account_id}")
+async def get_tradestation_balances_alt(account_id: str):
+    """Alternative endpoint for TradeStation balances (for compatibility)"""
+    return await get_tradestation_balances(account_id)
+
+@api_router.get("/tradestation/connection/test")
+async def test_tradestation_connection():
+    """Test TradeStation API connection"""
+    try:
+        result = await ts_client.test_connection()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Connection test failed: {str(e)}")
+
 # Mount router
 app.include_router(api_router)
 
