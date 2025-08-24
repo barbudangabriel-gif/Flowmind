@@ -61,6 +61,7 @@ const AdvancedScreener = React.lazy(() => import("./components/AdvancedScreener"
 const InvestmentScoring = React.lazy(() => import("./components/InvestmentScoring"));
 const InvestmentScoringDisplay = React.lazy(() => import("./components/InvestmentScoringDisplay"));
 const StockAnalysisPage = React.lazy(() => import("./components/StockAnalysisPage"));
+const TokenRefreshTest = React.lazy(() => import("./components/TokenRefreshTest"));
 const OptionsModule = React.lazy(() => import("./components/OptionsModule"));
 const ChartTestPage = React.lazy(() => import("./components/ChartTestPage"));
 const ProfessionalChartTest = React.lazy(() => import("./components/ProfessionalChartTest"));
