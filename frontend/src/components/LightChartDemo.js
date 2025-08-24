@@ -42,6 +42,7 @@ export default function LightChartDemo() {
   const [symbol, setSymbol] = useState('AAPL');
   const [theme, setTheme] = useState('dark');
   const [bars, setBars] = useState(300);
+  const [error, setError] = useState(null);
   
   // Generate demo data
   const { data, sma20 } = genDemoOHLCV(bars);
@@ -50,91 +51,133 @@ export default function LightChartDemo() {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const chart = createChart(containerRef.current, {
-      layout: {
-        background: { type: ColorType.Solid, color: theme === 'dark' ? '#1a1a1a' : '#ffffff' },
-        textColor: theme === 'dark' ? '#e5e5e5' : '#333333',
-      },
-      grid: {
-        vertLines: { color: theme === 'dark' ? '#2a2a2a' : '#e0e0e0' },
-        horzLines: { color: theme === 'dark' ? '#2a2a2a' : '#e0e0e0' },
-      },
-      crosshair: {
-        mode: 0, // Normal crosshair
-      },
-      timeScale: {
-        borderColor: theme === 'dark' ? '#485158' : '#cccccc',
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      rightPriceScale: {
-        borderColor: theme === 'dark' ? '#485158' : '#cccccc',
-      },
-      handleScroll: {
-        mouseWheel: true,
-        pressedMouseMove: true,
-      },
-      handleScale: {
-        axisPressedMouseMove: true,
-        mouseWheel: true,
-        pinch: true,
-      },
-    });
+    try {
+      // Clear any previous chart
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
 
-    chartRef.current = chart;
+      const chart = createChart(containerRef.current, {
+        layout: {
+          background: { type: ColorType.Solid, color: theme === 'dark' ? '#1a1a1a' : '#ffffff' },
+          textColor: theme === 'dark' ? '#e5e5e5' : '#333333',
+        },
+        grid: {
+          vertLines: { color: theme === 'dark' ? '#2a2a2a' : '#e0e0e0' },
+          horzLines: { color: theme === 'dark' ? '#2a2a2a' : '#e0e0e0' },
+        },
+        crosshair: {
+          mode: 0, // Normal crosshair
+        },
+        timeScale: {
+          borderColor: theme === 'dark' ? '#485158' : '#cccccc',
+          timeVisible: true,
+          secondsVisible: false,
+        },
+        rightPriceScale: {
+          borderColor: theme === 'dark' ? '#485158' : '#cccccc',
+        },
+        handleScroll: {
+          mouseWheel: true,
+          pressedMouseMove: true,
+        },
+        handleScale: {
+          axisPressedMouseMove: true,
+          mouseWheel: true,
+          pinch: true,
+        },
+        width: containerRef.current.clientWidth,
+        height: 600,
+      });
 
-    // Add candlestick series
-    const candlestickSeries = chart.addCandlestickSeries({
-      upColor: '#16a34a',
-      downColor: '#dc2626',
-      borderDownColor: '#dc2626',
-      borderUpColor: '#16a34a',
-      wickDownColor: '#dc2626',
-      wickUpColor: '#16a34a',
-    });
-    candleRef.current = candlestickSeries;
+      chartRef.current = chart;
 
-    // Add volume series
-    const volumeSeries = chart.addHistogramSeries({
-      color: '#26a69a',
-      priceFormat: {
-        type: 'volume',
-      },
-      priceScaleId: '',
-      scaleMargins: {
-        top: 0.7,
-        bottom: 0,
-      },
-    });
-    volRef.current = volumeSeries;
+      // Add candlestick series
+      const candlestickSeries = chart.addCandlestickSeries({
+        upColor: '#16a34a',
+        downColor: '#dc2626',
+        borderDownColor: '#dc2626',
+        borderUpColor: '#16a34a',
+        wickDownColor: '#dc2626',
+        wickUpColor: '#16a34a',
+      });
+      candleRef.current = candlestickSeries;
 
-    // Add SMA series
-    const smaSeries = chart.addLineSeries({
-      color: '#2196F3',
-      lineWidth: 2,
-      title: 'SMA(20)',
-    });
-    smaRef.current = smaSeries;
+      // Add volume series
+      const volumeSeries = chart.addHistogramSeries({
+        color: '#26a69a',
+        priceFormat: {
+          type: 'volume',
+        },
+        priceScaleId: '',
+        scaleMargins: {
+          top: 0.7,
+          bottom: 0,
+        },
+      });
+      volRef.current = volumeSeries;
 
-    // Handle resize
-    const ro = new ResizeObserver(() => chart.applyOptions({ autoSize: true }));
-    ro.observe(containerRef.current);
+      // Add SMA series
+      const smaSeries = chart.addLineSeries({
+        color: '#2196F3',
+        lineWidth: 2,
+        title: 'SMA(20)',
+      });
+      smaRef.current = smaSeries;
 
-    return () => { 
-      ro.disconnect(); 
-      chart.remove(); 
-    };
-  }, [theme]);
+      // Set initial data
+      candlestickSeries.setData(data.map(({ time, open, high, low, close }) => ({ time, open, high, low, close })));
+      volumeSeries.setData(data.map(({ time, volume, up }) => ({ time, value: volume, color: up ? "#16a34a55" : "#dc262655" })));
+      smaSeries.setData(sma20);
+      
+      // Fit content
+      chart.timeScale().fitContent();
 
-  // Update data when changes
-  useEffect(() => {
-    if (!candleRef.current || !volRef.current || !smaRef.current) return;
-    
-    candleRef.current.setData(data.map(({ time, open, high, low, close }) => ({ time, open, high, low, close })));
-    volRef.current.setData(data.map(({ time, volume, up }) => ({ time, value: volume, color: up ? "#16a34a55" : "#dc262655" })));
-    smaRef.current.setData(sma20);
-    chartRef.current?.timeScale().fitContent();
-  }, [data, sma20]);
+      // Handle resize
+      const ro = new ResizeObserver(() => {
+        if (chart && containerRef.current) {
+          chart.applyOptions({ 
+            width: containerRef.current.clientWidth,
+            height: 600 
+          });
+        }
+      });
+      
+      if (containerRef.current) {
+        ro.observe(containerRef.current);
+      }
+
+      setError(null);
+
+      return () => { 
+        ro.disconnect(); 
+        if (chart) {
+          chart.remove(); 
+        }
+      };
+      
+    } catch (err) {
+      console.error('Chart initialization error:', err);
+      setError(err.message);
+    }
+  }, [theme, bars]);
+
+  if (error) {
+    return (
+      <div className="w-full h-full min-h-[720px] p-4 bg-red-900/20 border border-red-600 rounded-lg">
+        <div className="text-center text-red-300">
+          <h3 className="text-lg font-semibold mb-2">Chart Error</h3>
+          <p className="text-sm">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full min-h-[720px] p-4 bg-neutral-900/40 dark:bg-neutral-900/40">
@@ -170,7 +213,7 @@ export default function LightChartDemo() {
       </div>
 
       {/* Chart container */}
-      <div ref={containerRef} className="w-full h-[640px] rounded-2xl shadow-inner bg-neutral-800" />
+      <div ref={containerRef} className="w-full h-[600px] rounded-2xl shadow-inner bg-neutral-800" />
 
       {/* Helper text */}
       <div className="mt-3 text-xs opacity-70 text-gray-400">
