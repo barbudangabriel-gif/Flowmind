@@ -313,6 +313,25 @@ async def test_tradestation_connection():
 # Mount router
 app.include_router(api_router)
 
+# NEW: Mount robust TradeStation authentication router
+if ROBUST_TS_AVAILABLE:
+    app.include_router(ts_auth_router, prefix="/api")
+    logger.info("✅ Robust TradeStation authentication system mounted")
+else:
+    logger.warning("⚠️  Using legacy TradeStation authentication system")
+
+# Health check endpoint
+@app.get("/health")
+def health_check():
+    """Service health check"""
+    return {
+        "status": "healthy",
+        "service": "FlowMind Analytics API",
+        "version": "3.0.0",
+        "tradestation_robust": ROBUST_TS_AVAILABLE,
+        "timestamp": datetime.now().isoformat()
+    }
+
 # CORS (kept at end to apply globally)
 app.add_middleware(
     CORSMiddleware,
