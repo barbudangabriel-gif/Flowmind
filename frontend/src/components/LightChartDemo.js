@@ -85,7 +85,10 @@ export default function LightChartDemo() {
 
       const chart = createChart(containerRef.current, {
         layout: {
-          background: { type: ColorType.Solid, color: theme === 'dark' ? '#1a1a1a' : '#ffffff' },
+          background: { 
+            type: ColorType?.Solid || 'solid', 
+            color: theme === 'dark' ? '#1a1a1a' : '#ffffff' 
+          },
           textColor: theme === 'dark' ? '#e5e5e5' : '#333333',
         },
         grid: {
