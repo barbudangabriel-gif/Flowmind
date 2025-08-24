@@ -58,6 +58,7 @@ export default function LightChartDemo() {
   const [theme, setTheme] = useState('dark');
   const [bars, setBars] = useState(300);
   const [error, setError] = useState(null);
+  const [chartLoaded, setChartLoaded] = useState(false);
   
   // Generate demo data
   const { data, sma20 } = genDemoOHLCV(bars);
