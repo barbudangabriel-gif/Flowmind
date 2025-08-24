@@ -1,36 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import {
-  ArrowLeft,
-  TrendingUp,
-  TrendingDown,
-  Award,
-  Shield,
-  AlertTriangle,
-  Target,
-  BarChart3,
-  Activity,
-  DollarSign,
-  RefreshCw,
-  XCircle,
-  CheckCircle,
-  LineChart,
-  PieChart,
-  Zap,
-  Calendar,
-  Clock,
-  TrendingUp as BullishIcon,
-  TrendingDown as BearishIcon
-} from 'lucide-react';
-import ProfessionalTradingChart from './ProfessionalTradingChart';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import React from 'react';
+import { useParams } from 'react-router-dom';
 
 const StockAnalysisPage = () => {
   const { symbol } = useParams();
-  const navigate = useNavigate();
   
   // State management
   const [loading, setLoading] = useState(true);
