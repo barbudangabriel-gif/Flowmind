@@ -89,7 +89,7 @@ async def save_tokens(user_id: str, access: str, refresh: str, expires_in: int) 
     
     # Persist to MongoDB
     await init_db()
-    if _db:
+    if _db is not None:
         try:
             await _db.ts_tokens.replace_one(
                 {"user_id": user_id},
