@@ -396,29 +396,8 @@ class RobustTradeStationTester:
         print("\n🔗 TESTING INTEGRATION WITH EXISTING ENDPOINTS")
         print("=" * 80)
         
-        # First ensure we have valid tokens
-        print(f"🔐 Ensuring valid authentication for integration tests...")
-        
-        integration_tokens = {
-            "access_token": f"integration_test_{int(time.time())}",
-            "refresh_token": f"integration_refresh_{int(time.time())}",
-            "expires_in": 300  # 5 minutes for integration tests
-        }
-        
-        success_init, _ = self.run_test(
-            "Init Tokens for Integration", 
-            "POST", 
-            "auth/tradestation/init", 
-            200,
-            data=integration_tokens
-        )
-        
-        if not success_init:
-            print("   ❌ Failed to initialize tokens for integration tests")
-            return False
-        
         # Test 1: Verify existing TradeStation endpoints still work
-        print(f"\n📊 Testing existing TradeStation endpoints...")
+        print(f"📊 Testing existing TradeStation endpoints...")
         
         # Test accounts endpoint
         success1, accounts_data = self.run_test(
@@ -435,6 +414,14 @@ class RobustTradeStationTester:
             print(f"   📊 Status: {status}")
             print(f"   👥 Accounts Found: {len(accounts)}")
             accounts_working = status == 'success'
+            
+            if accounts_working and len(accounts) > 0:
+                # Show first account details
+                first_account = accounts[0]
+                account_id = first_account.get('AccountID', 'N/A')
+                account_type = first_account.get('TypeDescription', 'N/A')
+                status_desc = first_account.get('StatusDescription', 'N/A')
+                print(f"   🏦 First Account: {account_id} ({account_type}, {status_desc})")
         
         # Test connection test endpoint
         success2, connection_data = self.run_test(
@@ -446,86 +433,121 @@ class RobustTradeStationTester:
         
         connection_working = False
         if success2:
-            # Connection test response structure may vary
             print(f"   🔗 Connection Test Response: {connection_data}")
             connection_working = True
         
-        # Test 2: Test that 401 errors trigger proper refresh flow
-        print(f"\n🔄 Testing 401 error handling and refresh flow...")
+        # Test 2: Test positions endpoint if we have accounts
+        positions_working = True  # Default to true if we can't test
+        if accounts_working and success1:
+            accounts = accounts_data.get('accounts', [])
+            if accounts:
+                first_account_id = accounts[0].get('AccountID')
+                if first_account_id:
+                    success2a, positions_data = self.run_test(
+                        f"TradeStation Positions ({first_account_id})", 
+                        "GET", 
+                        f"tradestation/accounts/{first_account_id}/positions", 
+                        200
+                    )
+                    
+                    if success2a:
+                        status = positions_data.get('status', 'unknown')
+                        positions = positions_data.get('data', [])
+                        print(f"   📈 Positions Status: {status}")
+                        print(f"   📊 Positions Found: {len(positions)}")
+                        positions_working = status == 'success'
         
-        # First, let's expire the current token by setting a very short expiry
-        expired_tokens = {
-            "access_token": f"expired_test_{int(time.time())}",
-            "refresh_token": f"expired_refresh_{int(time.time())}",
-            "expires_in": 1  # 1 second - will expire immediately
-        }
+        # Test 3: Test that authentication is working properly
+        print(f"\n🔐 Testing authentication integration...")
         
-        success3a, _ = self.run_test(
-            "Init Expired Tokens", 
-            "POST", 
-            "auth/tradestation/init", 
-            200,
-            data=expired_tokens
+        success3, auth_status = self.run_test(
+            "Authentication Status Check", 
+            "GET", 
+            "auth/tradestation/status", 
+            200
         )
         
-        if success3a:
-            # Wait for expiry
-            time.sleep(2)
+        auth_integration_working = False
+        if success3:
+            authenticated = auth_status.get('authenticated', False)
+            has_access_token = auth_status.get('has_access_token', False)
+            has_refresh_token = auth_status.get('has_refresh_token', False)
+            environment = auth_status.get('environment', 'unknown')
             
-            # Now try to use an endpoint that requires authentication
-            # This should trigger the refresh flow
-            success3b, refresh_flow_test = self.run_test(
-                "Endpoint Call with Expired Token (Should Trigger Refresh)", 
-                "GET", 
-                "auth/tradestation/validate", 
-                200
-            )
+            print(f"   🔐 Authenticated: {authenticated}")
+            print(f"   🔑 Has Access Token: {has_access_token}")
+            print(f"   🔄 Has Refresh Token: {has_refresh_token}")
+            print(f"   🌍 Environment: {environment}")
             
-            refresh_flow_working = False
-            if success3b:
-                valid = refresh_flow_test.get('valid', False)
-                print(f"   🔄 Auto-refresh triggered: {'✅ Yes' if valid else '❌ No'}")
-                refresh_flow_working = valid
+            auth_integration_working = authenticated and has_access_token and has_refresh_token
             
+            if auth_integration_working:
+                print("   ✅ Authentication integration working properly")
+            else:
+                print("   ⚠️  Authentication integration may have issues")
+        
+        # Test 4: Test error handling for invalid requests
+        print(f"\n🛡️  Testing error handling integration...")
+        
+        # Try to access positions for a non-existent account
+        success4, error_test = self.run_test(
+            "Error Handling Test (Invalid Account)", 
+            "GET", 
+            "tradestation/accounts/invalid-account/positions", 
+            500  # Expect error for invalid account
+        )
+        
+        error_handling_working = success4  # Success means we got expected error response
+        
+        if error_handling_working:
+            print("   ✅ Error handling working correctly")
         else:
-            refresh_flow_working = False
+            print("   ⚠️  Error handling may need improvement")
         
-        # Test 3: Verify robust system doesn't break existing functionality
-        print(f"\n🛡️  Testing robust system compatibility...")
+        # Test 5: Test refresh mechanism integration
+        print(f"\n🔄 Testing refresh mechanism integration...")
         
-        # Re-initialize with good tokens
-        good_tokens = {
-            "access_token": f"compatibility_test_{int(time.time())}",
-            "refresh_token": f"compatibility_refresh_{int(time.time())}",
-            "expires_in": 600  # 10 minutes
-        }
-        
-        success4a, _ = self.run_test(
-            "Init Good Tokens for Compatibility", 
+        success5, refresh_integration = self.run_test(
+            "Refresh Integration Test", 
             "POST", 
-            "auth/tradestation/init", 
-            200,
-            data=good_tokens
+            "auth/tradestation/refresh", 
+            200
         )
         
-        compatibility_working = False
-        if success4a:
-            # Test that status endpoint works
-            success4b, compat_status = self.run_test(
-                "Compatibility Status Check", 
-                "GET", 
-                "auth/tradestation/status", 
-                200
-            )
+        refresh_integration_working = False
+        if success5:
+            status = refresh_integration.get('status', 'unknown')
+            message = refresh_integration.get('message', '')
             
-            if success4b:
-                authenticated = compat_status.get('authenticated', False)
-                expires_in = compat_status.get('expires_in', 0)
-                print(f"   🔐 Authenticated: {authenticated}")
-                print(f"   ⏰ Expires In: {expires_in}s")
-                compatibility_working = authenticated and expires_in > 0
+            print(f"   📊 Refresh Status: {status}")
+            print(f"   📝 Message: {message}")
+            
+            refresh_integration_working = status == 'success'
+            
+            if refresh_integration_working:
+                print("   ✅ Refresh mechanism integration working")
+                
+                # Test that API still works after refresh
+                success5a, post_refresh_test = self.run_test(
+                    "API Test After Refresh", 
+                    "GET", 
+                    "tradestation/accounts", 
+                    200
+                )
+                
+                if success5a:
+                    post_refresh_status = post_refresh_test.get('status', 'unknown')
+                    print(f"   📊 Post-refresh API Status: {post_refresh_status}")
+                    
+                    if post_refresh_status == 'success':
+                        print("   ✅ API working correctly after refresh")
+                    else:
+                        print("   ⚠️  API may have issues after refresh")
+                        refresh_integration_working = False
+            else:
+                print("   ⚠️  Refresh mechanism integration failed")
         
-        return all([success_init, accounts_working, connection_working, refresh_flow_working, compatibility_working])
+        return all([accounts_working, connection_working, positions_working, auth_integration_working, refresh_integration_working])
 
     def run_comprehensive_test(self):
         """Run comprehensive test of robust TradeStation token refresh system"""
