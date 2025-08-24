@@ -6909,6 +6909,16 @@ function AppContent() {
               } 
             />
             
+            {/* Token Refresh Test Route */}
+            <Route 
+              path="/token-test" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Token Refresh Test" />}>
+                  <TokenRefreshTest />
+                </Suspense>
+              } 
+            />
+            
             {/* Options Module Route */}
             <Route 
               path="/options" 
