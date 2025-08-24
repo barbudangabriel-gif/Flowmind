@@ -310,15 +310,15 @@ async def test_tradestation_connection():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Connection test failed: {str(e)}")
 
-# Mount router
-app.include_router(api_router)
-
-# NEW: Mount robust TradeStation authentication router
+# NEW: Mount robust TradeStation authentication router FIRST (higher priority)
 if ROBUST_TS_AVAILABLE:
     app.include_router(ts_auth_router, prefix="/api")
     logger.info("✅ Robust TradeStation authentication system mounted")
 else:
     logger.warning("⚠️  Using legacy TradeStation authentication system")
+
+# Mount main API router (includes legacy endpoints)
+app.include_router(api_router)
 
 # Health check endpoint
 @app.get("/health")
