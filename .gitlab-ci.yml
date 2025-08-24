@@ -1,0 +1,97 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+stages: [fe, be, gate]
+
+variables:
+  NODE_OPTIONS: --max-old-space-size=2048
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.cache/npm"
+
+frontend:
+  stage: fe
+  image: node:20
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-fe"
+    paths:
+      - .cache/npm/
+  before_script:
+    - cd frontend
+    - |
+      if [ -f yarn.lock ]; then
+        corepack enable
+        yarn --version
+        yarn install --immutable
+      else
+        npm ci
+      fi
+  script:
+    - |
+      if [ -f yarn.lock ]; then
+        yarn run lint
+        if grep -q '"build"' package.json; then yarn build; fi
+        yarn audit --level high
+      else
+        npm run lint
+        npm run build --if-present
+        npm audit --audit-level=high
+      fi
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - frontend/build/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+backend:
+  stage: be
+  image: python:3.11
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-be"
+    paths:
+      - .cache/pip/
+  before_script:
+    - cd backend
+    - pip install -U pip
+    - pip install ruff mypy bandit pytest pip-audit
+    - |
+      if [ -f requirements.txt ]; then
+        pip install -r requirements.txt
+      fi
+  script:
+    - ruff --output-format=github check .
+    - ruff format --check
+    - mypy . --ignore-missing-imports --pretty
+    - bandit -ll -r . -x tests
+    - |
+      if [ -f requirements.txt ]; then
+        pip-audit -r requirements.txt --strict
+      else
+        pip-audit --strict
+      fi
+    - pytest -q || true
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: backend/junit*.xml
+    paths:
+      - backend/.ruff_cache/
+      - backend/.mypy_cache/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+gate:
+  stage: gate
+  image: alpine:3.19
+  needs: [frontend, backend]
+  script:
+    - echo "All gates passed ✅"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
