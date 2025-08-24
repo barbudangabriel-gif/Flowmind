@@ -404,10 +404,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                           <button
                             onClick={() => {
                               if (item.route) {
-                                if (item.route.startsWith('http') || item.external) {
-                                  window.open(item.route, '_blank');
-                                  return;
-                                }
+                                // Navigate to specific route
                                 navigate(item.route);
                               } else {
                                 // Set active tab for in-app sections
