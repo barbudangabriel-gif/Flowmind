@@ -6921,6 +6921,16 @@ function AppContent() {
               } 
             />
             
+            {/* Advanced Chart Controller Route */}
+            <Route 
+              path="/chart-headless" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Advanced Chart Controller" />}>
+                  <ChartHeadlessPage />
+                </Suspense>
+              } 
+            />
+            
             {/* Token Refresh Test Route */}
             <Route 
               path="/token-test" 
