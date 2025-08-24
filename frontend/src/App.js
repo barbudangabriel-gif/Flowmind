@@ -6292,7 +6292,7 @@ const TradeStationAccountBalance = () => {
           </div>
 
           {/* Buying Power Section */}
-          <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+          <div className="border rounded-xl p-6 shadow-lg">
             <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-blue-500" />
               Buying Power
