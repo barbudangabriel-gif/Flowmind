@@ -6910,6 +6910,16 @@ function AppContent() {
               } 
             />
             
+            {/* Professional Chart Route */}
+            <Route 
+              path="/chart-lite" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Professional Chart" />}>
+                  <ChartPage />
+                </Suspense>
+              } 
+            />
+            
             {/* Token Refresh Test Route */}
             <Route 
               path="/token-test" 
