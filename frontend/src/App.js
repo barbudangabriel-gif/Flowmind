@@ -5288,8 +5288,10 @@ const TradeStationAuth = () => {
       </div>
     </div>
   );
-};
 */
+
+// Disabled TradeStationAuth component - using separate file instead
+const TradeStationAuthInlineDisabled = () => null;
 
 // TradeStation Live Portfolio Component
 const TradeStationPortfolio = () => {
