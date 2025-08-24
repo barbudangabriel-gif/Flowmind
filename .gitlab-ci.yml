@@ -6,26 +6,30 @@ workflow:
 stages: [build, fe, be, test, quality, sast, gate]
 
 include:
-  - template: Code-Quality.gitlab-ci.yml        # Code Quality (gl-code-quality-report.json)
-  - template: Security/SAST.gitlab-ci.yml       # SAST (Security Dashboard)
-  - template: Security/Dependency-Scanning.gitlab-ci.yml   # Dep Scan (SBOM/lockfiles)
-  - template: Security/Container-Scanning.gitlab-ci.yml    # Container Scan (Trivy)
+  - template: Code-Quality.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/Container-Scanning.gitlab-ci.yml
 
 variables:
   NODE_OPTIONS: --max-old-space-size=2048
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.cache/npm"
-  # Etape pentru securitate
+
+  # Stage-urile securitate
   SAST_STAGE: "sast"
   DS_STAGE: "sast"
   CS_STAGE: "sast"
 
-  # Praguri configurabile (poți schimba în Settings→CI/CD→Variables)
-  NPM_AUDIT_LEVEL: "critical"   # fail dacă există vulnerabilități ≥ acest nivel (critical/high/moderate)
-  MIN_COVERAGE: "60"            # procent minim Cobertura backend
-  QUALITY_MAX_ISSUES: "0"       # număr maxim de issues permis în Code Quality
+  # Praguri (poți seta în Settings→CI/CD→Variables)
+  NPM_AUDIT_LEVEL: "critical"
+  MIN_COVERAGE: "60"
+  QUALITY_MAX_ISSUES: "0"
+  SEC_MAX_CRITICAL: "0"
+  SEC_MAX_HIGH: "0"
+  SEC_MAX_MEDIUM: "999"
 
-# ---------- BUILD IMAGE (pt. Container Scanning) ----------
+# ---------- BUILD IMAGE pt Container Scanning (opțional) ----------
 build_image:
   stage: build
   image: docker:25
@@ -44,7 +48,6 @@ build_image:
     when: always
     expire_in: 1 week
 
-# Variabila folosită de jobul container_scanning din template
 .container_scanning:
   variables:
     CS_IMAGE: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
@@ -53,9 +56,7 @@ build_image:
 frontend:
   stage: fe
   image: node:20
-  cache:
-    key: "${CI_COMMIT_REF_SLUG}-fe"
-    paths: [ .cache/npm/ ]
+  cache: { key: "${CI_COMMIT_REF_SLUG}-fe", paths: [ .cache/npm/ ] }
   before_script:
     - cd frontend
     - |
@@ -72,7 +73,6 @@ frontend:
         yarn run lint
         if grep -q '"build"' package.json; then yarn build; fi
         yarn audit --level "${NPM_AUDIT_LEVEL}"
-        # coverage HTML dacă există test script / jest
         if jq -e '.scripts.test' package.json >/dev/null 2>&1 || grep -qi jest package.json; then
           yarn test --coverage --coverageReporters=cobertura --coverageReporters=html || true
         fi
@@ -89,7 +89,7 @@ frontend:
     expire_in: 1 week
     paths:
       - frontend/build/
-      - frontend/coverage/            # HTML jest coverage (dacă există)
+      - frontend/coverage/
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH
@@ -98,9 +98,7 @@ frontend:
 backend:
   stage: be
   image: python:3.11
-  cache:
-    key: "${CI_COMMIT_REF_SLUG}-be"
-    paths: [ .cache/pip/ ]
+  cache: { key: "${CI_COMMIT_REF_SLUG}-be", paths: [ .cache/pip/ ] }
   before_script:
     - cd backend
     - pip install -U pip
@@ -111,7 +109,6 @@ backend:
       fi
     - mkdir -p reports/flake8 reports/bandit reports/mypy reports/coverage_html
   script:
-    # Gates (fail la erori reale)
     - ruff --output-format=github check .
     - ruff format --check
     - mypy . --ignore-missing-imports --pretty
@@ -122,9 +119,7 @@ backend:
       else
         pip-audit --strict
       fi
-    # Coverage (Cobertura + HTML) — nu blochează MR dacă nu ai teste încă
     - pytest -q --maxfail=1 --disable-warnings --cov=. --cov-report=xml:coverage.xml --cov-report=html:reports/coverage_html || true
-    # Artifacte HTML (nu blochează MR)
     - flake8 . --format=html --htmldir reports/flake8 || true
     - bandit -r . -f html -o reports/bandit/index.html || true
     - mypy . --ignore-missing-imports --html-report reports/mypy || true
@@ -160,9 +155,9 @@ coverage-gate:
       if not os.path.exists(p):
           print("NO_COVERAGE_XML -> SKIP (green)"); sys.exit(0)
       root=ET.parse(p).getroot()
-      lines_total=int(root.attrib.get("lines-valid","0") or 0)
-      lines_covered=int(root.attrib.get("lines-covered","0") or 0)
-      cov=0.0 if lines_total==0 else 100.0*lines_covered/lines_total
+      total=int(root.attrib.get("lines-valid","0") or 0)
+      covd=int(root.attrib.get("lines-covered","0") or 0)
+      cov=0.0 if total==0 else 100.0*covd/total
       MIN=float(os.getenv("MIN_COVERAGE","60"))
       print(f"COVERAGE={cov:.2f}%  (MIN={MIN}%)")
       sys.exit(0 if cov>=MIN else 1)
@@ -191,19 +186,41 @@ quality-gate:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
-# ---------- SAST / DEP-SCAN / CONTAINER-SCAN ----------
-# Template-urile gestionează joburile. Container scan se rulează doar dacă există Dockerfile + build_image.
-container_scanning:
-  needs: [build_image]
+# ---------- SECURITY GATE (SAST + Dependency Scan) ----------
+security-gate:
+  stage: gate
+  image: alpine:3.19
+  needs: [sast, dependency_scanning]
+  dependencies: [sast, dependency_scanning]
+  script:
+    - apk add --no-cache jq >/dev/null
+    - |
+      files=("gl-sast-report.json" "gl-dependency-scanning-report.json")
+      crit=0; high=0; med=0
+      for f in "${files[@]}"; do
+        if [ -f "$f" ]; then
+          c=$(jq '[.vulnerabilities[]? | select(.severity=="Critical")] | length' "$f"); crit=$((crit+c))
+          h=$(jq '[.vulnerabilities[]? | select(.severity=="High")] | length' "$f");     high=$((high+h))
+          m=$(jq '[.vulnerabilities[]? | select(.severity=="Medium")] | length' "$f");   med=$((med+m))
+          echo "$f -> Critical=$c High=$h Medium=$m"
+        else
+          echo "INFO: $f nu există (job probabil sărit)."
+        fi
+      done
+      echo "TOTAL -> Critical=$crit High=$high Medium=$med"
+      MAXC=${SEC_MAX_CRITICAL:-0}; MAXH=${SEC_MAX_HIGH:-0}; MAXM=${SEC_MAX_MEDIUM:-999}
+      [ "$crit" -le "$MAXC" ] || { echo "FAIL: Critical $crit > $MAXC"; exit 1; }
+      [ "$high" -le "$MAXH" ] || { echo "FAIL: High $high > $MAXH"; exit 1; }
+      [ "$med"  -le "$MAXM" ] || { echo "FAIL: Medium $med > $MAXM"; exit 1; }
+      echo "Security gate PASSED ✅"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      exists: [ "Dockerfile" ]
 
 # ---------- FINAL GATE ----------
 gate:
   stage: gate
   image: alpine:3.19
-  needs: [frontend, backend, coverage-gate, quality-gate]
+  needs: [frontend, backend, coverage-gate, quality-gate, security-gate]
   script: [ 'echo "All enterprise gates passed ✅"' ]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
