@@ -214,7 +214,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     {
       title: "Dashboard 🏠",
       items: [
-        { id: 'dashboard', label: 'Overview', icon: Home, color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' }
+        { id: 'dashboard', label: 'Overview', icon: Home, color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' },
+        { id: 'summary-report', label: 'Project Report (PDF) – temp', icon: Eye, color: 'from-slate-500 to-gray-600', shortLabel: 'Report', route: '/reports/flowmind_summary.html', external: true },
+        { id: 'conduita-report', label: 'Conduită & Workflow – temp', icon: Eye, color: 'from-slate-500 to-gray-600', shortLabel: 'Conduită', route: '/reports/conduita_workflow.html', external: true }
       ]
     },
     {
