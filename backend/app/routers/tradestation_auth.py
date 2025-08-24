@@ -150,7 +150,7 @@ async def logout(user_id: str = Depends(get_user_id)) -> Dict[str, Any]:
         # Clear from MongoDB
         from ..services.tradestation import _db, init_db
         await init_db()
-        if _db:
+        if _db is not None:
             await _db.ts_tokens.delete_one({"user_id": user_id})
         
         log.info(f"User {user_id} logged out successfully")
