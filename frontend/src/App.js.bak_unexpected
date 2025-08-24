@@ -5134,7 +5134,7 @@ const TradeStationAuth = () => {
       )}
 
       {/* Authentication Status Card */}
-      <div className={`border rounded-xl p-6 ${isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+      <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Status Overview */}
           <div className="space-y-4">
@@ -6054,7 +6054,7 @@ const TradeStationPortfolio = () => {
 
           {/* Risk Analysis */}
           {portfolioData.risk_analysis && (
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+            <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-500" />
                 Risk Analysis
@@ -6234,7 +6234,7 @@ const TradeStationAccountBalance = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             
             {/* Cash Balance */}
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+            <div className="border rounded-xl p-6 shadow-lg">
               <div className="text-center">
                 <div className="text-sm font-medium text-gray-600 mb-1">Cash Balance</div>
                 <div className="text-3xl font-bold text-green-600">
@@ -6248,7 +6248,7 @@ const TradeStationAccountBalance = () => {
             </div>
 
             {/* Total Equity */}
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+            <div className="border rounded-xl p-6 shadow-lg">
               <div className="text-center">
                 <div className="text-sm font-medium text-gray-600 mb-1">Total Equity</div>
                 <div className="text-3xl font-bold text-blue-600">
@@ -6262,7 +6262,7 @@ const TradeStationAccountBalance = () => {
             </div>
 
             {/* Market Value */}
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+            <div className="border rounded-xl p-6 shadow-lg">
               <div className="text-center">
                 <div className="text-sm font-medium text-gray-600 mb-1">Market Value</div>
                 <div className="text-3xl font-bold text-purple-600">
@@ -6276,7 +6276,7 @@ const TradeStationAccountBalance = () => {
             </div>
 
             {/* Today's P&L */}
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+            <div className="border rounded-xl p-6 shadow-lg">
               <div className="text-center">
                 <div className="text-sm font-medium text-gray-600 mb-1">Today's P&L</div>
                 <div className={`text-3xl font-bold ${balanceData.TodaysProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -6292,7 +6292,7 @@ const TradeStationAccountBalance = () => {
           </div>
 
           {/* Buying Power Section */}
-          <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+          <div className="border rounded-xl p-6 shadow-lg">
             <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-blue-500" />
               Buying Power
@@ -6340,7 +6340,7 @@ const TradeStationAccountBalance = () => {
           </div>
 
           {/* Account Details */}
-          <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6 shadow-lg`}>
+          <div className="border rounded-xl p-6 shadow-lg">
             <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
               <Settings className="w-5 h-5 text-gray-500" />
               Account Details
@@ -6536,7 +6536,7 @@ const TradeStationTrading = () => {
       )}
 
       {/* Order Form */}
-      <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+      <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
         <h3 className="text-xl font-semibold mb-6">Place Order</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -6642,7 +6642,7 @@ const TradeStationTrading = () => {
 
       {/* Order Validation Results */}
       {orderValidation && (
-        <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+        <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
           <h3 className="text-lg font-semibold mb-4">Order Validation</h3>
           
           <div className="space-y-4">
@@ -6864,7 +6864,7 @@ const TradeStationOrders = () => {
       )}
 
       {/* Filters */}
-      <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+      <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
         <h3 className="text-lg font-semibold mb-4">Filters</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
