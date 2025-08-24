@@ -2,7 +2,7 @@ import requests
 import json
 from datetime import datetime
 
-base_url = 'https://put-selling-dash.preview.emergentagent.com/api'
+base_url = 'https://options-trader-6.preview.emergentagent.com/api'
 
 print('🎯 FOCUSED TESTING: 3-Tier Priority System with Unusual Whales Fallback')
 print('=' * 80)

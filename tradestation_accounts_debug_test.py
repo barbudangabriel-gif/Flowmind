@@ -24,7 +24,7 @@ import sys
 from datetime import datetime
 
 class TradeStationAccountsDebugger:
-    def __init__(self, base_url="https://put-selling-dash.preview.emergentagent.com"):
+    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.target_account = "11775499"  # The account that should be present

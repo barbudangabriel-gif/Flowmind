@@ -13,7 +13,7 @@ def log(message):
     print(f"[{timestamp}] {message}")
 
 def test_monitor_debug():
-    base_url = "https://put-selling-dash.preview.emergentagent.com"
+    base_url = "https://options-trader-6.preview.emergentagent.com"
     api_url = f"{base_url}/api"
     
     # Proper payload format

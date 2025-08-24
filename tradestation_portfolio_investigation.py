@@ -22,7 +22,7 @@ from datetime import datetime
 import sys
 
 class TradeStationPortfolioInvestigator:
-    def __init__(self, base_url="https://put-selling-dash.preview.emergentagent.com"):
+    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.investigation_results = {}
