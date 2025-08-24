@@ -90,11 +90,11 @@ class RobustTradeStationTester:
         print("\n🏥 TESTING HEALTH CHECK ENDPOINTS")
         print("=" * 80)
         
-        # Test 1: General health check
+        # Test 1: General health check (use the correct endpoint from server.py)
         success1, health_data = self.run_test(
             "General Health Check", 
             "GET", 
-            "health", 
+            "/health", 
             200
         )
         
