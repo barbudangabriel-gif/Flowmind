@@ -1,0 +1,6 @@
+# Frontend
+/frontend/ @reviewer-frontend
+# Backend
+/backend/  @reviewer-backend
+# CI
+/.gitlab-ci.yml @reviewer-devops
