@@ -404,12 +404,23 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                           <button
                             onClick={() => {
                               if (item.route) {
-                                // Navigate to specific route
+                                if (item.route.startsWith('http') || item.external) {
+                                  window.open(item.route, '_blank');
+                                  return;
+                                }
                                 navigate(item.route);
-                              } else {
-                                // Set active tab for in-app sections
-                                setActiveTab(item.id);
+                                return;
                               }
+                              if (item.id === 'summary-report') {
+                                window.open('/reports/flowmind_summary.html', '_blank');
+                                return;
+                              }
+                              if (item.id === 'conduita-report') {
+                                window.open('/reports/conduita_workflow.html', '_blank');
+                                return;
+                              }
+                              // Set active tab for in-app sections
+                              setActiveTab(item.id);
                               if (isMobile) setIsCollapsed(true);
                             }}
                             className={`w-full group flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-3'} py-3 rounded-xl transition-all duration-200 relative ${
