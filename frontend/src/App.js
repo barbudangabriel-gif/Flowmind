@@ -4959,6 +4959,7 @@ const MarketNews = () => {
 
 // ==================== TRADESTATION COMPONENTS ====================
 // DISABLED - Using separate TradeStationAuth.js component instead
+const TradeStationAuthDisabled = () => null; // Disabled component
 /*
 // TradeStation Authentication Component
 const TradeStationAuth = () => {
