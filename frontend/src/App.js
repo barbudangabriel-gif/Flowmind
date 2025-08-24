@@ -6642,7 +6642,7 @@ const TradeStationTrading = () => {
 
       {/* Order Validation Results */}
       {orderValidation && (
-        <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+        <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
           <h3 className="text-lg font-semibold mb-4">Order Validation</h3>
           
           <div className="space-y-4">
