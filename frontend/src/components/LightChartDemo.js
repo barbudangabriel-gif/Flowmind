@@ -75,7 +75,7 @@ export default function LightChartDemo() {
 
   // Initialize chart
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !chartLoaded || !createChart) return;
 
     try {
       // Clear any previous chart
