@@ -214,7 +214,7 @@ async def health_check() -> Dict[str, Any]:
         
         # Check if we can connect to MongoDB
         mongo_ok = False
-        if _mongo_client:
+        if _mongo_client is not None:
             try:
                 await _mongo_client.admin.command('ping')
                 mongo_ok = True
