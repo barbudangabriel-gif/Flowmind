@@ -6068,7 +6068,7 @@ const TradeStationPortfolio = () => {
 
           {/* Risk Analysis */}
           {portfolioData.risk_analysis && (
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+            <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-500" />
                 Risk Analysis
