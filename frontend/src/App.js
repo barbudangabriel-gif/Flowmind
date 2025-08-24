@@ -6536,7 +6536,7 @@ const TradeStationTrading = () => {
       )}
 
       {/* Order Form */}
-      <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
+      <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
         <h3 className="text-xl font-semibold mb-6">Place Order</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
