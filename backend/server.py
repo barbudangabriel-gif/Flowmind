@@ -54,13 +54,17 @@ from options_selling_service import (
     AnalysisQuery, options_analysis
 )
 
+# Logger setup
+logger = logging.getLogger("server")
+logger.setLevel(logging.INFO)
+
 # NEW: Robust TradeStation Token Management
 try:
     from app.routers.tradestation_auth import router as ts_auth_router
     ROBUST_TS_AVAILABLE = True
 except ImportError:
     ROBUST_TS_AVAILABLE = False
-    logging.warning("Robust TradeStation auth not available - using legacy system")
+    logger.warning("Robust TradeStation auth not available - using legacy system")
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
