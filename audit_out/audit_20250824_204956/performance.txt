@@ -1,0 +1,15 @@
+Performance Analysis:
+Largest files:
+-rw-r--r-- 1 root root 11958396 Aug 23 11:50 /app/frontend/node_modules/plotly.js/dist/plotly-strict.js
+-rw-r--r-- 1 root root 11481373 Aug 23 11:50 /app/frontend/node_modules/plotly.js/dist/plotly-with-meta.js
+-rw-r--r-- 1 root root 11119304 Aug 23 11:50 /app/frontend/node_modules/plotly.js/dist/plotly.js
+-rw-r--r-- 1 root root  5496045 Aug 23 11:50 /app/frontend/node_modules/plotly.js/dist/plotly-geo-assets.js
+-rw-r--r-- 1 root root  5107367 Aug 23 11:50 /app/frontend/node_modules/plotly.js/dist/plotly-strict.min.js
+-rw-r--r-- 1 root root  4763993 Aug 23 11:50 /app/frontend/node_modules/plotly.js/dist/plotly.min.js
+-rw-r--r-- 1 root root  4645258 Aug 23 11:50 /app/frontend/node_modules/plotly.js/dist/plotly-mapbox.js
+-rw-r--r-- 1 root root 4504586 Aug 23 11:50 /app/frontend/node_modules/tailwindcss/peers/index.js
+-rw-r--r-- 1 root root  4295764 Aug 23 11:50 /app/frontend/node_modules/plotly.js/dist/plotly-gl3d.js
+-rw-r--r-- 1 root root  3922249 Aug 23 11:50 /app/frontend/node_modules/plotly.js/dist/plotly-gl2d.js
+
+Database operations found: 300
+API calls found: 220

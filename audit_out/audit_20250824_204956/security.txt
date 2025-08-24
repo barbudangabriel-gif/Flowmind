@@ -1,0 +1,37 @@
+Checking for potential secrets...
+/app/tradestation_api_test.py:        has_access_token = auth_data.get('has_access_token', False)
+/app/tradestation_api_test.py:        print(f"📊 Has Access Token: {has_access_token}")
+/app/tradestation_api_test.py:        if authenticated and has_access_token:
+/app/.gitignore:*token.json*
+/app/test_unusual_whales_direct.py:    api_token = os.getenv("UW_API_TOKEN")
+/app/test_unusual_whales_direct.py:    print(f"API Token: {api_token}")
+/app/test_unusual_whales_direct.py:        "Authorization": f"Bearer {api_token}",
+/app/test_unusual_whales_direct.py:                    print(f"   ❌ Unauthorized - API token may be invalid")
+/app/test_unusual_whales_direct.py:        print(f"Service API token: {service.api_token}")
+/app/frontend/public/reports/conduita_workflow.html:      <li>Fără secrete în repo.</li>
+/app/frontend/public/reports/flowmind_summary.html:      <li>Backend: rute prefixate <span class="mono">/api/unusualwhales/…</span>, cheie în env (ex.: <span class="mono">UNUSUAL_WHALES_API_KEY</span>)</li>
+/app/frontend/src/components/TradeStationAuth.js:  const refreshToken = async () => {
+/app/frontend/src/components/TradeStationAuth.js:      setError(`Failed to refresh token: ${err.message}`);
+/app/frontend/src/components/TradeStationAuth.js:              <span className="text-gray-400">Has Access Token:</span>
+/app/frontend/src/components/TradeStationAuth.js:                {authStatus?.authentication?.has_access_token ? '✅ Yes' : '❌ No'}
+/app/frontend/src/components/TradeStationAuth.js:              <span className="text-gray-400">Has Refresh Token:</span>
+/app/frontend/src/components/TradeStationAuth.js:                {authStatus?.authentication?.has_refresh_token ? '✅ Yes' : '❌ No'}
+/app/frontend/src/components/TradeStationAuth.js:              <span className="text-gray-400">Token Expires:</span>
+/app/frontend/src/components/TradeStationAuth.js:                {authStatus?.authentication?.token_expires 
+/app/frontend/src/components/TradeStationAuth.js:                  ? new Date(authStatus.authentication.token_expires).toLocaleString()
+
+.env files found:
+/app/frontend/.env
+/app/backend/.env
+
+Hardcoded URLs/endpoints:
+/app/detailed_chart_test.py:    url = "https://options-trader-6.preview.emergentagent.com/api/unusual-whales/trading-strategies"
+/app/price_fix_verification.py:    base_url = "https://options-trader-6.preview.emergentagent.com"
+/app/monitor_debug_test.py:    base_url = "https://options-trader-6.preview.emergentagent.com"
+/app/analysis_chart_backend_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
+/app/test_portfolio_management.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
+/app/tradestation_api_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
+/app/covered_calls_backend_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
+/app/comprehensive_backend_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
+/app/investment_scoring_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
+/app/chart_integration_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):

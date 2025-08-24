@@ -1,0 +1,6 @@
+Architecture Analysis:
+Services detected:
+8
+React components:
+8136
+API endpoints: 1
