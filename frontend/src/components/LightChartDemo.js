@@ -189,7 +189,7 @@ export default function LightChartDemo() {
       console.error('Chart initialization error:', err);
       setError(err.message);
     }
-  }, [theme, bars]);
+  }, [theme, bars, chartLoaded, data, sma20]);
 
   if (error) {
     return (
