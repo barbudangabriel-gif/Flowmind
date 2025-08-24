@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "timestamp": "audit_20250824_204956",
+    "repo": "/app",
+    "commit": "",
+    "auditor": "Aggregated"
+  },
+  "summary": [],
+  "metrics": {
+    "sloc": 0,
+    "vuln_high": 0,
+    "vuln_med": 0,
+    "lint_errors": 0,
+    "dup_percent": 0.0,
+    "coverage": 0.0,
+    "hot_files": []
+  },
+  "top_issues": [],
+  "quick_wins": [],
+  "two_week_plan": [],
+  "findings": [],
+  "artifacts": {
+    "logs": [],
+    "manifests": [],
+    "configs": [],
+    "reports": []
+  }
+}
