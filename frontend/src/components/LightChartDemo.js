@@ -197,12 +197,26 @@ export default function LightChartDemo() {
         <div className="text-center text-red-300">
           <h3 className="text-lg font-semibold mb-2">Chart Error</h3>
           <p className="text-sm">{error}</p>
+          <p className="text-xs mt-2 opacity-70">
+            Ensure lightweight-charts package is properly installed
+          </p>
           <button 
             onClick={() => window.location.reload()} 
             className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           >
             Reload Page
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!chartLoaded) {
+    return (
+      <div className="w-full h-full min-h-[720px] p-4 bg-neutral-900/40 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p>Loading charting library...</p>
         </div>
       </div>
     );
