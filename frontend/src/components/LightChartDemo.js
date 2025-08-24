@@ -63,6 +63,16 @@ export default function LightChartDemo() {
   // Generate demo data
   const { data, sma20 } = genDemoOHLCV(bars);
 
+  // Load chart library
+  useEffect(() => {
+    loadLightweightCharts().then(success => {
+      setChartLoaded(success);
+      if (!success) {
+        setError('Failed to load charting library');
+      }
+    });
+  }, []);
+
   // Initialize chart
   useEffect(() => {
     if (!containerRef.current) return;
