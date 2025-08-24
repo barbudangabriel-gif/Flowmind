@@ -65,7 +65,6 @@ const OptionsModule = React.lazy(() => import("./components/OptionsModule"));
 const ChartTestPage = React.lazy(() => import("./components/ChartTestPage"));
 const ProfessionalChartTest = React.lazy(() => import("./components/ProfessionalChartTest"));
 const SettingsPage = React.lazy(() => import("./components/SettingsPage"));
-const ReportViewer = React.lazy(() => import("./components/ReportViewer"));
 
 import "./App.css";
 
@@ -214,9 +213,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     {
       title: "Dashboard 🏠",
       items: [
-        { id: 'dashboard', label: 'Overview', icon: Home, color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' },
-        { id: 'summary-report', label: 'Project Report (PDF) – temp', icon: Eye, color: 'from-slate-500 to-gray-600', shortLabel: 'Report', route: '/reports/flowmind_summary.html', external: true },
-        { id: 'conduita-report', label: 'Conduită & Workflow – temp', icon: Eye, color: 'from-slate-500 to-gray-600', shortLabel: 'Conduită', route: '/reports/conduita_workflow.html', external: true }
+        { id: 'dashboard', label: 'Overview', icon: Home, color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' }
       ]
     },
     {
@@ -404,23 +401,12 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                           <button
                             onClick={() => {
                               if (item.route) {
-                                if (item.route.startsWith('http') || item.external) {
-                                  window.open(item.route, '_blank');
-                                  return;
-                                }
+                                // Navigate to specific route
                                 navigate(item.route);
-                                return;
+                              } else {
+                                // Set active tab for in-app sections
+                                setActiveTab(item.id);
                               }
-                              if (item.id === 'summary-report') {
-                                window.open('/reports/flowmind_summary.html', '_blank');
-                                return;
-                              }
-                              if (item.id === 'conduita-report') {
-                                window.open('/reports/conduita_workflow.html', '_blank');
-                                return;
-                              }
-                              // Set active tab for in-app sections
-                              setActiveTab(item.id);
                               if (isMobile) setIsCollapsed(true);
                             }}
                             className={`w-full group flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-3'} py-3 rounded-xl transition-all duration-200 relative ${
@@ -5148,7 +5134,7 @@ const TradeStationAuth = () => {
       )}
 
       {/* Authentication Status Card */}
-      <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
+      <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Status Overview */}
           <div className="space-y-4">
@@ -6068,7 +6054,7 @@ const TradeStationPortfolio = () => {
 
           {/* Risk Analysis */}
           {portfolioData.risk_analysis && (
-            <div className={isDarkMode ? 'bg-gray-800 border-gray-700 border rounded-xl p-6' : 'bg-white border-gray-200 border rounded-xl p-6'}>
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl p-6`}>
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-500" />
                 Risk Analysis
@@ -7221,10 +7207,6 @@ function AppContent() {
         return <PerformanceAnalytics />;
       case 'news':
         return <MarketNews />;
-      case 'summary-report':
-        // open the viewer route
-        navigate('/project-report');
-        return <div className="p-6 text-center text-white">Opening report…</div>;
       default:
         return <Dashboard />;
     }
@@ -7278,16 +7260,6 @@ function AppContent() {
               element={
                 <Suspense fallback={<LoadingFallback componentName="Chart Test" />}>
                   <ChartTestPage />
-                </Suspense>
-              } 
-            />
-
-            {/* Project Report Viewer (temporary) */}
-            <Route 
-              path="/project-report" 
-              element={
-                <Suspense fallback={<LoadingFallback componentName="Project Report" />}>
-                  <ReportViewer />
                 </Suspense>
               } 
             />
