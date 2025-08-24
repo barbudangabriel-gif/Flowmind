@@ -321,7 +321,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Logger
-logger = logging.getLogger("server")
-logger.setLevel(logging.INFO)
