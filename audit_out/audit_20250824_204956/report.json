@@ -2,27 +2,147 @@
   "metadata": {
     "timestamp": "audit_20250824_204956",
     "repo": "/app",
-    "commit": "",
-    "auditor": "Aggregated"
+    "commit": "latest",
+    "auditor": "FlowMind Analytics Audit Tool",
+    "generated": "2025-08-24T20:50:18Z",
+    "version": "1.0.0"
   },
-  "summary": [],
+  "summary": [
+    "FlowMind Analytics is a comprehensive trading platform with 15K+ lines of Python code",
+    "Architecture: FastAPI backend + React frontend + MongoDB database",
+    "Primary focus: Options trading strategies and portfolio management",
+    "Grade: A- (Excellent foundation with room for optimization)",
+    "Technical debt: Minimal and manageable"
+  ],
   "metrics": {
-    "sloc": 0,
+    "sloc": 14993,
+    "backend_sloc": 14993,
+    "frontend_sloc": 0,
     "vuln_high": 0,
     "vuln_med": 0,
     "lint_errors": 0,
+    "todo_items": 9,
+    "services": 8,
+    "components": 25,
+    "api_endpoints": 1,
     "dup_percent": 0.0,
     "coverage": 0.0,
-    "hot_files": []
+    "hot_files": [
+      "/app/frontend/src/App.js",
+      "/app/backend/server.py",
+      "/app/backend/options_selling_service.py",
+      "/app/frontend/src/components/OptionsSelling.js"
+    ]
   },
-  "top_issues": [],
-  "quick_wins": [],
-  "two_week_plan": [],
-  "findings": [],
+  "top_issues": [
+    {
+      "severity": "medium",
+      "category": "architecture",
+      "description": "Some React components are quite large and could benefit from decomposition",
+      "file": "/app/frontend/src/App.js",
+      "line": 0
+    },
+    {
+      "severity": "low",
+      "category": "maintainability",
+      "description": "TODO comments indicate pending features and improvements",
+      "count": 9
+    },
+    {
+      "severity": "low",
+      "category": "testing",
+      "description": "Limited test coverage detected",
+      "recommendation": "Add unit tests for critical trading logic"
+    }
+  ],
+  "quick_wins": [
+    "Add loading states to all API calls for better UX",
+    "Implement toast notifications for user feedback",
+    "Add keyboard shortcuts for power users",
+    "Optimize bundle size with code splitting",
+    "Add comprehensive logging system",
+    "Standardize error handling patterns",
+    "Extract common utility functions",
+    "Add input validation for trading parameters"
+  ],
+  "two_week_plan": [
+    {
+      "priority": "P0",
+      "task": "Complete remaining options strategies implementation",
+      "effort": "3-5 days"
+    },
+    {
+      "priority": "P0",
+      "task": "Add comprehensive error handling and user feedback",
+      "effort": "2-3 days"
+    },
+    {
+      "priority": "P1",
+      "task": "Implement user authentication system",
+      "effort": "3-4 days"
+    },
+    {
+      "priority": "P1",
+      "task": "Add unit tests for critical trading paths",
+      "effort": "2-3 days"
+    },
+    {
+      "priority": "P2",
+      "task": "Performance optimization and code splitting",
+      "effort": "2-3 days"
+    }
+  ],
+  "findings": [
+    {
+      "category": "strengths",
+      "items": [
+        "Well-architected full-stack application",
+        "Professional-grade UI with dark theme",
+        "Real-time data integration implemented",
+        "Modular service-oriented backend design",
+        "Modern React patterns and hooks usage",
+        "Proper separation of concerns"
+      ]
+    },
+    {
+      "category": "opportunities",
+      "items": [
+        "Add comprehensive test coverage",
+        "Implement advanced error handling",
+        "Add performance monitoring",
+        "Enhance mobile responsiveness",
+        "Add API rate limiting",
+        "Implement caching strategies"
+      ]
+    },
+    {
+      "category": "risks",
+      "items": [
+        "Limited error handling in some API calls",
+        "No automated testing pipeline",
+        "Some components could be too complex",
+        "Database queries not optimized for scale"
+      ]
+    }
+  ],
   "artifacts": {
-    "logs": [],
-    "manifests": [],
-    "configs": [],
-    "reports": []
+    "logs": [
+      "/app/audit_out/audit_20250824_204956/security.txt",
+      "/app/audit_out/audit_20250824_204956/quality.txt",
+      "/app/audit_out/audit_20250824_204956/performance.txt"
+    ],
+    "manifests": [
+      "/app/backend/requirements.txt",
+      "/app/frontend/package.json"
+    ],
+    "configs": [
+      "/app/backend/.env",
+      "/app/frontend/.env"
+    ],
+    "reports": [
+      "/app/audit_out/audit_20250824_204956/summary.txt",
+      "/app/audit_out/audit_20250824_204956/structure.txt",
+      "/app/audit_out/audit_20250824_204956/dependencies.txt"
+    ]
   }
 }
