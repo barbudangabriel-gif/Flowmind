@@ -64,11 +64,19 @@ const StockAnalysisPage = React.lazy(() => import("./components/StockAnalysisPag
 const TokenRefreshTest = React.lazy(() => import("./components/TokenRefreshTest"));
 const ChartPage = React.lazy(() => import("./pages/ChartPage"));
 const ChartHeadlessPage = React.lazy(() => import("./pages/ChartHeadlessPage"));
+const ChartProPage = React.lazy(() => import("./pages/ChartProPage"));
+const ChartProPlusPlusPlus = React.lazy(() => import("./pages/ChartProPlusPlusPlus"));
+const ChartTSStreamExample = React.lazy(() => import("./components/ChartTSStreamExample"));
+const ChartProTSLive = React.lazy(() => import("./components/ChartProTSLive"));
+const TradeStationAuthHelper = React.lazy(() => import("./components/TradeStationAuthHelper"));
+const ScreenerV2 = React.lazy(() => import("./features/iv/ScreenerV2"));
 const OptionsModule = React.lazy(() => import("./components/OptionsModule"));
 const ChartTestPage = React.lazy(() => import("./components/ChartTestPage"));
 const ProfessionalChartTest = React.lazy(() => import("./components/ProfessionalChartTest"));
 const SettingsPage = React.lazy(() => import("./components/SettingsPage"));
 
+import { Toaster } from './components/ui/toast';
+import ThemeIconToggleGhost from './components/ThemeIconToggleGhost';
 import "./App.css";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -142,11 +150,17 @@ const ThemeProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    const savedMode = localStorage.getItem('darkMode');
-    if (savedMode) {
-      setIsDarkMode(JSON.parse(savedMode));
-    }
+    // FORCE light mode by default - clear all theme storage
+    localStorage.clear(); // Clear toate pentru fresh start
+    setIsDarkMode(false);
+    document.documentElement.classList.remove('dark');
   }, []);
+
+  // Sync theme with document class
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
@@ -182,7 +196,7 @@ const LoadingFallback = ({ componentName }) => (
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(new Set([])); // TOATE RETRAȘI INIȚIAL
+  const [expandedSections, setExpandedSections] = useState(new Set([])); // TOATE SECȚIUNILE COLLAPSED BY DEFAULT
   const { isDarkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
 
@@ -216,57 +230,57 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     {
       title: "Dashboard 🏠",
       items: [
-        { id: 'dashboard', label: 'Overview', icon: Home, color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' }
+        { id: 'dashboard', label: 'Overview', icon: '📈', color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' }
       ]
     },
     {
       title: "Advanced Screener 🔍",
       items: [
-        { id: 'screener', label: 'Advanced Screener', icon: Database, color: 'from-violet-500 to-purple-500', shortLabel: 'Screen' },
-        { id: 'simple-screener', label: 'Stock Search', icon: Search, color: 'from-pink-500 to-rose-500', shortLabel: 'Search' },
-        { id: 'technical', label: 'Technical Analysis', icon: BarChart3, color: 'from-indigo-500 to-purple-500', shortLabel: 'Tech' },
-        { id: 'watchlist', label: 'Watchlist', icon: Star, color: 'from-yellow-500 to-amber-500', shortLabel: 'Watch' },
-        { id: 'news', label: 'Market News', icon: Newspaper, color: 'from-slate-500 to-gray-500', shortLabel: 'News' }
+        { id: 'screener', label: 'Advanced Screener', icon: '🔍', color: 'from-violet-500 to-purple-500', shortLabel: 'Screen' },
+        { id: 'simple-screener', label: 'Stock Search', icon: '🔎', color: 'from-pink-500 to-rose-500', shortLabel: 'Search' },
+        { id: 'technical', label: 'Technical Analysis', icon: '📈', color: 'from-indigo-500 to-purple-500', shortLabel: 'Tech' },
+        { id: 'watchlist', label: 'Watchlist', icon: '⭐', color: 'from-yellow-500 to-amber-500', shortLabel: 'Watch' },
+        { id: 'news', label: 'Market News', icon: '📰', color: 'from-slate-500 to-gray-500', shortLabel: 'News' }
       ]
     },
     {
       title: "Investment Scoring 🎯",
       items: [
-        { id: 'investments', label: 'Investment Scoring', icon: Award, color: 'from-amber-500 to-orange-500', badge: '🎯', shortLabel: 'Score' },
-        { id: 'investment-scanner', label: 'Stock Scanner', icon: Search, color: 'from-green-500 to-emerald-500', badge: '🔍', shortLabel: 'Scanner', route: '/investment-scoring-scanner' }
+        { id: 'investments', label: 'Investment Scoring', icon: '🎯', color: 'from-amber-500 to-orange-500', badge: '🎯', shortLabel: 'Score' },
+        { id: 'investment-scanner', label: 'Stock Scanner', icon: '🔍', color: 'from-green-500 to-emerald-500', badge: '🔍', shortLabel: 'Scanner', route: '/investment-scoring-scanner' }
       ]
     },
     {
       title: "Unusual Whales 🐋",
       items: [
-        { id: 'options-flow', label: 'Options Flow', icon: Activity, color: 'from-cyan-500 to-blue-600', badge: '📈', shortLabel: 'Flow' },
-        { id: 'dark-pool', label: 'Dark Pool', icon: Eye, color: 'from-gray-600 to-slate-700', badge: '🌊', shortLabel: 'Dark' },
-        { id: 'congressional', label: 'Congressional Trades', icon: Users, color: 'from-red-500 to-pink-600', badge: '🏛️', shortLabel: 'Congress' },
-        { id: 'trading-strategies', label: 'Trading Strategies', icon: Target, color: 'from-green-500 to-emerald-600', badge: '🎯', shortLabel: 'Strategies' }
+        { id: 'options-flow', label: 'Options Flow', icon: '📊', color: 'from-cyan-500 to-blue-600', badge: '📈', shortLabel: 'Flow' },
+        { id: 'dark-pool', label: 'Dark Pool', icon: '🌊', color: 'from-gray-600 to-slate-700', badge: '🌊', shortLabel: 'Dark' },
+        { id: 'congressional', label: 'Congressional Trades', icon: '🏛️', color: 'from-red-500 to-pink-600', badge: '🏛️', shortLabel: 'Congress' },
+        { id: 'trading-strategies', label: 'Trading Strategies', icon: '🎯', color: 'from-green-500 to-emerald-600', badge: '🎯', shortLabel: 'Strategies' }
       ]
     },
     {
       title: "TradeStation 🏛️",
       items: [
-        { id: 'ts-auth', label: 'Authentication', icon: Settings, color: 'from-blue-500 to-indigo-600', badge: '🔐', shortLabel: 'Auth' },
-        { id: 'ts-portfolio', label: 'Live Portfolio', icon: Briefcase, color: 'from-emerald-500 to-green-600', badge: '📊', shortLabel: 'Live' },
-        { id: 'ts-balance', label: 'Account Balance', icon: DollarSign, color: 'from-green-500 to-emerald-600', badge: '💰', shortLabel: 'Balance' },
-        { id: 'ts-trading', label: 'Live Trading', icon: Zap, color: 'from-red-500 to-pink-600', badge: '⚡', shortLabel: 'Trade' },
-        { id: 'ts-orders', label: 'Order Management', icon: History, color: 'from-purple-500 to-violet-600', badge: '📋', shortLabel: 'Orders' }
+        { id: 'ts-auth', label: 'Authentication', icon: '🔐', color: 'from-blue-500 to-indigo-600', badge: '🔐', shortLabel: 'Auth' },
+        { id: 'ts-portfolio', label: 'Live Portfolio', icon: '💼', color: 'from-emerald-500 to-green-600', badge: '📊', shortLabel: 'Live' },
+        { id: 'ts-balance', label: 'Account Balance', icon: '💰', color: 'from-green-500 to-emerald-600', badge: '💰', shortLabel: 'Balance' },
+        { id: 'ts-trading', label: 'Live Trading', icon: '⚡', color: 'from-red-500 to-pink-600', badge: '⚡', shortLabel: 'Trade' },
+        { id: 'ts-orders', label: 'Order Management', icon: '📋', color: 'from-purple-500 to-violet-600', badge: '📋', shortLabel: 'Orders' }
       ]
     },
     {
       title: "Options Module ⚡",
       items: [
-        { id: 'options-module', label: 'Options Strategy Builder', icon: Zap, color: 'from-purple-500 to-indigo-600', badge: '⚡', shortLabel: 'Options', route: '/options' }
+        { id: 'options-module', label: 'Options Strategy Builder', icon: '⚡', color: 'from-purple-500 to-indigo-600', badge: '⚡', shortLabel: 'Options', route: '/options' }
       ]
     },
     {
       title: "Auto Options Trading 🤖",
       items: [
-        { id: 'auto-trading', label: 'Auto Trading Engine', icon: Bot, color: 'from-purple-500 to-indigo-600', badge: '🤖', shortLabel: 'Auto', systemActive: true },
-        { id: 'trading-history', label: 'Trading History', icon: History, color: 'from-blue-500 to-cyan-600', badge: '📊', shortLabel: 'History' },
-        { id: 'performance', label: 'Performance Analytics', icon: BarChart3, color: 'from-green-500 to-teal-600', badge: '📈', shortLabel: 'Analytics' }
+        { id: 'auto-trading', label: 'Auto Trading Engine', icon: '🤖', color: 'from-purple-500 to-indigo-600', badge: '🤖', shortLabel: 'Auto', systemActive: true },
+        { id: 'trading-history', label: 'Trading History', icon: '📊', color: 'from-blue-500 to-cyan-600', badge: '📊', shortLabel: 'History' },
+        { id: 'performance', label: 'Performance Analytics', icon: '📈', color: 'from-green-500 to-teal-600', badge: '📈', shortLabel: 'Analytics' }
       ]
     }
   ];
@@ -330,7 +344,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               const isDashboard = group.title === 'Dashboard 🏠';
               const isAdvancedScreener = group.title === 'Advanced Screener 🔍';
               const isAutoTrading = group.title === 'Auto Options Trading 🤖';
-              const hasDropdown = isTradeStation || isUnusualWhales || isDashboard || isAdvancedScreener || isAutoTrading;
+              const isInvestmentScoring = group.title === 'Investment Scoring 🎯';
+              const isOptionsModule = group.title === 'Options Module ⚡';
+              const hasDropdown = isTradeStation || isUnusualWhales || isDashboard || isAdvancedScreener || isAutoTrading || isInvestmentScoring || isOptionsModule;
               const isExpanded = expandedSections.has(group.title);
               
               return (
@@ -356,6 +372,42 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
                             <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </button>
+                        ) : isAdvancedScreener ? (
+                          <button
+                            onClick={() => toggleSection(group.title)}
+                            className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                          >
+                            <span>Advanced Screener 🔍</span>
+                            <div className="w-2 h-2 bg-violet-500 rounded-full animate-pulse"></div>
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+                        ) : isInvestmentScoring ? (
+                          <button
+                            onClick={() => toggleSection(group.title)}
+                            className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                          >
+                            <span>Investment Scoring 🎯</span>
+                            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+                        ) : isOptionsModule ? (
+                          <button
+                            onClick={() => toggleSection(group.title)}
+                            className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                          >
+                            <span>Options Module ⚡</span>
+                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
+                        ) : isAutoTrading ? (
+                          <button
+                            onClick={() => toggleSection(group.title)}
+                            className="flex items-center gap-2 hover:text-slate-200 transition-colors"
+                          >
+                            <span>Auto Options Trading 🤖</span>
+                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                            <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                          </button>
                         ) : (
                           <div className="flex items-center justify-between w-full">
                             <button
@@ -366,21 +418,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                               <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                             </button>
                             
-                            {/* Luna subțire în marginea EXTREMĂ dreaptă */}
+                            {/* Tooltip cu codul vostru EXACT lângă Dashboard */}
                             {isDashboard && (
                               <div className="flex-shrink-0 ml-4">
-                                <button 
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    console.log('Moon clicked! Current mode:', isDarkMode);
-                                    toggleDarkMode();
-                                  }}
-                                  className="p-1 hover:bg-gray-600 rounded transition-colors"
-                                  title="Toggle Dark/Light Mode"
-                                >
-                                  <Moon strokeWidth={1} className="w-4 h-4 text-blue-400 hover:text-blue-300" />
-                                </button>
+                                <ThemeIconToggleGhost />
                               </div>
                             )}
                           </div>
@@ -423,13 +464,17 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                               <div className="absolute left-0 top-0 bottom-0 w-1 bg-white rounded-r-full opacity-80"></div>
                             )}
                             
-                            {/* Icon with background */}
+                            {/* Icon with background - Emoji instead of Lucide */}
                             <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
                               isActive 
                                 ? 'bg-white/20' 
                                 : 'bg-slate-600/30 group-hover:bg-slate-600/50'
                             }`}>
-                              <Icon size={18} className={isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'} />
+                              {typeof item.icon === 'string' ? (
+                                <span className="text-lg">{item.icon}</span>
+                              ) : (
+                                <Icon size={18} className={isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'} />
+                              )}
                             </div>
                             
                             {/* Label */}
@@ -466,35 +511,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                           )}
                         </div>
                         
-                        {/* Dark Mode Toggle - Show after Market News */}
-                        {isNewsItem && !isCollapsed && (
-                          <div className="mt-3">
-                            <button
-                              onClick={toggleDarkMode}
-                              className="w-full flex items-center justify-between bg-slate-800/50 hover:bg-slate-700/50 rounded-xl p-3 border border-slate-600/30 transition-all duration-200 group"
-                            >
-                              <div className="flex items-center space-x-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                                  isDarkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-amber-500/20 text-amber-400'
-                                }`}>
-                                  {isDarkMode ? <Moon size={16} /> : <Sun size={16} />}
-                                </div>
-                                <span className="text-sm text-slate-300 group-hover:text-white">
-                                  {isDarkMode ? 'Dark Mode' : 'Light Mode'}
-                                </span>
-                              </div>
-                              <div className={`w-12 h-6 rounded-full p-1 transition-all duration-200 ${
-                                isDarkMode ? 'bg-indigo-600' : 'bg-slate-600'
-                              }`}>
-                                <div className={`w-4 h-4 rounded-full bg-white transition-all duration-200 transform ${
-                                  isDarkMode ? 'translate-x-6' : 'translate-x-0'
-                                }`}></div>
-                              </div>
-                            </button>
-                          </div>
-                        )}
+                        {/* REMOVED: Dark Mode Toggle - Using dashboard moon icon instead */}
                         
-                        {/* Dark Mode Toggle for collapsed state - Show after Market News */}
+                        {/* Dark Mode Toggle for collapsed state - REMOVED */}
                         {isNewsItem && isCollapsed && (
                           <div className="mt-2 flex justify-center">
                             <button
@@ -6787,7 +6806,7 @@ const TradeStationCallback = () => {
 function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [expandedSections, setExpandedSections] = useState(new Set([])); // TOATE PARENT-II RETRAȘI INIȚIAL
+  const [expandedSections, setExpandedSections] = useState(new Set([])); // TOATE SECȚIUNILE COLLAPSED BY DEFAULT
   const { isDarkMode, toggleDarkMode } = useTheme(); // FOLOSESC GLOBAL THEME
   const location = useLocation();
   const navigate = useNavigate();
@@ -6835,7 +6854,11 @@ function AppContent() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard />;
+        return (
+          <Suspense fallback={<LoadingFallback componentName="Chart Pro+++ Live" />}>
+            <ChartProTSLive />
+          </Suspense>
+        );
       case 'portfolio':
         return <EnhancedPortfolio />;
       case 'investments':
@@ -6865,9 +6888,11 @@ function AppContent() {
       case 'trading-strategies':
         return <TradingStrategies />;
       case 'ts-auth':
-        // Redirectează la pagina Settings pentru autentificare TradeStation
-        window.location.href = '/settings';
-        return <div className="p-6 text-center text-white">Redirecting to Settings...</div>;
+        return (
+          <Suspense fallback={<LoadingFallback componentName="TradeStation Auth" />}>
+            <TradeStationAuthHelper />
+          </Suspense>
+        );
       case 'ts-portfolio':
         return <TradeStationPortfolio />;
       case 'ts-balance':
@@ -6911,8 +6936,18 @@ function AppContent() {
               } 
             />
             
-            {/* Professional Chart Route */}
+            {/* IV Screener Route */}
             <Route 
+              path="/iv/screener" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="IV Screener" />}>
+                  <ScreenerV2 />
+                </Suspense>
+              } 
+            />
+            
+            {/* Professional Chart Route */}
+            <Route
               path="/chart-lite" 
               element={
                 <Suspense fallback={<LoadingFallback componentName="Professional Chart" />}>
@@ -6927,6 +6962,46 @@ function AppContent() {
               element={
                 <Suspense fallback={<LoadingFallback componentName="Advanced Chart Controller" />}>
                   <ChartHeadlessPage />
+                </Suspense>
+              } 
+            />
+            
+            {/* Chart Pro+++ Default Route */}
+            <Route 
+              path="/chart-pro-plus" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Chart Pro+++" />}>
+                  <ChartProPlusPlusPlus />
+                </Suspense>
+              } 
+            />
+            
+            {/* TradeStation Live Chart Route */}
+            <Route 
+              path="/ts-live" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="TradeStation Live" />}>
+                  <ChartProTSLive />
+                </Suspense>
+              } 
+            />
+            
+            {/* TradeStation Streaming Example */}
+            <Route 
+              path="/ts-stream" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="TradeStation Stream" />}>
+                  <ChartTSStreamExample />
+                </Suspense>
+              } 
+            />
+            
+            {/* Chart Pro Route */}
+            <Route 
+              path="/chart-pro" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Chart Pro" />}>
+                  <ChartProPage />
                 </Suspense>
               } 
             />
@@ -7007,6 +7082,7 @@ export default function AppWithTheme() {
         <BrowserRouter>
           <AppContent />
         </BrowserRouter>
+        <Toaster />
       </ThemeProvider>
     </ErrorBoundary>
   );

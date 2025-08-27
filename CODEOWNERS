@@ -1,6 +1,4 @@
-# Frontend
-/frontend/ @reviewer-frontend
-# Backend
-/backend/  @reviewer-backend
-# CI
-/.gitlab-ci.yml @reviewer-devops
+# FlowMind Analytics - Code Ownership
+# All code owned by @Capp1971
+
+* @Capp1971

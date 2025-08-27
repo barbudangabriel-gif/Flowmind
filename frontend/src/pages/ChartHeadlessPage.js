@@ -5,32 +5,32 @@ export default function ChartHeadlessPage() {
   // Optional custom fetcher to map your backend response
   const fetcher = async ({ symbol, timeframe, limit }) => {
     try {
-      // Example: if your backend uses e.g., /api/kline?symbol=NVDA&tf=60&n=500
+      // Use the real FlowMind backend API
       const API_BASE = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
       const response = await fetch(`${API_BASE}/api/market/chart/${symbol}?timeframe=${timeframe}&limit=${limit}`);
       
       if (!response.ok) {
-        // Fallback to demo data if API not available
-        console.warn(`Backend chart API not available, using demo data for ${symbol}`);
         throw new Error(`HTTP ${response.status}`);
       }
       
-      const data = await response.json();
+      const result = await response.json();
       
-      // Map backend response to normalized format
-      return data.map((bar) => ({
-        time: bar.time || bar.timestamp || Math.floor(Date.now() / 1000),
-        open: parseFloat(bar.open || bar.o || 0),
-        high: parseFloat(bar.high || bar.h || 0),
-        low: parseFloat(bar.low || bar.l || 0),
-        close: parseFloat(bar.close || bar.c || 0),
-        volume: parseInt(bar.volume || bar.v || 0),
-      }));
+      if (result.status === 'success' && result.data) {
+        return result.data.map((bar) => ({
+          time: bar.time,
+          open: parseFloat(bar.open),
+          high: parseFloat(bar.high),
+          low: parseFloat(bar.low),
+          close: parseFloat(bar.close),
+          volume: parseInt(bar.volume),
+        }));
+      } else {
+        throw new Error('Invalid API response format');
+      }
       
     } catch (error) {
-      console.warn('Chart API fetch failed, using demo data:', error.message);
-      // Fallback to demo data generation
-      return null; // This will trigger the default fetcher in useOHLCV
+      console.warn('Chart API fetch failed:', error.message);
+      throw error; // Let useOHLCV handle the fallback
     }
   };
 
@@ -96,7 +96,7 @@ export default function ChartHeadlessPage() {
               <div>
                 <strong>Backend API:</strong>
                 <code className="ml-2 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
-                  GET /api/market/chart/{symbol}?timeframe=D&limit=300
+                  GET /api/market/chart/SYMBOL?timeframe=D&limit=300
                 </code>
               </div>
               <div>

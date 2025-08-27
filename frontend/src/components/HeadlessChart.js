@@ -100,22 +100,27 @@ const HeadlessChart = forwardRef(({
           layout: {
             background: { 
               type: ColorType?.Solid || 0, 
-              color: theme === 'dark' ? '#1a1a1a' : '#ffffff' 
+              color: theme === 'dark' ? '#000000' : '#ffffff'  // SUPER BLACK pentru dark mode
             },
             textColor: theme === 'dark' ? '#e5e5e5' : '#333333',
           },
           grid: {
-            vertLines: { color: theme === 'dark' ? '#2a2a2a' : '#e0e0e0' },
-            horzLines: { color: theme === 'dark' ? '#2a2a2a' : '#e0e0e0' },
+            vertLines: { color: theme === 'dark' ? '#1a1a1a' : '#e0e0e0' }, // Darker grid pentru super black
+            horzLines: { color: theme === 'dark' ? '#1a1a1a' : '#e0e0e0' }, // Darker grid pentru super black
           },
           crosshair: { mode: 0 },
           timeScale: {
-            borderColor: theme === 'dark' ? '#485158' : '#cccccc',
+            borderColor: theme === 'dark' ? '#333333' : '#cccccc', // Lighter border on black
             timeVisible: true,
             secondsVisible: false,
+            borderVisible: false, // Remove border
           },
           rightPriceScale: {
-            borderColor: theme === 'dark' ? '#485158' : '#cccccc',
+            borderColor: theme === 'dark' ? '#333333' : '#cccccc', // Lighter border on black
+            borderVisible: false, // Remove border
+          },
+          leftPriceScale: {
+            visible: false, // Hide left price scale
           },
           handleScroll: {
             mouseWheel: true,
@@ -213,19 +218,19 @@ const HeadlessChart = forwardRef(({
       layout: {
         background: { 
           type: ColorType?.Solid || 0, 
-          color: theme === 'dark' ? '#1a1a1a' : '#ffffff' 
+          color: theme === 'dark' ? '#000000' : '#ffffff'  // SUPER BLACK pentru dark mode
         },
         textColor: theme === 'dark' ? '#e5e5e5' : '#333333',
       },
       grid: {
-        vertLines: { color: theme === 'dark' ? '#2a2a2a' : '#e0e0e0' },
-        horzLines: { color: theme === 'dark' ? '#2a2a2a' : '#e0e0e0' },
+        vertLines: { color: theme === 'dark' ? '#1a1a1a' : '#e0e0e0' }, // Darker grid on super black
+        horzLines: { color: theme === 'dark' ? '#1a1a1a' : '#e0e0e0' }, // Darker grid on super black
       },
       timeScale: {
-        borderColor: theme === 'dark' ? '#485158' : '#cccccc',
+        borderColor: theme === 'dark' ? '#333333' : '#cccccc', // Lighter border on black
       },
       rightPriceScale: {
-        borderColor: theme === 'dark' ? '#485158' : '#cccccc',
+        borderColor: theme === 'dark' ? '#333333' : '#cccccc', // Lighter border on black
       },
     });
   }, [theme]);
@@ -234,8 +239,8 @@ const HeadlessChart = forwardRef(({
     <div className={className}>
       <div 
         ref={containerRef} 
-        className="w-full h-full" 
-        style={{ minHeight: height }}
+        className="w-full h-full bg-transparent" 
+        style={{ minHeight: height, margin: 0, padding: 0 }}
       />
     </div>
   );
