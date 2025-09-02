@@ -1,0 +1,7 @@
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+prometheus-client==0.20.0
+slowapi==0.1.9
+ujson==5.10.0
+python-json-logger==2.0.7
+pydantic==2.7.4

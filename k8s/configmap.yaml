@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  ALLOWED_ORIGINS: "https://app.example.com"
+  RATE_LIMIT: "120/minute"

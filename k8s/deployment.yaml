@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels: { app: app }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: app }
+  template:
+    metadata:
+      labels: { app: app }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: app
+          image: app:prod
+          imagePullPolicy: IfNotPresent
+          ports: [{ containerPort: 8080 }]
+          env:
+            - name: APP_MODE
+              value: "prod"
+            - name: ALLOWED_ORIGINS
+              valueFrom:
+                configMapKeyRef: { name: app-config, key: ALLOWED_ORIGINS }
+            - name: RATE_LIMIT
+              valueFrom:
+                configMapKeyRef: { name: app-config, key: RATE_LIMIT }
+            - name: ALPHA_VANTAGE_API_KEY
+              valueFrom: { secretKeyRef: { name: app-secrets, key: ALPHA_VANTAGE_API_KEY } }
+            - name: UW_API_TOKEN
+              valueFrom: { secretKeyRef: { name: app-secrets, key: UW_API_TOKEN } }
+            - name: TS_TOKEN
+              valueFrom: { secretKeyRef: { name: app-secrets, key: TS_TOKEN } }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          readinessProbe:
+            httpGet: { path: /readiness, port: 8080 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: 8080 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits:   { cpu: "500m", memory: "512Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+spec:
+  selector: { app: app }
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP

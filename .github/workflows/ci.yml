@@ -1,55 +1,76 @@
-name: CI
-
+name: ci
 on:
   pull_request:
-    branches: [ main, master ]
   push:
     branches: [ main ]
-
 jobs:
-  frontend:
-    name: FE Lint & Build & Audit
+  python:
+    name: Lint, test, and security scans
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run build --if-present
-      - run: npm audit --audit-level=high
+          fetch-depth: 0
 
-  backend:
-    name: BE Ruff & Mypy & Bandit & Pytest & pip-audit
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
-      - run: pip install -U pip
-      - run: pip install -r requirements.txt || true
-      - run: pip install ruff mypy bandit pytest pip-audit
-      - run: ruff --output-format=github check .
-      - run: ruff format --check
-      - run: mypy . --ignore-missing-imports --pretty
-      - run: bandit -ll -r . -x tests
-      - run: pip-audit -r requirements.txt --strict || pip-audit --strict
-      - run: pytest -q || true
 
-  gate:
-    name: PR Gate
+      - name: Install dev tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+          pip install -r requirements-dev.txt
+
+      - name: Pre-commit (lint, format, hooks)
+        run: |
+          pip install pre-commit
+          pre-commit run --all-files
+
+      - name: Run tests
+        run: |
+          if [ -f pytest.ini ] || [ -d tests ]; then
+            pip install pytest
+            pytest -q
+          else
+            echo "No tests directory - skipping"
+          fi
+
+      - name: Generate SBOM (syft)
+        uses: anchore/syft-action@v0.16.0
+        with:
+          args: . -o spdx-json=sbom.spdx.json
+
+      - name: Scan dependencies (grype)
+        uses: anchore/grype-action@v3
+        with:
+          fail-build: true
+          severity-cutoff: high
+
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source . --no-git -v --redact --report-format sarif --report-path gitleaks.sarif
+
+      - name: Upload scan reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            sbom.spdx.json
+            gitleaks.sarif
+
+  docker-build:
     runs-on: ubuntu-latest
-    needs: [frontend, backend]
+    needs: python
     steps:
-      - run: echo "All gates passed ✅"
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: app:ci
