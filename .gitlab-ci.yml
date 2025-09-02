@@ -149,6 +149,27 @@ backend:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH
 
+# -------- IV SMOKE TEST --------
+iv:smoke:
+  stage: test
+  image: python:3.11-slim
+  rules:
+    - changes:
+        - backend/**/*
+        - .gitlab-ci.yml
+  before_script:
+    - cd backend
+    - pip install --no-cache-dir fastapi uvicorn pytest httpx
+    - pip install -r requirements.txt || true
+  script:
+    - pytest -q tests/test_iv_smoke.py --junitxml=junit-iv-smoke.xml
+  artifacts:
+    when: always
+    reports:
+      junit: backend/junit-iv-smoke.xml
+    paths:
+      - backend/junit-iv-smoke.xml
+
 # -------- SBOM: Frontend (CycloneDX) --------
 sbom-frontend:
   stage: sbom

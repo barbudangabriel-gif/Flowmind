@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import BacktestCard from "../../components/BacktestCard";
 
 // Utils (o singură dată, fără duplicări)
 const fmtPct = (x) => (x == null || Number.isNaN(x) ? "-" : (x * 100).toFixed(2) + "%");
@@ -214,9 +215,12 @@ export default function ScreenerV2() {
                   </>
                 )}
                 <td className="p-2">
-                  <button onClick={() => onBuild(r)} className="px-3 py-1 rounded border hover:bg-gray-50">
-                    {rule === "condor" ? "Build Condor" : "Build Calendar"}
-                  </button>
+                  <div className="space-y-2">
+                    <button onClick={() => onBuild(r)} className="px-3 py-1 rounded border hover:bg-gray-50 w-full">
+                      {rule === "condor" ? "Build Condor" : "Build Calendar"}
+                    </button>
+                    <BacktestCard backtest={r.backtest} className="w-full" />
+                  </div>
                 </td>
               </tr>
             ))}

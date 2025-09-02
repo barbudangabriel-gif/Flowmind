@@ -1,0 +1,27 @@
+name: backend-tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: 
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          pip install -U pip
+          pip install -r backend/requirements.txt
+      - name: Run contract tests (TEST_MODE=1 -> in-memory Redis)
+        env:
+          TEST_MODE: "1"
+        working-directory: backend
+        run: |
+          pytest ../tests/ -q
+      - name: Coverage
+        env: 
+          TEST_MODE: "1"
+        working-directory: backend
+        run: |
+          pip install pytest-cov
+          pytest ../tests/ --cov=. --cov-report=term-missing --cov-fail-under=70 -q

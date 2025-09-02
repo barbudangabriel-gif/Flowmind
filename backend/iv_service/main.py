@@ -1,61 +1,81 @@
-import logging
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
-from pydantic import BaseModel
+from .ts_client import summary, terms, strikes_calc, pick_calendar, pick_condor
 
-app = FastAPI(title="FlowMind IV/EM Service", version="0.1.0")
+app = FastAPI(title="FlowMind IV Service", version="0.1.0")
 
 
-# --- HEALTH + ROUTES DEBUG (ca să nu mai bâjbâim) ---
-@app.get("/health", include_in_schema=False)
+@app.get("/health")
 def health():
     return {"ok": True}
 
 
-@app.get("/_routes", include_in_schema=False)
+@app.get("/_routes")
 def _routes():
     return sorted([r.path for r in app.router.routes if isinstance(r, APIRoute)])
 
 
-# --- IMPORTURI EXISTENTE (summary/strikes/term) ---
-from .ts_client import TSClient
-
-ts_client = TSClient()
-
-
-class StrikesRequest(BaseModel):
-    symbol: str
-    rule: str
-    mult: float
-
-
 @app.get("/api/iv/summary")
-async def summary(symbol: str = "NVDA"):
-    spot = await ts_client.get_spot(symbol)
-    return {"symbol": symbol, "spot": spot, "iv": 0.25}
+async def get_summary(symbol: str = "NVDA", front_dte: int = 3, back_dte: int = 35):
+    return await summary(symbol, front_dte, back_dte)
 
 
 @app.get("/api/iv/term")
-async def term(symbol: str = "NVDA"):
-    return {"symbol": symbol, "term": [{"dte": 7, "iv": 0.3}, {"dte": 30, "iv": 0.25}]}
+async def get_term(symbol: str = "NVDA"):
+    return await terms(symbol)
 
 
-@app.post("/api/iv/strikes")
-async def strikes(req: StrikesRequest):
-    spot = await ts_client.get_spot(req.symbol)
-    k_low = int(spot * 0.95)
-    k_high = int(spot * 1.05)
-    return {
-        "front": {"dte": 3, "strikes": [k_low, k_high]},
-        "back": {"dte": 35, "strikes": [k_low, k_high]},
-    }
+@app.get("/api/iv/strikes")
+async def get_strikes(symbol: str = "NVDA", front_dte: int = 3, back_dte: int = 35):
+    return await strikes_calc(symbol, front_dte, back_dte)
 
 
-# --- MONTEAZĂ BATCH ROUTER ---
-try:
-    from .batch import router as iv_batch_router
+@app.post("/api/iv/batch")
+async def post_batch(body: dict):
+    symbols = body.get("symbols", ["NVDA", "AAPL", "MSFT"])[:5]  # limit 5 pentru demo
+    rule = body.get("rule", "calendar")
+    mult = float(body.get("mult", 0.5))
 
-    app.include_router(iv_batch_router)
-    logging.warning("Mounted iv_batch_router OK")
-except Exception as e:
-    logging.exception("Failed to mount iv_batch_router: %s", e)
+    rows = []
+    ok = fail = 0
+
+    for sym in symbols:
+        try:
+            s = await summary(sym)
+            spot, em_usd = s["spot"], s["em_usd"]
+            row = {
+                "symbol": s["symbol"],
+                "spot": spot,
+                "iv": s["iv"],
+                "em_usd": em_usd,
+                "em_pct": s["em_pct"],
+                "front_dte": s["front_dte"],
+                "back_dte": s["back_dte"],
+                "error": None,
+            }
+
+            if rule == "calendar":
+                dc_low, dc_high = pick_calendar(spot, em_usd, mult)
+                row.update({"dc_low": dc_low, "dc_high": dc_high})
+            else:  # condor
+                shorts, wings = pick_condor(spot, em_usd)
+                row.update({"ic_shorts": shorts, "ic_wings": wings})
+
+            rows.append(row)
+            ok += 1
+        except Exception as e:
+            rows.append(
+                {
+                    "symbol": sym,
+                    "error": str(e),
+                    "spot": 0,
+                    "iv": 0,
+                    "em_usd": 0,
+                    "em_pct": 0,
+                    "front_dte": 0,
+                    "back_dte": 0,
+                }
+            )
+            fail += 1
+
+    return {"meta": {"count": len(symbols), "ok": ok, "fail": fail}, "rows": rows}

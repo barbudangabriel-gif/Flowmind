@@ -1,4 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -8,8 +9,6 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from alpha_vantage.timeseries import TimeSeries
-from alpha_vantage.techindicators import TechIndicators
 from unusual_whales_service import UnusualWhalesService
 
 # TradeStation Integration
@@ -65,17 +64,7 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ["DB_NAME"]]
 
 # Alpha Vantage API
-ALPHA_VANTAGE_API_KEY = os.environ.get("ALPHA_VANTAGE_API_KEY")
-ts = (
-    TimeSeries(key=ALPHA_VANTAGE_API_KEY, output_format="pandas")
-    if ALPHA_VANTAGE_API_KEY
-    else None
-)
-ti = (
-    TechIndicators(key=ALPHA_VANTAGE_API_KEY, output_format="pandas")
-    if ALPHA_VANTAGE_API_KEY
-    else None
-)
+# Alpha Vantage removed - not used in this application
 
 # Initialize Unusual Whales Service
 uw_service = UnusualWhalesService()
@@ -93,6 +82,18 @@ trading_service = TradingService(ts_client)
 portfolio_charts_service = PortfolioChartsService()
 smart_rebalancing_service = SmartRebalancingService()
 portfolio_management_service = PortfolioManagementService(ts_auth)
+
+# Integration clients
+try:
+    from integrations.uw_client import UWClient
+    from integrations.ts_client import TSClient
+
+    INTEGRATIONS_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Integration clients not available: {e}")
+    INTEGRATIONS_AVAILABLE = False
+    UWClient = None
+    TSClient = None
 
 # Global flag to track initialization
 portfolio_service_initialized = False
@@ -113,6 +114,48 @@ async def initialize_portfolio_service():
 
 # Create the main app without a prefix
 app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
+
+
+# Application lifecycle events
+@app.on_event("startup")
+async def startup():
+    """Initialize integration clients on startup"""
+    if INTEGRATIONS_AVAILABLE:
+        try:
+            # Initialize UW client for trades data
+            app.state.uw = UWClient()
+            logger.info("✅ UW client initialized for trades data")
+
+            # Initialize TS client for options chain data
+            app.state.ts = TSClient()
+            logger.info("✅ TS client initialized for options chain data")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize integration clients: {e}")
+            # Set None to prevent crashes if clients fail to initialize
+            app.state.uw = None
+            app.state.ts = None
+    else:
+        logger.warning("⚠️ Integration clients not available - using fallback mode")
+        app.state.uw = None
+        app.state.ts = None
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    """Clean up integration clients on shutdown"""
+    try:
+        if hasattr(app.state, "uw") and app.state.uw:
+            await app.state.uw.aclose()
+            logger.info("✅ UW client closed")
+
+        if hasattr(app.state, "ts") and app.state.ts:
+            await app.state.ts.aclose()
+            logger.info("✅ TS client closed")
+
+    except Exception as e:
+        logger.error(f"❌ Error closing integration clients: {e}")
+
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -448,13 +491,65 @@ async def get_chart_data(
 # Watchlist module
 from watchlist.routes import router as watchlist_router
 
+# Trade routes
+from trade_routes import router as trade_router
+
+# Redis backtest cache
+from bt_cache_integration import router as bt_router
+from bt_ops import router as bt_ops_router
+
+# Portfolios
+
+# Emergent status
+from bt_emergent import emergent_router, redis_diag_router
+
+# Portfolios
+from portfolios import router as portfolios_router
+
 # Mount main API router (includes legacy endpoints)
 app.include_router(api_router)
+app.include_router(trade_router)
+app.include_router(bt_router)
+app.include_router(bt_ops_router)
+app.include_router(emergent_router)
+app.include_router(redis_diag_router)
+app.include_router(portfolios_router, prefix="/api")
 app.include_router(watchlist_router, prefix="/api/watchlists")
 
+# Options provider router
+from routers.options import router as options_router
 
-# Health check endpoint
+app.include_router(options_router, prefix="/api")
+
+# Flow provider router
+from routers.flow import router as flow_router
+
+app.include_router(flow_router, prefix="/api")
+
+# Optimize router
+from routers.optimize import router as optimize_router
+
+app.include_router(optimize_router, prefix="/api")
+
+# Builder router
+from routers.builder import router as builder_router
+
+app.include_router(builder_router, prefix="/api")
+
+# Options Overview router
+from routers.options_overview import router as options_overview_router
+
+app.include_router(options_overview_router, prefix="/api")
+
+# Options Flow router
+from routers.options_flow import router as options_flow_router
+
+app.include_router(options_flow_router, prefix="/api")
+
+
+# Health check endpoints
 @app.get("/health")
+@app.get("/healthz")
 def health_check():
     """Service health check"""
     return {
@@ -466,11 +561,42 @@ def health_check():
     }
 
 
+@app.get("/readyz")
+async def readiness_check():
+    """Service readiness check"""
+    try:
+        # Check Redis connection
+        from redis_fallback import get_kv
+
+        kv = await get_kv()
+        await kv.get("health_check_test")
+        redis_status = "connected"
+    except Exception:
+        redis_status = "disconnected"
+
+    return {
+        "status": "ready",
+        "service": "FlowMind Analytics API",
+        "redis": redis_status,
+        "tradestation": "configured" if ROBUST_TS_AVAILABLE else "not_configured",
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+# Rate limiting middleware
+from middleware.rate_limit import rate_limit
+
+app.middleware("http")(rate_limit)
+
 # CORS (kept at end to apply globally)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=os.getenv(
+        "CORS_ORIGINS", "http://localhost:3000,http://localhost:5173"
+    ).split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# TEST: portfolios import

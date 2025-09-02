@@ -6,21 +6,23 @@ Test the expanded Options Calculator with new strategies and optimization endpoi
 
 import sys
 import os
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from backend_test import StockMarketAPITester
+
 
 def main():
     print("🎯 OPTIONS CALCULATOR COMPREHENSIVE TESTING")
     print("=" * 80)
     print("🔑 Testing expanded Options Calculator with new strategies")
-    print("🌐 Backend URL: https://options-trader-6.preview.emergentagent.com")
-    
+    print("🌐 Backend URL: https://options-analytics.preview.emergentagent.com")
+
     tester = StockMarketAPITester()
-    
+
     # Run the Options Calculator comprehensive test
     success = tester.test_options_calculator_comprehensive()
-    
+
     # Summary
     print("\n" + "=" * 80)
     print("🎯 OPTIONS CALCULATOR TEST SUMMARY")
@@ -28,7 +30,7 @@ def main():
     print(f"Total Tests Run: {tester.tests_run}")
     print(f"Tests Passed: {tester.tests_passed}")
     print(f"Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
-    
+
     if success:
         print("🎉 OPTIONS CALCULATOR TESTING PASSED!")
         print("✅ All new strategies and optimization endpoints working correctly")
@@ -37,6 +39,7 @@ def main():
         print("⚠️  OPTIONS CALCULATOR TESTING NEEDS ATTENTION")
         print("❌ Some strategies or endpoints may have issues")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

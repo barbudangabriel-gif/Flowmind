@@ -1,0 +1,7 @@
+# FlowMind - Daily Warm-up Cron
+# Europe/Bucharest timezone (16:00 = pre-market US)
+CRON_TZ=Europe/Bucharest
+0 16 * * 1-5 /usr/bin/python3 /app/warmup_backtest_cache.py >> /var/log/flowmind/warmup.log 2>&1
+
+# Alternative cu API endpoint:
+# 0 16 * * 1-5 /usr/bin/python3 /app/warmup_backtest_cache.py --api-url http://localhost:8001/screen/iv-setups --limit 50 >> /var/log/flowmind/warmup.log 2>&1

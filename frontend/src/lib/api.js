@@ -7,7 +7,7 @@ import axios from "axios";
 
 // Base API configuration
 const api = axios.create({ 
-  baseURL: "/api", 
+  baseURL: process.env.REACT_APP_BACKEND_URL || "http://localhost:8001/api", 
   timeout: 8000 
 });
 

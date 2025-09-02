@@ -70,16 +70,51 @@ const ChartTSStreamExample = React.lazy(() => import("./components/ChartTSStream
 const ChartProTSLive = React.lazy(() => import("./components/ChartProTSLive"));
 const TradeStationAuthHelper = React.lazy(() => import("./components/TradeStationAuthHelper"));
 const ScreenerV2 = React.lazy(() => import("./features/iv/ScreenerV2"));
+const IVServicePill = React.lazy(() => import("./components/IVServicePill"));
 const OptionsModule = React.lazy(() => import("./components/OptionsModule"));
+const SmartRebalancingAgent = React.lazy(() => import("./components/SmartRebalancingAgent"));
 const ChartTestPage = React.lazy(() => import("./components/ChartTestPage"));
 const ProfessionalChartTest = React.lazy(() => import("./components/ProfessionalChartTest"));
 const SettingsPage = React.lazy(() => import("./components/SettingsPage"));
 
+// Portfolio components
+const PortfoliosList = React.lazy(() => import("./pages/PortfoliosList"));
+const PortfolioDetail = React.lazy(() => import("./pages/PortfolioDetail"));
+const PortfolioCreate = React.lazy(() => import("./pages/PortfolioCreate"));
+
+// Flow page
+const FlowPage = React.lazy(() => import("./pages/FlowPage"));
+const LiveFlowPage = React.lazy(() => import("./pages/LiveFlowPage"));
+
+// Builder page
+import BuilderPage from "./pages/BuilderPage";
+
+// Optimize page
+const OptimizePage = React.lazy(() => import("./pages/OptimizePage"));
+
+// Options Analytics
+import OptionsAnalytics from "./pages/OptionsAnalytics";
+
+// Options Workbench
+const OptionsWorkbench = React.lazy(() => import("./pages/OptionsWorkbench"));
+
+// Options Selling component
+const OptionsSelling = React.lazy(() => import("./components/OptionsSelling"));
+
 import { Toaster } from './components/ui/toast';
 import ThemeIconToggleGhost from './components/ThemeIconToggleGhost';
+import SidebarSimple from './components/SidebarSimple';
+import { ErrorBoundary as SidebarErrorBoundary } from './components/ErrorBoundary';
+import { useSimpleNavContext } from './hooks/useSimpleNavContext';
 import "./App.css";
+import TopBar from "./components/nav/TopBar";
+import OptionsHeader from "./components/nav/OptionsHeader";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Feature flag pentru noul sidebar
+const USE_NEW_SIDEBAR = window.location.search.includes('new_sidebar=1') || 
+                       localStorage.getItem('flowmind_new_sidebar') === 'true';
 
 // Configure axios with minimal settings
 axios.defaults.timeout = 60000; // 60 seconds timeout - generous for complex API calls
@@ -228,59 +263,76 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   const menuGroups = [
     {
-      title: "Dashboard 🏠",
+      title: "Overview",
       items: [
-        { id: 'dashboard', label: 'Overview', icon: '📈', color: 'from-blue-500 to-cyan-500', shortLabel: 'Dash' }
+        { id: 'dashboard', label: 'Dashboard', icon: '📈', color: 'from-blue-500 to-cyan-500', shortLabel: 'Dashboard' }
       ]
     },
     {
       title: "Advanced Screener 🔍",
       items: [
-        { id: 'screener', label: 'Advanced Screener', icon: '🔍', color: 'from-violet-500 to-purple-500', shortLabel: 'Screen' },
+        { id: 'screener', label: 'Screener', icon: '🔍', color: 'from-violet-500 to-purple-500', shortLabel: 'Screen' },
         { id: 'simple-screener', label: 'Stock Search', icon: '🔎', color: 'from-pink-500 to-rose-500', shortLabel: 'Search' },
         { id: 'technical', label: 'Technical Analysis', icon: '📈', color: 'from-indigo-500 to-purple-500', shortLabel: 'Tech' },
-        { id: 'watchlist', label: 'Watchlist', icon: '⭐', color: 'from-yellow-500 to-amber-500', shortLabel: 'Watch' },
+        { id: 'watchlist', label: 'Watchlists', icon: '⭐', color: 'from-yellow-500 to-amber-500', shortLabel: 'Watch' },
         { id: 'news', label: 'Market News', icon: '📰', color: 'from-slate-500 to-gray-500', shortLabel: 'News' }
       ]
     },
     {
       title: "Investment Scoring 🎯",
       items: [
-        { id: 'investments', label: 'Investment Scoring', icon: '🎯', color: 'from-amber-500 to-orange-500', badge: '🎯', shortLabel: 'Score' },
-        { id: 'investment-scanner', label: 'Stock Scanner', icon: '🔍', color: 'from-green-500 to-emerald-500', badge: '🔍', shortLabel: 'Scanner', route: '/investment-scoring-scanner' }
+        { id: 'investments', label: 'Scoring', icon: '🎯', color: 'from-amber-500 to-orange-500', shortLabel: 'Score' },
+        { id: 'investment-scanner', label: 'Scanner', icon: '🔍', color: 'from-green-500 to-emerald-500', shortLabel: 'Scanner', route: '/investment-scoring-scanner' }
       ]
     },
     {
-      title: "Unusual Whales 🐋",
+      title: "Portfolios 💼",
       items: [
-        { id: 'options-flow', label: 'Options Flow', icon: '📊', color: 'from-cyan-500 to-blue-600', badge: '📈', shortLabel: 'Flow' },
-        { id: 'dark-pool', label: 'Dark Pool', icon: '🌊', color: 'from-gray-600 to-slate-700', badge: '🌊', shortLabel: 'Dark' },
-        { id: 'congressional', label: 'Congressional Trades', icon: '🏛️', color: 'from-red-500 to-pink-600', badge: '🏛️', shortLabel: 'Congress' },
-        { id: 'trading-strategies', label: 'Trading Strategies', icon: '🎯', color: 'from-green-500 to-emerald-600', badge: '🎯', shortLabel: 'Strategies' }
+        { id: 'ts-portfolio', label: 'TS Main', icon: '🏛️', color: 'from-emerald-500 to-green-600', shortLabel: 'TS Main' },
+        { id: 'smart-rebalancing', label: 'Smart Rebalancing Agent', icon: '⚖️', color: 'from-blue-500 to-cyan-600', shortLabel: 'Rebalance' },
+        { id: 'create-portfolio', label: '+ Create Portfolio', icon: '➕', color: 'from-blue-500 to-cyan-600', shortLabel: 'Create' }
       ]
     },
     {
       title: "TradeStation 🏛️",
       items: [
-        { id: 'ts-auth', label: 'Authentication', icon: '🔐', color: 'from-blue-500 to-indigo-600', badge: '🔐', shortLabel: 'Auth' },
-        { id: 'ts-portfolio', label: 'Live Portfolio', icon: '💼', color: 'from-emerald-500 to-green-600', badge: '📊', shortLabel: 'Live' },
-        { id: 'ts-balance', label: 'Account Balance', icon: '💰', color: 'from-green-500 to-emerald-600', badge: '💰', shortLabel: 'Balance' },
-        { id: 'ts-trading', label: 'Live Trading', icon: '⚡', color: 'from-red-500 to-pink-600', badge: '⚡', shortLabel: 'Trade' },
-        { id: 'ts-orders', label: 'Order Management', icon: '📋', color: 'from-purple-500 to-violet-600', badge: '📋', shortLabel: 'Orders' }
+        { id: 'ts-auth', label: 'Authentication', icon: '🔐', color: 'from-blue-500 to-indigo-600', shortLabel: 'Auth' },
+        { id: 'ts-balance', label: 'Account Balance', icon: '💰', color: 'from-green-500 to-emerald-600', shortLabel: 'Balance' },
+        { id: 'ts-trading', label: 'Live Trading', icon: '⚡', color: 'from-red-500 to-pink-600', shortLabel: 'Trade' },
+        { id: 'ts-orders', label: 'Order Management', icon: '📋', color: 'from-purple-500 to-violet-600', shortLabel: 'Orders' }
       ]
     },
     {
-      title: "Options Module ⚡",
+      title: "Unusual Whales 🐋",
       items: [
-        { id: 'options-module', label: 'Options Strategy Builder', icon: '⚡', color: 'from-purple-500 to-indigo-600', badge: '⚡', shortLabel: 'Options', route: '/options' }
+        { id: 'options-flow', label: 'Options Flow', icon: '📊', color: 'from-cyan-500 to-blue-600', shortLabel: 'Flow' },
+        { id: 'dark-pool', label: 'Dark Pool', icon: '🌊', color: 'from-gray-600 to-slate-700', shortLabel: 'Dark' },
+        { id: 'congressional', label: 'Congressional Trades', icon: '🏛️', color: 'from-red-500 to-pink-600', shortLabel: 'Congress' },
+        { id: 'trading-strategies', label: 'Trading Strategies', icon: '🎯', color: 'from-green-500 to-emerald-600', shortLabel: 'Strategies' }
       ]
     },
     {
-      title: "Auto Options Trading 🤖",
+      title: "Options ⚡",
       items: [
-        { id: 'auto-trading', label: 'Auto Trading Engine', icon: '🤖', color: 'from-purple-500 to-indigo-600', badge: '🤖', shortLabel: 'Auto', systemActive: true },
-        { id: 'trading-history', label: 'Trading History', icon: '📊', color: 'from-blue-500 to-cyan-600', badge: '📊', shortLabel: 'History' },
-        { id: 'performance', label: 'Performance Analytics', icon: '📈', color: 'from-green-500 to-teal-600', badge: '📈', shortLabel: 'Analytics' }
+        { id: 'iv-service', label: 'IV Service (Auto)', icon: '📊', color: 'from-blue-500 to-indigo-600', shortLabel: 'IV Service' },
+        { id: 'sell-puts-income', label: 'Sell_Puts for Income (Auto)', icon: '💰', color: 'from-emerald-500 to-green-600', shortLabel: 'Sell Puts', route: '/options/selling' },
+        { id: 'options-watchlist', label: 'Watchlist', icon: '⭐', color: 'from-yellow-500 to-amber-500', shortLabel: 'Watch' },
+        { id: 'options-strategies', label: 'Strategies', icon: '🎯', color: 'from-red-500 to-pink-600', shortLabel: 'Strategies' },
+        { id: 'options-analytics', label: 'Analytics', icon: '📈', color: 'from-green-500 to-teal-600', shortLabel: 'Analytics' },
+        { id: 'options-backtests', label: 'Backtests', icon: '⚙️', color: 'from-gray-500 to-slate-600', shortLabel: 'Backtests' }
+      ]
+    },
+    {
+      title: "Verified Chains",
+      items: [
+        { id: 'verified-chains', label: 'Verified Chains', icon: '🔗', color: 'from-indigo-500 to-purple-600', shortLabel: 'Chains' }
+      ]
+    },
+    {
+      title: "Market Data (TS LIVE) 📡",
+      items: [
+        { id: 'quotes', label: 'Quotes', icon: '💹', color: 'from-blue-500 to-cyan-600', shortLabel: 'Quotes' },
+        { id: 'option-chain', label: 'Option Chain', icon: '🔗', color: 'from-purple-500 to-indigo-600', shortLabel: 'Chain' }
       ]
     }
   ];
@@ -341,12 +393,14 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             {menuGroups.map((group, groupIndex) => {
               const isTradeStation = group.title === 'TradeStation 🏛️';
               const isUnusualWhales = group.title === 'Unusual Whales 🐋';
-              const isDashboard = group.title === 'Dashboard 🏠';
+              const isDashboard = group.title === 'Overview';
               const isAdvancedScreener = group.title === 'Advanced Screener 🔍';
-              const isAutoTrading = group.title === 'Auto Options Trading 🤖';
               const isInvestmentScoring = group.title === 'Investment Scoring 🎯';
-              const isOptionsModule = group.title === 'Options Module ⚡';
-              const hasDropdown = isTradeStation || isUnusualWhales || isDashboard || isAdvancedScreener || isAutoTrading || isInvestmentScoring || isOptionsModule;
+              const isPortfolios = group.title === 'Portfolios 💼';
+              const isOptions = group.title === 'Options ⚡';
+              const isVerifiedChains = group.title === 'Verified Chains';
+              const isMarketData = group.title === 'Market Data (TS LIVE) 📡';
+              const hasDropdown = isTradeStation || isUnusualWhales || isDashboard || isAdvancedScreener || isInvestmentScoring || isPortfolios || isOptions || isVerifiedChains || isMarketData;
               const isExpanded = expandedSections.has(group.title);
               
               return (
@@ -390,22 +444,22 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
                             <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </button>
-                        ) : isOptionsModule ? (
+                        ) : isOptions ? (
                           <button
                             onClick={() => toggleSection(group.title)}
                             className="flex items-center gap-2 hover:text-slate-200 transition-colors"
                           >
-                            <span>Options Module ⚡</span>
+                            <span>Options ⚡</span>
                             <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
                             <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </button>
-                        ) : isAutoTrading ? (
+                        ) : isPortfolios ? (
                           <button
                             onClick={() => toggleSection(group.title)}
                             className="flex items-center gap-2 hover:text-slate-200 transition-colors"
                           >
-                            <span>Auto Options Trading 🤖</span>
-                            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                            <span>Portfolios 💼</span>
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                             <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                           </button>
                         ) : (
@@ -486,6 +540,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                                     <span className="text-xs opacity-70">{item.badge}</span>
                                   )}
                                 </div>
+                                {/* IV Service Status pentru Options */}
+                                {/* IV Service Pill removed - clean sidebar */}
+                                
                                 {/* System Active indicator for Auto Options Trading */}
                                 {item.systemActive && (
                                   <div className="flex items-center space-x-1 mt-1">
@@ -493,6 +550,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                                     <span className="text-xs text-emerald-400">System Active</span>
                                   </div>
                                 )}
+                                
+                                {/* IV Service Status pentru Options selling */}
+                                {/* Sell Puts IV Pill removed - clean sidebar */}
                               </div>
                             )}
                             
@@ -6901,8 +6961,154 @@ function AppContent() {
         return <TradeStationTrading />;
       case 'ts-orders':
         return <TradeStationOrders />;
+      case 'iv-screener':
+        return (
+          <Suspense fallback={<LoadingFallback componentName="IV Screener" />}>
+            <ScreenerV2 />
+          </Suspense>
+        );
+      case 'iv-service-status':
+        return (
+          <div className="p-6 max-w-4xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h1 className="text-2xl font-bold mb-4">IV Service Status</h1>
+              <Suspense fallback={<div>Loading...</div>}>
+                <IVServicePill />
+              </Suspense>
+            </div>
+          </div>
+        );
+      case 'smart-rebalancing':
+        return (
+          <Suspense fallback={<LoadingFallback componentName="Smart Rebalancing Agent" />}>
+            <SmartRebalancingAgent />
+          </Suspense>
+        );
+      case 'portfolios':
+        return (
+          <Suspense fallback={<LoadingFallback componentName="Portfolios" />}>
+            <PortfoliosList />
+          </Suspense>
+        );
+      case 'create-portfolio':
+        return (
+          <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6">Create New Portfolio</h2>
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <p className="text-gray-600">Portfolio creation interface coming soon...</p>
+            </div>
+          </div>
+        );
+      case 'iv-service':
+        return (
+          <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                📊
+              </div>
+              IV Service (Auto)
+            </h2>
+            <div className="mb-6">
+              <Suspense fallback={<span className="text-sm">Loading IV Service...</span>}>
+                <IVServicePill />
+              </Suspense>
+            </div>
+          </div>
+        );
+      case 'options-watchlist':
+        return (
+          <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6">Options Watchlist</h2>
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <p className="text-gray-600">Options watchlist interface coming soon...</p>
+            </div>
+          </div>
+        );
+      case 'options-strategies':
+        return (
+          <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6">Options Strategies</h2>
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <p className="text-gray-600">Options strategies interface coming soon...</p>
+            </div>
+          </div>
+        );
+      case 'options-analytics':
+        return (
+          <Suspense fallback={<LoadingFallback componentName="Options Analytics" />}>
+            <OptionsAnalytics />
+          </Suspense>
+        );
+      case 'options-backtests':
+        return (
+          <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6">Options Backtests</h2>
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <p className="text-gray-600">Options backtests interface coming soon...</p>
+            </div>
+          </div>
+        );
+      case 'verified-chains':
+        return (
+          <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6">Verified Chains</h2>
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <p className="text-gray-600">Verified chains interface coming soon...</p>
+            </div>
+          </div>
+        );
+      case 'quotes':
+        return (
+          <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6">Market Quotes</h2>
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <p className="text-gray-600">Real-time quotes interface coming soon...</p>
+            </div>
+          </div>
+        );
+      case 'option-chain':
+        return (
+          <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6">Option Chain</h2>
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <p className="text-gray-600">Option chain interface coming soon...</p>
+            </div>
+          </div>
+        );
       case 'auto-trading':
         return <AutoOptionsTrading />;
+      case 'gates-engine':
+        return (
+          <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-orange-600 rounded-lg flex items-center justify-center">
+                🛡️
+              </div>
+              Risk Gates Engine
+            </h2>
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <p className="text-gray-600 mb-4">14-Gate Risk Management System for Trade Validation</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h3 className="font-semibold text-green-800">Tradeability</h3>
+                  <p className="text-sm text-green-600">Account Status</p>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h3 className="font-semibold text-blue-800">Data Freshness</h3>
+                  <p className="text-sm text-blue-600">Quote Age Check</p>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                  <h3 className="font-semibold text-purple-800">Buying Power</h3>
+                  <p className="text-sm text-purple-600">Capital Requirements</p>
+                </div>
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                  <h3 className="font-semibold text-orange-800">14 Gates Total</h3>
+                  <p className="text-sm text-orange-600">Risk Validation</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
       case 'trading-history':
         return <TradingHistory />;
       case 'performance':
@@ -7065,9 +7271,113 @@ function AppContent() {
                 </Suspense>
               } 
             />
+
+            {/* Portfolio Routes */}
+            <Route 
+              path="/portfolios" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolios" />}>
+                  <PortfoliosList />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/portfolios/create" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Create Portfolio" />}>
+                  <PortfolioCreate />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/portfolios/:id" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Portfolio Detail" />}>
+                  <PortfolioDetail />
+                </Suspense>
+              } 
+            />
+
+            {/* Options Selling Route */}
+            <Route 
+              path="/options/selling" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Options Selling" />}>
+                  <OptionsSelling />
+                </Suspense>
+              } 
+            />
+
+            {/* Options Analytics Route */}
+            <Route 
+              path="/options/analytics" 
+              element={<OptionsAnalytics />} 
+            />
+
+            {/* Options Workbench Route */}
+            <Route 
+              path="/options/workbench" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Options Workbench" />}>
+                  <OptionsWorkbench />
+                </Suspense>
+              }
+            />
+
+            {/* Flow Route */}
+            <Route 
+              path="/flow" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Options Flow" />}>
+                  <FlowPage />
+                </Suspense>
+              } 
+            />
+
+            {/* Builder Route */}
+            <Route 
+              path="/build/:strategyId" 
+              element={<BuilderPage />} 
+            />
+
+            {/* Flow Routes */}
+            <Route 
+              path="/flow" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Options Flow" />}>
+                  <FlowPage />
+                </Suspense>
+              } 
+            />
+            <Route 
+              path="/flow/live" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Live Flow" />}>
+                  <LiveFlowPage />
+                </Suspense>
+              } 
+            />
+
+            {/* Optimize Route */}
+            <Route 
+              path="/optimize" 
+              element={
+                <Suspense fallback={<LoadingFallback componentName="Options Optimizer" />}>
+                  <OptimizePage />
+                </Suspense>
+              } 
+            />
             
             {/* Default Route - renders based on activeTab */}
-            <Route path="/*" element={renderContent()} />
+            <Route path="/" element={renderContent()} />
+            <Route path="/dashboard" element={renderContent()} />
+            <Route path="/portfolio" element={renderContent()} />
+            <Route path="/investments" element={renderContent()} />
+            <Route path="/tradestation" element={renderContent()} />
+            <Route path="/screener" element={renderContent()} />
+            
+            {/* Catch-all route for unmatched paths */}
+            <Route path="*" element={renderContent()} />
           </Routes>
         </div>
       </main>
@@ -7075,7 +7385,57 @@ function AppContent() {
   );
 }
 
+// Simple Sidebar Wrapper Component
+function AppWithSimpleSidebar() {
+  const { ctx, loading } = useSimpleNavContext();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading FlowMind...</p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('🚀 App.js rendering, about to render OptionsHeader');
+  
+  return (
+    <div className="flex flex-col h-screen bg-gray-50">
+      <TopBar />
+      {console.log('🔥 About to render OptionsHeader')}
+      <OptionsHeader />
+      {console.log('✅ OptionsHeader rendered')}
+      <div className="flex flex-1 overflow-hidden">
+        <SidebarErrorBoundary>
+          <SidebarSimple ctx={ctx} />
+        </SidebarErrorBoundary>
+        <main className="flex-1 overflow-y-auto">
+          <AppContent />
+        </main>
+      </div>
+    </div>
+  );
+}
+
 export default function AppWithTheme() {
+  // Check pentru noul sidebar
+  if (USE_NEW_SIDEBAR) {
+    return (
+      <ErrorBoundary>
+        <ThemeProvider>
+          <BrowserRouter>
+            <AppWithSimpleSidebar />
+          </BrowserRouter>
+          <Toaster />
+        </ThemeProvider>
+      </ErrorBoundary>
+    );
+  }
+
+  // Sidebar-ul vechi (implicit)
   return (
     <ErrorBoundary>
       <ThemeProvider>

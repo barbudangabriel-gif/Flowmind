@@ -413,7 +413,7 @@ export default function OptionsSelling() {
   // Auto compute once on mount with demo
   useEffect(() => {
     compute();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, []);
 
   // Load TS live when switching to tab

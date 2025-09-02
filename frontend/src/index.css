@@ -31,6 +31,18 @@
     --trading-red: 348 83% 47%;
     --trading-orange: 20 90% 48%;
     --trading-purple: 258 90% 66%;
+    
+    /* P&L Chart Unified Palette - Default (Dark Theme) */
+    --pl-profit-fill: rgba(34, 197, 94, 0.22);    /* emerald-500 @22% */
+    --pl-profit-line: #22c55e;                   /* emerald-500 */
+    --pl-loss-fill: rgba(239, 68, 68, 0.22);     /* rose-500 @22% */
+    --pl-loss-line: #ef4444;                     /* rose-500 */
+    --pl-prob-fill: rgba(59, 130, 246, 0.16);    /* blue-500 @16% */
+    --pl-prob-line: #60a5fa;                     /* blue-400 */
+    --pl-spot-line: #6ee7b7;                     /* emerald-300 */
+    --pl-atm-line: #a78bfa;                      /* violet-400 */
+    --pl-breakeven-line: #fbbf24;                /* amber-400 */
+    --pl-zero-axis: #94a3b8;                     /* slate-400 */
   }
 
   .dark {
@@ -61,6 +73,20 @@
     --trading-orange: 20 90% 48%;
     --trading-purple: 258 90% 66%;
   }
+
+  /* High-contrast / Color-blind safe theme (protanopia/deuteranopia) */
+  .theme-contrast {
+    --pl-profit-fill: rgba(0, 180, 170, 0.28);   /* teal-ish */
+    --pl-profit-line: #00b4aa;
+    --pl-loss-fill: rgba(230, 120, 20, 0.28);    /* orange */
+    --pl-loss-line: #e67814;
+    --pl-prob-fill: rgba(100, 100, 255, 0.18);   /* blue-purple */
+    --pl-prob-line: #7e89ff;
+    --pl-spot-line: #00f5d4;                     /* bright teal */
+    --pl-atm-line: #c77dff;                      /* bright purple */
+    --pl-breakeven-line: #ffd84d;                /* bright yellow */
+    --pl-zero-axis: #b8c5d1;                     /* lighter slate */
+  }
 }
 
 @layer base {
@@ -77,6 +103,33 @@
   @apply bg-background border-0 rounded-lg;
   margin: 0;
   padding: 0;
+}
+
+/* Patch A - FlowMind Consistent Card & Chip System */
+.fm-chip { 
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium; 
+}
+.fm-chip-bullish { 
+  @apply bg-emerald-900/30 text-emerald-300 ring-1 ring-emerald-800; 
+}
+.fm-chip-bearish { 
+  @apply bg-rose-900/30 text-rose-300 ring-1 ring-rose-800; 
+}
+.fm-chip-neutral { 
+  @apply bg-slate-800 text-slate-300 ring-1 ring-slate-700; 
+}
+.fm-chip-directional { 
+  @apply bg-fuchsia-900/30 text-fuchsia-300 ring-1 ring-fuchsia-800; 
+}
+
+.fm-card { 
+  @apply rounded-2xl border border-slate-800 bg-slate-950/60 hover:bg-slate-900/40 transition-colors; 
+}
+.fm-card-head { 
+  @apply px-4 py-3 border-b border-slate-800/80 flex items-center justify-between; 
+}
+.fm-card-body { 
+  @apply p-4; 
 }
 
 /* Perfect chart fitting cu super black background */

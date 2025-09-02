@@ -25,13 +25,13 @@ Checking for potential secrets...
 /app/backend/.env
 
 Hardcoded URLs/endpoints:
-/app/detailed_chart_test.py:    url = "https://options-trader-6.preview.emergentagent.com/api/unusual-whales/trading-strategies"
-/app/price_fix_verification.py:    base_url = "https://options-trader-6.preview.emergentagent.com"
-/app/monitor_debug_test.py:    base_url = "https://options-trader-6.preview.emergentagent.com"
-/app/analysis_chart_backend_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
-/app/test_portfolio_management.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
-/app/tradestation_api_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
-/app/covered_calls_backend_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
-/app/comprehensive_backend_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
-/app/investment_scoring_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
-/app/chart_integration_test.py:    def __init__(self, base_url="https://options-trader-6.preview.emergentagent.com"):
+/app/detailed_chart_test.py:    url = "https://options-analytics.preview.emergentagent.com/api/unusual-whales/trading-strategies"
+/app/price_fix_verification.py:    base_url = "https://options-analytics.preview.emergentagent.com"
+/app/monitor_debug_test.py:    base_url = "https://options-analytics.preview.emergentagent.com"
+/app/analysis_chart_backend_test.py:    def __init__(self, base_url="https://options-analytics.preview.emergentagent.com"):
+/app/test_portfolio_management.py:    def __init__(self, base_url="https://options-analytics.preview.emergentagent.com"):
+/app/tradestation_api_test.py:    def __init__(self, base_url="https://options-analytics.preview.emergentagent.com"):
+/app/covered_calls_backend_test.py:    def __init__(self, base_url="https://options-analytics.preview.emergentagent.com"):
+/app/comprehensive_backend_test.py:    def __init__(self, base_url="https://options-analytics.preview.emergentagent.com"):
+/app/investment_scoring_test.py:    def __init__(self, base_url="https://options-analytics.preview.emergentagent.com"):
+/app/chart_integration_test.py:    def __init__(self, base_url="https://options-analytics.preview.emergentagent.com"):
