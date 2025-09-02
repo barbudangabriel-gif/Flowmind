@@ -1,7 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
@@ -9,13 +8,22 @@ from pathlib import Path
 from typing import Optional
 from datetime import datetime
 
-from unusual_whales_service import UnusualWhalesService
+# Import observability and config (optional for security audit)
+try:
+    from observability import wire_observability, configure_logging
+    from config import get_settings
 
-# TradeStation Integration
-from tradestation_auth_service import tradestation_auth_service as ts_auth
-from tradestation_client import TradeStationClient
-from portfolio_service import PortfolioService
-from trading_service import TradingService
+    OBSERVABILITY_AVAILABLE = True
+except ImportError:
+    # Observability modules not available - continue without them
+    OBSERVABILITY_AVAILABLE = False
+
+# Import services (temporarily disabled for security audit)
+# from unusual_whales_service import UnusualWhalesService
+# from tradestation_auth_service import tradestation_auth_service as ts_auth
+# from tradestation_client import TradeStationClient
+# from portfolio_service import PortfolioService
+# from trading_service import TradingService
 
 # AI Agents
 from investment_scoring_agent import InvestmentScoringAgent
@@ -28,7 +36,6 @@ from portfolio_charts_service import PortfolioChartsService
 from smart_rebalancing_service import SmartRebalancingService
 
 # Portfolio Management
-from portfolio_management_service import PortfolioManagementService
 
 # NEW: Option Selling compute + monitor service + analysis
 from options_selling_service import (
@@ -66,22 +73,28 @@ db = client[os.environ["DB_NAME"]]
 # Alpha Vantage API
 # Alpha Vantage removed - not used in this application
 
-# Initialize Unusual Whales Service
-uw_service = UnusualWhalesService()
+# Initialize services (temporarily disabled for security audit)
+# uw_service = UnusualWhalesService()
+# ts_client = TradeStationClient(ts_auth)
+# portfolio_service = PortfolioService(ts_client)
+# trading_service = TradingService(ts_client)
+# portfolio_management_service = PortfolioManagementService(ts_auth)
 
 # Initialize AI Agents
 investment_scoring_agent = InvestmentScoringAgent()
 technical_analysis_agent = TechnicalAnalysisAgent()
 
-# Initialize TradeStation Services
-ts_client = TradeStationClient(ts_auth)
-portfolio_service = PortfolioService(ts_client)
-trading_service = TradingService(ts_client)
-
 # Initialize new services
 portfolio_charts_service = PortfolioChartsService()
 smart_rebalancing_service = SmartRebalancingService()
-portfolio_management_service = PortfolioManagementService(ts_auth)
+
+# Placeholder services for disabled functionality
+uw_service = None
+ts_client = None
+portfolio_service = None
+trading_service = None
+portfolio_management_service = None
+ts_auth = None
 
 # Integration clients
 try:
@@ -104,9 +117,15 @@ async def initialize_portfolio_service():
     global portfolio_service_initialized
     if not portfolio_service_initialized:
         try:
-            await portfolio_management_service.initialize()
-            portfolio_service_initialized = True
-            logger.info("Portfolio management service initialized successfully")
+            if portfolio_management_service is not None:
+                await portfolio_management_service.initialize()
+                portfolio_service_initialized = True
+                logger.info("Portfolio management service initialized successfully")
+            else:
+                logger.warning(
+                    "Portfolio management service is disabled for security audit"
+                )
+                portfolio_service_initialized = False
         except Exception as e:
             logger.error(f"Failed to initialize portfolio management service: {str(e)}")
             portfolio_service_initialized = False
@@ -232,11 +251,17 @@ async def options_selling_analysis(
         )
 
 
-# TradeStation Authentication Endpoints
+# TradeStation Authentication Endpoints (disabled for security audit)
 @api_router.get("/auth/tradestation/status")
 async def tradestation_auth_status():
     """Get TradeStation authentication status"""
     try:
+        if ts_auth is None:
+            return {
+                "status": "disabled",
+                "message": "TradeStation authentication is disabled for security audit",
+                "timestamp": datetime.now().isoformat(),
+            }
         status = ts_auth.get_status()
         return status
     except Exception as e:
@@ -249,6 +274,11 @@ async def tradestation_auth_status():
 async def tradestation_auth_login():
     """Get TradeStation login URL"""
     try:
+        if ts_auth is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation authentication is disabled for security audit",
+            )
         auth_info = ts_auth.generate_auth_url()
         return auth_info
     except Exception as e:
@@ -261,6 +291,11 @@ async def tradestation_auth_login():
 async def tradestation_token_refresh():
     """Refresh TradeStation access token"""
     try:
+        if ts_auth is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation authentication is disabled for security audit",
+            )
         success = await ts_auth.refresh_access_token()
         if success:
             return {
@@ -284,6 +319,11 @@ async def tradestation_auth_callback(
 ):
     """Handle TradeStation OAuth callback"""
     try:
+        if ts_auth is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation authentication is disabled for security audit",
+            )
         if not code:
             raise HTTPException(
                 status_code=422, detail="Authorization code is required"
@@ -301,11 +341,16 @@ async def tradestation_auth_callback(
         )
 
 
-# TradeStation API Endpoints
+# TradeStation API Endpoints (disabled for security audit)
 @api_router.get("/tradestation/accounts")
 async def get_tradestation_accounts():
     """Get TradeStation accounts"""
     try:
+        if ts_client is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation client is disabled for security audit",
+            )
         accounts = await ts_client.get_accounts()
         return {
             "status": "success",
@@ -320,6 +365,11 @@ async def get_tradestation_accounts():
 async def get_tradestation_positions(account_id: str):
     """Get positions for a TradeStation account"""
     try:
+        if ts_client is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation client is disabled for security audit",
+            )
         positions = await ts_client.get_positions(account_id)
 
         # Convert Position objects to dictionaries
@@ -362,6 +412,11 @@ async def get_tradestation_positions_alt(account_id: str):
 async def get_tradestation_balances(account_id: str):
     """Get balances for a TradeStation account"""
     try:
+        if ts_client is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation client is disabled for security audit",
+            )
         balances = await ts_client.get_account_balances(account_id)
         return {
             "status": "success",
@@ -382,6 +437,11 @@ async def get_tradestation_balances_alt(account_id: str):
 async def test_tradestation_connection():
     """Test TradeStation API connection"""
     try:
+        if ts_client is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation client is disabled for security audit",
+            )
         result = await ts_client.test_connection()
         return result
     except Exception as e:
@@ -545,6 +605,16 @@ app.include_router(options_overview_router, prefix="/api")
 from routers.options_flow import router as options_flow_router
 
 app.include_router(options_flow_router, prefix="/api")
+
+# Wire observability (metrics, structured logging, request correlation)
+try:
+    wire_observability(app)
+    configure_logging()
+    print("✅ Observability enabled: /metrics, structured logging, request correlation")
+except ImportError:
+    print("⚠️  Observability modules not available - running without metrics")
+except Exception as e:
+    print(f"⚠️  Observability setup failed: {e}")
 
 
 # Health check endpoints

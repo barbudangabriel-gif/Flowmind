@@ -1,0 +1,39 @@
+repos:
+  - repo: local
+    hooks:
+      - id: forbid-raw-todo
+        name: Block TODO without ticket
+        entry: bash -c '! git grep -n -P "TODO(?!\\[)" -- . | tee /dev/stderr'
+        language: system
+        types: [text]
+        exclude: '^(.*\.md|.*\.txt|tools/audit\.sh)$'
+      
+      - id: no-commit-to-main
+        name: Disallow direct commits to main
+        entry: bash -c '[ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]'
+        language: system
+        
+      - id: check-secrets
+        name: Check for potential secrets
+        entry: bash -c '! git grep -nE "(AWS_|API[_-]?KEY|SECRET|TOKEN|PASSWORD|PRIVATE KEY|BEGIN RSA)" -- . | grep -v ".env.example" | tee /dev/stderr'
+        language: system
+        types: [text]
+
+  - repo: https://github.com/psf/black
+    rev: 23.9.1
+    hooks:
+      - id: black
+        language_version: python3
+        args: [--line-length=88]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.291
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]

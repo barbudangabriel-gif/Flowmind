@@ -1,0 +1,79 @@
+"""
+Secure configuration management with fail-fast validation
+"""
+
+import os
+from typing import Optional
+from pydantic import BaseModel, Field, ValidationError
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class Settings(BaseModel):
+    """Application settings with secure defaults and validation"""
+
+    # API Keys (fail-fast if critical ones missing in production)
+    uw_token: Optional[str] = Field(None, alias="UW_API_TOKEN")
+    ts_token: Optional[str] = Field(None, alias="TS_TOKEN")
+    ts_api_key: Optional[str] = Field(None, alias="TRADESTATION_API_KEY")
+    ts_api_secret: Optional[str] = Field(None, alias="TRADESTATION_API_SECRET")
+    ts_client_secret: Optional[str] = Field(None, alias="TS_CLIENT_SECRET")
+
+    # Database & Infrastructure
+    mongo_url: str = Field("mongodb://localhost:27017/flowmind", alias="MONGO_URL")
+    env: str = Field("development", alias="ENV")
+    debug: bool = Field(False, alias="DEBUG")
+
+    # TradeStation Config
+    ts_base_url: str = Field("https://api.tradestation.com/v3", alias="TS_BASE_URL")
+    ts_token_url: str = Field(
+        "https://signin.tradestation.com/oauth/token", alias="TS_TOKEN_URL"
+    )
+    ts_redirect_uri: str = Field("http://localhost:8080", alias="TS_REDIRECT_URI")
+    ts_token_margin_sec: int = Field(120, alias="TS_TOKEN_MARGIN_SEC")
+
+
+def get_settings() -> Settings:
+    """Get validated settings with proper error handling"""
+    try:
+        settings = Settings(**os.environ)
+
+        # Warn about missing optional secrets in development
+        if settings.env == "development":
+            missing_secrets = []
+            if not settings.uw_token:
+                missing_secrets.append("UW_API_TOKEN")
+            if not settings.ts_api_key:
+                missing_secrets.append("TRADESTATION_API_KEY")
+
+            if missing_secrets:
+                logger.warning(
+                    f"Missing optional secrets (demo mode): {', '.join(missing_secrets)}"
+                )
+
+        # Fail-fast in production if critical secrets missing
+        elif settings.env == "production":
+            required_secrets = []
+            if not settings.uw_token:
+                required_secrets.append("UW_API_TOKEN")
+            if not settings.ts_api_key:
+                required_secrets.append("TRADESTATION_API_KEY")
+            if not settings.ts_api_secret:
+                required_secrets.append("TRADESTATION_API_SECRET")
+
+            if required_secrets:
+                raise RuntimeError(
+                    f"Missing required secrets in production: {', '.join(required_secrets)}"
+                )
+
+        return settings
+
+    except ValidationError as e:
+        raise RuntimeError(f"Invalid configuration: {e}")
+    except Exception as e:
+        raise RuntimeError(f"Configuration error: {e}")
+
+
+# Global settings instance
+settings = get_settings()

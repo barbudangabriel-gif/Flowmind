@@ -696,7 +696,7 @@ async def subscribe_to_quotes(symbols: List[str]):
     """Subscribe to live quote updates for symbols"""
     try:
         # For now, just return success without actual database operations
-        # TODO: Implement actual quote subscription when database service is available
+        # TODO[OPS-001]: Implement actual quote subscription when database service is available
 
         return {
             "status": "success",
@@ -731,7 +731,7 @@ async def get_portfolio_buckets(pid: str):
         await pf_get(pid)
 
         # For now, return mock buckets data
-        # TODO: Implement actual database integration when available
+        # TODO[OPS-002]: Implement actual database integration when available
         portfolio_buckets = [
             {
                 "id": "bucket_001",
@@ -775,7 +775,7 @@ async def create_portfolio_bucket(
         # Verify portfolio exists
         await pf_get(pid)
 
-        # Create mock bucket (TODO: Implement actual database integration)
+        # Create mock bucket (TODO[OPS-003]: Implement actual database integration)
         import uuid
 
         bucket = {
@@ -848,12 +848,12 @@ async def get_portfolio_equity_chart(pid: str, timeframe: str = "1M"):
                 "current_equity": round(current_equity, 2),
                 "total_realized_pnl": round(total_realized, 2),
                 "total_trades": total_trades,
-                "win_rate": None,  # TODO: Calculate from profitable trades
-                "sharpe_ratio": None,  # TODO: Calculate from equity curve
-                "max_drawdown": None,  # TODO: Calculate from equity curve
+                "win_rate": None,  # TODO[OPS-004]: Calculate from profitable trades
+                "sharpe_ratio": None,  # TODO[OPS-005]: Calculate from equity curve
+                "max_drawdown": None,  # TODO[OPS-006]: Calculate from equity curve
                 "positions_count": len(positions),
             },
-            "buckets": [],  # TODO: Implement bucket-level analytics
+            "buckets": [],  # TODO[OPS-007]: Implement bucket-level analytics
             "timeframe": timeframe,
             "generated_at": datetime.utcnow().isoformat(),
         }
