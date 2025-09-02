@@ -608,13 +608,27 @@ app.include_router(options_flow_router, prefix="/api")
 
 # Wire observability (metrics, structured logging, request correlation)
 try:
-    wire_observability(app)
-    configure_logging()
-    print("✅ Observability enabled: /metrics, structured logging, request correlation")
-except ImportError:
-    print("⚠️  Observability modules not available - running without metrics")
+    from observability import wire, setup_cors, setup_rate_limit
+    from config import get_settings
+
+    # Get settings
+    settings = get_settings()
+
+    # Wire observability
+    wire(app)
+
+    # Setup CORS and rate limiting
+    setup_cors(app, settings.allowed_origins)
+    setup_rate_limit(app, settings.rate_limit)
+
+    print(
+        "✅ Production observability enabled: /metrics, CORS, rate limiting, structured logging"
+    )
+except ImportError as e:
+    print(f"⚠️  Production observability modules not available: {e}")
 except Exception as e:
-    print(f"⚠️  Observability setup failed: {e}")
+    print(f"⚠️  Production observability setup failed: {e}")
+    # Continue without enhanced observability
 
 
 # Health check endpoints
