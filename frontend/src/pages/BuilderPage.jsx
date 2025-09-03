@@ -260,6 +260,31 @@ const BuilderChart = forwardRef(function BuilderChart(
 export default function BuilderPage() {
   // Extract strategyId from URL parameters  
   const { strategyId } = useParams();
+  const navigate = useNavigate();
+  
+  // State for persistent header Build menu
+  const [showBuildMenu, setShowBuildMenu] = useState(false);
+  const [hoverTimer, setHoverTimer] = useState(null);
+  
+  // Build menu hover handlers
+  const handleBuildEnter = () => {
+    if (hoverTimer) clearTimeout(hoverTimer);
+    setShowBuildMenu(true);
+  };
+
+  const handleBuildLeave = () => {
+    const timer = setTimeout(() => setShowBuildMenu(false), 300);
+    setHoverTimer(timer);
+  };
+
+  const handleMenuEnter = () => {
+    if (hoverTimer) clearTimeout(hoverTimer);
+  };
+
+  const handleMenuLeave = () => {
+    const timer = setTimeout(() => setShowBuildMenu(false), 100);
+    setHoverTimer(timer);
+  };
   
   // Central state management
   const [builder, setBuilder] = useState({
