@@ -491,17 +491,27 @@ export default function BuilderPage() {
           {/* Build Tab with Mega Menu */}
           <div className="relative">
             <button
-              onClick={() => {
-                console.log('Build button clicked - toggling menu');
-                setShowBuildMenu(!showBuildMenu);
-              }}
+              onClick={() => navigate('/options/analytics')}
               onMouseEnter={handleBuildEnter}
               onMouseLeave={handleBuildLeave}
               className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium bg-slate-800"
               title="Build"
             >
-              Build ▾ {showBuildMenu ? '(OPEN)' : '(CLOSED)'}
+              Build ▾
             </button>
+            
+            {showBuildMenu && (
+              <div 
+                onMouseEnter={handleMenuEnter}
+                onMouseLeave={handleMenuLeave}
+              >
+                <BuildHoverMegaMenu
+                  symbol="TSLA"
+                  onClose={() => setShowBuildMenu(false)}
+                  onItemHover={(item) => setPreviewItem(item)}
+                />
+              </div>
+            )}
           </div>
           
           {/* Other Tabs */}
@@ -518,21 +528,6 @@ export default function BuilderPage() {
             Flow
           </button>
         </div>
-        
-        {/* Debug: Mega Menu Outside Button */}
-        {showBuildMenu && (
-          <div 
-            className="absolute top-20 left-4 z-50"
-            onMouseEnter={handleMenuEnter}
-            onMouseLeave={handleMenuLeave}
-          >
-            <BuildHoverMegaMenu
-              symbol="TSLA"
-              onClose={() => setShowBuildMenu(false)}
-              onItemHover={(item) => setPreviewItem(item)}
-            />
-          </div>
-        )}
         
         {/* Core Error Display */}
         {coreError && (
