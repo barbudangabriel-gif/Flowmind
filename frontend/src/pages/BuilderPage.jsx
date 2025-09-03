@@ -265,8 +265,29 @@ export default function BuilderPage() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   
+  // Bootstrap app - CRITIC pentru Build mega menu să funcționeze prima dată!
+  const params = useMemo(() => ({
+    symbol: 'TSLA', // Default symbol
+    strategyId: strategyId || 'long_call'
+  }), [strategyId]);
+  
+  const { ready, initializing } = useBootstrapApp(params);
+  
   // Access options store for consistent state management
   const { previewItem, setPreviewItem } = useOptionsStore();
+  
+  // Early return dacă nu e ready (similar cu OptimizePage)
+  if (!ready) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="text-slate-300">Loading FlowMind Builder...</div>
+          <div className="text-xs text-slate-500 mt-1">Initializing options engine</div>
+        </div>
+      </div>
+    );
+  }
   
   // State for persistent header Build menu
   const [showBuildMenu, setShowBuildMenu] = useState(false);
