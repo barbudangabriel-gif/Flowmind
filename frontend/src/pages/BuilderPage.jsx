@@ -262,6 +262,7 @@ export default function BuilderPage() {
   // Extract strategyId from URL parameters  
   const { strategyId } = useParams();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   
   // Access options store for consistent state management
   const { previewItem, setPreviewItem } = useOptionsStore();
