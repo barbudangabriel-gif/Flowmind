@@ -289,6 +289,61 @@ export default function BuilderPage() {
     const timer = setTimeout(() => setShowBuildMenu(false), 100);
     setHoverTimer(timer);
   };
+
+  // Tab component (exactly like OptimizePage)  
+  const Tab = ({ label, to, dropdown = false }) => {
+    let active = false;
+    
+    if (to === 'build' && pathname.includes('/build')) active = true;
+    else if (to === 'optimize' && pathname === '/optimize') active = true;
+    else if (to === 'flow' && pathname === '/flow') active = true;
+    
+    const base = 'px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium';
+    
+    // Special handling for Build tab with dropdown menu
+    if (to === 'build' && dropdown) {
+      return (
+        <div className="relative">
+          <button
+            onClick={() => navigate('/options/analytics')}
+            onMouseEnter={handleBuildEnter}
+            onMouseLeave={handleBuildLeave}
+            className={`${base} ${active ? 'bg-slate-800' : ''}`}
+            title={label}
+          >
+            {label} ▾
+          </button>
+          
+          {showBuildMenu && (
+            <div 
+              onMouseEnter={handleMenuEnter}
+              onMouseLeave={handleMenuLeave}
+            >
+              <BuildHoverMegaMenu
+                symbol="TSLA"
+                onClose={() => setShowBuildMenu(false)}
+                onItemHover={(item) => setPreviewItem(item)}
+              />
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    return (
+      <button
+        onClick={() => {
+          if (to === 'build') navigate('/options/analytics');
+          else if (to === 'optimize') navigate('/optimize');
+          else if (to === 'flow') navigate('/flow');
+        }}
+        className={`${base} ${active ? 'bg-slate-800' : ''}`}
+        title={label}
+      >
+        {label}{dropdown ? ' ▾' : ''}
+      </button>
+    );
+  };
   
   // Central state management
   const [builder, setBuilder] = useState({
