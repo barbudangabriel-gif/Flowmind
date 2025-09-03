@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { FLAT_BUILD_LIST, toSlug } from '../lib/buildStrategies';
 import BuildHoverMegaMenu from '../components/nav/BuildHoverMegaMenu';
 import { useOptionsStore } from '../stores/optionsStore';
+import { useBootstrapApp } from '../hooks/useBootstrapApp';
 import { SpreadQualityMeter } from '../components/SpreadQualityMeter';
 import { StrategyPicker } from '../components/StrategyPicker';
 import BuilderHeaderV2 from '../components/build/BuilderHeaderV2';
