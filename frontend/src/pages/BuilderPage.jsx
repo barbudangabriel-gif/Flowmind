@@ -270,6 +270,11 @@ export default function BuilderPage() {
   const [showBuildMenu, setShowBuildMenu] = useState(false);
   const [hoverTimer, setHoverTimer] = useState(null);
   
+  // Debug showBuildMenu changes
+  useEffect(() => {
+    console.log('showBuildMenu state changed to:', showBuildMenu);
+  }, [showBuildMenu]);
+  
   // Build menu hover handlers
   const handleBuildEnter = () => {
     console.log('Build hover ENTER - showing menu');
