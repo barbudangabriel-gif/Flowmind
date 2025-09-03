@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState, useRef, forwardRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FLAT_BUILD_LIST, toSlug } from '../lib/buildStrategies';
 import BuildHoverMegaMenu from '../components/nav/BuildHoverMegaMenu';
+import { useOptionsStore } from '../stores/optionsStore';
 import { SpreadQualityMeter } from '../components/SpreadQualityMeter';
 import { StrategyPicker } from '../components/StrategyPicker';
 import BuilderHeaderV2 from '../components/build/BuilderHeaderV2';
