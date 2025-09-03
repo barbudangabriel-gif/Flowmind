@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef, forwardRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { FLAT_BUILD_LIST, toSlug } from '../lib/buildStrategies';
 import BuildHoverMegaMenu from '../components/nav/BuildHoverMegaMenu';
 import { useOptionsStore } from '../stores/optionsStore';
