@@ -539,45 +539,9 @@ export default function BuilderPage() {
         
         {/* Persistent Header: Build | Optimize | Flow */}
         <div className="flex items-center gap-2 mb-6">
-          {/* Build Tab with Mega Menu */}
-          <div className="relative">
-            <button
-              onClick={() => navigate('/options/analytics')}
-              onMouseEnter={handleBuildEnter}
-              onMouseLeave={handleBuildLeave}
-              className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium bg-slate-800"
-              title="Build"
-            >
-              Build ▾
-            </button>
-            
-            {showBuildMenu && (
-              <div 
-                onMouseEnter={handleMenuEnter}
-                onMouseLeave={handleMenuLeave}
-              >
-                <BuildHoverMegaMenu
-                  symbol="TSLA"
-                  onClose={() => setShowBuildMenu(false)}
-                  onItemHover={(item) => setPreviewItem(item)}
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Other Tabs */}
-          <button
-            onClick={() => navigate('/optimize')}
-            className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium"
-          >
-            Optimize
-          </button>
-          <button
-            onClick={() => navigate('/flow')}
-            className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium"
-          >
-            Flow
-          </button>
+          <Tab label="Build" to="build" dropdown />
+          <Tab label="Optimize" to="optimize" />
+          <Tab label="Flow" to="flow" />
         </div>
         
         {/* Core Error Display */}
