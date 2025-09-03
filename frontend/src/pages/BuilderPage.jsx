@@ -263,6 +263,9 @@ export default function BuilderPage() {
   const { strategyId } = useParams();
   const navigate = useNavigate();
   
+  // Access options store for consistent state management
+  const { previewItem, setPreviewItem } = useOptionsStore();
+  
   // State for persistent header Build menu
   const [showBuildMenu, setShowBuildMenu] = useState(false);
   const [hoverTimer, setHoverTimer] = useState(null);
