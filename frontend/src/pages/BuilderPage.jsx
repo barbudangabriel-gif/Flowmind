@@ -504,7 +504,7 @@ export default function BuilderPage() {
                 <BuildHoverMegaMenu
                   symbol="TSLA"
                   onClose={() => setShowBuildMenu(false)}
-                  onItemHover={() => {}}
+                  onItemHover={(item) => setPreviewItem(item)}
                 />
               </div>
             )}
