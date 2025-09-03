@@ -275,33 +275,22 @@ export default function BuilderPage() {
     console.log('showBuildMenu state changed to:', showBuildMenu);
   }, [showBuildMenu]);
   
-  // Build menu hover handlers
   const handleBuildEnter = () => {
-    console.log('Build hover ENTER - showing menu');
     if (hoverTimer) clearTimeout(hoverTimer);
     setShowBuildMenu(true);
   };
 
   const handleBuildLeave = () => {
-    console.log('Build hover LEAVE - hiding menu in 300ms');
-    const timer = setTimeout(() => {
-      console.log('Build menu hidden');
-      setShowBuildMenu(false);
-    }, 300);
+    const timer = setTimeout(() => setShowBuildMenu(false), 300);
     setHoverTimer(timer);
   };
 
   const handleMenuEnter = () => {
-    console.log('Menu hover ENTER - keeping menu open');  
     if (hoverTimer) clearTimeout(hoverTimer);
   };
 
   const handleMenuLeave = () => {
-    console.log('Menu hover LEAVE - hiding menu in 100ms');
-    const timer = setTimeout(() => {
-      console.log('Menu timer executed - hiding menu');
-      setShowBuildMenu(false);
-    }, 100);
+    const timer = setTimeout(() => setShowBuildMenu(false), 100);
     setHoverTimer(timer);
   };
   
