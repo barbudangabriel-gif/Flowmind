@@ -478,6 +478,49 @@ export default function BuilderPage() {
     <div className="min-h-screen bg-slate-900 text-white">
       <div className="max-w-7xl mx-auto p-4">
         
+        {/* Persistent Header: Build | Optimize | Flow */}
+        <div className="flex items-center gap-2 mb-6">
+          {/* Build Tab with Mega Menu */}
+          <div className="relative">
+            <button
+              onClick={() => navigate('/options/analytics')}
+              onMouseEnter={handleBuildEnter}
+              onMouseLeave={handleBuildLeave}
+              className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium bg-slate-800"
+              title="Build"
+            >
+              Build ▾
+            </button>
+            
+            {showBuildMenu && (
+              <div 
+                onMouseEnter={handleMenuEnter}
+                onMouseLeave={handleMenuLeave}
+              >
+                <BuildHoverMegaMenu
+                  symbol="TSLA"
+                  onClose={() => setShowBuildMenu(false)}
+                  onItemHover={() => {}}
+                />
+              </div>
+            )}
+          </div>
+          
+          {/* Other Tabs */}
+          <button
+            onClick={() => navigate('/optimize')}
+            className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium"
+          >
+            Optimize
+          </button>
+          <button
+            onClick={() => navigate('/flow')}
+            className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium"
+          >
+            Flow
+          </button>
+        </div>
+        
         {/* Core Error Display */}
         {coreError && (
           <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mb-4">
