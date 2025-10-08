@@ -1,0 +1,17 @@
+www.flowmindanalytics.com, flowmindanalytics.com {
+  encode gzip
+
+  @api path /api/* /health /metrics
+  handle @api {
+    reverse_proxy backend:8000
+  }
+
+  handle {
+    reverse_proxy backend:8000
+  }
+}
+
+flowmindanalytics.ai {
+  redir https://www.flowmindanalytics.com{uri} 301
+}
+
