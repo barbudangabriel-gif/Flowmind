@@ -4,11 +4,33 @@ services:
   redis:
     image: redis:7
     command: ["redis-server", "--appendonly", "yes"]
-    ports:
-      - "6379:6379"
     volumes:
       - redis-data:/data
     restart: unless-stopped
 
+  backend:
+    build: ./backend
+    env_file: .env
+    depends_on:
+      - redis
+    restart: unless-stopped
+    # IMPORTANT: backend-ul tău trebuie să asculte pe 0.0.0.0:8000 în container
+
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   redis-data:
+  caddy_data:
+  caddy_config:
+
