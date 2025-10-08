@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
     # IMPORTANT: backend-ul tău trebuie să asculte pe 0.0.0.0:8000 în container
 
-  caddy:
+    caddy:
     image: caddy:2
     ports:
       - "80:80"
