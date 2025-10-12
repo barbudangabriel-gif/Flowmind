@@ -8,7 +8,8 @@
     "start:staging": "vite --host 0.0.0.0 --port 5173 --strictPort",
     "mock:api": "nodemon --signal SIGTERM scripts/mock-api.js",
     "dev:all": "concurrently -k -n API,UI \"yarn mock:api\" \"yarn start\"",
-    "smoke:fis": "concurrently -k -n API,UI \"yarn mock:api\" \"yarn ui\""
+    "smoke:fis": "concurrently -k -n API,UI \"yarn mock:api\" \"yarn ui\"",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "cors": "^2.8.5",
