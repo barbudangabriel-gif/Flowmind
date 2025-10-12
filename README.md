@@ -1,5 +1,10 @@
 # Here are your Instructions
 
+## Package Manager Policy
+**Use only `yarn` for all Node.js/React/Frontend operations. Do NOT use `pnpm` or `npm` in this repository.**
+
+If you see a `pnpm-lock.yaml`, delete it. Only `yarn.lock` is supported. All install/build/dev commands must use `yarn`.
+
 ## CI/QA Gates (GitLab)
 - **FE (Node 20):** `eslint`, `build`, `npm audit --audit-level=high`
 - **BE (Py 3.11):** `ruff`, `mypy`, `bandit`, `pip-audit --strict`, `pytest` → **JUnit** ca artifact

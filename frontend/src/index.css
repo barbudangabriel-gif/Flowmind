@@ -162,3 +162,19 @@
 .trading-purple {
   color: hsl(var(--trading-purple));
 }
+
+/* FIS Tooltip & Card Theme */
+:root {
+  --tooltip-bg:#111827;
+  --tooltip-fg:#fff;
+  --card-bg:#fff;
+  --border:#e5e7eb;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tooltip-bg:#0b1220;
+    --tooltip-fg:#e5e7eb;
+    --card-bg:#0f172a;
+    --border:#1f2937;
+  }
+}

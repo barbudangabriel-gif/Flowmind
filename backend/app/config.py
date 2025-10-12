@@ -23,3 +23,8 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 # MongoDB for token storage
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.getenv("DB_NAME", "test_database")
+
+# Additional API Keys and Timeout
+TS_KEY = os.getenv("TS_API_KEY", "")
+UW_KEY = os.getenv("UW_API_KEY", "")
+TIMEOUT_MS = int(os.getenv("REQUEST_TIMEOUT_MS", "300"))

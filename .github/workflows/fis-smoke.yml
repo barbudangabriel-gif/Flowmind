@@ -1,0 +1,54 @@
+name: FIS Smoke Health
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Enable Corepack & Install
+        run: |
+          corepack enable
+          yarn install --frozen-lockfile
+
+      - name: Start mock API (background)
+        run: |
+          nohup node ./scripts/mock-api.js >/tmp/mock-api.log 2>&1 & echo $! > /tmp/mock.pid
+          sleep 1
+          curl -sS http://localhost:5174/fis/score | head -c 120 || (echo "::error ::Mock API not responding" && exit 1)
+
+      - name: Start Vite (background)
+        env:
+          PORT: 5173
+        run: |
+          nohup yarn run -T start -- --host 0.0.0.0 --port $PORT --strictPort --open=false --clearScreen=false >/tmp/vite.log 2>&1 & echo $! > /tmp/vite.pid
+          sleep 1
+          curl -sSI http://localhost:5173 | grep -q "200 OK" || (echo "::error ::UI not responding" && tail -n 80 /tmp/vite.log && exit 1)
+
+      - name: Health-check script
+        run: node scripts/health-check.js
+
+      - name: Attach logs on failure
+        if: failure()
+        run: |
+          echo "---- mock-api.log ----"
+          tail -n 120 /tmp/mock-api.log || true
+          echo "---- vite.log ----"
+          tail -n 120 /tmp/vite.log || true
+
+      - name: Teardown
+        if: always()
+        run: |
+          kill $(cat /tmp/mock.pid) 2>/dev/null || true
+          kill $(cat /tmp/vite.pid) 2>/dev/null || true

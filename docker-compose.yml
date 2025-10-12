@@ -1,36 +1,45 @@
 version: "3.9"
 
 services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    working_dir: /app
+    command: ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"   # util pentru debug direct; optional în prod
+    depends_on:
+      - redis
+    restart: unless-stopped
+
   redis:
-    image: redis:7
-    command: ["redis-server", "--appendonly", "yes"]
+    image: redis:alpine
     volumes:
       - redis-data:/data
     restart: unless-stopped
 
-  backend:
-    build: ./backend
-    env_file: .env
-    depends_on:
-      - redis
-    restart: unless-stopped
-    # IMPORTANT: backend-ul tău trebuie să asculte pe 0.0.0.0:8000 în container
-
-    caddy:
-    image: caddy:2
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - backend
-    restart: unless-stopped
-
 volumes:
   redis-data:
-  caddy_data:
-  caddy_config:
 
+
+  # caddy:
+#   image: caddy:2
+#   ports:
+#     - "80:80"
+#     - "443:443"
+#   environment:
+#     DOMAIN=${DOMAIN}
+#     EMAIL=${EMAIL}
+#   volumes:
+#     - ./Caddyfile:/etc/caddy/Caddyfile
+#     - caddy-data:/data
+#     - caddy-config:/config
+#   depends_on:
+#     - backend
+#   restart: unless-stopped
