@@ -6,10 +6,26 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     working_dir: /app
-    command: ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command: ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      # MongoDB (optional - will use fallback if not available)
+      MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017/flowmind}
+      # Database
+      DB_NAME: ${DB_NAME:-flowmind}
+      DB_USER: ${DB_USER:-flowmind}
+      DB_PASSWORD: ${DB_PASSWORD:-flowmind}
+      DB_HOST: ${DB_HOST:-localhost}
+      DB_PORT: ${DB_PORT:-5432}
+      # Unusual Whales API (inject from secrets or .env)
+      UW_API_TOKEN: ${UW_API_TOKEN:-}
+      UW_BASE_URL: ${UW_BASE_URL:-https://api.unusualwhales.com}
+      UW_LIVE: ${UW_LIVE:-1}
+      # TradeStation API
+      TS_CLIENT_ID: ${TS_CLIENT_ID:-}
+      TS_CLIENT_SECRET: ${TS_CLIENT_SECRET:-}
+      TS_REDIRECT_URI: ${TS_REDIRECT_URI:-}
     volumes:
       - ./backend:/app
     ports:

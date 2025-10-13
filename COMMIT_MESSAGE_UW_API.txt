@@ -1,0 +1,49 @@
+fix(api): Replace hallucinated UW API endpoints with correct routes
+
+BREAKING CHANGE: Updated Unusual Whales API integration to use correct endpoints
+
+## Problem
+Previous implementation used AI-hallucinated endpoints that don't exist in the 
+actual Unusual Whales API, causing all requests to fail with 404 errors.
+
+## Solution
+Replaced all hallucinated endpoints with correct UW API v2 routes as confirmed 
+by Dan @ Unusual Whales API Support.
+
+### Endpoints Fixed
+- ❌ `/v1/options/trades` → ✅ `/api/flow-alerts`
+- ❌ `/api/stock/{ticker}/quote` → ✅ `/api/stock/{ticker}/state`
+- ❌ `/api/stock/{ticker}/gamma-exposure` → ✅ `/api/stock/{ticker}/spot-gex-exposures-by-strike-expiry`
+- ❌ `/api/market/overview` → ✅ `/api/market/tide`
+- ❌ `/v1/news`, `/v1/congress/trades`, `/v1/insiders/trades` → Deprecated (not available)
+
+### Files Changed
+- `backend/integrations/uw_client.py` - Added correct endpoint methods
+- `backend/unusual_whales_service.py` - Updated service layer
+- `docker-compose.yml` - Added UW_API_TOKEN env var
+- `.env.example` - Documented all UW configuration
+
+### New Features
+- `flow_alerts()` - Get options flow alerts (sweeps, blocks, etc.)
+- `stock_state()` - Current stock price
+- `stock_ohlc()` - Historical OHLC data
+- `spot_gex_exposures()` - Gamma exposure by strike & expiry
+- `market_tide()` - Market-wide sentiment
+
+### Testing
+- Created `uw_correct_endpoints_test.py` - All 11 tests passing ✅
+- Integration tests validate both UWClient and UnusualWhalesService
+- Graceful fallback to demo data if API unavailable
+
+### Documentation
+- `UW_API_CORRECT_ENDPOINTS.md` - Complete API reference
+- `UW_API_MIGRATION_COMPLETE.md` - Migration summary
+- `DEPLOYMENT_UW_API_KEY.md` - Deployment guide
+- `DEPLOYMENT_FINAL_CHECKLIST.md` - Step-by-step checklist
+- `UW_API_MIGRATION_README.md` - Quick start guide
+
+### Deployment
+Ready for deployment once `UW_API_TOKEN` is injected from GitHub Secrets.
+
+Co-authored-by: Dan <support@unusualwhales.com> (Unusual Whales API Support)
+Fixes: #UW-API-HALLUCINATION

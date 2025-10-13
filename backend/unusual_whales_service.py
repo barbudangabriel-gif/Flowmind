@@ -63,25 +63,35 @@ class UnusualWhalesService:
             logger.error(f"Error making request to {endpoint}: {str(e)}")
             raise UnusualWhalesException(f"Request failed: {str(e)}")
     
-    # OPTIONS FLOW METHODS
+    # ============================================================================
+    # OPTIONS FLOW ALERTS - CORRECT UW API ENDPOINT
+    # Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.OptionTradeController.flow_alerts
+    # ============================================================================
     async def get_options_flow_alerts(
         self,
         minimum_premium: Optional[int] = 200000,
-        minimum_volume_oi_ratio: Optional[float] = 1.0,
+        ticker: Optional[str] = None,
         limit: Optional[int] = 100
     ) -> List[Dict[str, Any]]:
-        """Fetch options flow alerts with filtering using real Unusual Whales API"""
+        """
+        Fetch options flow alerts using CORRECT Unusual Whales API endpoint
+        
+        FIXED: Changed from /api/option-trades/flow-alerts to /api/flow-alerts
+        """
         try:
             params = {
                 "limit": limit,
-                "min_premium": minimum_premium,
-                "min_volume_oi_ratio": minimum_volume_oi_ratio
+                "min_premium": minimum_premium
             }
+            
+            if ticker:
+                params["ticker"] = ticker
             
             # Remove None values
             params = {k: v for k, v in params.items() if v is not None}
             
-            response = await self._make_request("/api/option-trades/flow-alerts", params)
+            # ✅ CORRECT ENDPOINT (was: /api/option-trades/flow-alerts)
+            response = await self._make_request("/api/flow-alerts", params)
             
             if not response.get('data'):
                 logger.warning("No options flow data from API, using mock data as fallback")
@@ -213,7 +223,117 @@ class UnusualWhalesService:
         except Exception as e:
             logger.error(f"Error processing real flow alert: {str(e)}")
             return {}
-        """Process and enhance individual flow alert data"""
+
+    # ============================================================================
+    # STOCK PRICE DATA - CORRECT UW API ENDPOINTS
+    # ============================================================================
+    async def get_stock_state(self, ticker: str) -> Dict[str, Any]:
+        """
+        Get current stock price (replaces hallucinated /api/stock/{ticker}/quote)
+        
+        Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.TickerController.last_stock_state
+        """
+        try:
+            response = await self._make_request(f"/api/stock/{ticker}/state", {})
+            
+            if not response:
+                logger.warning(f"No stock state data for {ticker}, returning fallback")
+                return {"ticker": ticker, "price": 0, "error": "No data"}
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error fetching stock state for {ticker}: {str(e)}")
+            return {"ticker": ticker, "price": 0, "error": str(e)}
+
+    async def get_stock_ohlc(
+        self,
+        ticker: str,
+        interval: str = "1d",
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get historical OHLC data
+        
+        Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.TickerController.ohlc
+        
+        Args:
+            ticker: Stock symbol
+            interval: 1m, 5m, 15m, 1h, 1d (default: 1d)
+            start_date: Start date for historical data
+            end_date: End date for historical data
+        """
+        try:
+            params = {"interval": interval}
+            if start_date:
+                params["start_date"] = start_date.strftime("%Y-%m-%d")
+            if end_date:
+                params["end_date"] = end_date.strftime("%Y-%m-%d")
+            
+            response = await self._make_request(f"/api/stock/{ticker}/ohlc", params)
+            
+            if not response.get('data'):
+                logger.warning(f"No OHLC data for {ticker}")
+                return []
+            
+            return response.get('data', [])
+            
+        except Exception as e:
+            logger.error(f"Error fetching OHLC for {ticker}: {str(e)}")
+            return []
+
+    # ============================================================================
+    # GAMMA EXPOSURE - CORRECT UW API ENDPOINT
+    # ============================================================================
+    async def get_gamma_exposure(self, ticker: str) -> Dict[str, Any]:
+        """
+        Get gamma exposure by strike & expiry (replaces hallucinated gamma-exposure endpoint)
+        
+        Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.TickerController.spot_exposures_by_strike_expiry_v2
+        """
+        try:
+            response = await self._make_request(
+                f"/api/stock/{ticker}/spot-gex-exposures-by-strike-expiry", 
+                {}
+            )
+            
+            if not response:
+                logger.warning(f"No GEX data for {ticker}")
+                return {"ticker": ticker, "error": "No data"}
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error fetching GEX for {ticker}: {str(e)}")
+            return {"ticker": ticker, "error": str(e)}
+
+    # ============================================================================
+    # MARKET OVERVIEW - CORRECT UW API ENDPOINT
+    # ============================================================================
+    async def get_market_tide(self) -> Dict[str, Any]:
+        """
+        Get market-wide flow sentiment (replaces hallucinated /api/market/overview)
+        
+        Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.MarketController.market_tide
+        """
+        try:
+            response = await self._make_request("/api/market/tide", {})
+            
+            if not response:
+                logger.warning("No market tide data")
+                return {"error": "No data"}
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error fetching market tide: {str(e)}")
+            return {"error": str(e)}
+    
+    # ============================================================================
+    # LEGACY METHODS (kept for backward compatibility)
+    # ============================================================================
+    
         try:
             # Calculate days to expiration
             dte = self._calculate_dte(alert.get('expiration_date', ''))
