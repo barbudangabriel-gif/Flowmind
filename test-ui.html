@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowMind - Market Intelligence Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: #0f172a; color: white; font-family: system-ui; }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+            🎉 FlowMind Market Intelligence
+        </h1>
+        <p class="text-slate-400 mb-8">Testează noile 4 features UW API</p>
+
+        <!-- Market Movers -->
+        <div class="bg-slate-800 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                📈 Market Movers
+                <span id="movers-status" class="text-sm font-normal text-slate-400">Loading...</span>
+            </h2>
+            <div id="movers-content" class="grid grid-cols-3 gap-4">
+                <div class="text-center text-slate-400">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Congress Trades -->
+        <div class="bg-slate-800 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                🏛️ Congress Trades
+                <span id="congress-status" class="text-sm font-normal text-slate-400">Loading...</span>
+            </h2>
+            <div id="congress-content" class="text-slate-400">
+                Loading...
+            </div>
+        </div>
+
+        <!-- Dark Pool -->
+        <div class="bg-slate-800 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                👁️ Dark Pool Trades
+                <span id="darkpool-status" class="text-sm font-normal text-slate-400">Loading...</span>
+            </h2>
+            <div id="darkpool-content" class="text-slate-400">
+                Loading...
+            </div>
+        </div>
+
+        <!-- Institutional Holdings -->
+        <div class="bg-slate-800 rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                🏢 Institutional Holdings (TSLA)
+                <span id="institutional-status" class="text-sm font-normal text-slate-400">Loading...</span>
+            </h2>
+            <div id="institutional-content" class="text-slate-400">
+                Loading...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8000';
+
+        // Market Movers
+        fetch(`${API}/api/flow/market-movers`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('movers-status').textContent = '✅ Loaded';
+                document.getElementById('movers-status').className = 'text-sm font-normal text-emerald-400';
+                
+                const html = `
+                    <div>
+                        <h3 class="text-emerald-400 font-semibold mb-2">🚀 Gainers</h3>
+                        ${data.gainers.slice(0, 3).map(s => `
+                            <div class="bg-slate-700 p-2 rounded mb-1">
+                                <div class="font-bold">${s.ticker}</div>
+                                <div class="text-sm text-emerald-400">+${s.change_pct}%</div>
+                                <div class="text-xs text-slate-400">$${s.price}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div>
+                        <h3 class="text-red-400 font-semibold mb-2">📉 Losers</h3>
+                        ${data.losers.slice(0, 3).map(s => `
+                            <div class="bg-slate-700 p-2 rounded mb-1">
+                                <div class="font-bold">${s.ticker}</div>
+                                <div class="text-sm text-red-400">${s.change_pct}%</div>
+                                <div class="text-xs text-slate-400">$${s.price}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div>
+                        <h3 class="text-blue-400 font-semibold mb-2">🔥 Most Active</h3>
+                        ${data.most_active.slice(0, 3).map(s => `
+                            <div class="bg-slate-700 p-2 rounded mb-1">
+                                <div class="font-bold">${s.ticker}</div>
+                                <div class="text-sm text-blue-400">${s.change_pct > 0 ? '+' : ''}${s.change_pct}%</div>
+                                <div class="text-xs text-slate-400">${(s.volume / 1000000).toFixed(1)}M vol</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                document.getElementById('movers-content').innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById('movers-status').textContent = '❌ Error: ' + err.message;
+                document.getElementById('movers-status').className = 'text-sm font-normal text-red-400';
+            });
+
+        // Congress Trades
+        fetch(`${API}/api/flow/congress-trades?limit=5`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('congress-status').textContent = '✅ Loaded';
+                document.getElementById('congress-status').className = 'text-sm font-normal text-emerald-400';
+                
+                const html = data.map(trade => `
+                    <div class="bg-slate-700 p-3 rounded mb-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-bold">${trade.politician}</div>
+                                <div class="text-sm text-slate-400">${trade.ticker} - ${trade.transaction_type}</div>
+                                <div class="text-xs text-slate-500">${trade.date}</div>
+                            </div>
+                            <div>
+                                <span class="px-2 py-1 rounded text-xs ${
+                                    trade.party === 'D' ? 'bg-blue-500' :
+                                    trade.party === 'R' ? 'bg-red-500' : 'bg-purple-500'
+                                }">${trade.party}</span>
+                                <span class="px-2 py-1 rounded text-xs ml-1 ${
+                                    trade.transaction_type === 'BUY' ? 'bg-green-500' : 'bg-red-500'
+                                }">${trade.transaction_type}</span>
+                            </div>
+                        </div>
+                        <div class="text-sm mt-1">${trade.amount}</div>
+                    </div>
+                `).join('');
+                document.getElementById('congress-content').innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById('congress-status').textContent = '❌ Error: ' + err.message;
+                document.getElementById('congress-status').className = 'text-sm font-normal text-red-400';
+            });
+
+        // Dark Pool
+        fetch(`${API}/api/flow/dark-pool?limit=5`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('darkpool-status').textContent = '✅ Loaded';
+                document.getElementById('darkpool-status').className = 'text-sm font-normal text-emerald-400';
+                
+                const html = data.map(trade => `
+                    <div class="bg-slate-700 p-3 rounded mb-2">
+                        <div class="flex justify-between">
+                            <div>
+                                <div class="font-bold text-lg">${trade.ticker}</div>
+                                <div class="text-sm text-slate-400">${new Date(trade.timestamp).toLocaleTimeString()}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-purple-400 font-bold">$${(trade.value / 1000000).toFixed(2)}M</div>
+                                <div class="text-xs text-slate-400">${(trade.volume / 1000).toFixed(0)}K shares @ $${trade.price}</div>
+                            </div>
+                        </div>
+                        ${trade.value > 10000000 ? '<div class="text-xs text-orange-400 mt-1">🔥 Large Print >$10M</div>' : ''}
+                    </div>
+                `).join('');
+                document.getElementById('darkpool-content').innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById('darkpool-status').textContent = '❌ Error: ' + err.message;
+                document.getElementById('darkpool-status').className = 'text-sm font-normal text-red-400';
+            });
+
+        // Institutional Holdings
+        fetch(`${API}/api/flow/institutional/TSLA`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('institutional-status').textContent = '✅ Loaded';
+                document.getElementById('institutional-status').className = 'text-sm font-normal text-emerald-400';
+                
+                const html = `
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-slate-700 p-3 rounded">
+                            <div class="text-xs text-slate-400">Total Ownership</div>
+                            <div class="text-2xl font-bold text-blue-400">${data.ownership_pct}%</div>
+                        </div>
+                        <div class="bg-slate-700 p-3 rounded">
+                            <div class="text-xs text-slate-400">Change QoQ</div>
+                            <div class="text-2xl font-bold ${data.change_pct > 0 ? 'text-emerald-400' : 'text-red-400'}">
+                                ${data.change_pct > 0 ? '+' : ''}${data.change_pct}%
+                            </div>
+                        </div>
+                        <div class="bg-slate-700 p-3 rounded">
+                            <div class="text-xs text-slate-400">Top Holder</div>
+                            <div class="text-lg font-bold">${data.top_holder.name}</div>
+                            <div class="text-sm text-slate-400">${data.top_holder.pct}%</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Top 5 Institutional Holders</h4>
+                        ${data.holdings.slice(0, 5).map((h, i) => `
+                            <div class="bg-slate-700 p-2 rounded mb-1 flex justify-between">
+                                <div>
+                                    <div class="font-semibold">${i + 1}. ${h.institution}</div>
+                                    <div class="text-xs text-slate-400">${(h.shares / 1000000).toFixed(1)}M shares</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-bold text-blue-400">${h.pct}%</div>
+                                    <div class="text-xs ${h.change_pct > 0 ? 'text-emerald-400' : 'text-red-400'}">
+                                        ${h.change_pct > 0 ? '+' : ''}${h.change_pct}%
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                document.getElementById('institutional-content').innerHTML = html;
+            })
+            .catch(err => {
+                document.getElementById('institutional-status').textContent = '❌ Error: ' + err.message;
+                document.getElementById('institutional-status').className = 'text-sm font-normal text-red-400';
+            });
+    </script>
+</body>
+</html>
