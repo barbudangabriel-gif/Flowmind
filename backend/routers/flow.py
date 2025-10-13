@@ -297,3 +297,178 @@ async def flow_insiders(tickers: Optional[str] = Query(None)):
         mode = "DEMO"
 
     return {"mode": mode, "items": data, "ts": now_iso()}
+
+
+# ============================================================================
+# NEW ENDPOINTS - 2025-10-13 Extension
+# ============================================================================
+
+@router.get("/market-movers")
+async def market_movers():
+    """
+    Get market movers (top gainers, losers, most active)
+    
+    Returns:
+        {
+            "gainers": [...],
+            "losers": [...],
+            "most_active": [...]
+        }
+    """
+    from unusual_whales_service import UnusualWhalesService
+    
+    try:
+        service = UnusualWhalesService()
+        data = await service.get_market_movers()
+        return {"status": "success", "data": data, "timestamp": now_iso()}
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "data": {
+                "gainers": [],
+                "losers": [],
+                "most_active": []
+            },
+            "timestamp": now_iso()
+        }
+
+
+@router.get("/congress-trades")
+async def congress_trades(
+    ticker: Optional[str] = Query(None),
+    politician: Optional[str] = Query(None),
+    party: Optional[str] = Query(None),
+    transaction_type: Optional[str] = Query(None),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    limit: int = Query(100, ge=1, le=500)
+):
+    """
+    Get congressional trading activity
+    
+    Query params:
+        - ticker: Filter by stock symbol
+        - politician: Filter by politician name
+        - party: Filter by party (D, R, I)
+        - transaction_type: BUY, SELL, or EXCHANGE
+        - start_date: Start date (YYYY-MM-DD)
+        - end_date: End date (YYYY-MM-DD)
+        - limit: Max results (1-500, default 100)
+    """
+    from unusual_whales_service import UnusualWhalesService
+    
+    try:
+        service = UnusualWhalesService()
+        
+        # Parse dates if provided
+        start_dt = datetime.fromisoformat(start_date) if start_date else None
+        end_dt = datetime.fromisoformat(end_date) if end_date else None
+        
+        data = await service.get_congress_trades(
+            ticker=ticker,
+            politician=politician,
+            party=party,
+            transaction_type=transaction_type,
+            start_date=start_dt,
+            end_date=end_dt,
+            limit=limit
+        )
+        
+        return {
+            "status": "success",
+            "data": data,
+            "count": len(data),
+            "timestamp": now_iso()
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "data": [],
+            "timestamp": now_iso()
+        }
+
+
+@router.get("/dark-pool")
+async def dark_pool(
+    ticker: Optional[str] = Query(None),
+    min_volume: Optional[int] = Query(None),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    limit: int = Query(100, ge=1, le=500)
+):
+    """
+    Get dark pool activity (off-exchange trades)
+    
+    Query params:
+        - ticker: Filter by symbol
+        - min_volume: Minimum share volume threshold
+        - start_date: Start date (YYYY-MM-DD)
+        - end_date: End date (YYYY-MM-DD)
+        - limit: Max results (1-500, default 100)
+    """
+    from unusual_whales_service import UnusualWhalesService
+    
+    try:
+        service = UnusualWhalesService()
+        
+        # Parse dates if provided
+        start_dt = datetime.fromisoformat(start_date) if start_date else None
+        end_dt = datetime.fromisoformat(end_date) if end_date else None
+        
+        data = await service.get_dark_pool(
+            ticker=ticker,
+            min_volume=min_volume,
+            start_date=start_dt,
+            end_date=end_dt,
+            limit=limit
+        )
+        
+        return {
+            "status": "success",
+            "data": data,
+            "count": len(data),
+            "timestamp": now_iso()
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "data": [],
+            "timestamp": now_iso()
+        }
+
+
+@router.get("/institutional/{ticker}")
+async def institutional_holdings(
+    ticker: str,
+    quarter: Optional[str] = Query(None, description="Quarter (e.g., 2025Q3)")
+):
+    """
+    Get institutional holdings (13F filings) for a ticker
+    
+    Path params:
+        - ticker: Stock symbol (required)
+        
+    Query params:
+        - quarter: Quarter filter (e.g., "2025Q3", defaults to latest)
+    """
+    from unusual_whales_service import UnusualWhalesService
+    
+    try:
+        service = UnusualWhalesService()
+        data = await service.get_institutional_holdings(ticker=ticker, quarter=quarter)
+        
+        return {
+            "status": "success",
+            "data": data,
+            "timestamp": now_iso()
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "data": {"ticker": ticker, "holdings": []},
+            "timestamp": now_iso()
+        }

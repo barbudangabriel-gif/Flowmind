@@ -75,6 +75,42 @@ export function buildNav(ctx) {
       ],
     },
 
+    // MARKET INTELLIGENCE
+    {
+      title: "Market Intelligence",
+      items: [
+        { 
+          label: "Flow Summary", 
+          to: "/flow", 
+          icon: "TrendingUp" 
+        },
+        { 
+          label: "Dark Pool", 
+          to: "/dark-pool", 
+          icon: "Droplet",
+          badge: { text: "NEW", tone: "success" }
+        },
+        { 
+          label: "Market Movers", 
+          to: "/market-movers", 
+          icon: "Activity",
+          badge: { text: "NEW", tone: "success" }
+        },
+        { 
+          label: "Congress Trades", 
+          to: "/congress-trades", 
+          icon: "Building",
+          badge: { text: "NEW", tone: "success" }
+        },
+        { 
+          label: "Institutional", 
+          to: "/institutional", 
+          icon: "Building2",
+          badge: { text: "NEW", tone: "success" }
+        },
+      ],
+    },
+
     // TRADES
     {
       title: "Trades",

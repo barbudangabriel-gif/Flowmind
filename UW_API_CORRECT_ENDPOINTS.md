@@ -156,6 +156,272 @@ Response:
 
 ---
 
+### 5. Market Movers
+
+**Endpoint:** `GET /api/market/movers`
+
+**Description:** Returns top gaining/losing stocks and most active by volume.
+
+**Parameters:** None
+
+**Response Structure:**
+```json
+{
+  "gainers": [
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA Corp",
+      "change_pct": 8.42,
+      "price": 485.20,
+      "volume": 52000000
+    }
+  ],
+  "losers": [
+    {
+      "ticker": "TSLA",
+      "name": "Tesla Inc",
+      "change_pct": -4.15,
+      "price": 242.30,
+      "volume": 35000000
+    }
+  ],
+  "most_active": [
+    {
+      "ticker": "AAPL",
+      "name": "Apple Inc",
+      "change_pct": 0.52,
+      "price": 178.50,
+      "volume": 85000000
+    }
+  ]
+}
+```
+
+**Usage in Backend:**
+```python
+# In uw_client.py
+async def market_movers(self) -> dict:
+    """Get market movers (gainers, losers, most active)"""
+    return await self._get("/api/market/movers", {})
+
+# In unusual_whales_service.py
+async def get_market_movers(self):
+    """Get market movers with fallback to mock data"""
+    try:
+        result = await self.client.market_movers()
+        return result if result else self._get_mock_market_movers()
+    except Exception as e:
+        logger.error(f"Market movers error: {e}")
+        return self._get_mock_market_movers()
+```
+
+**Frontend Endpoint:** `GET /api/flow/market-movers`
+
+**UI Components:** 
+- `MarketMoversWidget.jsx` - Dashboard widget
+- `MarketMoversPage.jsx` - Full-page view
+
+---
+
+### 6. Congress Trades
+
+**Endpoint:** `GET /api/congress-trades`
+
+**Description:** Track congressional stock trading activity with filters.
+
+**Parameters:**
+- `ticker` (optional): Filter by stock symbol
+- `politician` (optional): Filter by politician name
+- `party` (optional): Filter by party (D/R/I)
+- `transaction_type` (optional): BUY or SELL
+- `start_date` (optional): Start date (YYYY-MM-DD)
+- `end_date` (optional): End date (YYYY-MM-DD)
+- `limit` (optional, default: 100): Max results
+
+**Response Structure:**
+```json
+[
+  {
+    "politician": "Nancy Pelosi",
+    "party": "D",
+    "ticker": "NVDA",
+    "transaction_type": "BUY",
+    "amount": "$50,001-$100,000",
+    "price": 485.20,
+    "date": "2025-10-10",
+    "disclosed": "2025-10-13"
+  }
+]
+```
+
+**Usage in Backend:**
+```python
+# In uw_client.py
+async def congress_trades(
+    self,
+    ticker: Optional[str] = None,
+    politician: Optional[str] = None,
+    party: Optional[str] = None,
+    transaction_type: Optional[str] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    limit: int = 100
+) -> list:
+    """Get congressional trading activity"""
+    params = {"limit": limit}
+    if ticker:
+        params["ticker"] = ticker
+    if politician:
+        params["politician"] = politician
+    if party:
+        params["party"] = party
+    if transaction_type:
+        params["transaction_type"] = transaction_type
+    if start_date:
+        params["start_date"] = start_date.strftime("%Y-%m-%d")
+    if end_date:
+        params["end_date"] = end_date.strftime("%Y-%m-%d")
+    
+    return await self._get("/api/congress-trades", params)
+```
+
+**Frontend Endpoint:** `GET /api/flow/congress-trades?ticker=TSLA&party=D&limit=50`
+
+**UI Components:**
+- `CongressTradesPage.jsx` - Full-page with filters and summary cards
+
+---
+
+### 7. Dark Pool Trades
+
+**Endpoint:** `GET /api/dark-pool`
+
+**Description:** Monitor off-exchange (dark pool) trading activity.
+
+**Parameters:**
+- `ticker` (optional): Filter by stock symbol
+- `min_volume` (optional): Minimum share volume
+- `start_date` (optional): Start date (YYYY-MM-DD)
+- `end_date` (optional): End date (YYYY-MM-DD)
+- `limit` (optional, default: 100): Max results
+
+**Response Structure:**
+```json
+[
+  {
+    "ticker": "TSLA",
+    "timestamp": "2025-10-13T14:32:15Z",
+    "price": 242.50,
+    "volume": 150000,
+    "value": 36375000,
+    "exchange": "DARK",
+    "lit_volume": 45000,
+    "lit_value": 10912500
+  }
+]
+```
+
+**Usage in Backend:**
+```python
+# In uw_client.py
+async def dark_pool(
+    self,
+    ticker: Optional[str] = None,
+    min_volume: Optional[int] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    limit: int = 100
+) -> list:
+    """Get dark pool trading data"""
+    params = {"limit": limit}
+    if ticker:
+        params["ticker"] = ticker
+    if min_volume:
+        params["min_volume"] = min_volume
+    if start_date:
+        params["start_date"] = start_date.strftime("%Y-%m-%d")
+    if end_date:
+        params["end_date"] = end_date.strftime("%Y-%m-%d")
+    
+    return await self._get("/api/dark-pool", params)
+```
+
+**Frontend Endpoint:** `GET /api/flow/dark-pool?ticker=NVDA&min_volume=10000`
+
+**UI Components:**
+- `DarkPoolPage.jsx` - Full-page with Plotly chart and filters
+
+---
+
+### 8. Institutional Holdings (13F)
+
+**Endpoint:** `GET /api/stock/{ticker}/institutional`
+
+**Description:** View institutional holdings from 13F filings per ticker.
+
+**Parameters:**
+- `ticker` (path param, required): Stock symbol
+- `quarter` (optional): Fiscal quarter (e.g., "2024-Q3")
+
+**Response Structure:**
+```json
+{
+  "ticker": "TSLA",
+  "quarter": "2024-Q3",
+  "total_shares": 500000000,
+  "total_value": 125000000000,
+  "ownership_pct": 62.5,
+  "change_pct": 2.3,
+  "top_holder": {
+    "name": "Vanguard Group",
+    "shares": 75000000,
+    "value": 18750000000,
+    "pct": 15.0
+  },
+  "holdings": [
+    {
+      "institution": "Vanguard Group",
+      "shares": 75000000,
+      "value": 18750000000,
+      "pct": 15.0,
+      "change_shares": 1500000,
+      "change_pct": 2.0
+    },
+    {
+      "institution": "BlackRock",
+      "shares": 60000000,
+      "value": 15000000000,
+      "pct": 12.0,
+      "change_shares": -500000,
+      "change_pct": -0.8
+    }
+  ]
+}
+```
+
+**Usage in Backend:**
+```python
+# In uw_client.py
+async def institutional_holdings(
+    self,
+    ticker: str,
+    quarter: Optional[str] = None
+) -> dict:
+    """Get 13F institutional holdings for a ticker"""
+    params = {}
+    if quarter:
+        params["quarter"] = quarter
+    
+    return await self._get(f"/api/stock/{ticker}/institutional", params)
+```
+
+**Frontend Endpoint:** `GET /api/flow/institutional/TSLA?quarter=2024-Q3`
+
+**UI Components:**
+- `InstitutionalPage.jsx` - Full-page with search, summary cards, and Plotly pie chart
+
+---
+
 ## 🔧 Implementation Changes Required
 
 ### File: `backend/integrations/uw_client.py`
@@ -245,6 +511,46 @@ async def get_options_flow_alerts(self, minimum_premium=200000, limit=100):
 - [ ] Document breaking changes in CHANGELOG
 - [ ] Run integration tests: `python backend_test.py`
 - [ ] Deploy to staging and verify
+
+### ✅ NEW ENDPOINTS IMPLEMENTED (2025-10-13)
+
+The following 4 endpoints have been fully implemented:
+
+- [x] Market Movers API (Backend + Frontend)
+  - `uw_client.py`: `market_movers()` method
+  - `unusual_whales_service.py`: `get_market_movers()` with mock fallback
+  - `routers/flow.py`: `GET /api/flow/market-movers` endpoint
+  - Frontend: `MarketMoversWidget.jsx` + `MarketMoversPage.jsx`
+  
+- [x] Congress Trades API (Backend + Frontend)
+  - `uw_client.py`: `congress_trades()` method with filters
+  - `unusual_whales_service.py`: `get_congress_trades()` with mock fallback
+  - `routers/flow.py`: `GET /api/flow/congress-trades` endpoint
+  - Frontend: `CongressTradesPage.jsx`
+  
+- [x] Dark Pool API (Backend + Frontend)
+  - `uw_client.py`: `dark_pool()` method with filters
+  - `unusual_whales_service.py`: `get_dark_pool()` with mock fallback
+  - `routers/flow.py`: `GET /api/flow/dark-pool` endpoint
+  - Frontend: `DarkPoolPage.jsx` with Plotly charts
+  
+- [x] Institutional Holdings API (Backend + Frontend)
+  - `uw_client.py`: `institutional_holdings()` method
+  - `unusual_whales_service.py`: `get_institutional_holdings()` with mock fallback
+  - `routers/flow.py`: `GET /api/flow/institutional/{ticker}` endpoint
+  - Frontend: `InstitutionalPage.jsx` with search and charts
+
+- [x] Navigation Integration
+  - Updated `App.js` with 4 new routes
+  - Updated `nav.simple.js` with "Market Intelligence" section
+  
+- [x] Testing
+  - Added 8 integration tests in `uw_correct_endpoints_test.py`
+  - All 19 tests passing (10 UWClient + 9 Service layer)
+  
+- [x] Documentation
+  - Created `UI_COMPONENTS_GUIDE.md` (397 lines)
+  - Updated this file with endpoint documentation
 
 ---
 

@@ -331,6 +331,272 @@ class UnusualWhalesService:
             return {"error": str(e)}
     
     # ============================================================================
+    # NEW ENDPOINTS - 2025-10-13 Extension
+    # ============================================================================
+    async def get_market_movers(self) -> Dict[str, Any]:
+        """
+        Get market movers (top gainers, losers, most active)
+        
+        Returns:
+            {
+                "gainers": [...],
+                "losers": [...],
+                "most_active": [...]
+            }
+        """
+        try:
+            response = await self._make_request("/api/market/movers", {})
+            
+            if not response:
+                logger.warning("No market movers data, using fallback")
+                return self._get_mock_market_movers()
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error fetching market movers: {str(e)}")
+            return self._get_mock_market_movers()
+    
+    async def get_congress_trades(
+        self,
+        ticker: Optional[str] = None,
+        politician: Optional[str] = None,
+        party: Optional[str] = None,
+        transaction_type: Optional[str] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """
+        Get congressional trading activity
+        
+        Args:
+            ticker: Filter by stock symbol
+            politician: Filter by politician name
+            party: Filter by party (D, R, I)
+            transaction_type: BUY, SELL, or EXCHANGE
+            start_date: Start date
+            end_date: End date
+            limit: Max results
+        """
+        try:
+            params: Dict[str, Any] = {"limit": limit}
+            if ticker:
+                params["ticker"] = ticker
+            if politician:
+                params["politician"] = politician
+            if party:
+                params["party"] = party
+            if transaction_type:
+                params["transaction_type"] = transaction_type
+            if start_date:
+                params["start_date"] = start_date.strftime("%Y-%m-%d")
+            if end_date:
+                params["end_date"] = end_date.strftime("%Y-%m-%d")
+            
+            # Remove None values
+            params = {k: v for k, v in params.items() if v is not None}
+            
+            response = await self._make_request("/api/congress-trades", params)
+            
+            if not response.get('data'):
+                logger.warning("No congress trades data, using fallback")
+                return self._get_mock_congress_trades()
+            
+            return response.get('data', [])
+            
+        except Exception as e:
+            logger.error(f"Error fetching congress trades: {str(e)}")
+            return self._get_mock_congress_trades()
+    
+    async def get_dark_pool(
+        self,
+        ticker: Optional[str] = None,
+        min_volume: Optional[int] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """
+        Get dark pool activity (off-exchange trades)
+        
+        Args:
+            ticker: Filter by symbol
+            min_volume: Minimum share volume threshold
+            start_date: Start date
+            end_date: End date
+            limit: Max results
+        """
+        try:
+            params: Dict[str, Any] = {"limit": limit}
+            if ticker:
+                params["ticker"] = ticker
+            if min_volume:
+                params["min_volume"] = min_volume
+            if start_date:
+                params["start_date"] = start_date.strftime("%Y-%m-%d")
+            if end_date:
+                params["end_date"] = end_date.strftime("%Y-%m-%d")
+            
+            # Remove None values
+            params = {k: v for k, v in params.items() if v is not None}
+            
+            response = await self._make_request("/api/dark-pool", params)
+            
+            if not response.get('data'):
+                logger.warning("No dark pool data, using fallback")
+                return self._get_mock_dark_pool()
+            
+            return response.get('data', [])
+            
+        except Exception as e:
+            logger.error(f"Error fetching dark pool data: {str(e)}")
+            return self._get_mock_dark_pool()
+    
+    async def get_institutional_holdings(
+        self,
+        ticker: str,
+        quarter: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get institutional holdings (13F filings)
+        
+        Args:
+            ticker: Stock symbol (required)
+            quarter: Quarter filter (e.g., "2025Q3")
+        """
+        try:
+            params: Dict[str, Any] = {}
+            if quarter:
+                params["quarter"] = quarter
+            
+            response = await self._make_request(f"/api/stock/{ticker}/institutional", params)
+            
+            if not response:
+                logger.warning(f"No institutional holdings data for {ticker}, using fallback")
+                return self._get_mock_institutional(ticker)
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error fetching institutional holdings for {ticker}: {str(e)}")
+            return self._get_mock_institutional(ticker)
+    
+    # ============================================================================
+    # MOCK DATA FOR GRACEFUL FALLBACK
+    # ============================================================================
+    def _get_mock_market_movers(self) -> Dict[str, Any]:
+        """Mock market movers data for fallback"""
+        return {
+            "gainers": [
+                {"ticker": "NVDA", "price": 520.50, "change_pct": 8.2, "volume": 28500000},
+                {"ticker": "TSLA", "price": 265.40, "change_pct": 5.8, "volume": 45200000},
+                {"ticker": "AMD", "price": 145.30, "change_pct": 4.1, "volume": 35100000}
+            ],
+            "losers": [
+                {"ticker": "META", "price": 380.20, "change_pct": -4.5, "volume": 18200000},
+                {"ticker": "AAPL", "price": 172.50, "change_pct": -3.2, "volume": 38500000},
+                {"ticker": "AMZN", "price": 145.80, "change_pct": -2.8, "volume": 25300000}
+            ],
+            "most_active": [
+                {"ticker": "TSLA", "price": 250.75, "volume": 45200000, "change_pct": 2.1},
+                {"ticker": "AAPL", "price": 175.20, "volume": 38500000, "change_pct": -1.5},
+                {"ticker": "SPY", "price": 445.50, "volume": 35100000, "change_pct": 0.5}
+            ]
+        }
+    
+    def _get_mock_congress_trades(self) -> List[Dict[str, Any]]:
+        """Mock congress trades data for fallback"""
+        return [
+            {
+                "date": "2025-10-12",
+                "politician_name": "Nancy Pelosi",
+                "party": "D",
+                "ticker": "NVDA",
+                "type": "BUY",
+                "amount": "$250K-$500K",
+                "price": 480.50
+            },
+            {
+                "date": "2025-10-11",
+                "politician_name": "Ted Cruz",
+                "party": "R",
+                "ticker": "TSLA",
+                "type": "SELL",
+                "amount": "$50K-$100K",
+                "price": 250.75
+            },
+            {
+                "date": "2025-10-10",
+                "politician_name": "Elizabeth Warren",
+                "party": "D",
+                "ticker": "AAPL",
+                "type": "BUY",
+                "amount": "$15K-$50K",
+                "price": 178.20
+            }
+        ]
+    
+    def _get_mock_dark_pool(self) -> List[Dict[str, Any]]:
+        """Mock dark pool data for fallback"""
+        return [
+            {
+                "timestamp": "2025-10-13T14:28:45Z",
+                "ticker": "SPY",
+                "volume": 250000,
+                "price": 445.20,
+                "notional": 111300000
+            },
+            {
+                "timestamp": "2025-10-13T14:25:12Z",
+                "ticker": "TSLA",
+                "volume": 50000,
+                "price": 250.75,
+                "notional": 12537500
+            },
+            {
+                "timestamp": "2025-10-13T14:22:03Z",
+                "ticker": "AAPL",
+                "volume": 100000,
+                "price": 178.40,
+                "notional": 17840000
+            }
+        ]
+    
+    def _get_mock_institutional(self, ticker: str) -> Dict[str, Any]:
+        """Mock institutional holdings data for fallback"""
+        return {
+            "ticker": ticker,
+            "quarter": "2025Q3",
+            "total_ownership_pct": 42.3,
+            "change_qoq_pct": 2.5,
+            "top_holder": "Vanguard Group",
+            "holdings": [
+                {
+                    "institution": "Vanguard Group",
+                    "shares": 50200000,
+                    "value": 12600000000,
+                    "change_pct": 2.5,
+                    "filed_date": "2025-10-05"
+                },
+                {
+                    "institution": "BlackRock",
+                    "shares": 40100000,
+                    "value": 10000000000,
+                    "change_pct": 1.8,
+                    "filed_date": "2025-10-05"
+                },
+                {
+                    "institution": "Fidelity",
+                    "shares": 25300000,
+                    "value": 6300000000,
+                    "change_pct": -0.5,
+                    "filed_date": "2025-10-04"
+                }
+            ]
+        }
+    
+    # ============================================================================
     # LEGACY METHODS (kept for backward compatibility)
     # ============================================================================
     

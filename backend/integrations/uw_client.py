@@ -145,6 +145,183 @@ class UWClient:
             return {}
 
     # ============================================================================
+    # NEW ENDPOINTS - 2025-10-13 Extension
+    # ============================================================================
+    async def market_movers(self) -> Dict[str, Any]:
+        """
+        Get market movers (top gainers, losers, most active)
+        
+        Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.MarketController.market_movers
+        
+        Returns:
+            {
+                "gainers": [{"ticker": "NVDA", "price": 520.50, "change_pct": 8.2, ...}, ...],
+                "losers": [{"ticker": "META", "price": 380.20, "change_pct": -4.5, ...}, ...],
+                "most_active": [{"ticker": "TSLA", "price": 250.75, "volume": 45200000, ...}, ...]
+            }
+        """
+        try:
+            result = await self._get("/api/market/movers", {})
+            return result
+        except Exception as e:
+            logger.error(f"UW market movers API error: {e}")
+            return {"gainers": [], "losers": [], "most_active": []}
+
+    async def congress_trades(
+        self,
+        ticker: Optional[str] = None,
+        politician: Optional[str] = None,
+        party: Optional[str] = None,
+        transaction_type: Optional[str] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """
+        Get congressional trading activity (politician stock purchases/sales)
+        
+        Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.CongressController.congress_trades
+        
+        Args:
+            ticker: Filter by stock symbol
+            politician: Filter by politician name
+            party: Filter by party (D, R, I)
+            transaction_type: BUY, SELL, or EXCHANGE
+            start_date: Start date for date range
+            end_date: End date for date range
+            limit: Max results (default 100)
+            
+        Returns:
+            [
+                {
+                    "date": "2025-10-12",
+                    "politician_name": "Nancy Pelosi",
+                    "party": "D",
+                    "ticker": "NVDA",
+                    "type": "BUY",
+                    "amount": "$250K-$500K",
+                    "price": 480.50,
+                    ...
+                },
+                ...
+            ]
+        """
+        params: Dict[str, Any] = {"limit": limit}
+        if ticker:
+            params["ticker"] = ticker
+        if politician:
+            params["politician"] = politician
+        if party:
+            params["party"] = party
+        if transaction_type:
+            params["transaction_type"] = transaction_type
+        if start_date:
+            params["start_date"] = start_date.strftime("%Y-%m-%d")
+        if end_date:
+            params["end_date"] = end_date.strftime("%Y-%m-%d")
+
+        try:
+            result = await self._get("/api/congress-trades", params)
+            return result.get("data", [])
+        except Exception as e:
+            logger.error(f"UW congress trades API error: {e}")
+            return []
+
+    async def dark_pool(
+        self,
+        ticker: Optional[str] = None,
+        min_volume: Optional[int] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        limit: int = 100
+    ) -> List[Dict[str, Any]]:
+        """
+        Get dark pool activity (off-exchange trades)
+        
+        Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.DarkPoolController.dark_pool_trades
+        
+        Args:
+            ticker: Filter by symbol
+            min_volume: Minimum share volume threshold
+            start_date: Start date for date range
+            end_date: End date for date range
+            limit: Max results (default 100)
+            
+        Returns:
+            [
+                {
+                    "timestamp": "2025-10-13T14:28:45Z",
+                    "ticker": "SPY",
+                    "volume": 250000,
+                    "price": 445.20,
+                    "notional": 111300000,
+                    ...
+                },
+                ...
+            ]
+        """
+        params: Dict[str, Any] = {"limit": limit}
+        if ticker:
+            params["ticker"] = ticker
+        if min_volume:
+            params["min_volume"] = min_volume
+        if start_date:
+            params["start_date"] = start_date.strftime("%Y-%m-%d")
+        if end_date:
+            params["end_date"] = end_date.strftime("%Y-%m-%d")
+
+        try:
+            result = await self._get("/api/dark-pool", params)
+            return result.get("data", [])
+        except Exception as e:
+            logger.error(f"UW dark pool API error: {e}")
+            return []
+
+    async def institutional_holdings(
+        self,
+        ticker: str,
+        quarter: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get institutional holdings (13F filings)
+        
+        Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.InstitutionalController.institutional_holdings
+        
+        Args:
+            ticker: Stock symbol (required)
+            quarter: Quarter filter (e.g., "2025Q3", defaults to latest)
+            
+        Returns:
+            {
+                "ticker": "TSLA",
+                "quarter": "2025Q3",
+                "total_ownership_pct": 42.3,
+                "change_qoq_pct": 2.5,
+                "top_holder": "Vanguard Group",
+                "holdings": [
+                    {
+                        "institution": "Vanguard Group",
+                        "shares": 50200000,
+                        "value": 12600000000,
+                        "change_pct": 2.5,
+                        "filed_date": "2025-10-05"
+                    },
+                    ...
+                ]
+            }
+        """
+        params: Dict[str, Any] = {}
+        if quarter:
+            params["quarter"] = quarter
+
+        try:
+            result = await self._get(f"/api/stock/{ticker}/institutional", params)
+            return result
+        except Exception as e:
+            logger.error(f"UW institutional holdings API error for {ticker}: {e}")
+            return {"ticker": ticker, "holdings": []}
+
+    # ============================================================================
     # LEGACY METHODS - Deprecated (kept for backward compatibility)
     # ============================================================================
     async def trades(

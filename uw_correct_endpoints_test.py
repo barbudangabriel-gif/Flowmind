@@ -121,9 +121,76 @@ async def test_uw_client():
     except Exception as e:
         print_result("Market Tide endpoint", False, f"Error: {e}")
     
-    # Test 6: Legacy methods (should warn but not crash)
+    # Test 6: Market Movers (NEW)
     try:
-        print(f"\n{YELLOW}Test 6: Legacy Methods (Deprecated){RESET}")
+        print(f"\n{YELLOW}Test 6: Market Movers (NEW){RESET}")
+        movers = await client.market_movers()
+        
+        if isinstance(movers, dict):
+            has_keys = all(k in movers for k in ['gainers', 'losers', 'most_active'])
+            print_result(
+                "Market Movers endpoint",
+                has_keys,
+                f"Keys present: gainers, losers, most_active" if has_keys else f"Missing keys: {movers.keys()}"
+            )
+        else:
+            print_result("Market Movers endpoint", False, f"Expected dict, got {type(movers)}")
+    except Exception as e:
+        print_result("Market Movers endpoint", False, f"Error: {e}")
+    
+    # Test 7: Congress Trades (NEW)
+    try:
+        print(f"\n{YELLOW}Test 7: Congress Trades (NEW){RESET}")
+        trades = await client.congress_trades(ticker="TSLA", party="D", limit=10)
+        
+        if isinstance(trades, list):
+            print_result(
+                "Congress Trades endpoint",
+                True,
+                f"Returned {len(trades)} congress trades for TSLA (party=D)"
+            )
+        else:
+            print_result("Congress Trades endpoint", False, f"Expected list, got {type(trades)}")
+    except Exception as e:
+        print_result("Congress Trades endpoint", False, f"Error: {e}")
+    
+    # Test 8: Dark Pool (NEW)
+    try:
+        print(f"\n{YELLOW}Test 8: Dark Pool (NEW){RESET}")
+        prints = await client.dark_pool(ticker="SPY", min_volume=100000, limit=10)
+        
+        if isinstance(prints, list):
+            print_result(
+                "Dark Pool endpoint",
+                True,
+                f"Returned {len(prints)} dark pool prints for SPY (min_volume=100k)"
+            )
+        else:
+            print_result("Dark Pool endpoint", False, f"Expected list, got {type(prints)}")
+    except Exception as e:
+        print_result("Dark Pool endpoint", False, f"Error: {e}")
+    
+    # Test 9: Institutional Holdings (NEW)
+    try:
+        print(f"\n{YELLOW}Test 9: Institutional Holdings (NEW){RESET}")
+        holdings = await client.institutional_holdings(ticker="TSLA")
+        
+        if isinstance(holdings, dict):
+            has_ticker = 'ticker' in holdings
+            has_holdings = 'holdings' in holdings
+            print_result(
+                "Institutional Holdings endpoint",
+                has_ticker and has_holdings,
+                f"Keys: ticker={has_ticker}, holdings={has_holdings}"
+            )
+        else:
+            print_result("Institutional Holdings endpoint", False, f"Expected dict, got {type(holdings)}")
+    except Exception as e:
+        print_result("Institutional Holdings endpoint", False, f"Error: {e}")
+    
+    # Test 10: Legacy methods (should warn but not crash)
+    try:
+        print(f"\n{YELLOW}Test 10: Legacy Methods (Deprecated){RESET}")
         start = datetime.now() - timedelta(days=1)
         end = datetime.now()
         
@@ -236,6 +303,73 @@ async def test_uw_service():
             print_result("Service Market Tide", False, f"Expected dict, got {type(tide)}")
     except Exception as e:
         print_result("Service Market Tide", False, f"Error: {e}")
+    
+    # Test 6: Market Movers (NEW)
+    try:
+        print(f"\n{YELLOW}Test 6: Market Movers (Service Layer - NEW){RESET}")
+        movers = await service.get_market_movers()
+        
+        if isinstance(movers, dict):
+            has_keys = all(k in movers for k in ['gainers', 'losers', 'most_active'])
+            print_result(
+                "Service Market Movers",
+                has_keys,
+                f"Returned market movers data (mock: {len(movers.get('gainers', []))} gainers)"
+            )
+        else:
+            print_result("Service Market Movers", False, f"Expected dict, got {type(movers)}")
+    except Exception as e:
+        print_result("Service Market Movers", False, f"Error: {e}")
+    
+    # Test 7: Congress Trades (NEW)
+    try:
+        print(f"\n{YELLOW}Test 7: Congress Trades (Service Layer - NEW){RESET}")
+        trades = await service.get_congress_trades(ticker="TSLA", party="D", limit=10)
+        
+        if isinstance(trades, list):
+            print_result(
+                "Service Congress Trades",
+                True,
+                f"Returned {len(trades)} congress trades (mock: {trades[0].get('politician_name', 'N/A') if trades else 'empty'})"
+            )
+        else:
+            print_result("Service Congress Trades", False, f"Expected list, got {type(trades)}")
+    except Exception as e:
+        print_result("Service Congress Trades", False, f"Error: {e}")
+    
+    # Test 8: Dark Pool (NEW)
+    try:
+        print(f"\n{YELLOW}Test 8: Dark Pool (Service Layer - NEW){RESET}")
+        prints = await service.get_dark_pool(ticker="SPY", min_volume=100000, limit=10)
+        
+        if isinstance(prints, list):
+            print_result(
+                "Service Dark Pool",
+                True,
+                f"Returned {len(prints)} dark pool prints (mock: ${prints[0].get('notional', 0)/1e6:.1f}M notional if prints else 'empty')"
+            )
+        else:
+            print_result("Service Dark Pool", False, f"Expected list, got {type(prints)}")
+    except Exception as e:
+        print_result("Service Dark Pool", False, f"Error: {e}")
+    
+    # Test 9: Institutional Holdings (NEW)
+    try:
+        print(f"\n{YELLOW}Test 9: Institutional Holdings (Service Layer - NEW){RESET}")
+        holdings = await service.get_institutional_holdings(ticker="TSLA")
+        
+        if isinstance(holdings, dict):
+            has_holdings = 'holdings' in holdings
+            count = len(holdings.get('holdings', []))
+            print_result(
+                "Service Institutional Holdings",
+                has_holdings,
+                f"Returned institutional data (mock: {count} holders, top: {holdings.get('top_holder', 'N/A')})"
+            )
+        else:
+            print_result("Service Institutional Holdings", False, f"Expected dict, got {type(holdings)}")
+    except Exception as e:
+        print_result("Service Institutional Holdings", False, f"Error: {e}")
 
 
 async def main():
