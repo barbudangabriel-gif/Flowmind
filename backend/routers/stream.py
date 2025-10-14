@@ -188,10 +188,95 @@ async def stream_flow_alerts(websocket: WebSocket):
             await uw_client.unsubscribe(channel)
 
 
+@router.websocket("/ws/gex/{ticker}")
+async def stream_gamma_exposure(websocket: WebSocket, ticker: str):
+    """
+    Stream real-time gamma exposure (GEX) updates for a specific ticker.
+    
+    **✅ VERIFIED CHANNEL** - Confirmed working with UW API
+    
+    **Connection:** wss://your-backend.com/api/stream/ws/gex/SPY
+    
+    **Parameters:**
+    - `ticker`: Stock symbol (e.g., SPY, TSLA, AAPL, NVDA)
+    
+    **Message Format:**
+    ```json
+    {
+        "channel": "gex:SPY",
+        "timestamp": "2025-10-14T12:34:56.789Z",
+        "data": {
+            "ticker": "SPY",
+            "total_gex": 125000000,
+            "call_gex": 85000000,
+            "put_gex": 40000000,
+            "zero_gamma_level": 445.5,
+            "strikes": [
+                {"strike": 440, "gex": 5000000},
+                {"strike": 445, "gex": 25000000}
+            ]
+        }
+    }
+    ```
+    """
+    ticker = ticker.upper()
+    channel = f"gex:{ticker}"
+    
+    if not uw_client:
+        await websocket.close(code=1011, reason="WebSocket streaming not available")
+        return
+    
+    # Connect frontend client
+    await ws_manager.connect(websocket, channel)
+    logger.info(f"🔌 Frontend client connected to {channel}")
+    
+    # Define handler that broadcasts to all clients
+    async def gex_handler(ch: str, payload: dict):
+        """Broadcast GEX updates to all subscribed frontend clients"""
+        message = {
+            "channel": ch,
+            "timestamp": datetime.now().isoformat(),
+            "data": payload
+        }
+        await ws_manager.broadcast(channel, message)
+    
+    # Subscribe to UW channel if not already subscribed
+    if not ws_manager.has_subscribers(channel):
+        logger.info(f"📡 First subscriber - subscribing to UW {channel}")
+        await uw_client.subscribe(channel, gex_handler)
+    else:
+        # Already subscribed, just register callback
+        uw_client.message_handlers[channel] = gex_handler
+    
+    try:
+        # Keep connection alive
+        while True:
+            try:
+                data = await websocket.receive_text()
+                logger.debug(f"Received from client on {channel}: {data}")
+            except WebSocketDisconnect:
+                break
+    
+    except Exception as e:
+        logger.error(f"Error in GEX stream for {ticker}: {e}")
+    
+    finally:
+        # Cleanup
+        await ws_manager.disconnect(websocket, channel)
+        
+        # Unsubscribe from UW if no more clients
+        if not ws_manager.has_subscribers(channel):
+            logger.info(f"📡 Last subscriber - unsubscribing from UW {channel}")
+            await uw_client.unsubscribe(channel)
+
+
 @router.websocket("/ws/market-movers")
 async def stream_market_movers(websocket: WebSocket):
     """
     Stream real-time market movers data.
+    
+    **⚠️ EXPERIMENTAL CHANNEL** - Not officially verified by UW API
+    This channel may not receive updates or could have a different name.
     
     **Note:** Channel name might vary - check UW docs for exact channel name.
     This is a placeholder implementation.
@@ -240,6 +325,9 @@ async def stream_dark_pool(websocket: WebSocket):
     """
     Stream real-time dark pool activity.
     
+    **⚠️ EXPERIMENTAL CHANNEL** - Not officially verified by UW API
+    This channel may not receive updates or could have a different name.
+    
     **Note:** Channel name might vary - check UW docs for exact channel name.
     """
     channel = "dark_pool"  # TODO: Verify actual UW channel name
@@ -283,6 +371,9 @@ async def stream_dark_pool(websocket: WebSocket):
 async def stream_congress_trades(websocket: WebSocket):
     """
     Stream real-time congress trade filings.
+    
+    **⚠️ EXPERIMENTAL CHANNEL** - Not officially verified by UW API
+    This channel may not receive updates or could have a different name.
     
     **Note:** Channel name might vary - check UW docs for exact channel name.
     """

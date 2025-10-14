@@ -10,8 +10,8 @@ from fastapi.testclient import TestClient
 # App principal
 import sys
 
-# sys.path.append("/app/backend")
-# from server import app
+sys.path.append("/app/backend")
+from server import app
 
 
 @pytest.fixture(scope="session")

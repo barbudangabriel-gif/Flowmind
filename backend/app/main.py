@@ -1,19 +1,14 @@
-# backend/app/main.py
-
 from fastapi import FastAPI
-from backend.app.fis_app import app as fis_app  # importă aplicația FIS (cu rutele /investment-scoring și /analytics)
+from fastapi.responses import RedirectResponse
 
-# Creează aplicația principală (fără OpenAPI propriu)
-app = FastAPI(
-    title="Flowmind API",
-    docs_url=None,       # dezactivăm /docs aici
-    redoc_url=None,
-    openapi_url=None
-)
+from .routes.system import router as system_router
+from .routes.analytics import router as analytics_router
 
-# Montează aplicația FIS ca root (toate rutele și /docs vin din fis_app)
-app.mount("/", fis_app)
+app = FastAPI(title="Flowmind API", version="1.0")
 
-@app.get("/healthz")
-def healthz():
-    return {"ok": True}
+@app.get("/", include_in_schema=False)
+def root_redirect():
+    return RedirectResponse(url="/api/v1/")
+
+app.include_router(system_router)
+app.include_router(analytics_router)

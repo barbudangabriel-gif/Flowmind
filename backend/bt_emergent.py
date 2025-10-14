@@ -16,6 +16,58 @@ emergent_router = APIRouter(prefix="/_emergent", tags=["emergent"])
 redis_diag_router = APIRouter(prefix="/_redis", tags=["redis"])
 
 
+@redis_diag_router.get("/health")
+async def redis_health():
+    """
+    Redis health check endpoint - simple status for monitoring
+    Returns: connected (Redis), fallback (in-memory), or error
+    """
+    try:
+        kv = await get_kv()
+        impl_name = type(kv).__name__
+        
+        # Test connection with ping
+        try:
+            ping_result = await kv.ping()
+            is_connected = bool(ping_result)
+        except Exception as ping_error:
+            is_connected = False
+        
+        # Determine status
+        if impl_name == "AsyncTTLDict":
+            status = "fallback"
+            mode = "in-memory"
+            message = "Using in-memory fallback storage (Redis not available)"
+        elif is_connected:
+            status = "connected"
+            mode = "redis"
+            message = "Redis connection healthy"
+        else:
+            status = "error"
+            mode = "unknown"
+            message = "Redis connection failed"
+        
+        return {
+            "status": status,
+            "mode": mode,
+            "implementation": impl_name,
+            "connected": is_connected,
+            "message": message,
+            "redis_url": os.getenv("REDIS_URL", "not_set"),
+            "force_fallback": os.getenv("FM_FORCE_FALLBACK") == "1",
+            "redis_required": os.getenv("FM_REDIS_REQUIRED") == "1",
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "mode": "error",
+            "implementation": "unknown",
+            "connected": False,
+            "message": f"Health check failed: {str(e)}",
+            "error": str(e),
+        }
+
+
 @redis_diag_router.get("/diag")
 async def redis_diag_endpoint():
     """Redis diagnostics endpoint"""

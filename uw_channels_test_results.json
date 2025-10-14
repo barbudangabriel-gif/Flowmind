@@ -1,0 +1,190 @@
+{
+  "timestamp": "2025-10-14T13:34:33.789615",
+  "total_tested": 30,
+  "results": {
+    "success": [],
+    "timeout": [],
+    "error": [
+      {
+        "channel": "flow-alerts",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "gex:SPY",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "option_trades:SPY",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "market-movers",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "market-mover",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "market_movers",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "marketMovers",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "dark-pool",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "dark_pool",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "darkPool",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "congress",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "congress-trades",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "congress_trades",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "congressTrades",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "gex:TSLA",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "gex:AAPL",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "gex:NVDA",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "option_trades:TSLA",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "option_trades:AAPL",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "stock-quotes:SPY",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "stock_quotes:SPY",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "market-tide",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "market_tide",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "institutional-flows",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "institutional_flows",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "earnings",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "earnings-calendar",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "news:SPY",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "options-flow",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      },
+      {
+        "channel": "options_flow",
+        "status": "error",
+        "response": null,
+        "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+      }
+    ]
+  }
+}

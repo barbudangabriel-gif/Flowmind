@@ -60,6 +60,12 @@ export const WebSocketProvider = ({ children }) => {
   // Global connection status
   const [globalStatus, setGlobalStatus] = useState(WS_STATUS.DISCONNECTED);
   const [isEnabled, setIsEnabled] = useState(true);
+  
+  // Experimental feeds toggle (persisted to localStorage)
+  const [experimentalFeedsEnabled, setExperimentalFeedsEnabled] = useState(() => {
+    const saved = localStorage.getItem('experimentalFeedsEnabled');
+    return saved === 'true';
+  });
 
   // Refs for WebSocket connections
   const wsRefs = useRef({});
@@ -282,6 +288,15 @@ export const WebSocketProvider = ({ children }) => {
   }, [connections]);
 
   /**
+   * Toggle experimental feeds
+   */
+  const toggleExperimentalFeeds = useCallback((enabled) => {
+    setExperimentalFeedsEnabled(enabled);
+    localStorage.setItem('experimentalFeedsEnabled', enabled.toString());
+    console.log(`[WebSocketContext] Experimental feeds ${enabled ? 'enabled' : 'disabled'}`);
+  }, []);
+
+  /**
    * Update global status based on individual channel statuses
    */
   useEffect(() => {
@@ -325,6 +340,10 @@ export const WebSocketProvider = ({ children }) => {
     globalStatus,
     isEnabled,
     setEnabled,
+    
+    // Experimental feeds
+    experimentalFeedsEnabled,
+    toggleExperimentalFeeds,
     
     // Stats
     getStats,
