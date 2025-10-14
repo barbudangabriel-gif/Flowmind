@@ -198,3 +198,65 @@ async def validate_token(user_id: str = Depends(get_user_id)) -> Dict[str, Any]:
             "error": str(e),
             "timestamp": int(time.time())
         }
+
+@router.get("/login")
+async def get_login_url() -> Dict[str, Any]:
+    """
+    Generate TradeStation OAuth authorization URL
+    """
+    import os
+    import secrets
+    
+    try:
+        client_id = os.getenv("TS_CLIENT_ID")
+        redirect_uri = os.getenv("TS_REDIRECT_URI")
+        
+        if not client_id or not redirect_uri:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation OAuth not configured (missing CLIENT_ID or REDIRECT_URI)"
+            )
+        
+        # Generate state for CSRF protection
+        state = secrets.token_urlsafe(32)
+        
+        # TradeStation OAuth authorization URL
+        ts_mode = os.getenv("TS_MODE", "SIMULATION")
+        if ts_mode == "LIVE":
+            base_url = "https://signin.tradestation.com/authorize"
+        else:
+            base_url = "https://sim-signin.tradestation.com/authorize"
+        
+        # Build authorization URL
+        params = {
+            "response_type": "code",
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "scope": "openid profile MarketData ReadAccount Trade Crypto",
+            "state": state,
+        }
+        
+        from urllib.parse import urlencode
+        auth_url = f"{base_url}?{urlencode(params)}"
+        
+        log.info(f"Generated OAuth login URL for mode: {ts_mode}")
+        
+        return {
+            "auth_url": auth_url,
+            "state": state,
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "mode": ts_mode,
+            "instructions": [
+                "1. Open the auth_url in your browser",
+                "2. Login with your TradeStation credentials",
+                "3. Approve the application",
+                "4. You will be redirected back with an authorization code"
+            ]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"Failed to generate login URL: {e}")
+        raise HTTPException(500, f"Failed to generate login URL: {str(e)}")
