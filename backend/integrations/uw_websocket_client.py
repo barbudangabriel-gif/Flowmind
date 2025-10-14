@@ -17,7 +17,7 @@ import logging
 import os
 from typing import Callable, Dict, Any, Optional, List
 from datetime import datetime
-import random
+import secrets
 
 logger = logging.getLogger(__name__)
 
@@ -226,7 +226,8 @@ class UWWebSocketClient:
             RECONNECT_DELAY * (2 ** (self.reconnect_attempt - 1)),
             RECONNECT_DELAY_MAX
         )
-        jitter = delay * 0.1 * random.random()
+        # Use secrets for cryptographically secure random jitter
+        jitter = delay * 0.1 * (secrets.randbelow(1000) / 1000.0)
         reconnect_delay = delay + jitter
         
         logger.info(

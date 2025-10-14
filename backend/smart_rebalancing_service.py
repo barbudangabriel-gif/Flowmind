@@ -177,15 +177,15 @@ class SmartRebalancingService:
         """
         try:
             market_conditions = {
-                'overall_sentiment': random.choice(['BULLISH', 'BEARISH', 'NEUTRAL']),
-                'vix': round(random.uniform(12, 35), 1),
-                'market_trend': random.choice(['UPTREND', 'DOWNTREND', 'SIDEWAYS']),
-                'sector_rotation': random.choice(['TECH_TO_VALUE', 'VALUE_TO_GROWTH', 'DEFENSIVE', 'CYCLICAL']),
-                'fed_policy': random.choice(['HAWKISH', 'DOVISH', 'NEUTRAL']),
-                'earnings_season': random.choice(['STRONG_BEATS', 'MODERATE_BEATS', 'MIXED', 'DISAPPOINTING']),
-                'technical_outlook': random.choice(['BULLISH', 'BEARISH', 'CONSOLIDATION']),
-                'recommended_strategy': random.choice(['AGGRESSIVE_GROWTH', 'DEFENSIVE_REBALANCE', 'OPPORTUNISTIC', 'CASH_BUILDING']),
-                'confidence_score': round(random.uniform(0.6, 0.95), 2),
+                'overall_sentiment': ['BULLISH', 'BEARISH', 'NEUTRAL'][secrets.randbelow(len(['BULLISH', 'BEARISH', 'NEUTRAL']))],
+                'vix': round((12 + secrets.randbelow(int((35 - 12) * 1000)) / 1000), 1),
+                'market_trend': ['UPTREND', 'DOWNTREND', 'SIDEWAYS'][secrets.randbelow(len(['UPTREND', 'DOWNTREND', 'SIDEWAYS']))],
+                'sector_rotation': ['TECH_TO_VALUE', 'VALUE_TO_GROWTH', 'DEFENSIVE', 'CYCLICAL'][secrets.randbelow(len(['TECH_TO_VALUE', 'VALUE_TO_GROWTH', 'DEFENSIVE', 'CYCLICAL']))],
+                'fed_policy': ['HAWKISH', 'DOVISH', 'NEUTRAL'][secrets.randbelow(len(['HAWKISH', 'DOVISH', 'NEUTRAL']))],
+                'earnings_season': ['STRONG_BEATS', 'MODERATE_BEATS', 'MIXED', 'DISAPPOINTING'][secrets.randbelow(len(['STRONG_BEATS', 'MODERATE_BEATS', 'MIXED', 'DISAPPOINTING']))],
+                'technical_outlook': ['BULLISH', 'BEARISH', 'CONSOLIDATION'][secrets.randbelow(len(['BULLISH', 'BEARISH', 'CONSOLIDATION']))],
+                'recommended_strategy': ['AGGRESSIVE_GROWTH', 'DEFENSIVE_REBALANCE', 'OPPORTUNISTIC', 'CASH_BUILDING'][secrets.randbelow(len(['AGGRESSIVE_GROWTH', 'DEFENSIVE_REBALANCE', 'OPPORTUNISTIC', 'CASH_BUILDING']))],
+                'confidence_score': round((0.6 + secrets.randbelow(int((0.95 - 0.6) * 1000)) / 1000), 2),
                 'last_updated': datetime.now().isoformat()
             }
             
@@ -230,30 +230,30 @@ class SmartRebalancingService:
     async def _get_market_conditions(self) -> Dict[str, Any]:
         """Get current market conditions"""
         return {
-            'vix': round(random.uniform(15, 25), 1),
-            'sentiment': random.choice(['BULLISH', 'BEARISH', 'NEUTRAL']),
-            'trend': random.choice(['UP', 'DOWN', 'SIDEWAYS'])
+            'vix': round((15 + secrets.randbelow(int((25 - 15) * 1000)) / 1000), 1),
+            'sentiment': ['BULLISH', 'BEARISH', 'NEUTRAL'][secrets.randbelow(len(['BULLISH', 'BEARISH', 'NEUTRAL']))],
+            'trend': ['UP', 'DOWN', 'SIDEWAYS'][secrets.randbelow(len(['UP', 'DOWN', 'SIDEWAYS']))]
         }
     
     async def _calculate_portfolio_health(self, portfolio_data: Dict) -> float:
         """Calculate overall portfolio health score (1-10)"""
-        return round(random.uniform(6.5, 9.0), 1)
+        return round((6.5 + secrets.randbelow(int((9.0 - 6.5) * 1000)) / 1000), 1)
     
     async def _calculate_diversification_score(self, portfolio_data: Dict) -> float:
         """Calculate diversification score"""
-        return round(random.uniform(5.5, 8.5), 1)
+        return round((5.5 + secrets.randbelow(int((8.5 - 5.5) * 1000)) / 1000), 1)
     
     async def _calculate_risk_score(self, portfolio_data: Dict) -> float:
         """Calculate risk score"""
-        return round(random.uniform(6.0, 9.0), 1)
+        return round((6.0 + secrets.randbelow(int((9.0 - 6.0) * 1000)) / 1000), 1)
     
     async def _calculate_leverage_ratio(self, portfolio_data: Dict) -> float:
         """Calculate leverage ratio"""
-        return round(random.uniform(1.1, 1.8), 2)
+        return round((1.1 + secrets.randbelow(int((1.8 - 1.1) * 1000)) / 1000), 2)
     
     async def _assess_concentration_risk(self, portfolio_data: Dict) -> str:
         """Assess concentration risk level"""
-        return random.choice(['LOW', 'MEDIUM', 'HIGH'])
+        return ['LOW', 'MEDIUM', 'HIGH'][secrets.randbelow(len(['LOW', 'MEDIUM', 'HIGH']))]
     
     async def _analyze_sector_allocation(self, portfolio_data: Dict) -> Dict[str, int]:
         """Analyze sector allocation"""
@@ -371,43 +371,43 @@ class SmartRebalancingService:
     
     async def _calculate_expected_dca_return(self, opportunities: List[Dict]) -> float:
         """Calculate expected return from DCA opportunities"""
-        return round(random.uniform(0.12, 0.18), 3)
+        return round((0.12 + secrets.randbelow(int((0.18 - 0.12) * 1000)) / 1000), 3)
     
     async def _assess_dca_risk_level(self, opportunities: List[Dict]) -> str:
         """Assess DCA strategy risk level"""
-        return random.choice(['LOW', 'MODERATE', 'HIGH'])
+        return ['LOW', 'MODERATE', 'HIGH'][secrets.randbelow(len(['LOW', 'MODERATE', 'HIGH']))]
     
     async def _calculate_market_timing_score(self, market_conditions: Dict) -> float:
         """Calculate market timing score"""
-        return round(random.uniform(0.6, 0.85), 2)
+        return round((0.6 + secrets.randbelow(int((0.85 - 0.6) * 1000)) / 1000), 2)
     
     async def _calculate_overall_risk(self, portfolio_data: Dict) -> str:
         """Calculate overall portfolio risk"""
-        return random.choice(['LOW', 'MODERATE', 'MODERATE-HIGH', 'HIGH'])
+        return ['LOW', 'MODERATE', 'MODERATE-HIGH', 'HIGH'][secrets.randbelow(len(['LOW', 'MODERATE', 'MODERATE-HIGH', 'HIGH']))]
     
     async def _calculate_portfolio_beta(self, portfolio_data: Dict) -> float:
         """Calculate portfolio beta"""
-        return round(random.uniform(1.2, 1.6), 2)
+        return round((1.2 + secrets.randbelow(int((1.6 - 1.2) * 1000)) / 1000), 2)
     
     async def _calculate_var_95(self, portfolio_data: Dict) -> float:
         """Calculate 95% Value at Risk"""
-        return round(random.uniform(-0.05, -0.12), 3)
+        return round((-0.05 + secrets.randbelow(int((-0.12 - -0.05) * 1000)) / 1000), 3)
     
     async def _calculate_max_drawdown(self, portfolio_data: Dict) -> float:
         """Calculate maximum drawdown"""
-        return round(random.uniform(-0.10, -0.20), 3)
+        return round((-0.10 + secrets.randbelow(int((-0.20 - -0.10) * 1000)) / 1000), 3)
     
     async def _calculate_sp500_correlation(self, portfolio_data: Dict) -> float:
         """Calculate correlation with S&P 500"""
-        return round(random.uniform(0.7, 0.9), 2)
+        return round((0.7 + secrets.randbelow(int((0.9 - 0.7) * 1000)) / 1000), 2)
     
     async def _calculate_portfolio_volatility(self, portfolio_data: Dict) -> float:
         """Calculate portfolio volatility"""
-        return round(random.uniform(0.18, 0.28), 3)
+        return round((0.18 + secrets.randbelow(int((0.28 - 0.18) * 1000)) / 1000), 3)
     
     async def _calculate_sharpe_ratio(self, portfolio_data: Dict) -> float:
         """Calculate Sharpe ratio"""
-        return round(random.uniform(1.0, 1.5), 2)
+        return round((1.0 + secrets.randbelow(int((1.5 - 1.0) * 1000)) / 1000), 2)
     
     async def _identify_risk_factors(self, portfolio_data: Dict) -> List[Dict]:
         """Identify key risk factors"""

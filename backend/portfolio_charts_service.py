@@ -136,12 +136,12 @@ class PortfolioChartsService:
         
         while current_dt <= end_dt:
             # Add some realistic volatility and trends
-            stocks_noise = random.uniform(-50, 50)
-            options_noise = random.uniform(-30, 30)
+            stocks_noise = -50 + secrets.randbelow(10000) / 100  # -50 to 50
+            options_noise = -30 + secrets.randbelow(6000) / 100  # -30 to 30
             
             # Slight upward trend with volatility
-            stocks_trend += random.uniform(-5, 10)
-            options_trend += random.uniform(-8, 12)
+            stocks_trend += -5 + secrets.randbelow(1500) / 100  # -5 to 10
+            options_trend += -8 + secrets.randbelow(2000) / 100  # -8 to 12
             
             stocks_pnl = base_stocks + stocks_trend + stocks_noise
             options_pnl = base_options + options_trend + options_noise
@@ -204,12 +204,12 @@ class PortfolioChartsService:
         
         # Apply closed/all filter
         if filter_type == 'closed':
-            # Simulate some positions being closed
-            filtered_positions = [pos for pos in filtered_positions if random.random() > 0.3]
+            # Simulate some positions being closed (70% probability to keep)
+            filtered_positions = [pos for pos in filtered_positions if secrets.randbelow(100) > 30]
         
         # Add some variance to values
         for pos in filtered_positions:
-            variance = random.uniform(0.9, 1.1)
+            variance = 0.9 + secrets.randbelow(20) / 100  # 0.9-1.1
             pos['value'] = round(pos['value'] * variance, 2)
         
         return filtered_positions

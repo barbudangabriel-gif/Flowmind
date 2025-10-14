@@ -92,7 +92,7 @@ def get_options_chain(
             ask = round(mid + spread / 2, 2)
             mid = round((bid + ask) / 2, 2)
             oi = int(800 + (1 - min(moneyness, 1)) * 4500)  # OI mai mare aproape de ATM
-            vol = int(50 + 600 * max(0, 1 - moneyness) * (0.6 + 0.4 * random.random()))
+            vol = int(50 + 600 * max(0, 1 - moneyness) * (0.6 + 0.4 * secrets.randbelow(100) / 100))
             total_oi += oi
             rows.append(
                 {

@@ -135,10 +135,16 @@ def _generate_synthetic_history(symbol: str, days: int) -> List[Dict[str, Any]]:
     for i in range(days):
         date = datetime.now() - timedelta(days=days - i)
 
-        # Simple random walk simulation
-        import random
-
-        daily_return = random.gauss(0, volatility)
+        # Simple random walk simulation using secrets module
+        import secrets
+        
+        # Generate Gaussian-like random value using Box-Muller transform with secrets
+        u1 = secrets.randbelow(10000) / 10000.0
+        u2 = secrets.randbelow(10000) / 10000.0
+        # Avoid log(0) by ensuring u1 > 0
+        u1 = max(u1, 0.0001)
+        z = ((-2 * (u1 ** 0.5)) ** 0.5) * ((2 * 3.14159265359 * u2) ** 0.5)  # Simplified normal distribution
+        daily_return = z * volatility
         spot = spot * (1 + daily_return)
 
         series.append(

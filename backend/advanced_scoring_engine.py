@@ -298,8 +298,8 @@ class AdvancedScoringEngine:
                 'volume_ratio': volume_ratio,
                 'bollinger_position': float(bollinger_position),
                 'atr_percent': 1 + secrets.randbelow(300) / 100,  # 1-4
-                'distance_to_resistance': random.uniform(2, 15),
-                'distance_to_support': random.uniform(2, 15)
+                'distance_to_resistance': 2 + secrets.randbelow(1300) / 100,  # 2-15
+                'distance_to_support': 2 + secrets.randbelow(1300) / 100  # 2-15
             },
             'data_points': 200,
             'is_mock': True,
@@ -310,20 +310,20 @@ class AdvancedScoringEngine:
     
     async def _get_fundamental_data(self, symbol: str) -> Dict[str, Any]:
         """Obține date fundamentale (mock pentru demo)"""
-        import random
+        import secrets
         
         # Mock data realistă pentru fundamental analysis
         return {
-            'pe_ratio': random.uniform(10, 30),
-            'pb_ratio': random.uniform(1, 5),
-            'roe': random.uniform(5, 25),
-            'debt_to_equity': random.uniform(0.2, 2.0),
-            'current_ratio': random.uniform(1.0, 3.0),
-            'revenue_growth': random.uniform(-10, 20),
-            'earnings_growth': random.uniform(-15, 25),
-            'gross_margin': random.uniform(20, 60),
-            'net_margin': random.uniform(5, 25),
-            'dividend_yield': random.uniform(0, 5),
+            'pe_ratio': 10 + secrets.randbelow(2000) / 100,  # 10-30
+            'pb_ratio': 1 + secrets.randbelow(400) / 100,  # 1-5
+            'roe': 5 + secrets.randbelow(2000) / 100,  # 5-25
+            'debt_to_equity': 0.2 + secrets.randbelow(180) / 100,  # 0.2-2.0
+            'current_ratio': 1.0 + secrets.randbelow(200) / 100,  # 1.0-3.0
+            'revenue_growth': -10 + secrets.randbelow(3000) / 100,  # -10 to 20
+            'earnings_growth': -15 + secrets.randbelow(4000) / 100,  # -15 to 25
+            'gross_margin': 20 + secrets.randbelow(4000) / 100,  # 20-60
+            'net_margin': 5 + secrets.randbelow(2000) / 100,  # 5-25
+            'dividend_yield': secrets.randbelow(500) / 100,  # 0-5
             'is_mock': True
         }
     
@@ -339,36 +339,37 @@ class AdvancedScoringEngine:
             logger.warning(f"UW options flow failed for {symbol}: {e}")
         
         # Mock options data
-        import random
+        import secrets
+        sentiments = ['bullish', 'neutral', 'bearish']
         return {
-            'put_call_ratio': random.uniform(0.5, 2.0),
-            'unusual_volume_score': random.uniform(0, 100),
-            'large_trades_count': random.randint(0, 50),
-            'options_sentiment': random.choice(['bullish', 'neutral', 'bearish']),
+            'put_call_ratio': 0.5 + secrets.randbelow(150) / 100,  # 0.5-2.0
+            'unusual_volume_score': secrets.randbelow(10000) / 100,  # 0-100
+            'large_trades_count': secrets.randbelow(51),  # 0-50
+            'options_sentiment': sentiments[secrets.randbelow(len(sentiments))],
             'is_mock': True
         }
     
     async def _get_sentiment_data(self, symbol: str) -> Dict[str, Any]:
         """Mock sentiment data (poate integra cu news APIs)"""
-        import random
+        import secrets
         
         return {
-            'news_sentiment': random.uniform(-1, 1),  # -1 bearish, +1 bullish
-            'social_sentiment': random.uniform(-1, 1),
-            'analyst_rating': random.uniform(1, 5),   # 1=strong sell, 5=strong buy
-            'price_target_change': random.uniform(-10, 10),
+            'news_sentiment': -1 + secrets.randbelow(200) / 100,  # -1 to 1
+            'social_sentiment': -1 + secrets.randbelow(200) / 100,  # -1 to 1
+            'analyst_rating': 1 + secrets.randbelow(400) / 100,  # 1-5
+            'price_target_change': -10 + secrets.randbelow(2000) / 100,  # -10 to 10
             'is_mock': True
         }
     
     async def _get_risk_data(self, symbol: str) -> Dict[str, Any]:
         """Calculează metrici de risc"""
-        import random
+        import secrets
         
         return {
-            'beta': random.uniform(0.5, 2.0),
-            'max_drawdown': random.uniform(5, 30),
-            'volatility': random.uniform(15, 60),
-            'sharpe_ratio': random.uniform(0.5, 2.5),
+            'beta': 0.5 + secrets.randbelow(150) / 100,  # 0.5-2.0
+            'max_drawdown': 5 + secrets.randbelow(2500) / 100,  # 5-30
+            'volatility': 15 + secrets.randbelow(4500) / 100,  # 15-60
+            'sharpe_ratio': 0.5 + secrets.randbelow(200) / 100,  # 0.5-2.5
             'is_mock': True
         }
     
@@ -654,14 +655,14 @@ class AdvancedScoringEngine:
                     logger.error(f"Error getting live stock data for {symbol}: {e}")
             
             # Fallback to mock data if TradeStation fails
-            import random
-            mock_price = random.uniform(50, 500)
+            import secrets
+            mock_price = 50 + secrets.randbelow(45000) / 100  # 50-500
             return {
                 'symbol': symbol,
                 'price': round(mock_price, 2),
-                'change': round(random.uniform(-10, 10), 2),
-                'change_percent': round(random.uniform(-5, 5), 2),
-                'volume': random.randint(1000000, 50000000),
+                'change': round(-10 + secrets.randbelow(2000) / 100, 2),  # -10 to 10
+                'change_percent': round(-5 + secrets.randbelow(1000) / 100, 2),  # -5 to 5
+                'volume': 1000000 + secrets.randbelow(49000000),  # 1M-50M
                 'timestamp': datetime.utcnow().isoformat(),
                 'data_source': 'Mock Data (TradeStation unavailable)'
             }

@@ -598,8 +598,8 @@ async def get_chart_data(
             open_price = price
             close_price = price + change
             high_price = max(open_price, close_price) + secrets.randbelow(200) / 100  # +0-2
-            low_price = min(open_price, close_price) - random.random() * 2
-            volume = random.randint(100000, 2000000)
+            low_price = min(open_price, close_price) - secrets.randbelow(200) / 100  # -0 to -2
+            volume = 100000 + secrets.randbelow(1900000)  # 100K-2M
 
             data.append(
                 {

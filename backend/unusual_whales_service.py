@@ -1,6 +1,7 @@
 import os
 import asyncio
 import logging
+import secrets
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from fastapi import HTTPException
@@ -36,6 +37,33 @@ class UnusualWhalesService:
         }
         
         self.rate_limit_delay = 1.0  # Delay between requests to avoid rate limiting
+    
+    @staticmethod
+    def _secure_choice(items):
+        """Cryptographically secure random choice"""
+        return items[secrets.randbelow(len(items))]
+    
+    @staticmethod
+    def _secure_randint(a, b):
+        """Cryptographically secure random integer in range [a, b]"""
+        return a + secrets.randbelow(b - a + 1)
+    
+    @staticmethod
+    def _secure_uniform(a, b):
+        """Cryptographically secure random float in range [a, b]"""
+        return a + (secrets.randbelow(10000) / 10000.0) * (b - a)
+    
+    @staticmethod
+    def _secure_choices_weighted(items, weights):
+        """Cryptographically secure weighted random choice"""
+        total = sum(weights)
+        r = secrets.randbelow(total)
+        cumsum = 0
+        for item, weight in zip(items, weights):
+            cumsum += weight
+            if r < cumsum:
+                return item
+        return items[-1]
     
     async def _make_request(self, endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
         """Make authenticated request to Unusual Whales API"""
@@ -888,17 +916,17 @@ class UnusualWhalesService:
         
         # Generate 80 realistic options trades based on today's market activity
         for i in range(80):
-            stock = random.choice(symbols_with_details)
+            stock = self._secure_choice(symbols_with_details)
             symbol = stock["symbol"]
             underlying_price = stock["price"]
             
             # Realistic DTE distribution (0-60 days, weighted toward shorter terms)
             dte_weights = [30, 25, 20, 10, 8, 4, 2, 1]  # 0, 1, 7, 14, 21, 30, 45, 60 days
             dte_options = [0, 1, 7, 14, 21, 30, 45, 60]
-            dte = random.choices(dte_options, weights=dte_weights)[0]
+            dte = self._secure_choices_weighted(dte_options, dte_weights)
             
             # Option type based on market sentiment (more bearish lately)
-            is_call = random.choices([True, False], weights=[40, 60])[0]
+            is_call = self._secure_choices_weighted([True, False], [40, 60])
             option_type = "call" if is_call else "put"
             
             # Strike selection based on moneyness probabilities
@@ -913,61 +941,61 @@ class UnusualWhalesService:
                 strike_weights = [2, 5, 15, 25, 30, 15, 5, 3]
                 sentiment = "bearish"
             
-            strike_multiplier = random.choices(strike_multipliers, weights=strike_weights)[0]
+            strike_multiplier = self._secure_choices_weighted(strike_multipliers, strike_weights)
             strike = round(underlying_price * strike_multiplier)
             
             # Volume based on stock activity and DTE
             if stock["activity"] == "high":
-                base_volume = random.randint(50, 5000)
+                base_volume = self._secure_randint(50, 5000)
             elif stock["activity"] == "medium":
-                base_volume = random.randint(20, 2000)
+                base_volume = self._secure_randint(20, 2000)
             else:
-                base_volume = random.randint(5, 500)
+                base_volume = self._secure_randint(5, 500)
                 
             # Expiring options have higher volume
             if dte <= 1:
-                base_volume *= random.uniform(2, 5)
+                base_volume *= self._secure_uniform(2, 5)
                 
             volume = int(base_volume)
             
             # Open Interest (usually higher than volume for non-expiring options)
             if dte <= 1:
-                open_interest = random.randint(1, volume)
+                open_interest = self._secure_randint(1, volume)
             else:
-                open_interest = random.randint(volume // 2, volume * 3)
+                open_interest = self._secure_randint(volume // 2, volume * 3)
             
             volume_oi_ratio = round(volume / max(open_interest, 1), 2)
             
             # Premium calculation based on multiple factors
             if dte == 0:
                 # Expiring today - very low premium
-                base_premium = random.uniform(0.05, 2.0) * volume
+                base_premium = self._secure_uniform(0.05, 2.0) * volume
             elif dte <= 7:
                 # Weekly options
-                base_premium = random.uniform(0.5, 8.0) * volume
+                base_premium = self._secure_uniform(0.5, 8.0) * volume
             elif dte <= 30:
                 # Monthly options
-                base_premium = random.uniform(1.0, 15.0) * volume
+                base_premium = self._secure_uniform(1.0, 15.0) * volume
             else:
                 # LEAPS
-                base_premium = random.uniform(5.0, 50.0) * volume
+                base_premium = self._secure_uniform(5.0, 50.0) * volume
             
             # Adjust premium based on moneyness
             if is_call:
                 if strike < underlying_price:  # ITM call
-                    base_premium *= random.uniform(1.5, 3.0)
+                    base_premium *= self._secure_uniform(1.5, 3.0)
                 elif strike > underlying_price * 1.05:  # Far OTM call
-                    base_premium *= random.uniform(0.2, 0.6)
+                    base_premium *= self._secure_uniform(0.2, 0.6)
             else:
                 if strike > underlying_price:  # ITM put
-                    base_premium *= random.uniform(1.5, 3.0)
+                    base_premium *= self._secure_uniform(1.5, 3.0)
                 elif strike < underlying_price * 0.95:  # Far OTM put
-                    base_premium *= random.uniform(0.2, 0.6)
+                    base_premium *= self._secure_uniform(0.2, 0.6)
             
             premium = int(base_premium * 100)  # Convert to cents
             
             # Buy/Sell determination based on volume/OI ratio and other factors
-            is_opener = volume_oi_ratio > 2.0 or random.choice([True, False])
+            is_opener = volume_oi_ratio > 2.0 or self._secure_choice([True, False])
             action = "BUY" if is_opener else "SELL"
             
             # Trade size classification
@@ -1324,7 +1352,6 @@ class UnusualWhalesService:
     
     async def _get_mock_stock_screener_data(self, limit: int = 100, exchange: str = "all") -> List[Dict[str, Any]]:
         """Generate mock stock screener data when API is unavailable"""
-        import random
         
         # Base stock lists for different exchanges
         sp500_stocks = [
@@ -1370,8 +1397,8 @@ class UnusualWhalesService:
         # Generate mock data
         mock_stocks = []
         for i, stock in enumerate(stock_list[:limit]):
-            base_price = random.uniform(50, 500)
-            change = random.uniform(-10, 10)
+            base_price = self._secure_uniform(50, 500)
+            change = self._secure_uniform(-10, 10)
             
             mock_stock = {
                 "symbol": stock["symbol"],
@@ -1379,14 +1406,14 @@ class UnusualWhalesService:
                 "price": round(base_price, 2),
                 "change": round(change, 2),
                 "change_percent": round((change / base_price) * 100, 2),
-                "volume": random.randint(1000000, 50000000),
-                "market_cap": random.randint(10000000000, 3000000000000),  # 10B to 3T
-                "pe_ratio": round(random.uniform(10, 50), 2) if random.random() > 0.2 else None,
+                "volume": self._secure_randint(1000000, 50000000),
+                "market_cap": self._secure_randint(10000000000, 3000000000000),  # 10B to 3T
+                "pe_ratio": round(self._secure_uniform(10, 50), 2) if secrets.randbelow(100) > 20 else None,
                 "sector": stock["sector"],
-                "exchange": "NYSE" if exchange == "sp500" else "NASDAQ" if exchange == "nasdaq" else random.choice(["NYSE", "NASDAQ"]),
-                "dividend_yield": round(random.uniform(0, 5), 2) if random.random() > 0.4 else None,
-                "unusual_activity": random.random() > 0.8,  # 20% chance of unusual activity
-                "options_flow_signal": random.choice(["bullish", "bearish", "neutral", "neutral", "neutral"])  # Mostly neutral
+                "exchange": "NYSE" if exchange == "sp500" else "NASDAQ" if exchange == "nasdaq" else self._secure_choice(["NYSE", "NASDAQ"]),
+                "dividend_yield": round(self._secure_uniform(0, 5), 2) if secrets.randbelow(100) > 40 else None,
+                "unusual_activity": secrets.randbelow(100) > 80,  # 20% chance of unusual activity
+                "options_flow_signal": self._secure_choice(["bullish", "bearish", "neutral", "neutral", "neutral"])  # Mostly neutral
             }
             mock_stocks.append(mock_stock)
         
