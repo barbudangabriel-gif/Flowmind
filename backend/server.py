@@ -139,6 +139,42 @@ app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
 @app.on_event("startup")
 async def startup():
     """Initialize integration clients on startup"""
+    logger.info("🚀 Starting FlowMind API Server...")
+    
+    # Validate critical environment variables
+    logger.info("🔍 Validating environment configuration...")
+    
+    required_vars = {
+        "MONGO_URL": os.getenv("MONGO_URL"),
+    }
+    
+    optional_vars = {
+        "TS_CLIENT_ID": os.getenv("TS_CLIENT_ID"),
+        "TS_CLIENT_SECRET": os.getenv("TS_CLIENT_SECRET"),
+        "UW_API_TOKEN": os.getenv("UW_API_TOKEN") or os.getenv("UNUSUAL_WHALES_API_KEY"),
+        "REDIS_URL": os.getenv("REDIS_URL"),
+    }
+    
+    # Check required variables
+    missing_required = [key for key, val in required_vars.items() if not val]
+    if missing_required:
+        logger.error(f"❌ Missing required environment variables: {', '.join(missing_required)}")
+        logger.error("💡 Check your .env file or environment configuration")
+        raise RuntimeError(f"Missing required environment variables: {', '.join(missing_required)}")
+    else:
+        logger.info("✅ All required environment variables present")
+    
+    # Check optional variables (warnings only)
+    missing_optional = [key for key, val in optional_vars.items() if not val]
+    if missing_optional:
+        logger.warning(f"⚠️  Missing optional variables: {', '.join(missing_optional)}")
+        logger.warning("💡 Some features may be limited or use fallback mode")
+    
+    # Log configuration summary
+    logger.info(f"📊 Redis: {'Configured' if optional_vars['REDIS_URL'] else 'Using fallback (in-memory)'}")
+    logger.info(f"🔑 TradeStation: {'Configured' if optional_vars['TS_CLIENT_ID'] else 'Demo mode'}")
+    logger.info(f"🐋 Unusual Whales: {'Configured' if optional_vars['UW_API_TOKEN'] else 'Demo mode'}")
+    
     if INTEGRATIONS_AVAILABLE:
         try:
             # Initialize UW client for trades data
@@ -158,6 +194,36 @@ async def startup():
         logger.warning("⚠️ Integration clients not available - using fallback mode")
         app.state.uw = None
         app.state.ts = None
+    
+    # Initialize Prometheus metrics
+    try:
+        from observability.metrics import initialize_metrics
+        initialize_metrics()
+        logger.info("✅ Prometheus metrics initialized")
+    except Exception as e:
+        logger.warning(f"⚠️ Metrics initialization failed: {e}")
+    
+    # Run cache warmup if enabled
+    warmup_enabled = os.getenv("WARMUP_ENABLED", "1") == "1"
+    if warmup_enabled:
+        try:
+            from services.warmup import warmup_cache, get_warmup_config
+            
+            config = get_warmup_config()
+            logger.info(f"🔥 Starting cache warmup (symbols: {len(config['symbols'])})...")
+            
+            # Run warmup in background (don't block startup)
+            import asyncio
+            asyncio.create_task(warmup_cache(
+                symbols=config['symbols'],
+                include_flow=config['include_flow'],
+                parallel=config['parallel']
+            ))
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Cache warmup failed: {e}")
+    
+    logger.info("✨ FlowMind API Server started successfully!")
 
 
 @app.on_event("shutdown")
@@ -606,6 +672,11 @@ from routers.options_flow import router as options_flow_router
 
 app.include_router(options_flow_router, prefix="/api")
 
+# WebSocket Streaming router
+from routers.stream import router as stream_router
+
+app.include_router(stream_router)  # Already has /api/stream prefix
+
 # Wire observability (metrics, structured logging, request correlation)
 try:
     from observability import wire, setup_cors, setup_rate_limit
@@ -657,6 +728,44 @@ async def readiness_check():
         redis_status = "connected"
     except Exception:
         redis_status = "disconnected"
+
+
+@app.get("/metrics")
+async def metrics_endpoint():
+    """
+    Prometheus metrics endpoint
+    
+    Returns metrics in Prometheus exposition format:
+    - API request counts and latency
+    - Cache hits/misses
+    - External API calls
+    - Business metrics (strategies priced, flow trades)
+    
+    Usage:
+        curl http://localhost:8000/metrics
+        
+    Prometheus scrape config:
+        scrape_configs:
+          - job_name: 'flowmind'
+            static_configs:
+              - targets: ['localhost:8000']
+    """
+    try:
+        from observability.metrics import export_metrics
+        from fastapi.responses import Response
+        
+        metrics_data, content_type = export_metrics()
+        
+        return Response(
+            content=metrics_data,
+            media_type=content_type
+        )
+    except Exception as e:
+        logger.error(f"❌ Metrics export failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Metrics export failed"
+        )
 
     return {
         "status": "ready",
