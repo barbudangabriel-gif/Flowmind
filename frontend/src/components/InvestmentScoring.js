@@ -37,45 +37,16 @@ const InvestmentScoring = React.memo(() => {
   const [selectedSector, setSelectedSector] = useState('Technology');
   const [activeTab, setActiveTab] = useState('ai-agent');  // Default to AI Agent tab
   const [loading, setLoading] = useState(false);
-
+  
   // AI Agent specific states
   const [aiAnalysisSymbol, setAiAnalysisSymbol] = useState('');
   const [aiAnalysis, setAiAnalysis] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
-
+  
   // Top Picks expansion states
   const [displayLimit, setDisplayLimit] = useState(10); // Start with 10
   const [maxScrollLimit, setMaxScrollLimit] = useState(50); // Can scroll to 50
   const [loadingMore, setLoadingMore] = useState(false);
-
-  // Trend window state and persistence
-  const [trendWindow, setTrendWindow] = React.useState(() => {
-    try {
-      const saved = window.localStorage.getItem('trendWindow');
-      return saved ? parseInt(saved, 10) : 7;
-    } catch {
-      return 7;
-    }
-  });
-  React.useEffect(() => {
-    try {
-      window.localStorage.setItem('trendWindow', trendWindow);
-    } catch {}
-  }, [trendWindow]);
-
-  // Trend window state and persistence
-  const [trendWindow, setTrendWindow] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = window.localStorage.getItem('trendWindow');
-      return saved ? parseInt(saved, 10) : 7;
-    }
-    return 7;
-  });
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('trendWindow', trendWindow);
-    }
-  }, [trendWindow]);
 
   const sectors = [
     'Technology', 'Healthcare', 'Financial Services', 'Consumer Cyclical',
@@ -778,18 +749,6 @@ const InvestmentScoring = React.memo(() => {
             <div className="text-xs text-blue-500 mt-2">
               Debug: Found {topPicks?.length || 0} top picks
             </div>
-            {/* Trend Window Toggle */}
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-xs text-gray-600">Trend window:</span>
-              <button
-                className={`px-2 py-1 rounded text-xs font-semibold border ${trendWindow === 7 ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-blue-700 border-blue-300'}`}
-                onClick={() => setTrendWindow(7)}
-              >7d</button>
-              <button
-                className={`px-2 py-1 rounded text-xs font-semibold border ${trendWindow === 30 ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-blue-700 border-blue-300'}`}
-                onClick={() => setTrendWindow(30)}
-              >30d</button>
-            </div>
           </div>
 
           {(!topPicks || topPicks.length === 0) ? (
@@ -825,6 +784,75 @@ const InvestmentScoring = React.memo(() => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-700">
+                      {topPicks.slice(0, Math.min(displayLimit, maxScrollLimit)).map((pick, index) => (
+                        <tr 
+                          key={pick?.symbol || index} 
+                          className="hover:bg-gray-800 transition-colors cursor-pointer"
+                          onClick={() => handleTickerClick(pick?.symbol)}
+                        >
+                          <td className="px-4 py-4">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                              index < 3 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900' :
+                              index < 6 ? 'bg-gradient-to-r from-blue-400 to-blue-500 text-blue-900' :
+                              index < 10 ? 'bg-gradient-to-r from-green-400 to-green-500 text-green-900' :
+                              'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-900'
+                            }`}>
+                              {index + 1}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="font-bold text-lg text-blue-300 hover:text-blue-200 transition-colors">
+                              {pick?.symbol || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="text-green-400 font-semibold">
+                              ${pick?.current_price?.toFixed(2) || 'Loading...'}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className={`text-2xl font-bold ${getScoreColor(pick?.total_score || 50)}`}>
+                              {(pick?.total_score || 0).toFixed(1)}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getRatingColor(pick?.rating || 'HOLD')}`}>
+                              {pick?.rating || 'HOLD'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center space-x-2">
+                              <Shield className={`w-4 h-4 ${getRiskColor(pick?.risk_level || 'MODERATE').split(' ')[0]}`} />
+                              <span className={`text-xs px-2 py-1 rounded ${getRiskColor(pick?.risk_level || 'MODERATE')}`}>
+                                {pick?.risk_level || 'MODERATE'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="max-w-md">
+                              <p className="text-sm text-gray-300 mb-2">{pick?.explanation || 'Investment analysis pending...'}</p>
+                              <div className="flex flex-wrap gap-1 mb-2">
+                                <div className="text-xs text-green-400 font-medium">Strengths:</div>
+                                {(pick?.key_strengths || []).slice(0, 3).map((strength, idx) => (
+                                  <span key={idx} className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">
+                                    {strength}
+                                  </span>
+                                ))}
+                              </div>
+                              {(pick?.key_risks || []).length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  <div className="text-xs text-red-400 font-medium">Risks:</div>
+                                  {(pick?.key_risks || []).slice(0, 2).map((risk, idx) => (
+                                    <span key={idx} className="text-xs bg-red-900 text-red-300 px-2 py-1 rounded">
+                                      {risk}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

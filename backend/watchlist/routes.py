@@ -34,7 +34,10 @@ def parse_symbols_text(text: str, delimiter: str = "auto") -> List[str]:
 
 @router.on_event("startup")
 async def startup():
-    await init_db()
+    try:
+        await init_db()
+    except Exception as e:
+        print(f"⚠️  Watchlist DB initialization failed (MongoDB not available): {e}")
 
 
 @router.post("/", response_model=WatchlistOut)

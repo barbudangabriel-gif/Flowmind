@@ -99,7 +99,7 @@ function Row({ item, ctx, depth = 0 }) {
 export default function SidebarSimple({ ctx, collapsed = false }) {
   // State for collapsed sections
   const [collapsedSections, setCollapsedSections] = useState({});
-  // State for showing popover submenu (simple - no complex handlers needed with hover)
+  // State for showing popover submenu
   const [activePopover, setActivePopover] = useState(null);
   
   const toggleSection = (sectionTitle) => {
@@ -108,6 +108,39 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
       [sectionTitle]: !prev[sectionTitle]
     }));
   };
+  
+  // Close popover when clicking outside
+  React.useEffect(() => {
+    if (!activePopover) return;
+    
+    const handleClickOutside = (e) => {
+      // Don't close if clicking on the popover itself or the button
+      const clickedOnSidebar = e.target.closest('aside');
+      const clickedOnPopover = e.target.closest('[data-popover]');
+      
+      console.log('🖱️ Click outside check:', { 
+        clickedOnSidebar: !!clickedOnSidebar, 
+        clickedOnPopover: !!clickedOnPopover,
+        activePopover 
+      });
+      
+      if (!clickedOnSidebar && !clickedOnPopover) {
+        console.log('❌ Closing popover');
+        setActivePopover(null);
+      }
+    };
+    
+    // Use setTimeout to avoid closing immediately after opening
+    const timer = setTimeout(() => {
+      console.log('✅ Click outside handler attached for:', activePopover);
+      document.addEventListener('click', handleClickOutside);
+    }, 100);
+    
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [activePopover]);
   
   // Provide safe defaults
   const safeCtx = {
@@ -119,22 +152,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
   
   const nav = React.useMemo(() => {
     try {
-      const result = buildNav(safeCtx);
-      console.log('📊 Nav built:', {
-        sections: result.length,
-        collapsed,
-        portfoliosInCtx: safeCtx.portfolios.length
-      });
-      // Log fiecare secțiune
-      result.forEach((sec, i) => {
-        console.log(`  Section ${i}: "${sec.title}" - ${sec.items?.length || 0} items`);
-        sec.items?.forEach((it, j) => {
-          if (it.children) {
-            console.log(`    Item ${j}: "${it.label}" - ${it.children.length} children`);
-          }
-        });
-      });
-      return result;
+      return buildNav(safeCtx);
     } catch (e) {
       console.error('buildNav failed:', e);
       return [];
@@ -188,91 +206,73 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
                 {(sec.items || []).map((it, idx) => {
                   const itemKey = `${sec.title}-${idx}`;
                   const hasChildren = it.children && it.children.length > 0;
-                  const isActive = activePopover === itemKey;
                   
-                  // DEBUG: Log TOATE items din secțiunea Account
-                  if (sec.title === 'Account') {
-                    console.log(`🔍 ${sec.title} item ${idx}:`, {
-                      label: it.label,
-                      icon: it.icon,
-                      hasChildren,
-                      childrenCount: it.children?.length || 0,
-                      itemKey
-                    });
-                  }
-                  
-                  // Regular item without children - just show icon with link
-                  if (!hasChildren) {
+                  // If item has children, show a popover menu on click
+                  if (hasChildren) {
+                    const isActive = activePopover === itemKey;
+                    
                     return (
-                      <Link
-                        key={itemKey}
-                        to={it.to || '#'}
-                        className="flex items-center justify-center p-2 text-slate-300 hover:bg-slate-800 rounded transition-colors"
-                        title={it.label}
-                      >
-                        <IconByName name={it.icon} className="w-5 h-5" />
-                      </Link>
-                    );
-                  }
-                  
-                  // Item with children - show popover on hover
-                  return (
-                    <div 
-                      key={itemKey} 
-                      className="relative"
-                      onMouseEnter={() => {
-                        console.log('🖱️ HOVER:', it.label, 'itemKey:', itemKey);
-                        setActivePopover(itemKey);
-                      }}
-                      onMouseLeave={() => {
-                        console.log('🚪 LEAVE:', it.label);
-                        setActivePopover(null);
-                      }}
-                    >
-                      {/* Icon button */}
-                      <div
-                        className={`flex items-center justify-center p-2 rounded transition-all relative cursor-pointer ${
-                          isActive 
-                            ? 'bg-slate-800 text-emerald-400' 
-                            : 'text-slate-300 hover:bg-slate-800'
-                        }`}
-                        title={it.label}
-                      >
-                        <IconByName name={it.icon} className="w-5 h-5" />
-                        {/* Green dot indicator */}
-                        <span className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
-                      </div>
-                      
-                      {/* Popover menu */}
-                      {isActive && (
-                        <div 
-                          className="absolute left-full top-0 ml-2 z-[100] min-w-[200px]"
-                          style={{ backgroundColor: '#1e293b' }}
+                      <div key={`${itemKey}-icon`} className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('🔘 Popover toggle:', it.label, 'Current:', activePopover, 'New:', isActive ? null : itemKey);
+                            setActivePopover(isActive ? null : itemKey);
+                          }}
+                          className={`w-full flex items-center justify-center p-2 rounded transition-all relative ${
+                            isActive 
+                              ? 'bg-slate-800 text-emerald-400' 
+                              : 'text-slate-300 hover:bg-slate-800'
+                          }`}
+                          title={it.label}
                         >
-                          <div className="bg-[#1e293b] border border-[#334155] rounded-lg shadow-2xl py-2">
-                            {/* Header */}
-                            <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase border-b border-[#334155] flex items-center gap-2">
-                              <IconByName name={it.icon} className="w-3.5 h-3.5" />
-                              {it.label}
-                            </div>
-                            {/* Children items */}
-                            {it.children.map((ch, cidx) => {
-                              console.log('🔗 Rendering child:', ch.label);
-                              return (
+                          <IconByName name={it.icon} className="w-5 h-5" />
+                          {/* Indicator that item has submenu */}
+                          <span className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                        </button>
+                        
+                        {/* Popover menu */}
+                        {activePopover === itemKey && (
+                          <div 
+                            data-popover="true"
+                            className="absolute left-full top-0 ml-2 z-50 min-w-[200px] animate-in fade-in-0 slide-in-from-left-2 duration-200"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="bg-[#1e293b] border border-[#334155] rounded-lg shadow-2xl py-2 backdrop-blur-sm">
+                              {/* Header */}
+                              <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase border-b border-[#334155] flex items-center gap-2">
+                                <IconByName name={it.icon} className="w-3.5 h-3.5" />
+                                {it.label}
+                              </div>
+                              {/* Children items */}
+                              {it.children.map((ch, cidx) => (
                                 <Link
                                   key={cidx}
                                   to={ch.to || '#'}
-                                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all"
+                                  onClick={() => setActivePopover(null)}
+                                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white transition-all group"
                                 >
-                                  <IconByName name={ch.icon} className="w-4 h-4" />
+                                  <IconByName name={ch.icon} className="w-4 h-4 group-hover:text-emerald-400 transition-colors" />
                                   <span>{ch.label}</span>
                                 </Link>
-                              );
-                            })}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  
+                  // Regular item without children
+                  return (
+                    <Link
+                      key={`${itemKey}-icon`}
+                      to={it.to || '#'}
+                      className="flex items-center justify-center p-2 text-slate-300 hover:bg-slate-800 rounded transition-colors"
+                      title={it.label}
+                    >
+                      <IconByName name={it.icon} className="w-5 h-5" />
+                    </Link>
                   );
                 })}
               </div>
