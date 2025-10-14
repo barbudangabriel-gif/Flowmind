@@ -223,12 +223,26 @@ async def startup():
         except Exception as e:
             logger.warning(f"⚠️ Cache warmup failed: {e}")
     
+    # Initialize WebSocket streaming
+    try:
+        from routers.stream import initialize_websocket
+        await initialize_websocket()
+    except Exception as e:
+        logger.error(f"❌ WebSocket initialization failed: {e}")
+    
     logger.info("✨ FlowMind API Server started successfully!")
 
 
 @app.on_event("shutdown")
 async def shutdown():
     """Clean up integration clients on shutdown"""
+    # Shutdown WebSocket streaming
+    try:
+        from routers.stream import shutdown_websocket
+        await shutdown_websocket()
+    except Exception as e:
+        logger.error(f"❌ WebSocket shutdown failed: {e}")
+    
     try:
         if hasattr(app.state, "uw") and app.state.uw:
             await app.state.uw.aclose()
