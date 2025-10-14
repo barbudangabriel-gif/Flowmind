@@ -5,6 +5,8 @@ import FlowFilters from '../components/FlowFilters';
 import FlowSummary from '../components/FlowSummary';
 import FlowTable from '../components/FlowTable';
 import LiveFlow from './Flow/LiveFlow';
+import LiveLitTradesFeed from './LiveLitTradesFeed';
+import LiveOffLitTradesFeed from './LiveOffLitTradesFeed';
 import { getFlowHistorical, getFlowNews, getFlowCongress, getFlowInsiders } from '../api/flow';
 
 async function fetchJSON(url, {timeoutMs=3200, signal} = {}) {
@@ -98,6 +100,8 @@ export default function FlowPage() {
   const getCurrentTab = () => {
     if (pathname.includes('/live')) return 'LIVE';
     if (pathname.includes('/hist')) return 'HIST';
+    if (pathname.includes('/lit-trades')) return 'LIT_TRADES';
+    if (pathname.includes('/dark-pool')) return 'DARK_POOL';
     if (pathname.includes('/news')) return 'NEWS';
     if (pathname.includes('/congress')) return 'CONGRESS';
     if (pathname.includes('/insiders')) return 'INSIDERS';
@@ -111,6 +115,8 @@ export default function FlowPage() {
       'SUMMARY': '/flow',
       'LIVE': '/flow/live',
       'HIST': '/flow/hist',
+      'LIT_TRADES': '/flow/lit-trades',
+      'DARK_POOL': '/flow/dark-pool',
       'NEWS': '/flow/news',
       'CONGRESS': '/flow/congress',
       'INSIDERS': '/flow/insiders'
@@ -326,6 +332,8 @@ export default function FlowPage() {
               { key: 'SUMMARY', label: 'Summary', path: '/flow' },
               { key: 'LIVE', label: 'Live', path: '/flow/live' },
               { key: 'HIST', label: 'Hist', path: '/flow/hist' },
+              { key: 'LIT_TRADES', label: '📊 Lit Trades', path: '/flow/lit-trades' },
+              { key: 'DARK_POOL', label: '🕶️ Dark Pool', path: '/flow/dark-pool' },
               { key: 'NEWS', label: 'News', path: '/flow/news' },
               { key: 'CONGRESS', label: 'Congress', path: '/flow/congress' },
               { key: 'INSIDERS', label: 'Insiders', path: '/flow/insiders' }
@@ -373,6 +381,14 @@ export default function FlowPage() {
               
               {currentTab === 'HIST' && (
                 <FlowTable items={data?.items || []} />
+              )}
+              
+              {currentTab === 'LIT_TRADES' && (
+                <LiveLitTradesFeed ticker={filters.symbol || 'SPY'} />
+              )}
+              
+              {currentTab === 'DARK_POOL' && (
+                <LiveOffLitTradesFeed ticker={filters.symbol || 'SPY'} />
               )}
               
               {currentTab === 'NEWS' && (

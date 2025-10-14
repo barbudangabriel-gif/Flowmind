@@ -126,6 +126,12 @@ function App() {
                 <Route path="/builder/:strategySlug" element={<BuilderPage />} />
                 <Route path="/flow" element={<FlowPage />} />
                 <Route path="/flow/live" element={<FlowPage />} />
+                <Route path="/flow/hist" element={<FlowPage />} />
+                <Route path="/flow/lit-trades" element={<FlowPage />} />
+                <Route path="/flow/dark-pool" element={<FlowPage />} />
+                <Route path="/flow/news" element={<FlowPage />} />
+                <Route path="/flow/congress" element={<FlowPage />} />
+                <Route path="/flow/insiders" element={<FlowPage />} />
                 <Route path="/dark-pool" element={<DarkPoolPage />} />
                 <Route path="/market-movers" element={<MarketMoversPage />} />
                 <Route path="/congress-trades" element={<CongressTradesPage />} />
