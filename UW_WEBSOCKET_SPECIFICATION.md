@@ -21,7 +21,7 @@
 | `off_lit_trades` | Live off-lit (dark pool) trades | Real-time | ❌ **MISSING** |
 | `gex:TICKER` | Live GEX updates per ticker | Real-time | ✅ Implemented |
 | `gex_strike:TICKER` | Live GEX per strike | Real-time | ⚠️ **Need to verify** |
-| `gex_strike_expiry:TICKER` | Live GEX per strike & expiry | Real-time | ❌ **MISSING** |
+| `gex_strike_expiry:TICKER` | Live GEX per strike & expiry | Real-time | ✅ **IMPLEMENTED (2025-10-14)** |
 
 ---
 
@@ -214,69 +214,105 @@ export default function LiveOffLitTradesFeed() {
 ```
 
 ### 4. `gex_strike_expiry:TICKER` Channel
-**Status:** ❌ Not implemented (HIGH PRIORITY)
+**Status:** ✅ **IMPLEMENTED** (2025-10-14)
 
 **Implementation:**
 ```python
-# backend/routers/stream.py
+# backend/routers/stream.py (COMPLETED)
 @router.websocket("/ws/gex-strike-expiry/{ticker}")
-async def ws_gex_strike_expiry(websocket: WebSocket, ticker: str):
+async def stream_gex_strike_expiry(websocket: WebSocket, ticker: str):
     """
-    Stream live GEX updates per strike and expiry
+    🆕 Stream live GEX updates per strike and expiry
     
     Most granular GEX data available - shows gamma exposure
     broken down by both strike price and expiration date.
+    
+    Use Cases:
+    - Zero-DTE (0DTE) gamma analysis
+    - Strike-level exposure tracking
+    - Expiration-specific positioning
+    - Gamma squeeze detection
+    
+    Message Format:
+    {
+      "channel": "gex_strike_expiry:SPY",
+      "timestamp": "2025-10-14T14:30:00Z",
+      "ticker": "SPY",
+      "data": {
+        "strike": 450,
+        "expiry": "2025-10-18",
+        "call_gex": 125000000,
+        "put_gex": -85000000,
+        "net_gex": 40000000,
+        "call_oi": 25000,
+        "put_oi": 18000,
+        "call_volume": 5000,
+        "put_volume": 3500
+      }
+    }
     """
-    await websocket.accept()
+    ticker = ticker.upper()
+    channel = f"gex_strike_expiry:{ticker}"
     
-    channel = f"gex_strike_expiry:{ticker.upper()}"
+    if not uw_client:
+        await websocket.close(code=1011, reason="WebSocket streaming not available")
+        return
     
-    async def handler(ch, data):
-        await websocket.send_json({
+    await ws_manager.connect(websocket, channel)
+    
+    async def gex_strike_expiry_handler(ch: str, payload: dict):
+        message = {
             "channel": ch,
+            "timestamp": datetime.now().isoformat(),
             "ticker": ticker,
-            "data": data,
-            "timestamp": datetime.utcnow().isoformat()
-        })
+            "data": payload
+        }
+        await ws_manager.broadcast(channel, message)
     
-    await uw_ws_client.subscribe(channel, handler)
+    if not ws_manager.has_subscribers(channel):
+        await uw_client.subscribe(channel, gex_strike_expiry_handler)
+    else:
+        uw_client.message_handlers[channel] = gex_strike_expiry_handler
+    
+    try:
+        while True:
+            try:
+                data = await websocket.receive_text()
+            except WebSocketDisconnect:
+                break
+    except Exception as e:
+        logger.error(f"Error in GEX strike/expiry stream: {e}")
+    finally:
+        await ws_manager.disconnect(websocket, channel)
+        if not ws_manager.has_subscribers(channel):
+            await uw_client.unsubscribe(channel)
 ```
 
-**Expected Data Format:**
-```json
-{
-  "ticker": "SPY",
-  "strike": 450,
-  "expiry": "2025-10-18",
-  "call_gex": 125000000,
-  "put_gex": -85000000,
-  "net_gex": 40000000,
-  "call_oi": 25000,
-  "put_oi": 18000,
-  "timestamp": "2025-10-14T14:30:00Z"
-}
-```
-
-**Frontend Component:**
+**Frontend Component:** ✅ **IMPLEMENTED**
 ```jsx
-// frontend/src/pages/LiveGexStrikeExpiryFeed.jsx
-export default function LiveGexStrikeExpiryFeed({ ticker }) {
-    const { messages, status } = useWebSocket(`/ws/gex-strike-expiry/${ticker}`);
+// frontend/src/pages/LiveGexStrikeExpiryFeed.jsx (COMPLETED)
+export default function LiveGexStrikeExpiryFeed({ ticker = 'SPY', autoRefresh = true, view = 'heatmap' }) {
+    const [gexData, setGexData] = useState([]);
+    const [selectedExpiry, setSelectedExpiry] = useState(null);
     
-    // Group by expiry, then by strike
-    const gexMatrix = useMemo(() => {
-        return messages.reduce((acc, msg) => {
-            const { expiry, strike, net_gex } = msg.data;
-            if (!acc[expiry]) acc[expiry] = {};
-            acc[expiry][strike] = net_gex;
-            return acc;
-        }, {});
-    }, [messages]);
+    const wsUrl = `/api/stream/ws/gex-strike-expiry/${ticker.toUpperCase()}`;
+    const { messages, status, error } = useWebSocket(wsUrl);
+
+    // Process incoming messages and build strike × expiry matrix
+    // Supports dual view modes: heatmap (color-coded) and table (detailed)
+    // Heatmap: Green (positive GEX) to Red (negative GEX)
+    // Interactive: Click expiry to filter, hover for details
     
     return (
-        <div className="gex-heatmap">
-            <h3>Gamma Exposure Matrix: {ticker}</h3>
-            <GexHeatmap data={gexMatrix} />
+        <div className="bg-gray-900 rounded-lg shadow-lg p-6 text-white">
+            <h2 className="text-2xl font-bold">Gamma Exposure Matrix</h2>
+            <p className="text-gray-400 text-sm mt-1">{ticker} - Strike × Expiry GEX</p>
+            
+            {/* Heatmap visualization with strikes (rows) × expiries (columns) */}
+            {view === 'heatmap' ? <HeatmapView /> : <TableView />}
+            
+            {/* Real-time status indicator */}
+            <StatusIndicator status={status} />
         </div>
     );
 }
@@ -287,7 +323,7 @@ export default function LiveGexStrikeExpiryFeed({ ticker }) {
 ## 🔍 Implementation Priority
 
 ### Phase 1: Critical Additions (Week 1)
-1. **`gex_strike_expiry:TICKER`** ⚠️ HIGH
+1. ~~**`gex_strike_expiry:TICKER`** ⚠️ HIGH~~ ✅ **COMPLETED 2025-10-14**
    - Most granular GEX data
    - Essential for zero-DTE traders
    - Effort: 3-4 hours
