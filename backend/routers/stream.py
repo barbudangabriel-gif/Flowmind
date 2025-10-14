@@ -776,3 +776,223 @@ async def force_reconnect():
             status_code=500,
             detail=f"Reconnection error: {str(e)}"
         )
+
+
+@router.websocket("/ws/lit-trades/{ticker}")
+async def stream_lit_trades(websocket: WebSocket, ticker: str):
+    """
+    🆕 Stream live lit (exchange-based) trades for a ticker.
+    
+    **NEW CHANNEL** - Tracks visible exchange trades (NASDAQ, NYSE, etc.)
+    Opposite of dark pool trades - these are transparent, public executions.
+    
+    **Connection:** wss://your-backend.com/api/stream/ws/lit-trades/TSLA
+    
+    **Parameters:**
+    - `ticker`: Stock symbol (e.g., TSLA, AAPL, SPY)
+    
+    **Message Format:**
+    ```json
+    {
+        "channel": "lit_trades:TSLA",
+        "timestamp": "2025-10-14T12:34:56.789Z",
+        "ticker": "TSLA",
+        "data": {
+            "ticker": "TSLA",
+            "price": 250.75,
+            "size": 100,
+            "timestamp": "2025-10-14T12:34:56Z",
+            "exchange": "NASDAQ",
+            "conditions": ["@", "F"],
+            "tape": "C",
+            "sequence": 123456789
+        }
+    }
+    ```
+    
+    **Use Cases:**
+    - Track visible exchange executions
+    - Monitor public order flow
+    - Compare lit vs dark pool volume
+    - Detect exchange-specific patterns
+    - Analyze tape distribution (A/B/C)
+    
+    **Exchange Codes:**
+    - NASDAQ: NASDAQ Global Select/Capital Market
+    - NYSE: New York Stock Exchange
+    - ARCA: NYSE Arca
+    - BATS: Cboe BZX Exchange
+    - IEX: Investors Exchange
+    
+    **Condition Codes:**
+    - @: Regular sale
+    - F: Intermarket sweep
+    - T: Extended hours trade
+    - Z: Sold out of sequence
+    
+    **Tape:**
+    - A: NYSE listed securities
+    - B: NYSE Arca/Regional listed
+    - C: NASDAQ listed securities
+    """
+    ticker = ticker.upper()
+    channel = f"lit_trades:{ticker}"
+    
+    if not uw_client:
+        await websocket.close(code=1011, reason="WebSocket streaming not available")
+        return
+    
+    logger.info(f"📊 New lit trades subscription: {ticker}")
+    await ws_manager.connect(websocket, channel)
+    
+    # Define handler for UW messages
+    async def lit_trades_handler(ch: str, payload: dict):
+        message = {
+            "channel": ch,
+            "timestamp": datetime.now().isoformat(),
+            "ticker": ticker,
+            "data": payload
+        }
+        await ws_manager.broadcast(channel, message)
+    
+    # Subscribe to UW if first subscriber
+    if not ws_manager.has_subscribers(channel):
+        logger.info(f"📡 First subscriber - subscribing to UW {channel}")
+        await uw_client.subscribe(channel, lit_trades_handler)
+    else:
+        # Update handler for this connection
+        uw_client.message_handlers[channel] = lit_trades_handler
+    
+    # Keep connection alive
+    try:
+        while True:
+            try:
+                data = await websocket.receive_text()
+                # Client sent message (ping/pong or control)
+            except WebSocketDisconnect:
+                logger.info(f"📊 Client disconnected from {channel}")
+                break
+    except Exception as e:
+        logger.error(f"Error in lit trades stream: {e}")
+    finally:
+        await ws_manager.disconnect(websocket, channel)
+        
+        # Unsubscribe from UW if no more clients
+        if not ws_manager.has_subscribers(channel):
+            logger.info(f"📡 Last subscriber - unsubscribing from UW {channel}")
+            await uw_client.unsubscribe(channel)
+
+
+@router.websocket("/ws/off-lit-trades/{ticker}")
+async def stream_off_lit_trades(websocket: WebSocket, ticker: str):
+    """
+    🆕 Stream live off-lit (dark pool) trades for a ticker.
+    
+    **NEW CHANNEL** - Tracks dark pool executions (private, non-displayed liquidity)
+    These are large block trades executed away from public exchanges.
+    
+    **Connection:** wss://your-backend.com/api/stream/ws/off-lit-trades/TSLA
+    
+    **Parameters:**
+    - `ticker`: Stock symbol (e.g., TSLA, AAPL, SPY)
+    
+    **Message Format:**
+    ```json
+    {
+        "channel": "off_lit_trades:TSLA",
+        "timestamp": "2025-10-14T12:34:56.789Z",
+        "ticker": "TSLA",
+        "data": {
+            "ticker": "TSLA",
+            "price": 250.75,
+            "size": 10000,
+            "timestamp": "2025-10-14T12:34:56Z",
+            "venue": "DARK_POOL",
+            "venue_name": "UBS ATS",
+            "conditions": ["D"],
+            "notional": 2507500.00,
+            "is_block": true
+        }
+    }
+    ```
+    
+    **Use Cases:**
+    - Track institutional block trades
+    - Monitor dark pool activity
+    - Detect large hidden orders
+    - Compare dark pool vs lit volume
+    - Identify institutional accumulation/distribution
+    - Smart money tracking
+    
+    **Major Dark Pools:**
+    - UBS ATS: UBS Alternative Trading System
+    - MS Pool: Morgan Stanley's dark pool
+    - Level ATS: Citadel Securities
+    - SIGMA X: Goldman Sachs
+    - BIDS Trading: Block Interest Discovery System
+    - Liquidnet: Institutional crossing network
+    
+    **Condition Codes:**
+    - D: Dark pool trade
+    - B: Block trade (>10,000 shares or $200k)
+    - I: Odd lot trade
+    - T: Extended hours
+    
+    **Significance:**
+    - Large size trades (often 10,000+ shares)
+    - Institutional activity indicator
+    - Price impact typically delayed
+    - Smart money positioning clues
+    
+    **Dark Pool vs Lit Trade Comparison:**
+    - Dark: Hidden, institutional, large blocks
+    - Lit: Visible, retail/institutional mix, all sizes
+    - Dark typically 15-40% of daily volume
+    """
+    ticker = ticker.upper()
+    channel = f"off_lit_trades:{ticker}"
+    
+    if not uw_client:
+        await websocket.close(code=1011, reason="WebSocket streaming not available")
+        return
+    
+    logger.info(f"🕶️ New off-lit trades subscription: {ticker}")
+    await ws_manager.connect(websocket, channel)
+    
+    # Define handler for UW messages
+    async def off_lit_trades_handler(ch: str, payload: dict):
+        message = {
+            "channel": ch,
+            "timestamp": datetime.now().isoformat(),
+            "ticker": ticker,
+            "data": payload,
+            "venue_type": "dark_pool"  # Additional context
+        }
+        await ws_manager.broadcast(channel, message)
+    
+    # Subscribe to UW if first subscriber
+    if not ws_manager.has_subscribers(channel):
+        logger.info(f"📡 First subscriber - subscribing to UW {channel}")
+        await uw_client.subscribe(channel, off_lit_trades_handler)
+    else:
+        # Update handler for this connection
+        uw_client.message_handlers[channel] = off_lit_trades_handler
+    
+    # Keep connection alive
+    try:
+        while True:
+            try:
+                data = await websocket.receive_text()
+                # Client sent message (ping/pong or control)
+            except WebSocketDisconnect:
+                logger.info(f"🕶️ Client disconnected from {channel}")
+                break
+    except Exception as e:
+        logger.error(f"Error in off-lit trades stream: {e}")
+    finally:
+        await ws_manager.disconnect(websocket, channel)
+        
+        # Unsubscribe from UW if no more clients
+        if not ws_manager.has_subscribers(channel):
+            logger.info(f"📡 Last subscriber - unsubscribing from UW {channel}")
+            await uw_client.unsubscribe(channel)

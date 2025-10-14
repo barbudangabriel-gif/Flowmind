@@ -17,8 +17,8 @@
 | `flow-alerts` | Live flow alerts (unfiltered) | Varies | ✅ Implemented |
 | `price:TICKER` | Live price updates | Real-time | ✅ Implemented |
 | `news` | Live headline news | Real-time | ⚠️ **Need to verify** |
-| `lit_trades` | Live lit (exchange) trades | Real-time | ❌ **MISSING** |
-| `off_lit_trades` | Live off-lit (dark pool) trades | Real-time | ❌ **MISSING** |
+| `lit_trades` | Live lit (exchange) trades | Real-time | ✅ **IMPLEMENTED (2025-10-14)** |
+| `off_lit_trades` | Live off-lit (dark pool) trades | Real-time | ✅ **IMPLEMENTED (2025-10-14)** |
 | `gex:TICKER` | Live GEX updates per ticker | Real-time | ✅ Implemented |
 | `gex_strike:TICKER` | Live GEX per strike | Real-time | ⚠️ **Need to verify** |
 | `gex_strike_expiry:TICKER` | Live GEX per strike & expiry | Real-time | ✅ **IMPLEMENTED (2025-10-14)** |
