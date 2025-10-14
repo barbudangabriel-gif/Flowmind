@@ -157,7 +157,7 @@ async def test_api_endpoints_after_scan():
 
     import requests
 
-    base_url = "https://options-analytics.preview.emergentagent.com/api"
+    base_url = "http://localhost:8000/api"
 
     try:
         # Test scanner status

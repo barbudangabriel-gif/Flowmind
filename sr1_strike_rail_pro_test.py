@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Dict, Optional
 
 # Use the external URL from frontend/.env
-BASE_URL = "https://options-analytics.preview.emergentagent.com"
+BASE_URL = "http://localhost:8000"
 
 
 class SR1StrikeRailProTester:

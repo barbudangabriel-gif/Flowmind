@@ -16,7 +16,7 @@ def main():
     print("🎯 OPTIONS CALCULATOR COMPREHENSIVE TESTING")
     print("=" * 80)
     print("🔑 Testing expanded Options Calculator with new strategies")
-    print("🌐 Backend URL: https://options-analytics.preview.emergentagent.com")
+    print("🌐 Backend URL: http://localhost:8000")
 
     tester = StockMarketAPITester()
 

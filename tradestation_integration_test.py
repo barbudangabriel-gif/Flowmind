@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional
 
 
 class TradeStationIntegrationTester:
-    def __init__(self, base_url="https://options-analytics.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:8000"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0

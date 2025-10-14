@@ -22,7 +22,7 @@ class TradeStationConnectivityTester:
     def __init__(self):
         # Use the correct backend URL from frontend/.env
         # Note: The frontend/.env shows "None" which might be the issue
-        self.base_url = "https://options-analytics.preview.emergentagent.com"
+        self.base_url = "http://localhost:8000"
         self.api_url = f"{self.base_url}/api"
         self.tests_run = 0
         self.tests_passed = 0
@@ -425,7 +425,7 @@ class TradeStationConnectivityTester:
             )
             return False
 
-        expected_url = "https://options-analytics.preview.emergentagent.com"
+        expected_url = "http://localhost:8000"
 
         if "None" in frontend_url:
             self.log_test(
@@ -523,9 +523,9 @@ class TradeStationConnectivityTester:
         if not config_ok:
             print("1. 🚨 HIGH PRIORITY: Fix frontend/.env REACT_APP_BACKEND_URL")
             print(
-                "   - Change from: https://options-analytics.preview.emergentagent.com"
+                "   - Change from: http://localhost:8000"
             )
-            print("   - Change to: https://options-analytics.preview.emergentagent.com")
+            print("   - Change to: http://localhost:8000")
 
         if not auth_ok:
             print("2. 🔐 Authenticate with TradeStation:")

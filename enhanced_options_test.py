@@ -10,7 +10,7 @@ import json
 import time
 
 # Use the external URL from frontend/.env
-BASE_URL = "https://options-analytics.preview.emergentagent.com/api"
+BASE_URL = "http://localhost:8000/api"
 
 
 def test_enhanced_optimize_endpoint():

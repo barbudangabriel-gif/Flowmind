@@ -5,7 +5,7 @@ import requests
 
 def test_unusual_whales_endpoints():
     """Test all Unusual Whales API endpoints"""
-    base_url = "https://options-analytics.preview.emergentagent.com/api"
+    base_url = "http://localhost:8000/api"
 
     print("🐋 Testing Unusual Whales API Integration")
     print("=" * 50)

@@ -10,7 +10,7 @@ import json
 
 def test_chart_data_details():
     """Test detailed chart data structure"""
-    url = "https://options-analytics.preview.emergentagent.com/api/unusual-whales/trading-strategies"
+    url = "http://localhost:8000/api/unusual-whales/trading-strategies"
 
     try:
         response = requests.get(url, timeout=30)

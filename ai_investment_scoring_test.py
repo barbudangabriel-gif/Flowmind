@@ -11,7 +11,7 @@ import time
 
 class AIInvestmentScoringTester:
     def __init__(self):
-        self.base_url = "https://options-analytics.preview.emergentagent.com/api"
+        self.base_url = "http://localhost:8000/api"
         self.tests_run = 0
         self.tests_passed = 0
 
@@ -482,7 +482,7 @@ def main():
     print("🤖 AI INVESTMENT SCORING AGENT COMPREHENSIVE TEST")
     print("=" * 80)
     print("🎯 Review Request: Test Investment Scoring Agent endpoint")
-    print("🌐 Backend URL: https://options-analytics.preview.emergentagent.com")
+    print("🌐 Backend URL: http://localhost:8000")
 
     tester = AIInvestmentScoringTester()
 

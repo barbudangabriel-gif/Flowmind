@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Backend URL from environment
-BACKEND_URL = "https://options-analytics.preview.emergentagent.com"
+BACKEND_URL = "http://localhost:8000"
 
 
 class GoNoGoTester:

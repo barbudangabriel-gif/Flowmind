@@ -14,7 +14,7 @@ from datetime import datetime
 import time
 
 # Backend URL from environment
-BACKEND_URL = "https://options-analytics.preview.emergentagent.com/api"
+BACKEND_URL = "http://localhost:8000/api"
 
 
 def test_builder_price_endpoint():

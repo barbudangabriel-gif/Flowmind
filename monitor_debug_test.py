@@ -15,7 +15,7 @@ def log(message):
 
 
 def test_monitor_debug():
-    base_url = "https://options-analytics.preview.emergentagent.com"
+    base_url = "http://localhost:8000"
     api_url = f"{base_url}/api"
 
     # Proper payload format

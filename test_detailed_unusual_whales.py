@@ -6,7 +6,7 @@ import time
 
 def test_detailed_unusual_whales():
     """Detailed testing of Unusual Whales API with filters and data quality checks"""
-    base_url = "https://options-analytics.preview.emergentagent.com/api"
+    base_url = "http://localhost:8000/api"
 
     print("🐋 DETAILED Unusual Whales API Testing")
     print("=" * 60)

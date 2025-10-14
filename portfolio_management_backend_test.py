@@ -38,7 +38,7 @@ from typing import Dict, Any, Optional
 class PortfolioManagementTester:
     def __init__(self):
         # Use the external URL from frontend/.env
-        self.base_url = "https://options-analytics.preview.emergentagent.com"
+        self.base_url = "http://localhost:8000"
         self.api_url = f"{self.base_url}/api"
         self.session = requests.Session()
         self.session.headers.update(

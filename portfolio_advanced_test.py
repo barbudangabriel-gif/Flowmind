@@ -19,7 +19,7 @@ from typing import Dict, Any, Optional
 
 class AdvancedPortfolioTester:
     def __init__(self):
-        self.base_url = "https://options-analytics.preview.emergentagent.com"
+        self.base_url = "http://localhost:8000"
         self.api_url = f"{self.base_url}/api"
         self.session = requests.Session()
         self.session.headers.update(

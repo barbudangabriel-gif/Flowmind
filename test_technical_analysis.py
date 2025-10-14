@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = "https://options-analytics.preview.emergentagent.com/api"
+BACKEND_URL = "http://localhost:8000/api"
 
 
 def run_test(test_name, method, endpoint, expected_status=200, params=None, data=None):

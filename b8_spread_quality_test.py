@@ -24,7 +24,7 @@ import os
 
 # Backend URL from environment
 BACKEND_URL = os.getenv(
-    "REACT_APP_BACKEND_URL", "https://options-analytics.preview.emergentagent.com"
+    "REACT_APP_BACKEND_URL", "http://localhost:8000"
 )
 API_BASE = f"{BACKEND_URL}/api"
 

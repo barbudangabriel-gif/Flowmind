@@ -9,7 +9,7 @@ import time
 
 
 class StockAnalysisAPITester:
-    def __init__(self, base_url="https://options-analytics.preview.emergentagent.com"):
+    def __init__(self, base_url="http://localhost:8000"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
@@ -372,7 +372,7 @@ class StockAnalysisAPITester:
         print(f"   🔗 API Base: {self.api_url}")
 
         # Verify we're using the correct external URL
-        if "stock-analysis-hub.preview.emergentagent.com" in self.base_url:
+        if "localhost:8000" in self.base_url:
             print("   ✅ Using correct external URL for testing")
             print("   ✅ APIs accessible via /api prefix as required")
             api_accessibility = True
@@ -558,7 +558,7 @@ if __name__ == "__main__":
         "🔧 REVIEW REQUEST: Test backend API endpoints crucial for Stock Analysis and Chart functionality"
     )
     print("📊 FOCUS: META symbol testing with comprehensive data structure validation")
-    print("🌐 Backend URL: https://options-analytics.preview.emergentagent.com")
+    print("🌐 Backend URL: http://localhost:8000")
 
     tester = StockAnalysisAPITester()
     success = tester.test_stock_analysis_chart_endpoints()

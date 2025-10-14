@@ -8,7 +8,7 @@ import time
 
 
 def test_price_fix():
-    base_url = "https://options-analytics.preview.emergentagent.com"
+    base_url = "http://localhost:8000"
     api_url = f"{base_url}/api"
 
     print("🔧 TESTING PRICE FIX...")

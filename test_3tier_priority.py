@@ -1,6 +1,6 @@
 import requests
 
-base_url = "https://options-analytics.preview.emergentagent.com/api"
+base_url = "http://localhost:8000/api"
 
 print("🎯 FOCUSED TESTING: 3-Tier Priority System with Unusual Whales Fallback")
 print("=" * 80)

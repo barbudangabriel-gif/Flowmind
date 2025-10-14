@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 # Configuration
-BACKEND_URL = "https://options-analytics.preview.emergentagent.com/api"
+BACKEND_URL = "http://localhost:8000/api"
 
 
 class GreeksBackendTester:
