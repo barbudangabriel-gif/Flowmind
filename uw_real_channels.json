@@ -1,0 +1,13 @@
+{
+  "working": [
+    "flow-alerts",
+    "lit_trades",
+    "off_lit_trades",
+    "lit_trades:SPY",
+    "off_lit_trades:SPY",
+    "option_trades:SPY",
+    "dark_pool",
+    "gex:SPY"
+  ],
+  "failed": []
+}
