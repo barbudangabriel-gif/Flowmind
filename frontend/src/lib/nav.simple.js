@@ -24,11 +24,14 @@ export function buildNav(ctx) {
     {
       title: "Account",
       items: [
-        { label: "Account Balance", to: "/account/balance", icon: "Wallet" },
+        { label: "My Portfolios", to: "/portfolios", icon: "Wallet" },  // Changed from Account Balance
         {
-          label: "Portfolios", 
+          label: "Portfolio Manager", 
+          to: "/portfolios",  // Direct link to portfolios list
           icon: "Briefcase",
           children: [
+            // View all portfolios
+            { label: "View All Portfolios", to: "/portfolios", icon: "List" },
             // Dynamic portfolios
             ...((ctx.portfolios || []).map(p => ({
               label: p.name,
