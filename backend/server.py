@@ -56,11 +56,18 @@ logger.setLevel(logging.INFO)
 # NEW: Robust TradeStation Token Management
 try:
     from app.routers.tradestation_auth import router as ts_auth_router
-
     ROBUST_TS_AVAILABLE = True
 except ImportError:
     ROBUST_TS_AVAILABLE = False
     logger.warning("Robust TradeStation auth not available - using legacy system")
+
+# NEW: OAuth Callback Router
+try:
+    from app.routers.oauth import router as oauth_router
+    OAUTH_ROUTER_AVAILABLE = True
+except ImportError:
+    OAUTH_ROUTER_AVAILABLE = False
+    logger.warning("OAuth callback router not available")
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -535,6 +542,12 @@ if ROBUST_TS_AVAILABLE:
 else:
     logger.warning("⚠️  Using legacy TradeStation authentication system")
 
+# NEW: Mount OAuth callback router
+if OAUTH_ROUTER_AVAILABLE:
+    app.include_router(oauth_router, prefix="/api")
+    logger.info("✅ OAuth callback router mounted at /api/oauth/tradestation/callback")
+else:
+    logger.warning("⚠️  OAuth callback router not available")
 
 # NEW: TradeStation streaming endpoint
 @api_router.get("/tradestation/stream/{symbol}")
