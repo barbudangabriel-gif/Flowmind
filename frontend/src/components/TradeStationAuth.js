@@ -7,7 +7,7 @@ const TradeStationAuth = () => {
   const [error, setError] = useState(null);
   const [authenticating, setAuthenticating] = useState(false);
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
   const API = `${BACKEND_URL}/api`;
 
   const checkAuthStatus = async () => {
@@ -29,6 +29,7 @@ const TradeStationAuth = () => {
       
       // NU mai folosim popup - redirect direct în aceeași fereastră
       console.log('🔗 Initiating direct redirect authentication (no popup)');
+      console.log('🌐 Using API:', API);
       
       const response = await axios.get(`${API}/auth/tradestation/login`);
       const authUrl = response.data.auth_url;

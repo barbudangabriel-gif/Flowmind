@@ -47,8 +47,26 @@ const StreamingDashboard = () => {
             </p>
           </div>
           
-          {/* Global Status */}
-          <ConnectionStatus variant="detailed" />
+          <div className="flex items-center gap-4">
+            {/* TradeStation Auth Button - Now uses backend API */}
+            <button
+              onClick={async () => {
+                try {
+                  const response = await fetch('http://localhost:8000/api/auth/tradestation/login');
+                  const data = await response.json();
+                  window.location.href = data.auth_url;
+                } catch (err) {
+                  console.error('Failed to initiate auth:', err);
+                }
+              }}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+            >
+              🔗 Connect TradeStation
+            </button>
+            
+            {/* Global Status */}
+            <ConnectionStatus variant="detailed" />
+          </div>
         </div>
       </div>
 
