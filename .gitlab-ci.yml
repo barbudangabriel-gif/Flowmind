@@ -106,10 +106,15 @@ backend:
   stage: be
   image: python:3.11
   cache: { key: "${CI_COMMIT_REF_SLUG}-be", paths: [ .cache/pip/ ] }
+  services:
+    - redis:latest
+  variables:
+    REDIS_URL: "redis://redis:6379/0"
+    FM_FORCE_FALLBACK: "0"  # Test with real Redis
   before_script:
     - cd backend
     - pip install -U pip
-    - pip install ruff mypy bandit pytest pip-audit pytest-cov coverage flake8 flake8-html
+    - pip install ruff mypy bandit pytest pip-audit pytest-cov coverage flake8 flake8-html httpx
     - |
       if [ -f requirements.txt ]; then
         pip install -r requirements.txt
@@ -130,6 +135,16 @@ backend:
     - flake8 . --format=html --htmldir reports/flake8 || true
     - bandit -r . -f html -o reports/bandit/index.html || true
     - mypy . --ignore-missing-imports --html-report reports/mypy || true
+    # NEW: Health endpoint validation
+    - echo "🏥 Testing health endpoints..."
+    - python -m uvicorn server:app --host 0.0.0.0 --port 8000 &
+    - sleep 5
+    - curl -f http://localhost:8000/health || (echo "❌ /health failed" && exit 1)
+    - curl -f http://localhost:8000/healthz || (echo "❌ /healthz failed" && exit 1)
+    - curl -f http://localhost:8000/readyz || (echo "❌ /readyz failed" && exit 1)
+    - curl -f http://localhost:8000/api/health/redis || (echo "❌ /api/health/redis failed" && exit 1)
+    - echo "✅ All health endpoints working"
+    - pkill -f uvicorn || true
   artifacts:
     when: always
     expire_in: 1 week

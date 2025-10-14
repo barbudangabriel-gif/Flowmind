@@ -4,7 +4,7 @@ AI/ML-powered portfolio rebalancing recommendations with Smart DCA algorithms
 """
 
 import logging
-import random
+import secrets
 import asyncio
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional

@@ -57,7 +57,7 @@ def get_options_chain(
 ):
     """Get options chain data with demo fallback"""
     import os
-    import random
+    import secrets
 
     def _round5(x):
         return int(round(x / 5.0) * 5)

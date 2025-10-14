@@ -862,7 +862,7 @@ class UnusualWhalesService:
     # MOCK DATA METHODS (for when API key is not available or API fails)
     async def _get_mock_options_flow(self) -> List[Dict[str, Any]]:
         """Generate highly realistic mock options flow data based on actual market patterns"""
-        import random
+        import secrets
         from datetime import datetime, timedelta
         
         # Real market symbols with actual option activity (August 14, 2025)
