@@ -279,25 +279,25 @@ class AdvancedScoringEngine:
     
     def _generate_mock_technical_data(self, symbol: str) -> Dict[str, Any]:
         """Generează date tehnice mock realiste pentru demo"""
-        import random
+        import secrets
         
         logger.info(f"📋 Generating mock technical data for {symbol}")
         
-        # Simulează indicatori realisti
-        rsi = random.uniform(30, 80)  
-        trend_strength = random.uniform(40, 90)
-        volume_ratio = random.uniform(0.8, 2.5)
-        bollinger_position = random.uniform(20, 80)
+        # Simulează indicatori realisti (using secrets for consistency)
+        rsi = 30 + secrets.randbelow(50)  # 30-80
+        trend_strength = 40 + secrets.randbelow(50)  # 40-90
+        volume_ratio = 0.8 + secrets.randbelow(170) / 100  # 0.8-2.5
+        bollinger_position = 20 + secrets.randbelow(60)  # 20-80
         
         return {
             'symbol': symbol,
             'indicators': {
-                'trend_strength': trend_strength,
-                'rsi': rsi,
-                'macd': random.uniform(-2, 2),
+                'trend_strength': float(trend_strength),
+                'rsi': float(rsi),
+                'macd': (secrets.randbelow(400) - 200) / 100,  # -2 to 2
                 'volume_ratio': volume_ratio,
-                'bollinger_position': bollinger_position,
-                'atr_percent': random.uniform(1, 4),
+                'bollinger_position': float(bollinger_position),
+                'atr_percent': 1 + secrets.randbelow(300) / 100,  # 1-4
                 'distance_to_resistance': random.uniform(2, 15),
                 'distance_to_support': random.uniform(2, 15)
             },

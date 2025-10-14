@@ -574,7 +574,7 @@ async def get_chart_data(
     try:
         # Generate demo OHLCV data
         import time
-        import random
+        import secrets
 
         # Timeframe mapping to seconds
         tf_seconds = {
@@ -589,15 +589,15 @@ async def get_chart_data(
 
         seconds = tf_seconds.get(timeframe, 86400)
         now = int(time.time())
-        price = 150 + random.random() * 50
+        price = 150 + secrets.randbelow(5000) / 100  # 150-200
 
         data = []
         for i in range(limit, 0, -1):
             timestamp = now - (i * seconds)
-            change = (random.random() - 0.5) * 4
+            change = (secrets.randbelow(800) - 400) / 100  # -4 to +4
             open_price = price
             close_price = price + change
-            high_price = max(open_price, close_price) + random.random() * 2
+            high_price = max(open_price, close_price) + secrets.randbelow(200) / 100  # +0-2
             low_price = min(open_price, close_price) - random.random() * 2
             volume = random.randint(100000, 2000000)
 

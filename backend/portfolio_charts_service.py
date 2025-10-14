@@ -4,7 +4,7 @@ Provides data and analysis for portfolio performance charts and allocation visua
 """
 
 import logging
-import random
+import secrets
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 import asyncio
