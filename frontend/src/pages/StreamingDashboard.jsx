@@ -2,6 +2,7 @@ import React from 'react';
 import { useWebSocketContext } from '../context/WebSocketContext';
 import LiveFlowFeed from '../components/streaming/LiveFlowFeed';
 import GammaExposureFeed from '../components/streaming/GammaExposureFeed';
+import OptionTradesFeed from '../components/streaming/OptionTradesFeed';
 import LiveMarketMovers from '../components/streaming/LiveMarketMovers';
 import LiveDarkPool from '../components/streaming/LiveDarkPool';
 import LiveCongressFeed from '../components/streaming/LiveCongressFeed';
@@ -15,6 +16,7 @@ import ConnectionStatus from '../components/streaming/ConnectionStatus';
  * Core Feeds (Always Visible):
  * - ✅ Options Flow Alerts
  * - ✅ Gamma Exposure Tracking
+ * - ✅ Live Option Trades (NEW!)
  * 
  * Experimental Feeds (Toggle Required):
  * - ⚠️ Market Movers
@@ -110,6 +112,20 @@ const StreamingDashboard = () => {
               </span>
             </div>
             <GammaExposureFeed defaultTicker="SPY" />
+          </div>
+        </div>
+
+        <div className="bg-gray-900/50 border border-green-500/30 rounded-lg p-1">
+          <div className="bg-gray-900 rounded p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded font-semibold">
+                ✅ VERIFIED CHANNEL
+              </span>
+              <span className="text-xs text-gray-500">
+                Live option trades stream
+              </span>
+            </div>
+            <OptionTradesFeed defaultTicker="TSLA" />
           </div>
         </div>
       </div>

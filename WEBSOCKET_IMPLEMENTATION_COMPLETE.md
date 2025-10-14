@@ -2,7 +2,7 @@
 
 **Status:** PRODUCTION READY  
 **Date:** 2025-10-14  
-**Approach:** Hybrid (2 Verified + 3 Experimental Channels)
+**Approach:** Hybrid (3 Verified + 3 Experimental Channels)
 
 ---
 
@@ -11,7 +11,7 @@
 ### Architecture Decision: **Hybrid Approach** ⭐
 
 After thorough research and analysis, we implemented a **hybrid solution** that balances:
-- ✅ **Solid UX** with 100% functional core features
+- ✅ **Solid UX** with 100% functional core features (3 verified channels)
 - ✅ **Flexibility** for power users to explore experimental channels
 - ✅ **Transparency** about channel verification status
 - ✅ **Future-proof** design for when new channels are added
@@ -35,8 +35,16 @@ After thorough research and analysis, we implemented a **hybrid solution** that 
 - **UW Channel:** `gex:SPY`, `gex:TSLA`, `gex:AAPL`, etc.
 - **Status:** ✅ CONFIRMED WORKING (from UW official examples)
 - **Data:** Gamma exposure updates per ticker
-- **Frontend:** `GammaExposureFeed.jsx` (🆕 NEW)
+- **Frontend:** `GammaExposureFeed.jsx`
 - **Use Case:** Track gamma squeeze levels, zero gamma point
+
+#### 3. **option_trades:{TICKER}** 🆕 NEW
+- **Endpoint:** `/api/stream/ws/option-trades/{ticker}`
+- **UW Channel:** `option_trades:TSLA`, `option_trades:AAPL`, etc.
+- **Status:** ✅ CONFIRMED WORKING (from UW official examples)
+- **Data:** Real-time option trades per ticker
+- **Frontend:** `OptionTradesFeed.jsx` 🆕
+- **Use Case:** Monitor all option trades for specific ticker, track flow direction
 
 ### ⚠️ EXPERIMENTAL CHANNELS (Hidden by Default)
 

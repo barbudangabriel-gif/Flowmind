@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-10-14T13:51:06.429218",
+  "results": {
+    "Flow Alerts": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "Gamma Exposure - SPY": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "Gamma Exposure - TSLA": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "Market Movers": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "Dark Pool": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "Congress Trades": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "UW Direct: flow-alerts": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "UW Direct: gex:SPY": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "UW Direct: market-movers": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "UW Direct: market_movers": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "UW Direct: dark-pool": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "UW Direct: dark_pool": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "UW Direct: congress": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    },
+    "UW Direct: congress-trades": {
+      "status": "error",
+      "error": "BaseEventLoop.create_connection() got an unexpected keyword argument 'timeout'"
+    }
+  },
+  "summary": {
+    "core_working": 0,
+    "experimental_with_data": 0
+  }
+}

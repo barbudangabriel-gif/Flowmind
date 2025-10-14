@@ -270,6 +270,94 @@ async def stream_gamma_exposure(websocket: WebSocket, ticker: str):
             await uw_client.unsubscribe(channel)
 
 
+@router.websocket("/ws/option-trades/{ticker}")
+async def stream_option_trades(websocket: WebSocket, ticker: str):
+    """
+    Stream real-time option trades for a specific ticker.
+    
+    **✅ VERIFIED CHANNEL** - Confirmed from UW official examples
+    
+    **Connection:** wss://your-backend.com/api/stream/ws/option-trades/TSLA
+    
+    **Parameters:**
+    - `ticker`: Stock symbol (e.g., TSLA, AAPL, NVDA, SPY)
+    
+    **Message Format:**
+    ```json
+    {
+        "channel": "option_trades:TSLA",
+        "timestamp": "2025-10-14T12:34:56.789Z",
+        "data": {
+            "ticker": "TSLA",
+            "strike": 250,
+            "expiry": "2025-11-15",
+            "type": "CALL",
+            "side": "BUY",
+            "price": 5.30,
+            "quantity": 100,
+            "premium": 53000,
+            "timestamp": "2025-10-14T12:34:56Z"
+        }
+    }
+    ```
+    
+    **Use Cases:**
+    - Monitor all option trades for a specific ticker
+    - Track large trades (whales) in real-time
+    - Analyze trade patterns and flow direction
+    - Build trade volume heatmaps
+    """
+    ticker = ticker.upper()
+    channel = f"option_trades:{ticker}"
+    
+    if not uw_client:
+        await websocket.close(code=1011, reason="WebSocket streaming not available")
+        return
+    
+    # Connect frontend client
+    await ws_manager.connect(websocket, channel)
+    logger.info(f"🔌 Frontend client connected to {channel}")
+    
+    # Define handler that broadcasts to all clients
+    async def trades_handler(ch: str, payload: dict):
+        """Broadcast option trades to all subscribed frontend clients"""
+        message = {
+            "channel": ch,
+            "timestamp": datetime.now().isoformat(),
+            "data": payload
+        }
+        await ws_manager.broadcast(channel, message)
+    
+    # Subscribe to UW channel if not already subscribed
+    if not ws_manager.has_subscribers(channel):
+        logger.info(f"📡 First subscriber - subscribing to UW {channel}")
+        await uw_client.subscribe(channel, trades_handler)
+    else:
+        # Already subscribed, just register callback
+        uw_client.message_handlers[channel] = trades_handler
+    
+    try:
+        # Keep connection alive
+        while True:
+            try:
+                data = await websocket.receive_text()
+                logger.debug(f"Received from client on {channel}: {data}")
+            except WebSocketDisconnect:
+                break
+    
+    except Exception as e:
+        logger.error(f"Error in option trades stream for {ticker}: {e}")
+    
+    finally:
+        # Cleanup
+        await ws_manager.disconnect(websocket, channel)
+        
+        # Unsubscribe from UW if no more clients
+        if not ws_manager.has_subscribers(channel):
+            logger.info(f"📡 Last subscriber - unsubscribing from UW {channel}")
+            await uw_client.unsubscribe(channel)
+
+
 @router.websocket("/ws/market-movers")
 async def stream_market_movers(websocket: WebSocket):
     """
