@@ -24,7 +24,7 @@ export function buildNav(ctx) {
     {
       title: "Account",
       items: [
-        { label: "My Portfolios", to: "/portfolios", icon: "Wallet" },  // Changed from Account Balance
+        { label: "Account Balance", to: "/account/balance", icon: "Wallet" },
         {
           label: "Portfolio Manager", 
           to: "/portfolios",  // Direct link to portfolios list

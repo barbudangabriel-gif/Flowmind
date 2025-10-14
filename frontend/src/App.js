@@ -11,6 +11,7 @@ import FlowPage from './pages/FlowPage';
 import PortfoliosList from './pages/PortfoliosList';
 import PortfolioDetail from './pages/PortfolioDetail';
 import PortfolioCreate from './pages/PortfolioCreate';
+import AccountBalancePage from './pages/AccountBalancePage';
 import MarketMoversPage from './pages/MarketMoversPage';
 import CongressTradesPage from './pages/CongressTradesPage';
 import DarkPoolPage from './pages/DarkPoolPage';
@@ -130,6 +131,7 @@ function App() {
                 <Route path="/market-movers" element={<MarketMoversPage />} />
                 <Route path="/congress-trades" element={<CongressTradesPage />} />
                 <Route path="/institutional" element={<InstitutionalPage />} />
+                <Route path="/account/balance" element={<AccountBalancePage />} />
                 <Route path="/portfolios" element={<PortfoliosList />} />
                 <Route path="/portfolios/new" element={<PortfolioCreate />} />
                 <Route path="/portfolios/:id" element={<PortfolioDetail />} />
