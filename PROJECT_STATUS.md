@@ -89,11 +89,13 @@ None currently! Everything working as expected locally.
 
 ## 💡 Notes for Next Session
 
-1. Check email for TradeStation callback approval
-2. After approval: Test full OAuth flow (login → callback → token storage)
-3. Verify Account Balance page loads real data
-4. Consider switching to LIVE mode after successful testing
-5. May need to implement token refresh logic for long sessions
+1. **FIS Smoke Health** - Run smoke tests and health checks
+2. **Portfolio Pages Development** - Enhance PortfoliosList, PortfolioDetail, PortfolioCreate
+3. Check email for TradeStation callback approval
+4. After approval: Test full OAuth flow (login → callback → token storage)
+5. Verify Account Balance page loads real data
+6. Consider switching to LIVE mode after successful testing
+7. May need to implement token refresh logic for long sessions
 
 ---
 
