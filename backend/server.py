@@ -743,6 +743,79 @@ async def readiness_check():
     except Exception:
         redis_status = "disconnected"
 
+    return {
+        "status": "ready" if redis_status == "connected" else "degraded",
+        "redis": redis_status,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+@app.get("/api/health/redis")
+async def redis_health():
+    """
+    Redis cache health and statistics
+    
+    Returns detailed Redis status:
+    - Connection status
+    - Total keys count
+    - Memory usage
+    - Cache mode (Redis vs in-memory fallback)
+    """
+    try:
+        from redis_fallback import get_kv
+        
+        kv = await get_kv()
+        
+        # Determine cache mode
+        is_fallback = os.getenv("FM_FORCE_FALLBACK") == "1"
+        cache_mode = "in-memory" if is_fallback else "redis"
+        
+        # Get cache stats
+        try:
+            # Try to get keys count (works for both Redis and AsyncTTLDict)
+            if hasattr(kv, 'keys'):
+                all_keys = await kv.keys("*") if hasattr(kv.keys, '__call__') else []
+                keys_count = len(all_keys) if isinstance(all_keys, list) else 0
+            else:
+                keys_count = 0
+            
+            # Memory info (Redis only)
+            memory_used = None
+            if cache_mode == "redis" and hasattr(kv, 'info'):
+                try:
+                    info = await kv.info('memory')
+                    memory_used = info.get('used_memory_human', 'N/A')
+                except:
+                    memory_used = "N/A"
+            
+            return {
+                "status": "healthy",
+                "mode": cache_mode,
+                "connected": True,
+                "keys_total": keys_count,
+                "memory_used": memory_used or "N/A (in-memory mode)",
+                "fallback_active": is_fallback,
+                "timestamp": datetime.now().isoformat(),
+            }
+        except Exception as e:
+            logger.warning(f"Redis stats error: {e}")
+            return {
+                "status": "degraded",
+                "mode": cache_mode,
+                "connected": True,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+    except Exception as e:
+        logger.error(f"Redis health check failed: {e}")
+        return {
+            "status": "unavailable",
+            "mode": "unknown",
+            "connected": False,
+            "error": str(e),
+            "timestamp": datetime.now().isoformat(),
+        }
+
 
 @app.get("/metrics")
 async def metrics_endpoint():

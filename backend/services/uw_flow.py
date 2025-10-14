@@ -3,7 +3,7 @@ import json
 import requests
 from typing import Any, Dict
 from utils.redis_client import get_redis
-import random
+import secrets
 from datetime import datetime, timedelta
 
 BASE = os.getenv("UW_BASE_URL", "https://api.unusualwhales.com").rstrip("/")
@@ -49,36 +49,36 @@ def _generate_mock_data(path: str) -> Dict[str, Any]:
     executions = ["above_ask", "below_bid", "at_mid"]
 
     if "live" in path or "historical" in path:
-        # Generate mock flow data
+        # Generate mock flow data (using secrets for non-cryptographic randomness)
         items = []
-        for _ in range(random.randint(20, 50)):
-            ticker = random.choice(tickers)
-            side = random.choice(sides)
-            kind = random.choice(kinds)
-            opt_type = random.choice(types)
+        for _ in range(secrets.randbelow(30) + 20):  # 20-50 items
+            ticker = secrets.choice(tickers)
+            side = secrets.choice(sides)
+            kind = secrets.choice(kinds)
+            opt_type = secrets.choice(types)
 
             item = {
                 "time": (
-                    datetime.now() - timedelta(minutes=random.randint(0, 60))
+                    datetime.now() - timedelta(minutes=secrets.randbelow(60))
                 ).isoformat(),
                 "symbol": ticker,
                 "side": side,
-                "premium": round(random.uniform(1000, 100000), 2),
-                "price": round(random.uniform(0.5, 50), 2),
-                "size": random.randint(1, 100),
+                "premium": round(1000 + secrets.randbelow(99000), 2),
+                "price": round(0.5 + (secrets.randbelow(4950) / 100), 2),
+                "size": secrets.randbelow(100) + 1,
                 "kind": kind,
                 "type": opt_type,
-                "strike": random.randint(100, 500),
+                "strike": 100 + secrets.randbelow(400),
                 "expiry": (
-                    datetime.now() + timedelta(days=random.randint(1, 365))
+                    datetime.now() + timedelta(days=secrets.randbelow(365) + 1)
                 ).strftime("%Y-%m-%d"),
-                "dte": random.randint(1, 365),
-                "iv": round(random.uniform(0.2, 2.0), 3),
-                "execution": random.choice(executions),
-                "volume": random.randint(1, 1000),
-                "oi": random.randint(0, 5000),
-                "moneyness": round(random.uniform(0.8, 1.2), 3),
-                "chance": round(random.uniform(0.1, 0.9), 3),
+                "dte": secrets.randbelow(365) + 1,
+                "iv": round(0.2 + (secrets.randbelow(180) / 100), 3),
+                "execution": secrets.choice(executions),
+                "volume": secrets.randbelow(1000) + 1,
+                "oi": secrets.randbelow(5000),
+                "moneyness": round(0.8 + (secrets.randbelow(40) / 100), 3),
+                "chance": round(0.1 + (secrets.randbelow(80) / 100), 3),
             }
             items.append(item)
 
@@ -88,38 +88,38 @@ def _generate_mock_data(path: str) -> Dict[str, Any]:
         # Generate mock news data
         news_items = [
             {
-                "title": f"{random.choice(tickers)} Options Activity Surges",
-                "headline": f"Unusual {random.choice(tickers)} options volume detected",
+                "title": f"{secrets.choice(tickers)} Options Activity Surges",
+                "headline": f"Unusual {secrets.choice(tickers)} options volume detected",
                 "source": "FlowMind",
                 "time": (
-                    datetime.now() - timedelta(hours=random.randint(0, 24))
+                    datetime.now() - timedelta(hours=secrets.randbelow(24))
                 ).isoformat(),
-                "summary": f"Large {random.choice(kinds)} trades observed in {random.choice(types)} options",
+                "summary": f"Large {secrets.choice(kinds)} trades observed in {secrets.choice(types)} options",
             }
-            for _ in range(random.randint(5, 15))
+            for _ in range(secrets.randbelow(10) + 5)  # 5-15 items
         ]
         return {"data": news_items}
 
     elif "congress" in path or "insiders" in path:
         # Generate mock trading data
         trading_items = []
-        for _ in range(random.randint(3, 10)):
+        for _ in range(secrets.randbelow(7) + 3):  # 3-10 items
             item = {
                 "time": (
-                    datetime.now() - timedelta(days=random.randint(0, 30))
+                    datetime.now() - timedelta(days=secrets.randbelow(30))
                 ).isoformat(),
-                "symbol": random.choice(tickers),
-                "side": random.choice(sides),
-                "premium": round(random.uniform(10000, 1000000), 2),
-                "type": random.choice(types),
-                "strike": random.randint(100, 500),
+                "symbol": secrets.choice(tickers),
+                "side": secrets.choice(sides),
+                "premium": round(10000 + secrets.randbelow(990000), 2),
+                "type": secrets.choice(types),
+                "strike": 100 + secrets.randbelow(400),
                 "expiry": (
-                    datetime.now() + timedelta(days=random.randint(30, 365))
+                    datetime.now() + timedelta(days=30 + secrets.randbelow(335))
                 ).strftime("%Y-%m-%d"),
-                "dte": random.randint(30, 365),
-                "trader": f"Representative {chr(random.randint(65, 90))}"
+                "dte": 30 + secrets.randbelow(335),
+                "trader": f"Representative {chr(65 + secrets.randbelow(26))}"
                 if "congress" in path
-                else f"Insider {chr(random.randint(65, 90))}",
+                else f"Insider {chr(65 + secrets.randbelow(26))}",
             }
             trading_items.append(item)
 
