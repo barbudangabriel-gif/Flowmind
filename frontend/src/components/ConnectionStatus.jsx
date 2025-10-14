@@ -17,7 +17,39 @@ import { useWebSocketContext } from '../context/WebSocketContext';
 import { WS_STATUS } from '../hooks/useWebSocket';
 
 const ConnectionStatus = ({ channel = null, compact = false, className = '' }) => {
-  const { connections, globalStatus } = useWebSocketContext();
+  // Safely try to get WebSocket context
+  let contextValue;
+  try {
+    contextValue = useWebSocketContext();
+  } catch (err) {
+    // Context not available - show disconnected
+    const config = {
+      label: 'Offline',
+      icon: '⚪',
+      color: 'text-gray-400',
+      bgColor: 'bg-gray-500/10',
+      borderColor: 'border-gray-500/30',
+      pulse: false
+    };
+    
+    if (compact) {
+      return (
+        <div className={`inline-flex items-center gap-1.5 ${className}`}>
+          <span className="text-sm">{config.icon}</span>
+          <span className={`text-xs font-medium ${config.color}`}>{config.label}</span>
+        </div>
+      );
+    }
+    
+    return (
+      <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border ${config.bgColor} ${config.borderColor} ${className}`}>
+        <span className="text-sm">{config.icon}</span>
+        <span className={`text-xs font-semibold tracking-wide uppercase ${config.color}`}>{config.label}</span>
+      </div>
+    );
+  }
+
+  const { connections, globalStatus } = contextValue;
 
   // Use channel-specific status or global status
   const status = channel ? connections[channel]?.status : globalStatus;
@@ -118,7 +150,16 @@ const ConnectionStatus = ({ channel = null, compact = false, className = '' }) =
  * Shows status for all channels in a compact grid
  */
 export const MultiChannelStatus = ({ className = '' }) => {
-  const { connections, CHANNELS } = useWebSocketContext();
+  // Safely try to get WebSocket context
+  let contextValue;
+  try {
+    contextValue = useWebSocketContext();
+  } catch (err) {
+    // Context not available
+    return null;
+  }
+
+  const { connections, CHANNELS } = contextValue;
 
   const channelLabels = {
     [CHANNELS.FLOW]: 'Flow',
@@ -144,7 +185,16 @@ export const MultiChannelStatus = ({ className = '' }) => {
  * Full-width header bar showing connection status
  */
 export const ConnectionStatusBar = () => {
-  const { globalStatus, connections, getStats } = useWebSocketContext();
+  // Safely try to get WebSocket context
+  let contextValue;
+  try {
+    contextValue = useWebSocketContext();
+  } catch (err) {
+    // Context not available - WebSocket not initialized
+    return null;
+  }
+
+  const { globalStatus, connections, getStats } = contextValue;
 
   const stats = getStats();
   const connectedCount = Object.values(stats).filter(s => s.status === WS_STATUS.CONNECTED).length;
