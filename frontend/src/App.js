@@ -1,10 +1,11 @@
 // App.js - Step 4: Add Header with Logo + Sidebar Toggle
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { WebSocketProvider } from './context/WebSocketContext';
 import { ConnectionStatusBar } from './components/ConnectionStatus';
 import SidebarSimple from './components/SidebarSimple';
+import { mfClient } from './services/mindfolioClient';
 import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import BuilderPage from './pages/BuilderPage';
@@ -34,6 +35,7 @@ function ComingSoonPage() {
 
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mindfolios, setMindfolios] = useState([]);
   
   // Market hours check (9:30 AM - 4:00 PM EST)
   const isMarketOpen = () => {
@@ -47,6 +49,22 @@ function App() {
   
   const [marketOpen, setMarketOpen] = useState(isMarketOpen());
   
+  // Fetch mindfolios for sidebar navigation
+  useEffect(() => {
+    let mounted = true;
+    
+    mfClient.list()
+      .then(data => {
+        if (!mounted) return;
+        setMindfolios(data || []);
+      })
+      .catch(e => {
+        console.error('Failed to load mindfolios for sidebar:', e);
+      });
+    
+    return () => { mounted = false; };
+  }, []);
+  
   // Update market status every minute
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -55,12 +73,23 @@ function App() {
     return () => clearInterval(interval);
   }, []);
   
+  // Auto-refresh mindfolios every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      mfClient.list()
+        .then(data => setMindfolios(data || []))
+        .catch(e => console.error('Mindfolio refresh failed:', e));
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+  
   // Simple context for sidebar
   const ctx = {
     role: "user",
     flags: {},
     metrics: {},
-    portfolios: []
+    mindfolios: mindfolios,
+    portfolios: mindfolios  // Alias for backwards compatibility
   };
 
   return (
