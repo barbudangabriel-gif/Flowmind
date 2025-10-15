@@ -6,6 +6,7 @@ import { WebSocketProvider } from './context/WebSocketContext';
 import { ConnectionStatusBar } from './components/ConnectionStatus';
 import SidebarSimple from './components/SidebarSimple';
 import HomePage from './pages/HomePage';
+import Dashboard from './pages/Dashboard';
 import BuilderPage from './pages/BuilderPage';
 import FlowPage from './pages/FlowPage';
 import PortfoliosList from './pages/PortfoliosList';
@@ -122,7 +123,7 @@ function App() {
             <main className="flex-1 overflow-y-auto bg-[#0a0e1a]">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/dashboard" element={<HomePage />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/builder" element={<BuilderPage />} />
                 <Route path="/builder/:strategySlug" element={<BuilderPage />} />
                 <Route path="/flow" element={<FlowPage />} />
