@@ -37,6 +37,7 @@ export default function MindfolioDetailNew() {
   const [selectedGreek, setSelectedGreek] = useState("Delta");
   const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
   const [stocksView, setStocksView] = useState("OPEN"); // OPEN or ALL
+  const [expandedTickers, setExpandedTickers] = useState({}); // Track expanded tickers
 
   useEffect(() => {
     loadMindfolio();
@@ -1954,8 +1955,373 @@ export default function MindfolioDetailNew() {
 
             {stocksView === "ALL" && (
               <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-white mb-4">All Positions</h3>
-                <div className="text-gray-400">Coming soon...</div>
+                <h3 className="text-xl font-semibold text-white mb-4">Trade History</h3>
+                
+                {/* Expandable Trade Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    {/* Primary Header with Filters/Sorting */}
+                    <thead>
+                      <tr className="border-b border-slate-700">
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-12">
+                          {/* Empty space for arrow */}
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          <div>Trade Date</div>
+                          <input 
+                            type="text" 
+                            placeholder="Search..." 
+                            className="mt-1 w-full bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-xs text-white"
+                          />
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          <div>Ticker</div>
+                          <input 
+                            type="text" 
+                            placeholder="Search..." 
+                            className="mt-1 w-full bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-xs text-white"
+                          />
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          <div>Direction</div>
+                          <select className="mt-1 w-full bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-xs text-white">
+                            <option>All</option>
+                            <option>Long</option>
+                            <option>Short</option>
+                          </select>
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white">
+                          Shares ↕
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white">
+                          Price ↕
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white">
+                          Total ↕
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white">
+                          Commission ↕
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          <div>Type</div>
+                          <div className="flex gap-1 mt-1">
+                            <select className="flex-1 bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-xs text-white">
+                              <option>All</option>
+                              <option>Opening</option>
+                              <option>Closing</option>
+                            </select>
+                            <input 
+                              type="text" 
+                              placeholder="Search..." 
+                              className="flex-1 bg-slate-700/50 border border-slate-600 rounded px-2 py-1 text-xs text-white"
+                            />
+                          </div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* TSLA Expandable Row */}
+                      <tr 
+                        className="border-b border-slate-700 hover:bg-slate-700/30 cursor-pointer"
+                        onClick={() => setExpandedTickers({...expandedTickers, TSLA: !expandedTickers.TSLA})}
+                      >
+                        <td className="px-3 py-4 text-white">
+                          <span className={`transform transition-transform ${expandedTickers.TSLA ? 'rotate-90' : ''}`}>▶</span>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-gray-300">Various</td>
+                        <td className="px-3 py-4 text-sm font-medium text-white">TSLA</td>
+                        <td className="px-3 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span className="text-sm text-gray-300">Long</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-white">200</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$248.50</td>
+                        <td className="px-3 py-4 text-sm text-white">$49,700</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$3.50</td>
+                        <td className="px-3 py-4">
+                          <span className="px-2 py-1 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                        </td>
+                      </tr>
+                      
+                      {/* TSLA Expanded Trades */}
+                      {expandedTickers.TSLA && (
+                        <>
+                          {/* Sub-header Total Row */}
+                          <tr className="bg-slate-700/50 border-b border-slate-600">
+                            <td className="px-3 py-2"></td>
+                            <td className="px-3 py-2 text-xs font-semibold text-gray-400">Total</td>
+                            <td className="px-3 py-2">
+                              <div className="inline-flex items-center gap-1 px-2 py-1 rounded bg-green-500/20 border border-green-500/30">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                <span className="text-xs font-medium text-green-400">Long</span>
+                              </div>
+                            </td>
+                            <td className="px-3 py-2 text-xs font-semibold text-white">200</td>
+                            <td className="px-3 py-2"></td>
+                            <td className="px-3 py-2 text-xs font-semibold text-white">$49,700</td>
+                            <td className="px-3 py-2 text-xs font-semibold text-white">$3.50</td>
+                            <td className="px-3 py-2 text-xs text-gray-400">Opening</td>
+                            <td className="px-3 py-2"></td>
+                          </tr>
+                          
+                          {/* Individual Trade Rows */}
+                          <tr className="bg-slate-800/30 border-b border-slate-700/50 hover:bg-slate-700/20">
+                            <td className="px-3 py-3"></td>
+                            <td className="px-3 py-3 text-xs text-gray-400">2025-09-15 09:30</td>
+                            <td className="px-3 py-3 text-xs text-white">TSLA</td>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                <span className="text-xs text-gray-300">Long</span>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 text-xs text-white">100</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$245.00</td>
+                            <td className="px-3 py-3 text-xs text-white">$24,500</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$1.50</td>
+                            <td className="px-3 py-3">
+                              <span className="px-1.5 py-0.5 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                            </td>
+                          </tr>
+                          
+                          <tr className="bg-slate-800/30 border-b border-slate-700/50 hover:bg-slate-700/20">
+                            <td className="px-3 py-3"></td>
+                            <td className="px-3 py-3 text-xs text-gray-400">2025-10-01 14:15</td>
+                            <td className="px-3 py-3 text-xs text-white">TSLA</td>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                <span className="text-xs text-gray-300">Long</span>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 text-xs text-white">100</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$252.00</td>
+                            <td className="px-3 py-3 text-xs text-white">$25,200</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$2.00</td>
+                            <td className="px-3 py-3">
+                              <span className="px-1.5 py-0.5 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                            </td>
+                          </tr>
+                        </>
+                      )}
+
+                      {/* AAPL Expandable Row */}
+                      <tr 
+                        className="border-b border-slate-700 hover:bg-slate-700/30 cursor-pointer"
+                        onClick={() => setExpandedTickers({...expandedTickers, AAPL: !expandedTickers.AAPL})}
+                      >
+                        <td className="px-3 py-4 text-white">
+                          <span className={`transform transition-transform ${expandedTickers.AAPL ? 'rotate-90' : ''}`}>▶</span>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-gray-300">Various</td>
+                        <td className="px-3 py-4 text-sm font-medium text-white">AAPL</td>
+                        <td className="px-3 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span className="text-sm text-gray-300">Long</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-white">150</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$178.20</td>
+                        <td className="px-3 py-4 text-sm text-white">$26,730</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$2.25</td>
+                        <td className="px-3 py-4">
+                          <span className="px-2 py-1 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                        </td>
+                      </tr>
+
+                      {expandedTickers.AAPL && (
+                        <>
+                          <tr className="bg-slate-700/50 border-b border-slate-600">
+                            <td className="px-3 py-2"></td>
+                            <td className="px-3 py-2 text-xs font-semibold text-gray-400">Total</td>
+                            <td className="px-3 py-2">
+                              <div className="inline-flex items-center gap-1 px-2 py-1 rounded bg-green-500/20 border border-green-500/30">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                <span className="text-xs font-medium text-green-400">Long</span>
+                              </div>
+                            </td>
+                            <td className="px-3 py-2 text-xs font-semibold text-white">150</td>
+                            <td className="px-3 py-2"></td>
+                            <td className="px-3 py-2 text-xs font-semibold text-white">$26,730</td>
+                            <td className="px-3 py-2 text-xs font-semibold text-white">$2.25</td>
+                            <td className="px-3 py-2 text-xs text-gray-400">Opening</td>
+                            <td className="px-3 py-2"></td>
+                          </tr>
+                          
+                          <tr className="bg-slate-800/30 border-b border-slate-700/50 hover:bg-slate-700/20">
+                            <td className="px-3 py-3"></td>
+                            <td className="px-3 py-3 text-xs text-gray-400">2025-08-20 10:00</td>
+                            <td className="px-3 py-3 text-xs text-white">AAPL</td>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                <span className="text-xs text-gray-300">Long</span>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 text-xs text-white">150</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$178.20</td>
+                            <td className="px-3 py-3 text-xs text-white">$26,730</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$2.25</td>
+                            <td className="px-3 py-3">
+                              <span className="px-1.5 py-0.5 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                            </td>
+                          </tr>
+                        </>
+                      )}
+
+                      {/* NVDA Expandable Row */}
+                      <tr 
+                        className="border-b border-slate-700 hover:bg-slate-700/30 cursor-pointer"
+                        onClick={() => setExpandedTickers({...expandedTickers, NVDA: !expandedTickers.NVDA})}
+                      >
+                        <td className="px-3 py-4 text-white">
+                          <span className={`transform transition-transform ${expandedTickers.NVDA ? 'rotate-90' : ''}`}>▶</span>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-gray-300">Various</td>
+                        <td className="px-3 py-4 text-sm font-medium text-white">NVDA</td>
+                        <td className="px-3 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span className="text-sm text-gray-300">Long</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-white">50</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$435.80</td>
+                        <td className="px-3 py-4 text-sm text-white">$21,790</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$1.50</td>
+                        <td className="px-3 py-4">
+                          <span className="px-2 py-1 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                        </td>
+                      </tr>
+
+                      {expandedTickers.NVDA && (
+                        <>
+                          <tr className="bg-slate-700/50 border-b border-slate-600">
+                            <td className="px-3 py-2"></td>
+                            <td className="px-3 py-2 text-xs font-semibold text-gray-400">Total</td>
+                            <td className="px-3 py-2">
+                              <div className="inline-flex items-center gap-1 px-2 py-1 rounded bg-green-500/20 border border-green-500/30">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                <span className="text-xs font-medium text-green-400">Long</span>
+                              </div>
+                            </td>
+                            <td className="px-3 py-2 text-xs font-semibold text-white">50</td>
+                            <td className="px-3 py-2"></td>
+                            <td className="px-3 py-2 text-xs font-semibold text-white">$21,790</td>
+                            <td className="px-3 py-2 text-xs font-semibold text-white">$1.50</td>
+                            <td className="px-3 py-2 text-xs text-gray-400">Opening</td>
+                            <td className="px-3 py-2"></td>
+                          </tr>
+                          
+                          <tr className="bg-slate-800/30 border-b border-slate-700/50 hover:bg-slate-700/20">
+                            <td className="px-3 py-3"></td>
+                            <td className="px-3 py-3 text-xs text-gray-400">2025-07-10 11:30</td>
+                            <td className="px-3 py-3 text-xs text-white">NVDA</td>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                <span className="text-xs text-gray-300">Long</span>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 text-xs text-white">25</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$420.00</td>
+                            <td className="px-3 py-3 text-xs text-white">$10,500</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$0.75</td>
+                            <td className="px-3 py-3">
+                              <span className="px-1.5 py-0.5 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                            </td>
+                          </tr>
+                          
+                          <tr className="bg-slate-800/30 border-b border-slate-700/50 hover:bg-slate-700/20">
+                            <td className="px-3 py-3"></td>
+                            <td className="px-3 py-3 text-xs text-gray-400">2025-09-25 13:45</td>
+                            <td className="px-3 py-3 text-xs text-white">NVDA</td>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                                <span className="text-xs text-gray-300">Long</span>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 text-xs text-white">25</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$451.60</td>
+                            <td className="px-3 py-3 text-xs text-white">$11,290</td>
+                            <td className="px-3 py-3 text-xs text-gray-300">$0.75</td>
+                            <td className="px-3 py-3">
+                              <span className="px-1.5 py-0.5 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                            </td>
+                          </tr>
+                        </>
+                      )}
+
+                      {/* SPY, MSFT, AMD - Collapsed Only (similar pattern) */}
+                      <tr className="border-b border-slate-700 hover:bg-slate-700/30 cursor-pointer">
+                        <td className="px-3 py-4 text-white">
+                          <span>▶</span>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-gray-300">Various</td>
+                        <td className="px-3 py-4 text-sm font-medium text-white">SPY</td>
+                        <td className="px-3 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span className="text-sm text-gray-300">Long</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-white">100</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$445.00</td>
+                        <td className="px-3 py-4 text-sm text-white">$44,500</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$2.00</td>
+                        <td className="px-3 py-4">
+                          <span className="px-2 py-1 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                        </td>
+                      </tr>
+
+                      <tr className="border-b border-slate-700 hover:bg-slate-700/30 cursor-pointer">
+                        <td className="px-3 py-4 text-white">
+                          <span>▶</span>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-gray-300">Various</td>
+                        <td className="px-3 py-4 text-sm font-medium text-white">MSFT</td>
+                        <td className="px-3 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <span className="text-sm text-gray-300">Short</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-white">-80</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$422.50</td>
+                        <td className="px-3 py-4 text-sm text-white">-$33,800</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$1.80</td>
+                        <td className="px-3 py-4">
+                          <span className="px-2 py-1 text-xs rounded bg-orange-500/20 text-orange-400">Closing</span>
+                        </td>
+                      </tr>
+
+                      <tr className="border-b border-slate-700 hover:bg-slate-700/30 cursor-pointer">
+                        <td className="px-3 py-4 text-white">
+                          <span>▶</span>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-gray-300">Various</td>
+                        <td className="px-3 py-4 text-sm font-medium text-white">AMD</td>
+                        <td className="px-3 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span className="text-sm text-gray-300">Long</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-sm text-white">120</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$162.10</td>
+                        <td className="px-3 py-4 text-sm text-white">$19,452</td>
+                        <td className="px-3 py-4 text-sm text-gray-300">$1.80</td>
+                        <td className="px-3 py-4">
+                          <span className="px-2 py-1 text-xs rounded bg-blue-500/20 text-blue-400">Opening</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
