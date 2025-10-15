@@ -417,16 +417,23 @@ async def list_portfolios():
 
 @router.post("", response_model=Portfolio)
 async def create_portfolio(body: PortfolioCreate):
-    """Create new portfolio"""
+    """Create new portfolio with module budget validation"""
     portfolio = Portfolio(
-        id=f"pf_{str(uuid.uuid4()).replace('-', '')[:8]}",
+        id=f"mf_{str(uuid.uuid4()).replace('-', '')[:12]}",  # Changed prefix to 'mf' for mindfolio
         name=body.name,
         cash_balance=body.starting_balance,
         modules=body.modules,
         created_at=datetime.utcnow().isoformat(),
         updated_at=datetime.utcnow().isoformat(),
     )
+    
+    # Validate module budgets
+    is_valid, error_msg = validate_module_budget_allocation(portfolio)
+    if not is_valid:
+        raise HTTPException(400, f"Invalid module budget allocation: {error_msg}")
+    
     await pf_put(portfolio)
+    logger.info(f"Created mindfolio {portfolio.id} with {len(portfolio.modules)} modules, total budget: ${sum(m.budget for m in portfolio.modules):,.2f}")
     return portfolio
 
 
@@ -1126,3 +1133,194 @@ async def get_eod_series(pid: str):
     except Exception as e:
         logger.error(f"Failed to get EOD series for {pid}: {str(e)}")
         raise HTTPException(500, f"Failed to get EOD series: {str(e)}")
+
+
+# ——— MODULE BUDGET TRACKING ———
+
+async def get_module_budget_usage(pid: str, module_name: str) -> dict:
+    """
+    Calculate current budget usage for a specific module.
+    Returns: {budget, used, available, positions_count, buying_power_used}
+    """
+    try:
+        # Get portfolio
+        pf = await pf_get(pid)
+        
+        # Find module
+        module = next((m for m in pf.modules if m.module == module_name), None)
+        if not module:
+            raise HTTPException(404, f"Module {module_name} not found in mindfolio {pid}")
+        
+        # Get all transactions for this mindfolio
+        all_txs = await list_transactions(pid)
+        
+        # Filter transactions tagged with this module (we'll add module field to transactions)
+        # For now, calculate based on all positions
+        # TODO: Add module field to Transaction model
+        
+        # Get current positions
+        positions = await get_positions(pid)
+        
+        # Calculate buying power used (simplified - would need real options Greeks)
+        buying_power_used = 0
+        positions_count = len(positions)
+        
+        for pos in positions:
+            # Estimate buying power (for stocks: qty * avg_cost)
+            buying_power_used += abs(pos.qty * pos.avg_cost)
+        
+        # TODO: More sophisticated calculation for options
+        # Options buying power = max_loss of spread
+        
+        return {
+            "module": module_name,
+            "budget": module.budget,
+            "used": buying_power_used,
+            "available": module.budget - buying_power_used,
+            "utilization_pct": (buying_power_used / module.budget * 100) if module.budget > 0 else 0,
+            "positions_count": positions_count,
+            "max_risk_per_trade": module.max_risk_per_trade,
+            "daily_loss_limit": module.daily_loss_limit,
+            "autotrade": module.autotrade
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get module budget usage: {str(e)}")
+        raise HTTPException(500, f"Failed to get module budget usage: {str(e)}")
+
+
+async def get_all_modules_budget_usage(pid: str) -> dict:
+    """
+    Get budget usage for all modules in a mindfolio.
+    Returns aggregated stats across all modules.
+    """
+    try:
+        pf = await pf_get(pid)
+        
+        modules_usage = []
+        total_budget = 0
+        total_used = 0
+        
+        for module in pf.modules:
+            usage = await get_module_budget_usage(pid, module.module)
+            modules_usage.append(usage)
+            total_budget += module.budget
+            total_used += usage["used"]
+        
+        # Calculate reserve (cash not allocated to modules)
+        reserve = pf.cash_balance - total_budget
+        
+        return {
+            "mindfolio_id": pid,
+            "mindfolio_name": pf.name,
+            "total_cash": pf.cash_balance,
+            "total_budget_allocated": total_budget,
+            "total_budget_used": total_used,
+            "reserve_cash": reserve,
+            "allocation_pct": (total_budget / pf.cash_balance * 100) if pf.cash_balance > 0 else 0,
+            "utilization_pct": (total_used / total_budget * 100) if total_budget > 0 else 0,
+            "modules": modules_usage,
+            "module_count": len(pf.modules)
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get all modules budget usage: {str(e)}")
+        raise HTTPException(500, f"Failed to get all modules budget usage: {str(e)}")
+
+
+def validate_module_budget_allocation(pf: Portfolio) -> tuple[bool, str]:
+    """
+    Validate that module budgets don't exceed portfolio cash.
+    Returns: (is_valid, error_message)
+    """
+    total_allocated = sum(m.budget for m in pf.modules)
+    
+    if total_allocated > pf.cash_balance:
+        return False, f"Total module budgets (${total_allocated:,.2f}) exceed portfolio cash (${pf.cash_balance:,.2f})"
+    
+    # Check for duplicate modules
+    module_names = [m.module for m in pf.modules]
+    if len(module_names) != len(set(module_names)):
+        return False, "Duplicate module names not allowed"
+    
+    # Validate individual module budgets
+    for m in pf.modules:
+        if m.budget < 0:
+            return False, f"Module {m.module} has negative budget: ${m.budget}"
+        
+        if m.max_risk_per_trade < 0:
+            return False, f"Module {m.module} has negative max_risk_per_trade: ${m.max_risk_per_trade}"
+        
+        if m.daily_loss_limit < 0:
+            return False, f"Module {m.module} has negative daily_loss_limit: ${m.daily_loss_limit}"
+        
+        if m.max_risk_per_trade > m.budget:
+            return False, f"Module {m.module} max_risk_per_trade (${m.max_risk_per_trade}) exceeds budget (${m.budget})"
+    
+    return True, ""
+
+
+async def check_module_can_trade(pid: str, module_name: str, trade_risk: float) -> tuple[bool, str]:
+    """
+    Check if a module has available budget and is within risk limits to execute a trade.
+    Returns: (can_trade, reason)
+    """
+    try:
+        # Get portfolio
+        pf = await pf_get(pid)
+        
+        # Check portfolio status
+        if pf.status != "ACTIVE":
+            return False, f"Mindfolio status is {pf.status}, not ACTIVE"
+        
+        # Find module
+        module = next((m for m in pf.modules if m.module == module_name), None)
+        if not module:
+            return False, f"Module {module_name} not found"
+        
+        # Check trade risk vs module limit
+        if trade_risk > module.max_risk_per_trade:
+            return False, f"Trade risk ${trade_risk:,.2f} exceeds module max ${module.max_risk_per_trade:,.2f}"
+        
+        # Check module budget usage
+        usage = await get_module_budget_usage(pid, module_name)
+        
+        if usage["available"] < trade_risk:
+            return False, f"Insufficient budget: ${usage['available']:,.2f} available, ${trade_risk:,.2f} required"
+        
+        # TODO: Check daily loss limit (requires tracking daily P&L per module)
+        
+        return True, "OK"
+    
+    except Exception as e:
+        logger.error(f"Failed to check module can trade: {str(e)}")
+        return False, f"Error checking module: {str(e)}"
+
+
+# ——— API ENDPOINTS FOR MODULE BUDGET ———
+
+@router.get("/{pid}/modules/budget")
+async def get_modules_budget_endpoint(pid: str):
+    """Get budget allocation and usage for all modules in a mindfolio"""
+    return await get_all_modules_budget_usage(pid)
+
+
+@router.get("/{pid}/modules/{module_name}/budget")
+async def get_module_budget_endpoint(pid: str, module_name: str):
+    """Get budget allocation and usage for a specific module"""
+    return await get_module_budget_usage(pid, module_name)
+
+
+@router.post("/{pid}/modules/{module_name}/check-trade")
+async def check_module_trade_endpoint(pid: str, module_name: str, trade_risk: float):
+    """Check if a module can execute a trade with given risk"""
+    can_trade, reason = await check_module_can_trade(pid, module_name, trade_risk)
+    
+    if can_trade:
+        return {"status": "success", "can_trade": True, "reason": reason}
+    else:
+        return {"status": "error", "can_trade": False, "reason": reason}
