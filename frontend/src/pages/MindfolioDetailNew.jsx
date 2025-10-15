@@ -189,7 +189,7 @@ export default function MindfolioDetailNew() {
   const drawdown = ((totalValue - initialValue) / initialValue * 100).toFixed(2);
   const isPositive = drawdown >= 0;
 
-  const tabs = ["SUMMARY", "STOCKS", "OPTIONS", "DIVIDEND"];
+  const tabs = ["SUMMARY", "STOCKS", "OPTIONS", "DIVIDEND", "NEWS"];
 
   const chartOptions = {
     responsive: true,
@@ -2503,6 +2503,376 @@ export default function MindfolioDetailNew() {
           <div className="text-gray-400">Coming soon: Dividend tracking and projections</div>
         </div>
       )}
+
+      {activeTab === "NEWS" && <NewsIntelligenceTab mindfolioId={id} />}
+    </div>
+  );
+}
+
+// =============================================
+// NEWS & INTELLIGENCE TAB COMPONENT
+// =============================================
+function NewsIntelligenceTab({ mindfolioId }) {
+  const [newsData, setNewsData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedTicker, setSelectedTicker] = useState(null);
+
+  useEffect(() => {
+    loadNewsData();
+  }, [mindfolioId]);
+
+  const loadNewsData = async () => {
+    try {
+      setLoading(true);
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+      
+      // Fetch portfolio news digest
+      const response = await fetch(`${backendUrl}/api/geopolitical/portfolio/${mindfolioId}`);
+      const result = await response.json();
+      
+      if (result.status === "success") {
+        setNewsData(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to load news data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="text-gray-400">Loading news intelligence...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!newsData) {
+    return (
+      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+        <div className="text-gray-400">No news data available</div>
+      </div>
+    );
+  }
+
+  const macroEvents = newsData.macro_events || {};
+  const tickerNews = newsData.ticker_news || {};
+  const riskAlerts = newsData.risk_alerts || [];
+  const opportunities = newsData.opportunities || [];
+  const portfolioSentiment = newsData.portfolio_sentiment || 0;
+  const newsSummary = newsData.news_summary || "";
+
+  return (
+    <div className="space-y-6">
+      {/* Executive Summary Banner */}
+      <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-700/50 rounded-lg p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white mb-2">📰 News & Intelligence Digest</h3>
+            <p className="text-gray-300 text-sm">{newsSummary}</p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-gray-400 mb-1">Portfolio Sentiment</div>
+            <div className={`text-3xl font-bold ${portfolioSentiment > 0 ? 'text-green-400' : portfolioSentiment < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+              {portfolioSentiment > 0 ? '+' : ''}{portfolioSentiment.toFixed(2)}
+            </div>
+            <div className="text-xs text-gray-500">(-1 to +1 scale)</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-[2fr_1fr] gap-6">
+        {/* LEFT COLUMN: Macro + Ticker News */}
+        <div className="space-y-6">
+          {/* Macro Events */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4">🌍 Macro & Geopolitical Events</h3>
+            
+            {/* Fed Policy */}
+            {macroEvents.fed_policy && (
+              <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">🏦</span>
+                  <span className="font-semibold text-white">{macroEvents.fed_policy.title || "Fed Policy"}</span>
+                  <span className={`ml-auto px-2 py-1 text-xs rounded ${
+                    macroEvents.fed_policy.severity === 'high' ? 'bg-red-500/20 text-red-400' :
+                    macroEvents.fed_policy.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                    'bg-green-500/20 text-green-400'
+                  }`}>
+                    {macroEvents.fed_policy.severity?.toUpperCase()} IMPACT
+                  </span>
+                </div>
+                <div className="text-sm text-gray-300">{macroEvents.fed_policy.latest}</div>
+                <div className="text-xs text-gray-500 mt-2">Impact: {macroEvents.fed_policy.impact}</div>
+                {macroEvents.fed_policy.affected_sectors && (
+                  <div className="text-xs text-blue-400 mt-1">
+                    Affected sectors: {macroEvents.fed_policy.affected_sectors.join(", ")}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Geopolitical */}
+            {macroEvents.geopolitical && (
+              <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">⚠️</span>
+                  <span className="font-semibold text-white">{macroEvents.geopolitical.title || "Geopolitical Risk"}</span>
+                  <span className={`ml-auto px-2 py-1 text-xs rounded ${
+                    macroEvents.geopolitical.severity === 'high' ? 'bg-red-500/20 text-red-400' :
+                    'bg-yellow-500/20 text-yellow-400'
+                  }`}>
+                    {macroEvents.geopolitical.severity?.toUpperCase()} IMPACT
+                  </span>
+                </div>
+                <div className="text-sm text-gray-300">{macroEvents.geopolitical.latest}</div>
+                <div className="text-xs text-gray-500 mt-2">Impact: {macroEvents.geopolitical.impact}</div>
+                {macroEvents.geopolitical.affected_tickers && (
+                  <div className="text-xs text-red-400 mt-1">
+                    Affected: {macroEvents.geopolitical.affected_tickers.join(", ")}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Economic Data */}
+            {macroEvents.economic_data && (
+              <div className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">📊</span>
+                  <span className="font-semibold text-white">{macroEvents.economic_data.title || "Economic Data"}</span>
+                  <span className={`ml-auto px-2 py-1 text-xs rounded ${
+                    macroEvents.economic_data.severity === 'high' ? 'bg-orange-500/20 text-orange-400' :
+                    'bg-yellow-500/20 text-yellow-400'
+                  }`}>
+                    {macroEvents.economic_data.severity?.toUpperCase()} IMPACT
+                  </span>
+                </div>
+                <div className="text-sm text-gray-300">{macroEvents.economic_data.latest}</div>
+                <div className="text-xs text-gray-500 mt-2">Impact: {macroEvents.economic_data.impact}</div>
+              </div>
+            )}
+          </div>
+
+          {/* Ticker-Specific News */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4">📈 Position News & Sentiment</h3>
+            
+            <div className="space-y-4">
+              {Object.entries(tickerNews).map(([symbol, intel]) => {
+                const sentiment = intel.aggregate_sentiment || 0;
+                const sentimentLabel = intel.sentiment_label || "Neutral";
+                const impactLevel = intel.impact_level || 0;
+                const fisScore = intel.fis_score;
+                const newsItems = intel.news_items || [];
+                const optionsSuggestions = intel.options_suggestions || [];
+                const recommendation = intel.trading_recommendation || "";
+
+                const sentimentColor = sentiment > 0.5 ? 'green' : sentiment < -0.5 ? 'red' : 'gray';
+                const isHighRisk = sentiment < -0.5 && impactLevel > 70;
+
+                return (
+                  <div 
+                    key={symbol} 
+                    className={`p-4 bg-slate-900 rounded-lg ${isHighRisk ? 'border-2 border-red-500/50' : ''}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">
+                          {symbol === 'TSLA' ? '🚗' : symbol === 'AAPL' ? '🍎' : symbol === 'NVDA' ? '🎮' : symbol === 'SPY' ? '📊' : symbol === 'MSFT' ? '💻' : '📈'}
+                        </span>
+                        <span className="font-bold text-white">{symbol}</span>
+                        {fisScore && (
+                          <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-400 rounded border border-purple-500/30">
+                            FIS: {fisScore}/100
+                          </span>
+                        )}
+                        {isHighRisk && (
+                          <span className="ml-2 px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded animate-pulse border border-red-500/30">
+                            ⚠️ RISK ALERT
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`px-2 py-1 bg-${sentimentColor}-500/20 text-${sentimentColor}-400 text-xs rounded border border-${sentimentColor}-500/30`}>
+                          Sentiment: {sentiment > 0 ? '+' : ''}{sentiment.toFixed(2)}
+                        </div>
+                        <div className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
+                          Impact: {impactLevel}/100
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* News Items */}
+                    {newsItems.length > 0 && (
+                      <div className="space-y-2 mb-3">
+                        {newsItems.slice(0, 3).map((item, idx) => {
+                          const itemSentiment = item.sentiment || 'neutral';
+                          const borderColor = itemSentiment === 'positive' ? 'green-500' : itemSentiment === 'negative' ? 'red-500' : 'gray-500';
+                          
+                          return (
+                            <div key={idx} className={`text-sm text-gray-300 border-l-2 border-${borderColor} pl-3`}>
+                              {itemSentiment === 'positive' ? '✅' : itemSentiment === 'negative' ? '❌' : '📰'} {item.headline}
+                              <div className="text-xs text-gray-500 mt-1">
+                                {item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Recent'} · {item.source}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* AI Recommendation */}
+                    {recommendation && (
+                      <div className={`mt-3 p-2 rounded text-xs border ${
+                        recommendation.includes('⚠️') ? 'bg-red-500/10 border-red-500/30 text-red-400' :
+                        recommendation.includes('✅') ? 'bg-green-500/10 border-green-500/30 text-green-400' :
+                        recommendation.includes('💡') ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' :
+                        'bg-gray-500/10 border-gray-500/30 text-gray-400'
+                      }`}>
+                        {recommendation}
+                      </div>
+                    )}
+
+                    {/* Options Suggestions */}
+                    {optionsSuggestions.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-slate-700">
+                        <div className="text-xs font-semibold text-gray-400 mb-2">💡 Options Strategy Suggestions:</div>
+                        <div className="space-y-1">
+                          {optionsSuggestions.map((suggestion, idx) => (
+                            <div key={idx} className="text-xs text-gray-300 pl-3 border-l-2 border-purple-500">
+                              <span className="font-semibold text-purple-400">{suggestion.strategy}:</span> {suggestion.rationale}
+                              {suggestion.strikes !== 'N/A' && (
+                                <div className="text-gray-500">Strikes: {suggestion.strikes} • DTE: {suggestion.dte}</div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Digest + Alerts */}
+        <div className="space-y-6">
+          {/* Portfolio News Digest */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4">📋 Daily Digest</h3>
+            
+            <div className="space-y-3">
+              <div className="text-sm">
+                <div className="text-gray-400 mb-1">Overall Market Sentiment</div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-slate-900 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${portfolioSentiment > 0 ? 'bg-green-500' : portfolioSentiment < 0 ? 'bg-red-500' : 'bg-gray-500'}`}
+                      style={{ width: `${Math.min(100, Math.abs(portfolioSentiment) * 100)}%` }}
+                    ></div>
+                  </div>
+                  <span className={`font-semibold ${portfolioSentiment > 0 ? 'text-green-400' : portfolioSentiment < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                    {portfolioSentiment > 0 ? '+' : ''}{portfolioSentiment.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="text-sm">
+                <div className="text-gray-400 mb-1">Portfolio Risk Level</div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-slate-900 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${riskAlerts.length > 2 ? 'bg-red-500' : riskAlerts.length > 0 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                      style={{ width: `${Math.min(100, riskAlerts.length * 33)}%` }}
+                    ></div>
+                  </div>
+                  <span className={`font-semibold ${riskAlerts.length > 2 ? 'text-red-400' : riskAlerts.length > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
+                    {riskAlerts.length > 2 ? 'High' : riskAlerts.length > 0 ? 'Medium' : 'Low'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="border-t border-slate-700 pt-3 mt-3">
+                <div className="text-xs text-gray-400 mb-2">Today's Activity</div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">News Items</span>
+                    <span className="text-white font-semibold">{newsData.total_news_items || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Positive Signals</span>
+                    <span className="text-green-400 font-semibold">{opportunities.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Risk Alerts</span>
+                    <span className="text-red-400 font-semibold">{riskAlerts.length}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Active Alerts */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4">🚨 Active Alerts</h3>
+            
+            {riskAlerts.length === 0 && opportunities.length === 0 ? (
+              <div className="text-sm text-gray-400">No alerts at this time</div>
+            ) : (
+              <div className="space-y-3">
+                {/* Risk Alerts */}
+                {riskAlerts.map((alert, idx) => (
+                  <div key={`risk-${idx}`} className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-red-400 font-semibold">⚠️ {alert.severity === 'high' ? 'High Risk' : 'Medium Risk'}</span>
+                      <span className="text-xs text-gray-500">{alert.symbol}</span>
+                    </div>
+                    <div className="text-xs text-gray-300">{alert.alert}</div>
+                    <div className="text-xs text-gray-500 mt-1">→ {alert.recommendation}</div>
+                  </div>
+                ))}
+
+                {/* Opportunities */}
+                {opportunities.map((opp, idx) => (
+                  <div key={`opp-${idx}`} className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-green-400 font-semibold">✅ Opportunity</span>
+                      <span className="text-xs text-gray-500">{opp.symbol}</span>
+                    </div>
+                    <div className="text-xs text-gray-300">{opp.alert}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Upcoming Events Calendar */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-white mb-4">📅 Upcoming Events</h3>
+            
+            <div className="space-y-2 text-xs">
+              <div className="p-2 bg-slate-900 rounded">
+                <div className="text-blue-400 font-semibold">Tomorrow</div>
+                <div className="text-gray-300">NVDA Earnings After Market</div>
+              </div>
+              <div className="p-2 bg-slate-900 rounded">
+                <div className="text-blue-400 font-semibold">Oct 18</div>
+                <div className="text-gray-300">Fed Minutes Release</div>
+              </div>
+              <div className="p-2 bg-slate-900 rounded">
+                <div className="text-blue-400 font-semibold">Oct 20</div>
+                <div className="text-gray-300">CPI Data</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
