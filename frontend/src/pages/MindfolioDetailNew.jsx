@@ -1611,21 +1611,23 @@ export default function MindfolioDetailNew() {
       )}
 
       {activeTab === "STOCKS" && (
-        <div className="grid grid-cols-2 gap-6">
-          {/* LEFT SIDE - Stock Positions Table */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-            {/* Table Header with Search */}
-            <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-700">
-              <h3 className="text-lg font-semibold text-white">Ticker</h3>
-              <input
-                type="text"
-                placeholder="Search stocks..."
-                className="px-3 py-1 text-sm bg-slate-700/50 border border-slate-600 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-              />
-            </div>
+        <div className={`grid gap-6 ${stocksView === "OPEN" ? "grid-cols-2" : "grid-cols-[2fr_1fr]"}`}>
+          {/* LEFT SIDE - Conditional Content */}
+          <div>
+            {stocksView === "OPEN" && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                {/* Table Header with Search */}
+                <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-700">
+                  <h3 className="text-lg font-semibold text-white">Ticker</h3>
+                  <input
+                    type="text"
+                    placeholder="Search stocks..."
+                    className="px-3 py-1 text-sm bg-slate-700/50 border border-slate-600 rounded text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
 
-            {/* Stock Positions Table */}
-            <div className="overflow-x-auto">
+                {/* Stock Positions Table */}
+                <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-gray-400 border-b border-slate-700">
@@ -1798,6 +1800,15 @@ export default function MindfolioDetailNew() {
                 <div className="text-gray-400">Total P/L: <span className="text-green-400 font-semibold">+$6,740 (+3.01%)</span></div>
               </div>
             </div>
+              </div>
+            )}
+
+            {stocksView === "ALL" && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">Trade History</h3>
+                <p className="text-gray-400 text-sm">Expandable trade list coming soon...</p>
+              </div>
+            )}
           </div>
 
           {/* RIGHT SIDE - Analytics */}
