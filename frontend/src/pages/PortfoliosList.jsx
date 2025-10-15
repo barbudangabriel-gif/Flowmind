@@ -6,6 +6,9 @@ export default function PortfoliosList() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState("ALL");
+  const [sortBy, setSortBy] = useState("name");
 
   useEffect(() => {
     let mounted = true;
@@ -54,6 +57,47 @@ export default function PortfoliosList() {
   const totalValue = items.reduce((sum, pf) => sum + (pf.cash_balance || 0), 0);
   const totalPortfolios = items.length;
 
+  // Filter and sort logic
+  const filteredAndSortedItems = React.useMemo(() => {
+    let result = [...items];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(p => 
+        p.name?.toLowerCase().includes(query) ||
+        p.id?.toLowerCase().includes(query) ||
+        p.modules?.some(m => m.module?.toLowerCase().includes(query))
+      );
+    }
+
+    // Apply status filter
+    if (filterStatus !== "ALL") {
+      result = result.filter(p => p.status === filterStatus);
+    }
+
+    // Apply sorting
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return (a.name || "").localeCompare(b.name || "");
+        case "balance":
+          return (b.cash_balance || 0) - (a.cash_balance || 0);
+        case "created":
+          return new Date(b.created_at) - new Date(a.created_at);
+        case "status":
+          return (a.status || "").localeCompare(b.status || "");
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [items, searchQuery, filterStatus, sortBy]);
+
+  const activeCount = items.filter(p => p.status === 'ACTIVE').length;
+  const pausedCount = items.filter(p => p.status === 'PAUSED').length;
+
   return (
     <div className="p-8 space-y-6">
       {/* Header */}
@@ -71,7 +115,7 @@ export default function PortfoliosList() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
           <div className="text-sm text-gray-400 mb-1">Total Portfolios</div>
           <div className="text-3xl font-bold text-white">{totalPortfolios}</div>
@@ -83,28 +127,135 @@ export default function PortfoliosList() {
           </div>
         </div>
         <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-          <div className="text-sm text-gray-400 mb-1">Active Modules</div>
-          <div className="text-3xl font-bold text-blue-400">
-            {items.reduce((sum, pf) => sum + (pf.modules?.length || 0), 0)}
-          </div>
+          <div className="text-sm text-gray-400 mb-1">Active</div>
+          <div className="text-3xl font-bold text-green-400">{activeCount}</div>
+        </div>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+          <div className="text-sm text-gray-400 mb-1">Paused</div>
+          <div className="text-3xl font-bold text-yellow-400">{pausedCount}</div>
         </div>
       </div>
+
+      {/* Search, Filter, Sort Controls */}
+      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Search */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="🔍 Search portfolios..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-2 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            />
+            <span className="absolute left-3 top-2.5 text-gray-500">🔍</span>
+          </div>
+
+          {/* Filter by Status */}
+          <div>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              <option value="ALL">📊 All Status</option>
+              <option value="ACTIVE">✅ Active Only</option>
+              <option value="PAUSED">⏸️ Paused Only</option>
+              <option value="CLOSED">🔒 Closed Only</option>
+            </select>
+          </div>
+
+          {/* Sort by */}
+          <div>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+            >
+              <option value="name">📝 Sort by Name</option>
+              <option value="balance">💰 Sort by Balance</option>
+              <option value="created">📅 Sort by Date</option>
+              <option value="status">🎯 Sort by Status</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Active filters indicator */}
+        {(searchQuery || filterStatus !== "ALL") && (
+          <div className="mt-3 flex items-center gap-2 text-sm">
+            <span className="text-gray-400">Active filters:</span>
+            {searchQuery && (
+              <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded border border-blue-500/30">
+                Search: "{searchQuery}"
+              </span>
+            )}
+            {filterStatus !== "ALL" && (
+              <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded border border-green-500/30">
+                Status: {filterStatus}
+              </span>
+            )}
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setFilterStatus("ALL");
+              }}
+              className="ml-2 text-xs text-gray-400 hover:text-white transition-colors"
+            >
+              ✕ Clear all
+            </button>
+          </div>
+        )}
+      </div>
       
-      {items.length === 0 ? (
+      {filteredAndSortedItems.length === 0 ? (
         <div className="text-center py-16 bg-slate-800/30 border border-slate-700 rounded-lg">
-          <div className="text-6xl mb-4">📊</div>
-          <div className="text-xl text-gray-300 mb-2">No portfolios yet</div>
-          <div className="text-gray-500 mb-6">Create your first portfolio to start tracking your trades</div>
-          <Link 
-            to="/portfolios/new"
-            className="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all hover:scale-105"
-          >
-            🚀 Create Your First Portfolio
-          </Link>
+          <div className="text-6xl mb-4">
+            {items.length === 0 ? "📊" : "🔍"}
+          </div>
+          <div className="text-xl text-gray-300 mb-2">
+            {items.length === 0 ? "No portfolios yet" : "No portfolios match your filters"}
+          </div>
+          <div className="text-gray-500 mb-6">
+            {items.length === 0 
+              ? "Create your first portfolio to start tracking your trades"
+              : "Try adjusting your search or filter criteria"
+            }
+          </div>
+          {items.length === 0 ? (
+            <Link 
+              to="/portfolios/new"
+              className="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all hover:scale-105"
+            >
+              🚀 Create Your First Portfolio
+            </Link>
+          ) : (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setFilterStatus("ALL");
+              }}
+              className="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all hover:scale-105"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map(p => {
+        <>
+          {/* Results count */}
+          <div className="flex items-center justify-between text-sm text-gray-400">
+            <span>
+              Showing {filteredAndSortedItems.length} of {totalPortfolios} portfolio{totalPortfolios !== 1 ? 's' : ''}
+            </span>
+            <span>
+              Sorted by: <span className="text-blue-400 font-semibold">
+                {sortBy === 'name' ? 'Name' : sortBy === 'balance' ? 'Balance' : sortBy === 'created' ? 'Date' : 'Status'}
+              </span>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredAndSortedItems.map(p => {
             const statusColors = {
               'ACTIVE': 'bg-green-500/20 text-green-400 border-green-500/30',
               'PAUSED': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
@@ -168,6 +319,7 @@ export default function PortfoliosList() {
             );
           })}
         </div>
+        </>
       )}
     </div>
   );
