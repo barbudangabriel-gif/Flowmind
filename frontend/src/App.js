@@ -11,6 +11,7 @@ import BuilderPage from './pages/BuilderPage';
 import FlowPage from './pages/FlowPage';
 import MindfolioList from './pages/MindfolioList';
 import MindfolioDetail from './pages/MindfolioDetail';
+import MindfolioDetailNew from './pages/MindfolioDetailNew';
 import MindfolioCreate from './pages/MindfolioCreate';
 import AccountBalancePage from './pages/AccountBalancePage';
 import MarketMoversPage from './pages/MarketMoversPage';
@@ -135,7 +136,8 @@ function App() {
                 <Route path="/account/balance" element={<AccountBalancePage />} />
                 <Route path="/mindfolio" element={<MindfolioList />} />
                 <Route path="/mindfolio/new" element={<MindfolioCreate />} />
-                <Route path="/mindfolio/:id" element={<MindfolioDetail />} />
+                <Route path="/mindfolio/:id/old" element={<MindfolioDetail />} />
+                <Route path="/mindfolio/:id" element={<MindfolioDetailNew />} />
                 {/* Catch-all for all other routes */}
                 <Route path="*" element={<ComingSoonPage />} />
               </Routes>
