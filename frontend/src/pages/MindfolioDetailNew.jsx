@@ -189,7 +189,7 @@ export default function MindfolioDetailNew() {
   const drawdown = ((totalValue - initialValue) / initialValue * 100).toFixed(2);
   const isPositive = drawdown >= 0;
 
-  const tabs = ["SUMMARY", "STOCKS", "OPTIONS", "DIVIDEND", "NEWS"];
+  const tabs = ["SUMMARY", "STOCKS", "OPTIONS", "DIVIDEND", "NEWS", "TERM STRUCTURE"];
 
   const chartOptions = {
     responsive: true,
@@ -2505,6 +2505,449 @@ export default function MindfolioDetailNew() {
       )}
 
       {activeTab === "NEWS" && <NewsIntelligenceTab mindfolioId={id} />}
+
+      {activeTab === "TERM STRUCTURE" && <TermStructureTab mindfolioId={id} />}
+    </div>
+  );
+}
+
+// =============================================
+// TERM STRUCTURE VOLATILITY ARBITRAGE TAB
+// =============================================
+function TermStructureTab({ mindfolioId }) {
+  const [opportunities, setOpportunities] = useState([]);
+  const [positions, setPositions] = useState([]);
+  const [moduleStats, setModuleStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedSymbol, setSelectedSymbol] = useState(null);
+  const [backtestData, setBacktestData] = useState(null);
+  const [showExecuteModal, setShowExecuteModal] = useState(false);
+
+  // Fetch opportunities and module stats
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+        
+        // Fetch top opportunities
+        const oppResponse = await fetch(`${backendUrl}/api/term-structure/opportunities?limit=20`);
+        const oppData = await oppResponse.json();
+        
+        if (oppData.status === 'success') {
+          setOpportunities(oppData.data.opportunities || []);
+        }
+        
+        // Fetch module stats
+        const statsResponse = await fetch(`${backendUrl}/api/term-structure/module-stats/${mindfolioId}`);
+        const statsData = await statsResponse.json();
+        
+        if (statsData.status === 'success') {
+          setModuleStats(statsData.data);
+        }
+        
+        // Fetch active positions
+        const posResponse = await fetch(`${backendUrl}/api/term-structure/positions/${mindfolioId}`);
+        const posData = await posResponse.json();
+        
+        if (posData.status === 'success') {
+          setPositions(posData.data.positions || []);
+        }
+        
+      } catch (error) {
+        console.error('Error fetching term structure data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+    
+    // Refresh every 60 seconds
+    const interval = setInterval(fetchData, 60000);
+    return () => clearInterval(interval);
+  }, [mindfolioId]);
+
+  // Fetch backtest data for selected symbol
+  const fetchBacktest = async (symbol) => {
+    try {
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      const response = await fetch(`${backendUrl}/api/term-structure/backtest/${symbol}?lookback_quarters=8`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        setBacktestData(data.data.backtest_results);
+        setSelectedSymbol(symbol);
+      }
+    } catch (error) {
+      console.error('Error fetching backtest:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-white text-xl">Loading term structure opportunities...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Module Status Banner */}
+      {moduleStats && moduleStats.module_active && (
+        <div className={`border rounded-lg p-6 ${
+          moduleStats.status === 'ACTIVE' 
+            ? 'bg-gradient-to-r from-green-900/30 to-slate-800/50 border-green-700/50'
+            : moduleStats.status === 'EMERGENCY_STOP'
+            ? 'bg-gradient-to-r from-red-900/30 to-slate-800/50 border-red-700/50'
+            : 'bg-gradient-to-r from-yellow-900/30 to-slate-800/50 border-yellow-700/50'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                📊 Term Structure Module {moduleStats.status === 'ACTIVE' ? '🟢' : moduleStats.status === 'PAUSED' ? '🟡' : '🔴'}
+              </h2>
+              <p className="text-gray-300">
+                Budget: ${moduleStats.budget?.toLocaleString()} | Used: ${moduleStats.budget_used?.toLocaleString()} ({moduleStats.budget_utilization_pct?.toFixed(1)}%)
+              </p>
+              <p className="text-gray-300">
+                P&L: <span className={moduleStats.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+                  ${moduleStats.total_pnl?.toLocaleString()} ({moduleStats.total_pnl_pct?.toFixed(2)}%)
+                </span>
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-white font-semibold">{moduleStats.positions_count} Active Positions</div>
+              <div className="text-gray-400 text-sm">{moduleStats.trades_count} Total Trades</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+        
+        {/* LEFT COLUMN: Opportunities & Active Positions */}
+        <div className="space-y-6">
+          
+          {/* Top Opportunities */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              🎯 Top Earnings Volatility Opportunities
+              <span className="text-sm text-gray-400 font-normal">
+                (Ranked by Forward Vol Factor)
+              </span>
+            </h3>
+            
+            {opportunities.length === 0 ? (
+              <div className="text-gray-400 text-center py-8">
+                No opportunities found. Check back before next earnings season.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {opportunities.slice(0, 10).map((opp, idx) => (
+                  <div 
+                    key={idx}
+                    className="bg-slate-900/50 border border-slate-600 rounded-lg p-4 hover:border-blue-500/50 transition-colors cursor-pointer"
+                    onClick={() => fetchBacktest(opp.symbol)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">
+                          {opp.symbol === 'TSLA' ? '🚗' : 
+                           opp.symbol === 'NVDA' ? '🎮' :
+                           opp.symbol === 'AAPL' ? '🍎' :
+                           opp.symbol === 'META' ? '📘' :
+                           opp.symbol === 'AMZN' ? '📦' : '📊'}
+                        </div>
+                        <div>
+                          <h4 className="text-white font-bold text-lg">{opp.symbol}</h4>
+                          <p className="text-gray-400 text-sm">{opp.company_name}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
+                          opp.opportunity_score >= 80 ? 'bg-green-900/50 text-green-300 border border-green-700' :
+                          opp.opportunity_score >= 60 ? 'bg-blue-900/50 text-blue-300 border border-blue-700' :
+                          'bg-yellow-900/50 text-yellow-300 border border-yellow-700'
+                        }`}>
+                          Score: {opp.opportunity_score?.toFixed(0)}/100
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                      <div className="bg-slate-800/50 rounded p-2">
+                        <div className="text-gray-400 text-xs">Earnings</div>
+                        <div className="text-white font-semibold text-sm">
+                          {opp.days_to_earnings}d away
+                        </div>
+                      </div>
+                      <div className="bg-slate-800/50 rounded p-2">
+                        <div className="text-gray-400 text-xs">Fwd Vol Factor</div>
+                        <div className={`font-bold text-sm ${
+                          opp.forward_vol_factor >= 1.8 ? 'text-green-400' :
+                          opp.forward_vol_factor >= 1.5 ? 'text-blue-400' :
+                          'text-yellow-400'
+                        }`}>
+                          {opp.forward_vol_factor?.toFixed(2)}x
+                        </div>
+                      </div>
+                      <div className="bg-slate-800/50 rounded p-2">
+                        <div className="text-gray-400 text-xs">IV Crush (ML)</div>
+                        <div className="text-purple-400 font-semibold text-sm">
+                          {(opp.iv_crush?.ml_predicted * 100)?.toFixed(0) || 
+                           (opp.iv_crush?.historical_avg * 100)?.toFixed(0)}%
+                        </div>
+                      </div>
+                      <div className="bg-slate-800/50 rounded p-2">
+                        <div className="text-gray-400 text-xs">Expected ROI</div>
+                        <div className="text-green-400 font-bold text-sm">
+                          {opp.expected_roi?.toFixed(0)}%
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-gray-400 text-sm">Backtest:</span>
+                      <span className="text-white font-semibold">
+                        {(opp.backtest?.win_rate * 100)?.toFixed(0)}% win rate
+                      </span>
+                      <span className="text-gray-500">|</span>
+                      <span className="text-green-400">
+                        ${opp.backtest?.avg_profit?.toFixed(0)} avg profit
+                      </span>
+                      <span className="text-gray-500">|</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${
+                        opp.risk_rating === 'LOW' ? 'bg-green-900/50 text-green-300' :
+                        opp.risk_rating === 'MEDIUM' ? 'bg-yellow-900/50 text-yellow-300' :
+                        'bg-red-900/50 text-red-300'
+                      }`}>
+                        {opp.risk_rating} Risk
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button 
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fetchBacktest(opp.symbol);
+                        }}
+                      >
+                        📊 View Backtest
+                      </button>
+                      <button 
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedSymbol(opp.symbol);
+                          setShowExecuteModal(true);
+                        }}
+                      >
+                        🚀 Execute Trade
+                      </button>
+                    </div>
+
+                    {selectedSymbol === opp.symbol && backtestData && (
+                      <div className="mt-4 pt-4 border-t border-slate-600">
+                        <h5 className="text-white font-semibold mb-2">Historical Backtest ({backtestData.trades} trades)</h5>
+                        <div className="grid grid-cols-3 gap-2 text-sm">
+                          <div>
+                            <span className="text-gray-400">Win Rate:</span>
+                            <span className="text-green-400 ml-2 font-semibold">
+                              {(backtestData.win_rate * 100)?.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Sharpe:</span>
+                            <span className="text-blue-400 ml-2 font-semibold">
+                              {backtestData.sharpe_ratio?.toFixed(2)}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-400">Max DD:</span>
+                            <span className="text-red-400 ml-2 font-semibold">
+                              ${backtestData.max_drawdown?.toFixed(0)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Active Positions */}
+          {positions && positions.length > 0 && (
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-white mb-4">
+                📈 Active Calendar Spreads ({positions.length})
+              </h3>
+              
+              <div className="space-y-3">
+                {positions.map((pos, idx) => (
+                  <div key={idx} className="bg-slate-900/50 border border-slate-600 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">
+                          {pos.symbol === 'TSLA' ? '🚗' : 
+                           pos.symbol === 'NVDA' ? '🎮' :
+                           pos.symbol === 'AAPL' ? '🍎' : '📊'}
+                        </span>
+                        <span className="text-white font-bold">{pos.symbol}</span>
+                        <span className="text-gray-400 text-sm">Calendar Spread</span>
+                      </div>
+                      <div className={`font-bold ${
+                        pos.current_pnl >= 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        ${pos.current_pnl?.toFixed(2)} ({pos.current_pnl_pct?.toFixed(1)}%)
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-sm">
+                      <div>
+                        <span className="text-gray-400">Entry:</span>
+                        <span className="text-white ml-2">{pos.entry_date}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">DTE:</span>
+                        <span className="text-white ml-2">{pos.dte_front}d</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Cost:</span>
+                        <span className="text-white ml-2">${pos.cost?.toFixed(2)}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Status:</span>
+                        <span className={`ml-2 ${
+                          pos.status === 'Monitoring' ? 'text-green-400' : 'text-yellow-400'
+                        }`}>
+                          {pos.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* RIGHT COLUMN: Module Stats & Controls */}
+        <div className="space-y-6">
+          
+          {/* Module Controls */}
+          {moduleStats && moduleStats.module_active && (
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-white mb-4">⚙️ Module Controls</h3>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <button className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded transition-colors text-sm">
+                    ⏸️ Pause
+                  </button>
+                  <button className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition-colors text-sm">
+                    🛑 E-Stop
+                  </button>
+                </div>
+                
+                <div className="pt-4 border-t border-slate-600">
+                  <div className="text-gray-400 text-sm mb-2">Budget Utilization</div>
+                  <div className="w-full bg-slate-700 rounded-full h-3 mb-2">
+                    <div 
+                      className={`h-3 rounded-full ${
+                        moduleStats.budget_utilization_pct >= 90 ? 'bg-red-500' :
+                        moduleStats.budget_utilization_pct >= 70 ? 'bg-yellow-500' :
+                        'bg-green-500'
+                      }`}
+                      style={{ width: `${Math.min(100, moduleStats.budget_utilization_pct)}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-white text-sm">
+                    ${moduleStats.budget_used?.toLocaleString()} / ${moduleStats.budget?.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Strategy Explanation */}
+          <div className="bg-gradient-to-br from-purple-900/30 to-slate-800/50 border border-purple-700/50 rounded-lg p-6">
+            <h3 className="text-lg font-bold text-white mb-3">💡 Strategy Explained</h3>
+            <div className="space-y-3 text-sm">
+              <div>
+                <div className="text-purple-300 font-semibold mb-1">What is Forward Vol Factor?</div>
+                <div className="text-gray-300">
+                  Ratio of IV (front-month / back-month). Higher factor = greater mispricing = better calendar spread opportunity.
+                </div>
+              </div>
+              <div>
+                <div className="text-purple-300 font-semibold mb-1">How it works:</div>
+                <div className="text-gray-300">
+                  1. <strong>SELL</strong> expensive front-month option (pre-earnings)<br/>
+                  2. <strong>BUY</strong> cheap back-month option (post-earnings)<br/>
+                  3. <strong>PROFIT</strong> from IV crush after earnings
+                </div>
+              </div>
+              <div>
+                <div className="text-purple-300 font-semibold mb-1">Risk Profile:</div>
+                <div className="text-gray-300">
+                  <strong>Max Loss:</strong> Cost of spread (limited)<br/>
+                  <strong>Max Profit:</strong> Front-month premium decay<br/>
+                  <strong>Win Rate:</strong> Typically 65-75% (backtest validated)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Performance Summary */}
+          {moduleStats && moduleStats.module_active && (
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-white mb-4">📊 Performance</h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Total P&L:</span>
+                  <span className={`font-bold ${
+                    moduleStats.total_pnl >= 0 ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    ${moduleStats.total_pnl?.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">ROI:</span>
+                  <span className={`font-bold ${
+                    moduleStats.total_pnl_pct >= 0 ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {moduleStats.total_pnl_pct?.toFixed(2)}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Daily P&L:</span>
+                  <span className={`font-bold ${
+                    moduleStats.daily_pnl >= 0 ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    ${moduleStats.daily_pnl?.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Positions:</span>
+                  <span className="text-white font-semibold">{moduleStats.positions_count}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400">Total Trades:</span>
+                  <span className="text-white font-semibold">{moduleStats.trades_count}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
     </div>
   );
 }
