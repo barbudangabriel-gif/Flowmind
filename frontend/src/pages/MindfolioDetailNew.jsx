@@ -34,6 +34,7 @@ export default function MindfolioDetailNew() {
   const [timeRange, setTimeRange] = useState("1M");
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedGreek, setSelectedGreek] = useState("Delta");
 
   useEffect(() => {
     loadMindfolio();
@@ -983,6 +984,345 @@ export default function MindfolioDetailNew() {
                   }
                 }}
               />
+            </div>
+          </div>
+
+          {/* Profit/Loss by Options Liquidity & Holding Period */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Profit/Loss by Options Liquidity */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Profit/Loss by Options Liquidity</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="h-80">
+                <Bar 
+                  data={{
+                    labels: ['High Liquidity', 'Medium Liquidity', 'Low Liquidity'],
+                    datasets: [{
+                      label: 'P/L',
+                      data: [4800, 2200, -1500],
+                      backgroundColor: (context) => {
+                        const value = context.parsed.x;
+                        return value >= 0 ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+                      },
+                      borderColor: (context) => {
+                        const value = context.parsed.x;
+                        return value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
+                      },
+                      borderWidth: 1
+                    }]
+                  }}
+                  options={{
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                          label: (context) => `P/L: $${context.parsed.x.toLocaleString()}`
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { 
+                          color: 'rgb(148, 163, 184)',
+                          callback: (value) => `$${value/1000}k`
+                        }
+                      },
+                      y: {
+                        grid: { display: false },
+                        ticks: { color: 'rgb(148, 163, 184)', font: { size: 14 } }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Profit/Loss by Holding Period */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Profit/Loss by Holding Period</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="h-80">
+                <Bar 
+                  data={{
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7', 'Day 8', 'Day 9', 'Day 10'],
+                    datasets: [
+                      {
+                        type: 'bar',
+                        label: 'Daily P/L',
+                        data: [200, -150, 300, 180, -220, 350, 120, -180, 280, 400],
+                        backgroundColor: (context) => {
+                          const value = context.parsed.y;
+                          return value >= 0 ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+                        },
+                        borderColor: (context) => {
+                          const value = context.parsed.y;
+                          return value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
+                        },
+                        borderWidth: 1,
+                        order: 2
+                      },
+                      {
+                        type: 'line',
+                        label: 'Cumulative P/L',
+                        data: [200, 50, 350, 530, 310, 660, 780, 600, 880, 1280],
+                        borderColor: 'rgb(148, 163, 184)',
+                        backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: 'rgb(148, 163, 184)',
+                        pointBorderColor: 'rgb(148, 163, 184)',
+                        tension: 0.3,
+                        order: 1
+                      }
+                    ]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { 
+                        display: true,
+                        position: 'top',
+                        labels: {
+                          color: 'rgb(148, 163, 184)',
+                          font: { size: 12 },
+                          usePointStyle: true
+                        }
+                      },
+                      tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                          label: (context) => {
+                            const label = context.dataset.label;
+                            const value = context.parsed.y;
+                            return `${label}: ${value >= 0 ? '+' : ''}$${value}`;
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { color: 'rgb(148, 163, 184)' }
+                      },
+                      y: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { 
+                          color: 'rgb(148, 163, 184)',
+                          callback: (value) => `$${value}`
+                        },
+                        title: { display: true, text: 'P/L ($)', color: 'rgb(148, 163, 184)' }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Profit/Loss by Time Opened & Greeks */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Profit/Loss by Time Opened */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Profit/Loss by Time Opened</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="h-80">
+                <Bar 
+                  data={{
+                    labels: ['9:30', '9:40', '9:50', '10:00', '10:10', '10:20', '10:30', '10:40', '10:50', '11:00', 
+                             '11:10', '11:20', '11:30', '11:40', '11:50', '12:00', '12:10', '12:20', '12:30', '12:40',
+                             '12:50', '13:00', '13:10', '13:20', '13:30', '13:40', '13:50', '14:00', '14:10', '14:20',
+                             '14:30', '14:40', '14:50', '15:00', '15:10', '15:20', '15:30', '15:40', '15:50', '16:00'],
+                    datasets: [{
+                      label: 'P/L by Open Time',
+                      data: [150, -80, 220, 180, -120, 290, 160, -90, 240, 310, 
+                             -140, 190, 270, 130, -160, 200, 250, -110, 180, 320,
+                             -170, 210, 280, 150, -130, 230, 190, 260, -150, 210,
+                             180, -120, 240, 270, 190, -140, 220, 250, 180, 300],
+                      backgroundColor: (context) => {
+                        const value = context.parsed.y;
+                        return value >= 0 ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+                      },
+                      borderColor: (context) => {
+                        const value = context.parsed.y;
+                        return value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
+                      },
+                      borderWidth: 1
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                          label: (context) => {
+                            const value = context.parsed.y;
+                            return `P/L: ${value >= 0 ? '+' : ''}$${value}`;
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { 
+                          color: 'rgb(148, 163, 184)',
+                          maxRotation: 45,
+                          minRotation: 45,
+                          font: { size: 9 }
+                        }
+                      },
+                      y: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { 
+                          color: 'rgb(148, 163, 184)',
+                          callback: (value) => `$${value}`
+                        },
+                        title: { display: true, text: 'P/L ($)', color: 'rgb(148, 163, 184)' }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Profit/Loss by Greeks */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Profit/Loss by Greeks</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mb-3">
+                <select
+                  value={selectedGreek}
+                  onChange={(e) => setSelectedGreek(e.target.value)}
+                  className="w-full bg-slate-700/50 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+                >
+                  <option value="Delta">Delta</option>
+                  <option value="Theta">Theta</option>
+                  <option value="Vega">Vega</option>
+                </select>
+              </div>
+              <div className="h-72">
+                <Line 
+                  data={{
+                    labels: Array.from({ length: 20 }, (_, i) => `T${i+1}`),
+                    datasets: [{
+                      label: `${selectedGreek} P/L`,
+                      data: selectedGreek === 'Delta' 
+                        ? [250, -150, 320, 180, -200, 290, 160, -140, 240, 310, -180, 220, 280, -160, 200, 270, -190, 230, 260, 300]
+                        : selectedGreek === 'Theta'
+                        ? [-120, 180, -90, 240, 160, -130, 210, -170, 190, 220, -150, 200, -110, 230, 180, -140, 210, 250, -160, 190]
+                        : [190, -170, 260, 140, -200, 280, 150, -130, 230, 270, -180, 210, 240, -150, 190, 250, -170, 220, 260, 290],
+                      borderColor: 'rgba(148, 163, 184, 0.5)',
+                      backgroundColor: 'transparent',
+                      borderWidth: 1,
+                      pointRadius: 6,
+                      pointHoverRadius: 8,
+                      pointBackgroundColor: (context) => {
+                        const value = context.parsed.y;
+                        return value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
+                      },
+                      pointBorderColor: (context) => {
+                        const value = context.parsed.y;
+                        return value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
+                      },
+                      pointBorderWidth: 2,
+                      tension: 0
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                          title: (context) => `Trade ${context[0].label}`,
+                          label: (context) => {
+                            const value = context.parsed.y;
+                            return [
+                              `${selectedGreek}: ${value >= 0 ? '+' : ''}${value.toFixed(2)}`,
+                              `P/L: ${value >= 0 ? '+' : ''}$${Math.abs(value * 10).toFixed(0)}`
+                            ];
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { 
+                          color: 'rgb(148, 163, 184)',
+                          font: { size: 10 }
+                        }
+                      },
+                      y: {
+                        grid: { 
+                          color: (context) => {
+                            return context.tick.value === 0 
+                              ? 'rgba(148, 163, 184, 0.5)' 
+                              : 'rgba(148, 163, 184, 0.1)';
+                          },
+                          lineWidth: (context) => context.tick.value === 0 ? 2 : 1
+                        },
+                        ticks: { 
+                          color: 'rgb(148, 163, 184)',
+                          callback: (value) => value.toFixed(1)
+                        },
+                        title: { 
+                          display: true, 
+                          text: `${selectedGreek} Value`, 
+                          color: 'rgb(148, 163, 184)' 
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
