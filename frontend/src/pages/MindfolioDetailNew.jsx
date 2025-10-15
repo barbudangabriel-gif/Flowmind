@@ -648,6 +648,343 @@ export default function MindfolioDetailNew() {
               </div>
             </div>
           </div>
+
+          {/* Commissions & Fees Card - Full Width */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Commissions & Fees</h3>
+              <button className="text-gray-400 hover:text-white transition">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+            </div>
+            <div className="h-64">
+              <Bar 
+                data={{
+                  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                  datasets: [{
+                    label: 'Total Fees',
+                    data: [125, 180, 145, 210, 165, 190, 220, 175, 195, 240, 185, 205],
+                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                    borderColor: 'rgb(239, 68, 68)',
+                    borderWidth: 1
+                  }]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                      borderColor: 'rgba(148, 163, 184, 0.2)',
+                      borderWidth: 1,
+                      padding: 12,
+                      callbacks: {
+                        label: (context) => {
+                          const commissions = (Math.random() * 100 + 50).toFixed(2);
+                          const fees = (context.parsed.y - commissions).toFixed(2);
+                          return [
+                            `Total: $${context.parsed.y}`,
+                            `Commissions: $${commissions}`,
+                            `Fees: $${fees}`
+                          ];
+                        }
+                      }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                      ticks: { color: 'rgb(148, 163, 184)' }
+                    },
+                    y: {
+                      position: 'left',
+                      grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                      ticks: { 
+                        color: 'rgb(148, 163, 184)',
+                        callback: (value) => `$${value}`
+                      },
+                      title: { display: true, text: 'Amount ($)', color: 'rgb(148, 163, 184)' }
+                    }
+                  }
+                }}
+              />
+            </div>
+            <div className="mt-4 flex items-center justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <span className="text-gray-400">Commissions</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                <span className="text-gray-400">Fees</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Options Charts Section Title */}
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold text-white mb-6">Options Charts</h2>
+          </div>
+
+          {/* Profit/Loss by Sector & Market Cap */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Profit/Loss by Sector */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Profit/Loss by Sector</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="h-80">
+                <Bar 
+                  data={{
+                    labels: ['Technology', 'Healthcare', 'Finance', 'Energy', 'Consumer', 'Industrial'],
+                    datasets: [{
+                      label: 'P/L',
+                      data: [2500, 1800, -800, 1200, 3200, -500],
+                      backgroundColor: (context) => {
+                        const value = context.parsed.x;
+                        return value >= 0 ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+                      },
+                      borderColor: (context) => {
+                        const value = context.parsed.x;
+                        return value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
+                      },
+                      borderWidth: 1
+                    }]
+                  }}
+                  options={{
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                          label: (context) => `P/L: $${context.parsed.x.toLocaleString()}`
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { 
+                          color: 'rgb(148, 163, 184)',
+                          callback: (value) => `$${value/1000}k`
+                        }
+                      },
+                      y: {
+                        grid: { display: false },
+                        ticks: { color: 'rgb(148, 163, 184)' }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Profit/Loss by Market Cap */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Profit/Loss by Market Cap</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="h-80">
+                <Bar 
+                  data={{
+                    labels: ['Mega Cap', 'Large Cap', 'Mid Cap'],
+                    datasets: [{
+                      label: 'P/L',
+                      data: [4500, 2800, -1200],
+                      backgroundColor: (context) => {
+                        const value = context.parsed.x;
+                        return value >= 0 ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+                      },
+                      borderColor: (context) => {
+                        const value = context.parsed.x;
+                        return value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
+                      },
+                      borderWidth: 1
+                    }]
+                  }}
+                  options={{
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                          label: (context) => `P/L: $${context.parsed.x.toLocaleString()}`
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { 
+                          color: 'rgb(148, 163, 184)',
+                          callback: (value) => `$${value/1000}k`
+                        }
+                      },
+                      y: {
+                        grid: { display: false },
+                        ticks: { color: 'rgb(148, 163, 184)', font: { size: 14 } }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Profit/Loss by Ticker - Full Width */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Profit/Loss by Ticker</h3>
+              <button className="text-gray-400 hover:text-white transition">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+            </div>
+            <div className="h-96">
+              <Bar 
+                data={{
+                  labels: ['TSLA', 'AAPL', 'NVDA', 'MSFT', 'GOOGL', 'META', 'AMZN', 'NFLX', 'AMD', 'INTC'],
+                  datasets: [{
+                    label: 'P/L',
+                    data: [3500, 2200, -1500, 1800, 2800, -800, 1200, 900, -600, 1500],
+                    backgroundColor: (context) => {
+                      const value = context.parsed.x;
+                      return value >= 0 ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+                    },
+                    borderColor: (context) => {
+                      const value = context.parsed.x;
+                      return value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
+                    },
+                    borderWidth: 1
+                  }]
+                }}
+                options={{
+                  indexAxis: 'y',
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                      borderColor: 'rgba(148, 163, 184, 0.2)',
+                      borderWidth: 1,
+                      padding: 12,
+                      callbacks: {
+                        label: (context) => {
+                          const value = context.parsed.x;
+                          return `P/L: ${value >= 0 ? '+' : ''}$${value.toLocaleString()}`;
+                        }
+                      }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                      ticks: { 
+                        color: 'rgb(148, 163, 184)',
+                        callback: (value) => `${value >= 0 ? '+' : ''}$${Math.abs(value)/1000}k`
+                      }
+                    },
+                    y: {
+                      grid: { display: false },
+                      ticks: { color: 'rgb(148, 163, 184)', font: { size: 13, weight: 'bold' } }
+                    }
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Profit/Loss by Strategy - Full Width */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Profit/Loss by Strategy</h3>
+              <button className="text-gray-400 hover:text-white transition">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </button>
+            </div>
+            <div className="h-96">
+              <Bar 
+                data={{
+                  labels: ['Iron Condor', 'Bull Call Spread', 'Covered Call', 'Cash Secured Put', 'Straddle', 'Strangle', 'Butterfly', 'Calendar Spread'],
+                  datasets: [{
+                    label: 'P/L',
+                    data: [4200, 2800, 3500, -1200, 1800, -900, 1500, 2200],
+                    backgroundColor: (context) => {
+                      const value = context.parsed.x;
+                      return value >= 0 ? 'rgba(34, 197, 94, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+                    },
+                    borderColor: (context) => {
+                      const value = context.parsed.x;
+                      return value >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
+                    },
+                    borderWidth: 1
+                  }]
+                }}
+                options={{
+                  indexAxis: 'y',
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                      backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                      borderColor: 'rgba(148, 163, 184, 0.2)',
+                      borderWidth: 1,
+                      padding: 12,
+                      callbacks: {
+                        label: (context) => {
+                          const value = context.parsed.x;
+                          return `P/L: ${value >= 0 ? '+' : ''}$${value.toLocaleString()}`;
+                        }
+                      }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                      ticks: { 
+                        color: 'rgb(148, 163, 184)',
+                        callback: (value) => `${value >= 0 ? '+' : ''}$${Math.abs(value)/1000}k`
+                      }
+                    },
+                    y: {
+                      grid: { display: false },
+                      ticks: { color: 'rgb(148, 163, 184)', font: { size: 12 } }
+                    }
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
       )}
 
