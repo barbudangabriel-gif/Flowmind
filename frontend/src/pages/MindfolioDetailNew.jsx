@@ -35,6 +35,7 @@ export default function MindfolioDetailNew() {
   const [chartData, setChartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedGreek, setSelectedGreek] = useState("Delta");
+  const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
 
   useEffect(() => {
     loadMindfolio();
@@ -280,6 +281,284 @@ export default function MindfolioDetailNew() {
       {/* Tab Content */}
       {activeTab === "SUMMARY" && (
         <div className="space-y-6">
+          {/* Money Management & Risk Management Dashboard */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg">
+            {/* Dashboard Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <span className="text-2xl">🛡️</span>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Money & Risk Management</h2>
+                  <p className="text-sm text-gray-400">Portfolio health and risk metrics</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsDashboardExpanded(!isDashboardExpanded)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center gap-2"
+              >
+                {isDashboardExpanded ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Collapse
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                    </svg>
+                    Expand Full View
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Dashboard Content */}
+            <div className="p-6 space-y-6">
+              {/* Top Row - Key Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {/* Portfolio Health Score */}
+                <div className="bg-slate-700/30 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Portfolio Health</div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-3xl font-bold text-green-400">87</div>
+                    <div className="text-sm text-gray-400">/100</div>
+                  </div>
+                  <div className="text-xs text-green-400 mt-1">Excellent ✓</div>
+                </div>
+
+                {/* Sharpe Ratio */}
+                <div className="bg-slate-700/30 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Sharpe Ratio</div>
+                  <div className="text-3xl font-bold text-white">2.4</div>
+                  <div className="text-xs text-green-400 mt-1">Above average</div>
+                </div>
+
+                {/* Max Drawdown */}
+                <div className="bg-slate-700/30 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Max Drawdown</div>
+                  <div className="text-3xl font-bold text-yellow-400">-8.2%</div>
+                  <div className="text-xs text-gray-400 mt-1">Within limits</div>
+                </div>
+
+                {/* VaR (95%) */}
+                <div className="bg-slate-700/30 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">VaR (95%)</div>
+                  <div className="text-3xl font-bold text-white">$2,450</div>
+                  <div className="text-xs text-gray-400 mt-1">Daily risk at 95%</div>
+                </div>
+              </div>
+
+              {/* Conditional Expanded Content */}
+              {isDashboardExpanded && (
+                <>
+                  {/* Buying Power & Margin */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Buying Power Utilization */}
+                    <div className="bg-slate-700/30 rounded-lg p-5">
+                      <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                        <span>💰</span> Buying Power Utilization
+                      </h3>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-400">Total Buying Power</span>
+                            <span className="text-white font-medium">$100,000</span>
+                          </div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-400">Used</span>
+                            <span className="text-white font-medium">$68,500 (68.5%)</span>
+                          </div>
+                          <div className="w-full bg-slate-600 rounded-full h-3">
+                            <div className="bg-blue-500 h-3 rounded-full" style={{ width: '68.5%' }}></div>
+                          </div>
+                        </div>
+                        <div className="pt-3 border-t border-slate-600">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-400">Available</span>
+                            <span className="text-green-400 font-medium">$31,500</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Margin Requirements */}
+                    <div className="bg-slate-700/30 rounded-lg p-5">
+                      <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                        <span>📊</span> Margin Requirements
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400 text-sm">Initial Margin</span>
+                          <span className="text-white font-medium">$45,000</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400 text-sm">Maintenance Margin</span>
+                          <span className="text-white font-medium">$32,000</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400 text-sm">Current Equity</span>
+                          <span className="text-green-400 font-medium">$89,700</span>
+                        </div>
+                        <div className="flex justify-between pt-3 border-t border-slate-600">
+                          <span className="text-gray-400 text-sm">Margin Cushion</span>
+                          <span className="text-green-400 font-bold">$57,700 (180%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Risk Limits */}
+                  <div className="bg-slate-700/30 rounded-lg p-5">
+                    <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                      <span>⚠️</span> Risk Limits & Compliance
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Daily Risk */}
+                      <div>
+                        <div className="text-sm text-gray-400 mb-2">Daily Loss Limit</div>
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="text-white font-bold">-$450</span>
+                          <span className="text-gray-400 text-sm">/ $2,000</span>
+                        </div>
+                        <div className="w-full bg-slate-600 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{ width: '22.5%' }}></div>
+                        </div>
+                        <div className="text-xs text-green-400 mt-1">22.5% used ✓</div>
+                      </div>
+
+                      {/* Weekly Risk */}
+                      <div>
+                        <div className="text-sm text-gray-400 mb-2">Weekly Loss Limit</div>
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="text-white font-bold">-$1,250</span>
+                          <span className="text-gray-400 text-sm">/ $8,000</span>
+                        </div>
+                        <div className="w-full bg-slate-600 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{ width: '15.6%' }}></div>
+                        </div>
+                        <div className="text-xs text-green-400 mt-1">15.6% used ✓</div>
+                      </div>
+
+                      {/* Monthly Risk */}
+                      <div>
+                        <div className="text-sm text-gray-400 mb-2">Monthly Loss Limit</div>
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="text-white font-bold">+$3,200</span>
+                          <span className="text-gray-400 text-sm">/ $15,000</span>
+                        </div>
+                        <div className="w-full bg-slate-600 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{ width: '21.3%' }}></div>
+                        </div>
+                        <div className="text-xs text-green-400 mt-1">Profit! +21.3% ✓</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Concentration Risk & Correlation Matrix */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Concentration Risk */}
+                    <div className="bg-slate-700/30 rounded-lg p-5">
+                      <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                        <span>🎯</span> Concentration Risk
+                      </h3>
+                      <div className="space-y-3">
+                        {[
+                          { symbol: 'TSLA', pct: 18, color: 'bg-red-500' },
+                          { symbol: 'AAPL', pct: 15, color: 'bg-yellow-500' },
+                          { symbol: 'SPY', pct: 12, color: 'bg-green-500' },
+                          { symbol: 'NVDA', pct: 10, color: 'bg-green-500' },
+                          { symbol: 'Other', pct: 45, color: 'bg-gray-500' }
+                        ].map((item, idx) => (
+                          <div key={idx}>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-gray-400">{item.symbol}</span>
+                              <span className="text-white">{item.pct}%</span>
+                            </div>
+                            <div className="w-full bg-slate-600 rounded-full h-2">
+                              <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.pct}%` }}></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-400">
+                        ⚠️ TSLA concentration above 15% threshold
+                      </div>
+                    </div>
+
+                    {/* Correlation Matrix Preview */}
+                    <div className="bg-slate-700/30 rounded-lg p-5">
+                      <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                        <span>🔗</span> Position Correlation
+                      </h3>
+                      <div className="grid grid-cols-4 gap-2 text-xs">
+                        <div className="text-gray-400"></div>
+                        <div className="text-gray-400 text-center">TSLA</div>
+                        <div className="text-gray-400 text-center">AAPL</div>
+                        <div className="text-gray-400 text-center">SPY</div>
+                        
+                        <div className="text-gray-400">TSLA</div>
+                        <div className="bg-green-500/30 text-white text-center rounded py-1">1.00</div>
+                        <div className="bg-yellow-500/30 text-white text-center rounded py-1">0.65</div>
+                        <div className="bg-green-500/30 text-white text-center rounded py-1">0.72</div>
+                        
+                        <div className="text-gray-400">AAPL</div>
+                        <div className="bg-yellow-500/30 text-white text-center rounded py-1">0.65</div>
+                        <div className="bg-green-500/30 text-white text-center rounded py-1">1.00</div>
+                        <div className="bg-yellow-500/30 text-white text-center rounded py-1">0.68</div>
+                        
+                        <div className="text-gray-400">SPY</div>
+                        <div className="bg-green-500/30 text-white text-center rounded py-1">0.72</div>
+                        <div className="bg-yellow-500/30 text-white text-center rounded py-1">0.68</div>
+                        <div className="bg-green-500/30 text-white text-center rounded py-1">1.00</div>
+                      </div>
+                      <div className="mt-4 text-xs text-gray-400">
+                        <div className="flex gap-3">
+                          <span className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-green-500/30 rounded"></div> Low (&lt;0.5)
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-yellow-500/30 rounded"></div> Medium (0.5-0.7)
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-red-500/30 rounded"></div> High (&gt;0.7)
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Position Sizing Analysis */}
+                  <div className="bg-slate-700/30 rounded-lg p-5">
+                    <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                      <span>📐</span> Position Sizing Analysis
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <div className="text-sm text-gray-400 mb-1">Average Position Size</div>
+                        <div className="text-2xl font-bold text-white">$5,240</div>
+                        <div className="text-xs text-gray-400">Across 12 positions</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-400 mb-1">Largest Position</div>
+                        <div className="text-2xl font-bold text-yellow-400">$9,200</div>
+                        <div className="text-xs text-gray-400">TSLA (18% of portfolio)</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-gray-400 mb-1">Smallest Position</div>
+                        <div className="text-2xl font-bold text-white">$2,100</div>
+                        <div className="text-xs text-gray-400">AMD (4% of portfolio)</div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
           {/* Chart Card */}
           <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
             {/* Chart Header - Allocation & Current Value */}
@@ -401,7 +680,8 @@ export default function MindfolioDetailNew() {
                       <div className="text-2xl">
                         {module.module === "IV_SERVICE" ? "🤖" : 
                          module.module === "SELL_PUTS_ENGINE" ? "💰" :
-                         module.module === "SMART_REBALANCER" ? "⚖️" : "🎯"}
+                         module.module === "COVERED_CALLS_ENGINE" ? "📞" :
+                         module.module === "GAMMA_SCALPER" ? "⚡" : "🎯"}
                       </div>
                       <div>
                         <div className="text-white font-medium">{module.module.replace(/_/g, ' ')}</div>

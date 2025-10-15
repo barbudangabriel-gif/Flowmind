@@ -22,15 +22,15 @@ You allocate a budget from your main account → Each AI module gets its own bud
         │                     │                     │
         ▼                     ▼                     ▼
 ┌───────────────┐     ┌───────────────┐     ┌───────────────┐
-│  IV SERVICE   │     │  SELL PUTS    │     │  REBALANCER   │
+│  IV SERVICE   │     │  SELL PUTS    │     │ COVERED CALLS │
 │  Budget: $15k │     │  Budget: $20k │     │  Budget: $10k │
 │               │     │               │     │               │
 │ Independent   │     │ Independent   │     │ Independent   │
 │ Trading       │     │ Trading       │     │ Trading       │
 │               │     │               │     │               │
-│ ✓ Iron Condor │     │ ✓ CSP scanner │     │ ✓ Correlation │
-│ ✓ Calendar    │     │ ✓ Auto-assign │     │ ✓ Rebalance   │
-│ ✓ Diagonal    │     │ ✓ Cover call  │     │ ✓ Hedge       │
+│ ✓ Iron Condor │     │ ✓ CSP scanner │     │ ✓ ATM calls   │
+│ ✓ Calendar    │     │ ✓ Auto-assign │     │ ✓ Delta 0.3   │
+│ ✓ Diagonal    │     │ ✓ Wheel strat │     │ ✓ 30-45 DTE   │
 └───────────────┘     └───────────────┘     └───────────────┘
         │                     │                     │
         │ P&L tracking        │ P&L tracking        │ P&L tracking
@@ -50,9 +50,9 @@ You allocate a budget from your main account → Each AI module gets its own bud
 │                                                              │
 │  Module Performance:                                         │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │ IV Service:    +$1,250 (8.3% on $15k)  ████████░░   │  │
-│  │ Sell Puts:     +$1,500 (7.5% on $20k)  ███████░░░   │  │
-│  │ Rebalancer:      -$300 (-3% on $10k)   ██░░░░░░░░   │  │
+│  │ IV Service:      +$1,250 (8.3% on $15k)  ████████░░ │  │
+│  │ Sell Puts:       +$1,500 (7.5% on $20k)  ███████░░░ │  │
+│  │ Covered Calls:     +$450 (4.5% on $10k)  ████░░░░░░ │  │
 │  └──────────────────────────────────────────────────────┘  │
 │                                                              │
 │  Aggregate Greeks:                                           │
@@ -97,7 +97,7 @@ You allocate a budget from your main account → Each AI module gets its own bud
       "autotrade": false
     },
     {
-      "module": "SMART_REBALANCER",
+      "module": "COVERED_CALLS_ENGINE",
       "budget": 10000,
       "max_risk_per_trade": 500,
       "daily_loss_limit": 750,
@@ -221,46 +221,70 @@ notify_user(
 )
 ```
 
-#### **Smart Rebalancer (Budget: $10,000)**
+#### **Covered Calls Engine (Budget: $10,000)**
 ```python
-# Rebalancer analyzes portfolio composition
-portfolio_analysis = {
-  "positions": [
-    {"symbol": "TSLA", "value": 8500, "pct": 0.18},  # 18%
-    {"symbol": "AAPL", "value": 7000, "pct": 0.15},  # 15%
-    {"symbol": "SPY", "value": 5500, "pct": 0.12}    # 12%
-  ],
-  "correlation": {
-    "TSLA-NVDA": 0.85,  # HIGH correlation (both tech)
-    "TSLA-SPY": 0.65,
-    "AAPL-SPY": 0.70
-  },
-  "sector_exposure": {
-    "Technology": 0.45,  # 45% in tech (HIGH RISK!)
-    "Broad Market": 0.12,
-    "Other": 0.43
-  }
-}
+# Module scans for covered call opportunities on existing stock positions
+stock_positions = get_mindfolio_stock_positions(mindfolio_id)
 
-# Rebalancer suggests actions
-suggestions = [
-    {
-        "action": "CLOSE",
-        "position": "TSLA Iron Condor",
-        "reason": "Concentration risk > 15% in single stock",
-        "estimated_pnl": +125
-    },
-    {
-        "action": "HEDGE",
-        "position": "Tech sector",
-        "suggestion": "Buy QQQ put spread to hedge 45% tech exposure",
-        "cost": 450,
-        "protection": "10% downside in tech sector"
-    }
-]
+covered_call_candidates = []
+for stock in stock_positions:
+    # Check if we already have calls sold on this position
+    existing_calls = get_existing_calls(stock["symbol"])
+    
+    if len(existing_calls) == 0:  # No calls currently sold
+        # Find optimal strike (typically 0.3 delta, 30-45 DTE)
+        options_chain = get_options_chain(stock["symbol"])
+        
+        optimal_call = find_optimal_call(
+            chain=options_chain,
+            target_delta=0.30,
+            min_dte=30,
+            max_dte=45,
+            min_premium=50  # Minimum $50 premium per contract
+        )
+        
+        if optimal_call:
+            # Calculate potential return
+            annual_return = (optimal_call["premium"] * 12) / stock["cost_basis"]
+            
+            covered_call_candidates.append({
+                "symbol": stock["symbol"],
+                "shares_owned": stock["quantity"],
+                "current_price": stock["current_price"],
+                "call_strike": optimal_call["strike"],
+                "call_premium": optimal_call["premium"],
+                "dte": optimal_call["dte"],
+                "delta": optimal_call["delta"],
+                "annual_return_pct": annual_return * 100,
+                "assignment_risk": "Low" if stock["current_price"] < optimal_call["strike"] * 0.95 else "Medium"
+            })
 
-# If autotrade enabled, execute
-# Otherwise, notify user for approval
+# Rank by annual return
+covered_call_candidates.sort(key=lambda x: x["annual_return_pct"], reverse=True)
+
+# Execute top opportunities (if autotrade enabled and within budget)
+current_positions_value = sum(p["buying_power_used"] for p in get_module_positions("COVERED_CALLS_ENGINE"))
+available_budget = 10000 - current_positions_value
+
+for candidate in covered_call_candidates[:5]:  # Top 5 opportunities
+    if candidate["call_premium"] * (candidate["shares_owned"] / 100) <= available_budget:
+        if autotrade_enabled:
+            order = sell_covered_call(
+                symbol=candidate["symbol"],
+                strike=candidate["call_strike"],
+                quantity=candidate["shares_owned"] / 100,
+                expiration=candidate["dte"]
+            )
+            log_transaction(
+                module="COVERED_CALLS_ENGINE",
+                action="SELL_CALL",
+                symbol=candidate["symbol"],
+                strike=candidate["call_strike"],
+                premium_collected=candidate["call_premium"],
+                timestamp=datetime.now()
+            )
+        else:
+            notify_user_for_approval(candidate)
 ```
 
 ### **Step 4: Real-time Aggregation**
@@ -355,11 +379,12 @@ def get_mindfolio_aggregated_stats(mindfolio_id):
 │  │ [View Details] [Adjust Budget] [Pause Module]         │  │
 │  └────────────────────────────────────────────────────────┘  │
 │                                                               │
-│  ┌─ Smart Rebalancer ─────────────────────────────────────┐  │
-│  │ Budget: $10,000  |  Used: $3,200 (32%)                │  │
-│  │ P&L: -$300 (-3%) ⚠️                                     │  │
-│  │ Positions: Monitoring only  |  2 suggestions pending   │  │
-│  │ [View Suggestions] [Adjust Budget] [Pause Module]     │  │
+│  ┌─ Covered Calls Engine ─────────────────────────────────┐  │
+│  │ Budget: $10,000  |  Used: $4,200 (42%)                │  │
+│  │ P&L: +$450 (4.5%) ✅                                    │  │
+│  │ Positions: 5 calls sold  |  Today: 3 scans, 2 new     │  │
+│  │ 💰 Income: $450 collected this month (annualized 54%) │  │
+│  │ [View Positions] [Adjust Budget] [Pause Module]       │  │
 │  └────────────────────────────────────────────────────────┘  │
 │                                                               │
 │  [+ Add New Module] [Rebalance Budgets] [Emergency Stop]     │
@@ -523,21 +548,22 @@ if module_daily_loss > module["daily_loss_limit"]:
       }
     },
     {
-      "module": "SMART_REBALANCER",
+      "module": "COVERED_CALLS_ENGINE",
       "budget": 15000,              // 15% allocation
       "max_risk_per_trade": 500,
       "daily_loss_limit": 1000,
       "autotrade": false,
+      "strategies": ["Covered Calls on existing stocks"],
       "current_usage": {
         "buying_power_used": 4200,
-        "positions": 2,
+        "positions": 5,
         "available": 10800
       },
       "performance": {
-        "total_pnl": -450,
-        "pnl_pct": -3.0,
-        "win_rate": 0.42,
-        "trades_this_month": 8
+        "total_pnl": 850,
+        "pnl_pct": 5.7,
+        "win_rate": 0.78,
+        "trades_this_month": 12
       }
     },
     {
@@ -564,13 +590,13 @@ if module_daily_loss > module["daily_loss_limit"]:
   "reserve_cash": 5000,             // 5% unallocated buffer
   
   "aggregate_stats": {
-    "total_nav": 105600,
-    "total_pnl": 5600,
-    "total_pnl_pct": 5.6,
+    "total_nav": 106900,
+    "total_pnl": 6900,
+    "total_pnl_pct": 6.9,
     "total_buying_power_used": 50700,
-    "total_positions": 12,
+    "total_positions": 15,
     "best_module": "SELL_PUTS_ENGINE (+$3,200)",
-    "worst_module": "SMART_REBALANCER (-$450)",
+    "worst_module": "GAMMA_SCALPER ($0 - Paused)",
     "aggregate_greeks": {
       "delta": 450.2,
       "gamma": 28.5,
