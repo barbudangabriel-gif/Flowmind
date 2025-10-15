@@ -9,9 +9,9 @@ import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import BuilderPage from './pages/BuilderPage';
 import FlowPage from './pages/FlowPage';
-import PortfoliosList from './pages/PortfoliosList';
-import PortfolioDetail from './pages/PortfolioDetail';
-import PortfolioCreate from './pages/PortfolioCreate';
+import MindfolioList from './pages/MindfolioList';
+import MindfolioDetail from './pages/MindfolioDetail';
+import MindfolioCreate from './pages/MindfolioCreate';
 import AccountBalancePage from './pages/AccountBalancePage';
 import MarketMoversPage from './pages/MarketMoversPage';
 import CongressTradesPage from './pages/CongressTradesPage';
@@ -133,9 +133,9 @@ function App() {
                 <Route path="/congress-trades" element={<CongressTradesPage />} />
                 <Route path="/institutional" element={<InstitutionalPage />} />
                 <Route path="/account/balance" element={<AccountBalancePage />} />
-                <Route path="/portfolios" element={<PortfoliosList />} />
-                <Route path="/portfolios/new" element={<PortfolioCreate />} />
-                <Route path="/portfolios/:id" element={<PortfolioDetail />} />
+                <Route path="/mindfolio" element={<MindfolioList />} />
+                <Route path="/mindfolio/new" element={<MindfolioCreate />} />
+                <Route path="/mindfolio/:id" element={<MindfolioDetail />} />
                 {/* Catch-all for all other routes */}
                 <Route path="*" element={<ComingSoonPage />} />
               </Routes>

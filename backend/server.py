@@ -656,8 +656,8 @@ from bt_ops import router as bt_ops_router
 # Emergent status
 from bt_emergent import emergent_router, redis_diag_router
 
-# Portfolios
-from portfolios import router as portfolios_router
+# Mindfolio (formerly Portfolios)
+from mindfolio import router as mindfolio_router
 
 # Mount main API router (includes legacy endpoints)
 app.include_router(api_router)
@@ -666,7 +666,7 @@ app.include_router(bt_router)
 app.include_router(bt_ops_router)
 app.include_router(emergent_router)
 app.include_router(redis_diag_router)
-app.include_router(portfolios_router, prefix="/api")
+app.include_router(mindfolio_router, prefix="/api")
 app.include_router(watchlist_router, prefix="/api/watchlists")
 
 # Options provider router

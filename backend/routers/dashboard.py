@@ -18,20 +18,20 @@ async def get_dashboard_summary() -> Dict[str, Any]:
     """
     try:
         # TODO: Replace with real data from:
-        # - Portfolio service
+        # - Mindfolio service
         # - IV Service
         # - Sell Puts service
         # - Flow service
         # - Investment scoring
         
         return {
-            "portfolio_summary": {
+            "mindfolio_summary": {
                 "total_nav": 125000.50,
                 "daily_pnl": 2450.25,
                 "daily_pnl_pct": 1.96,
                 "total_cash": 35000.00,
-                "portfolio_count": 3,
-                "top_portfolios": [
+                "mindfolio_count": 3,
+                "top_mindfolios": [
                     {
                         "id": "pf_abc",
                         "name": "Main Trading",
@@ -167,7 +167,7 @@ async def get_dashboard_summary() -> Dict[str, Any]:
                 {
                     "timestamp": "2025-10-15T09:15:00Z",
                     "type": "position_threshold",
-                    "message": "TSLA position exceeded 10% of portfolio",
+                    "message": "TSLA position exceeded 10% of mindfolio",
                     "severity": "warning",
                 },
                 {

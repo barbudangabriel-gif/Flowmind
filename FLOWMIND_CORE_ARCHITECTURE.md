@@ -13,12 +13,12 @@
     └── Top Picks
 
 💼 PORTFOLIOS
-├── View All Portfolios
-├── Create New Portfolio
-└── [Each Portfolio Detail Page]
+├── View All Mindfolio
+├── Create New Mindfolio
+└── [Each Mindfolio Detail Page]
     ├── Overview / Positions / Transactions
     ├── Smart Rebalancing (per-portfolio module)
-    └── Portfolio Charts (per-portfolio analytics)
+    └── Mindfolio Charts (per-portfolio analytics)
 
 📊 OPTIONS ANALYTICS (All options functionality)
 ├── 🔨 Options Builder (manual construction + 54+ strategy library)
@@ -143,7 +143,7 @@
 
 These modules exist **inside each portfolio**, not at the global level:
 
-### 1. Portfolio Charts (Analytics Module)
+### 1. Mindfolio Charts (Analytics Module)
 - **Location:** Inside portfolio detail view (tab or section)
 - **Backend:** `backend/portfolio_charts_service.py`
 - **Features:**
@@ -163,9 +163,9 @@ These modules exist **inside each portfolio**, not at the global level:
   - Drift detection
   - Optimal trade suggestions
 
-### 3. Core Portfolio Functions
-- **Location:** Portfolio detail main view
-- **Backend:** `backend/portfolios.py`
+### 3. Core Mindfolio Functions
+- **Location:** Mindfolio detail main view
+- **Backend:** `backend/mindfolio.py`
 - **Features:**
   - Positions (FIFO tracking)
   - Transactions (CRUD)
@@ -192,11 +192,11 @@ These modules exist **inside each portfolio**, not at the global level:
     ├── Scanner
     └── Top Picks
 
-💼 Portfolios
-├── View All Portfolios
-├── Create New Portfolio
-├── [Dynamic: User's Portfolios]
-│   └── Portfolio Detail
+💼 Mindfolio
+├── View All Mindfolio
+├── Create New Mindfolio
+├── [Dynamic: User's Mindfolio]
+│   └── Mindfolio Detail
 │       ├── Overview (positions, transactions)
 │       ├── Charts (analytics module)
 │       └── Rebalancing (optimization module)
@@ -246,7 +246,7 @@ These modules exist **inside each portfolio**, not at the global level:
 - Mix stock analysis with options
 - Add portfolio features here
 
-### 2. **Portfolios Pillar**
+### 2. **Mindfolio Pillar**
 ✅ **DO:**
 - Enhance portfolio CRUD
 - Add features to Charts or Rebalancing modules
@@ -256,7 +256,7 @@ These modules exist **inside each portfolio**, not at the global level:
 ❌ **DON'T:**
 - Create global portfolio analytics (it's per-portfolio)
 - Mix trading strategies here
-- Create "Portfolio Trading Module"
+- Create "Mindfolio Trading Module"
 
 ### 3. **Options Analytics Pillar**
 ✅ **DO:**
@@ -279,7 +279,7 @@ These modules exist **inside each portfolio**, not at the global level:
 ### 5. **Adding New Features**
 Before coding, ask:
 - Is this a stock feature? → Enhance Investment Scoring
-- Is this a portfolio feature? → Add to Portfolio detail or per-portfolio modules
+- Is this a portfolio feature? → Add to Mindfolio detail or per-portfolio modules
 - Is this an options feature? → Add under Options Analytics
 - Is this a new trading system? → **STOP. Review with team. Do we really need a 3rd module?**
 
@@ -302,8 +302,8 @@ Before coding, ask:
 3. User: Clicks "Review in Builder"
 4. Builder: Pre-fills 4 legs based on scanner output
 5. User: Adjusts strikes, reviews P&L chart
-6. User: Saves to Portfolio Manager
-7. Portfolio Charts: Starts tracking performance
+6. User: Saves to Mindfolio Manager
+7. Mindfolio Charts: Starts tracking performance
 8. Smart Rebalancing: May suggest position size adjustment
 ```
 
@@ -311,13 +311,13 @@ Before coding, ask:
 ```
 1. User: Options Analytics → Sell Puts for Income → CSP Engine
 2. System: Suggests TSLA 0.28 delta put @ 35 DTE, premium $450
-3. User: Approves → saved to Portfolio Manager
+3. User: Approves → saved to Mindfolio Manager
 4. Market: Price drops, user gets assigned 100 shares
 5. System: Detects assignment in portfolio
 6. Module: Auto-switches to Covered Calls mode
 7. System: Suggests 0.25 delta call @ 30 DTE, premium $300
 8. User: Sells call → income cycle continues
-9. Portfolio Charts: Tracks total premium collected
+9. Mindfolio Charts: Tracks total premium collected
 ```
 
 ### Workflow 3: Manual Strategy via Builder
@@ -328,9 +328,9 @@ Before coding, ask:
 4. Builder: Pre-fills typical strikes (ATM, ±5, ±10)
 5. User: Adjusts strikes, quantity
 6. Builder: Calculates P&L, Greeks, quality score
-7. User: Saves to Portfolio Manager
+7. User: Saves to Mindfolio Manager
 8. Smart Rebalancing: Suggests if position size fits allocation
-9. Portfolio Charts: Tracks position over time
+9. Mindfolio Charts: Tracks position over time
 ```
 
 ### Workflow 4: Investment Scoring → Options
@@ -341,7 +341,7 @@ Before coding, ask:
 4. System: Navigates to Options Analytics → Options Builder
 5. Builder: Pre-fills symbol, fetches option chain
 6. User: Selects strategy from library, constructs trade
-7. User: Saves to Portfolio Manager
+7. User: Saves to Mindfolio Manager
 ```
 
 ---
@@ -352,7 +352,7 @@ Before coding, ask:
 
 **The 3 Pillars are sacred:**
 1. Stocks (Investment Scoring)
-2. Portfolios (Manager + per-portfolio modules)
+2. Mindfolio (Manager + per-portfolio modules)
 3. Options Analytics (Builder, Optimizer, 2 trading modules, market data)
 
 **When in doubt:**

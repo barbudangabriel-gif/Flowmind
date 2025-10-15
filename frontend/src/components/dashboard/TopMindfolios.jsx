@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function TopPortfolios({ limit = 3 }) {
+export default function TopMindfolios({ limit = 3 }) {
   // TODO: Replace with real API data
   const top = [
     { id: "pf_abc", name: "Main Trading", value: 75000, pnl_today: 1500 },

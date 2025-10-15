@@ -20,27 +20,27 @@ export function buildNav(ctx) {
       ],
     },
 
-    // ACCOUNT & PORTFOLIOS
+    // ACCOUNT & MINDFOLIO
     {
       title: "Account",
       items: [
         { label: "Account Balance", to: "/account/balance", icon: "Wallet" },
         {
-          label: "Portfolio Manager", 
-          to: "/portfolios",  // Direct link to portfolios list
+          label: "Mindfolio Manager", 
+          to: "/mindfolio",  // Direct link to mindfolio list
           icon: "Briefcase",
           children: [
-            // View all portfolios
-            { label: "View All Portfolios", to: "/portfolios", icon: "List" },
-            // Dynamic portfolios
-            ...((ctx.portfolios || []).map(p => ({
+            // View all mindfolios
+            { label: "View All Mindfolios", to: "/mindfolio", icon: "List" },
+            // Dynamic mindfolios
+            ...((ctx.mindfolios || []).map(p => ({
               label: p.name,
-              to: `/portfolios/${p.id}`,
+              to: `/mindfolio/${p.id}`,
               icon: "FolderKanban",
               badge: p.nav ? { text: `$${Math.round(p.nav/1000)}k`, tone: "default" } : undefined,
             }))),
             // Create new
-            { label: "+ Create Portfolio", to: "/portfolios/new", icon: "PlusCircle" },
+            { label: "+ Create Mindfolio", to: "/mindfolio/new", icon: "PlusCircle" },
           ],
         },
       ],
@@ -98,13 +98,13 @@ export function buildNav(ctx) {
         },
         { 
           label: "Smart Rebalancing", 
-          to: "/portfolio/rebalancing", 
+          to: "/mindfolio/rebalancing", 
           icon: "Scale",
           badge: { text: "AI", tone: "verified" }
         },
         { 
-          label: "Portfolio Analytics", 
-          to: "/portfolio/analytics", 
+          label: "Mindfolio Analytics", 
+          to: "/mindfolio/analytics", 
           icon: "BarChart3",
           badge: { text: "NEW", tone: "success" }
         },

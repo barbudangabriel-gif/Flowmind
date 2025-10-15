@@ -357,7 +357,7 @@ async def collect_portfolio_metrics():
     """Collect portfolio metrics"""
     try:
         # Import here to avoid circular dependencies
-        from portfolios import list_portfolios
+        from mindfolio import list_portfolios
         
         portfolios = await list_portfolios()
         portfolios_active.set(len(portfolios))

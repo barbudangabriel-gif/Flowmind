@@ -1,6 +1,6 @@
 import React from "react";
 import StatCard from "../components/dashboard/StatCard";
-import TopPortfolios from "../components/dashboard/TopPortfolios";
+import TopMindfolios from "../components/dashboard/TopMindfolios";
 import QuickActionButton from "../components/dashboard/QuickActionButton";
 import SignalCard from "../components/dashboard/SignalCard";
 import ActiveStrategies from "../components/dashboard/ActiveStrategies";
@@ -18,7 +18,7 @@ export default function Dashboard() {
   const dailyPnL = 2450.25;
   const dailyPnLPct = 1.96;
   const totalCash = 35000.0;
-  const portfolioCount = 3;
+  const mindfolioCount = 3;
 
   // Mock data - replace with API calls
   const ivSignals = [
@@ -50,7 +50,7 @@ export default function Dashboard() {
   ];
 
   const recentAlerts = [
-    { timestamp: "2025-10-15T09:15:00Z", type: "position_threshold", message: "TSLA position exceeded 10% of portfolio", severity: "warning" },
+    { timestamp: "2025-10-15T09:15:00Z", type: "position_threshold", message: "TSLA position exceeded 10% of mindfolio", severity: "warning" },
     { timestamp: "2025-10-15T08:30:00Z", type: "module_stop_loss", message: "IV Service daily loss limit approaching", severity: "warning" }
   ];
 
@@ -62,15 +62,15 @@ export default function Dashboard() {
         <p className="text-gray-400">Real-time overview of your trading activity and market intelligence</p>
       </div>
 
-      {/* Section 1: Portfolio Overview */}
+      {/* Section 1: Mindfolio Overview */}
       <div>
-        <h2 className="text-xl font-semibold text-white mb-4">💼 Portfolio Overview</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">💼 Mindfolio Overview</h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <StatCard title="Total Portfolio Value" value={totalNAV} change={dailyChange} icon="💼" gradient="from-blue-500/20 to-blue-600/20" />
+          <StatCard title="Total Mindfolio Value" value={totalNAV} change={dailyChange} icon="💼" gradient="from-blue-500/20 to-blue-600/20" />
           <StatCard title="Today's P&L" value={dailyPnL} percentage={dailyPnLPct} icon="📈" gradient="from-green-500/20 to-green-600/20" />
-          <StatCard title="Available Cash" value={totalCash} subtitle={`Across ${portfolioCount} portfolios`} icon="💵" gradient="from-purple-500/20 to-purple-600/20" />
+          <StatCard title="Available Cash" value={totalCash} subtitle={`Across ${mindfolioCount} mindfolios`} icon="💵" gradient="from-purple-500/20 to-purple-600/20" />
         </div>
-        <TopPortfolios limit={3} />
+        <TopMindfolios limit={3} />
       </div>
 
       {/* Section 2: Options Analytics Highlights */}
@@ -126,7 +126,7 @@ export default function Dashboard() {
       <div>
         <h2 className="text-xl font-semibold text-white mb-4">⚡ Quick Actions</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <QuickActionButton icon="➕" label="Create Portfolio" href="/portfolios/new" gradient="from-blue-600 to-blue-700" />
+          <QuickActionButton icon="➕" label="Create Mindfolio" href="/mindfolio/new" gradient="from-blue-600 to-blue-700" />
           <QuickActionButton icon="🔨" label="Open Builder" href="/builder" gradient="from-green-600 to-green-700" />
           <QuickActionButton icon="🔍" label="Run IV Scan" href="/options/iv-service" gradient="from-purple-600 to-purple-700" />
           <QuickActionButton icon="📈" label="View Flow" href="/flow" gradient="from-orange-600 to-orange-700" />
