@@ -882,11 +882,43 @@ from middleware.rate_limit import rate_limit
 app.middleware("http")(rate_limit)
 
 # CORS (kept at end to apply globally)
+# Resolve CORS settings
+_cors_origins_env = os.getenv(
+    "CORS_ORIGINS",
+    # Default: local dev (both http/https) and Vite
+    "http://localhost:3000,https://localhost:3000,http://localhost:5173,https://localhost:5173",
+)
+try:
+    # In case env provided as JSON array, try to normalize; otherwise treat as CSV
+    if _cors_origins_env.strip().startswith("["):
+        import json as _json
+
+        _cors_origins = [o.strip() for o in _json.loads(_cors_origins_env)]
+    else:
+        _cors_origins = [o.strip() for o in _cors_origins_env.split(",") if o.strip()]
+except Exception:
+    _cors_origins = [
+        "http://localhost:3000",
+        "https://localhost:3000",
+        "http://localhost:5173",
+        "https://localhost:5173",
+    ]
+
+# Allow Codespaces/GitHub dev URLs by default via regex (can be overridden via CORS_ORIGIN_REGEX)
+_cors_origin_regex = os.getenv(
+    "CORS_ORIGIN_REGEX", r"^https:\/\/.*\.app\.github\.dev$"
+)
+
+logger.info(
+    "CORS configured: allow_origins=%s allow_origin_regex=%s",
+    _cors_origins,
+    _cors_origin_regex,
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv(
-        "CORS_ORIGINS", "http://localhost:3000,http://localhost:5173"
-    ).split(","),
+    allow_origins=_cors_origins,
+    allow_origin_regex=_cors_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

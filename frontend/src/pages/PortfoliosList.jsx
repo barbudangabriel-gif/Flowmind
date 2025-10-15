@@ -24,40 +24,7 @@ export default function PortfoliosList() {
     return () => { mounted = false; };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <div className="text-gray-400">Loading portfolios...</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  if (err) {
-    return (
-      <div className="p-8">
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6">
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">⚠️</span>
-            <div>
-              <div className="font-semibold text-red-400 mb-2">Error Loading Portfolios</div>
-              <div className="text-sm text-gray-400">{err}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Calculate totals
-  const totalValue = items.reduce((sum, pf) => sum + (pf.cash_balance || 0), 0);
-  const totalPortfolios = items.length;
-
-  // Filter and sort logic
+  // Filter and sort logic - MUST be before early returns to maintain consistent hook order
   const filteredAndSortedItems = React.useMemo(() => {
     let result = [...items];
 
@@ -95,8 +62,41 @@ export default function PortfoliosList() {
     return result;
   }, [items, searchQuery, filterStatus, sortBy]);
 
+  // Calculate totals and counts
+  const totalValue = items.reduce((sum, pf) => sum + (pf.cash_balance || 0), 0);
+  const totalPortfolios = items.length;
   const activeCount = items.filter(p => p.status === 'ACTIVE').length;
   const pausedCount = items.filter(p => p.status === 'PAUSED').length;
+
+  // Early returns AFTER all hooks
+  if (loading) {
+    return (
+      <div className="p-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <div className="text-gray-400">Loading portfolios...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (err) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">⚠️</span>
+            <div>
+              <div className="font-semibold text-red-400 mb-2">Error Loading Portfolios</div>
+              <div className="text-sm text-gray-400">{err}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 space-y-6">
