@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { mfClient } from "../services/mindfolioClient";
-import { Line } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -19,6 +20,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
@@ -111,6 +113,43 @@ export default function MindfolioDetailNew() {
           tension: 0.4
         }
       ]
+    };
+  };
+
+  const generateROIChartData = () => {
+    const points = 30; // Last 30 days
+    const labels = [];
+    const roiData = [];
+    
+    let roi = 0;
+    for (let i = 0; i < points; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - (points - i));
+      labels.push(date.toISOString().split('T')[0]);
+      
+      // Simulate gradual ROI growth
+      roi += (Math.random() * 0.5 - 0.1); // Random daily change
+      roiData.push(roi);
+    }
+    
+    return {
+      labels,
+      datasets: [{
+        label: "ROI %",
+        data: roiData,
+        borderColor: "rgb(34, 197, 94)",
+        backgroundColor: (context) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+          gradient.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
+          gradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+          return gradient;
+        },
+        fill: true,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 4
+      }]
     };
   };
 
@@ -381,6 +420,234 @@ export default function MindfolioDetailNew() {
               </div>
             </div>
           )}
+
+          {/* Statistics Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* ROI per Account Card */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">ROI per Account</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mb-3">
+                <div className="text-3xl font-bold text-green-400">+{roiPct}%</div>
+                <div className="text-sm text-gray-400">Current ROI</div>
+              </div>
+              <div className="h-48">
+                <Line 
+                  data={generateROIChartData()}
+                  options={{
+                    ...chartOptions,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                          label: (context) => `ROI: ${context.parsed.y.toFixed(2)}%`
+                        }
+                      }
+                    },
+                    scales: {
+                      y: {
+                        ...chartOptions.scales.y,
+                        ticks: {
+                          ...chartOptions.scales.y.ticks,
+                          callback: (value) => `${value}%`
+                        }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Daily Realized P/L Calendar Card */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Daily Realized Profit/Loss</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm text-gray-400">This Month</div>
+                    <div className="text-2xl font-bold text-green-400">+$2,450</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm text-gray-400">Avg Daily</div>
+                    <div className="text-lg font-bold text-white">+$122</div>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-7 gap-1">
+                {/* Calendar heatmap - 28 days (4 weeks) */}
+                {Array.from({ length: 28 }).map((_, i) => {
+                  const pnl = (Math.random() - 0.4) * 500; // Random P/L
+                  const intensity = Math.min(Math.abs(pnl) / 250, 1);
+                  const bgColor = pnl >= 0 
+                    ? `rgba(34, 197, 94, ${intensity * 0.6})` 
+                    : `rgba(239, 68, 68, ${intensity * 0.6})`;
+                  return (
+                    <div
+                      key={i}
+                      className="aspect-square rounded cursor-pointer hover:ring-2 hover:ring-blue-500 transition"
+                      style={{ backgroundColor: bgColor }}
+                      title={`Day ${i+1}: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(0)}`}
+                    />
+                  );
+                })}
+              </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
+                <span>🟢 Profit</span>
+                <span>🔴 Loss</span>
+              </div>
+            </div>
+
+            {/* Distribution of Daily Realized PnL Card */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Distribution of Daily Realized PnL</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="h-64">
+                <Bar 
+                  data={{
+                    labels: ['-$1k+', '-$500', '-$250', '-$100', '$0', '$100', '$250', '$500', '$1k+'],
+                    datasets: [{
+                      label: 'Days',
+                      data: [2, 5, 8, 12, 15, 20, 18, 10, 5],
+                      backgroundColor: (context) => {
+                        const index = context.dataIndex;
+                        if (index < 4) return 'rgba(239, 68, 68, 0.8)'; // Red for losses
+                        if (index === 4) return 'rgba(148, 163, 184, 0.8)'; // Gray for breakeven
+                        return 'rgba(34, 197, 94, 0.8)'; // Green for profits
+                      },
+                      borderColor: (context) => {
+                        const index = context.dataIndex;
+                        if (index < 4) return 'rgb(239, 68, 68)';
+                        if (index === 4) return 'rgb(148, 163, 184)';
+                        return 'rgb(34, 197, 94)';
+                      },
+                      borderWidth: 1
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                          label: (context) => `${context.parsed.y} days`
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { color: 'rgb(148, 163, 184)', font: { size: 11 } }
+                      },
+                      y: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { color: 'rgb(148, 163, 184)' },
+                        title: { display: true, text: 'Number of Days', color: 'rgb(148, 163, 184)' }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Distribution of Daily Returns Card */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">Distribution of Daily Returns</h3>
+                <button className="text-gray-400 hover:text-white transition">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mb-3">
+                <label className="text-sm text-gray-400 mb-1 block">From:</label>
+                <input 
+                  type="date"
+                  className="w-full bg-slate-700/50 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+                  defaultValue="2025-01-01"
+                />
+              </div>
+              <div className="h-56">
+                <Bar 
+                  data={{
+                    labels: ['-5%+', '-3%', '-2%', '-1%', '0%', '+1%', '+2%', '+3%', '+5%+'],
+                    datasets: [{
+                      label: 'Days',
+                      data: [1, 4, 7, 15, 18, 22, 16, 8, 4],
+                      backgroundColor: (context) => {
+                        const index = context.dataIndex;
+                        if (index < 4) return 'rgba(239, 68, 68, 0.8)';
+                        if (index === 4) return 'rgba(148, 163, 184, 0.8)';
+                        return 'rgba(34, 197, 94, 0.8)';
+                      },
+                      borderColor: (context) => {
+                        const index = context.dataIndex;
+                        if (index < 4) return 'rgb(239, 68, 68)';
+                        if (index === 4) return 'rgb(148, 163, 184)';
+                        return 'rgb(34, 197, 94)';
+                      },
+                      borderWidth: 1
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        borderColor: 'rgba(148, 163, 184, 0.2)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                          label: (context) => `${context.parsed.y} days`
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { color: 'rgb(148, 163, 184)', font: { size: 11 } }
+                      },
+                      y: {
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' },
+                        ticks: { color: 'rgb(148, 163, 184)' },
+                        title: { display: true, text: 'Number of Days', color: 'rgb(148, 163, 184)' }
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
