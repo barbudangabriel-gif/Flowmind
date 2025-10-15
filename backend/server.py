@@ -709,6 +709,11 @@ from routers.geopolitical import router as geopolitical_router
 
 app.include_router(geopolitical_router)  # Already has /api/geopolitical prefix
 
+# Term Structure Volatility Arbitrage router
+from routers.term_structure import router as term_structure_router
+
+app.include_router(term_structure_router)  # Already has /api/term-structure prefix
+
 # WebSocket Streaming router
 from routers.stream import router as stream_router
 
