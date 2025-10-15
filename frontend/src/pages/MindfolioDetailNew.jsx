@@ -36,6 +36,7 @@ export default function MindfolioDetailNew() {
   const [loading, setLoading] = useState(true);
   const [selectedGreek, setSelectedGreek] = useState("Delta");
   const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
+  const [stocksView, setStocksView] = useState("OPEN"); // OPEN or ALL
 
   useEffect(() => {
     loadMindfolio();
@@ -1798,10 +1799,165 @@ export default function MindfolioDetailNew() {
             </div>
           </div>
 
-          {/* RIGHT SIDE - Coming soon */}
-          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Analytics</h3>
-            <div className="text-gray-400">Coming soon...</div>
+          {/* RIGHT SIDE - Analytics */}
+          <div className="space-y-6">
+            {/* Toggle Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStocksView("OPEN")}
+                className={`px-4 py-2 rounded font-semibold transition-colors ${
+                  stocksView === "OPEN"
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-700 text-gray-400 hover:bg-slate-600"
+                }`}
+              >
+                OPEN
+              </button>
+              <button
+                onClick={() => setStocksView("ALL")}
+                className={`px-4 py-2 rounded font-semibold transition-colors ${
+                  stocksView === "ALL"
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-700 text-gray-400 hover:bg-slate-600"
+                }`}
+              >
+                ALL
+              </button>
+            </div>
+
+            {stocksView === "OPEN" && (
+              <>
+                {/* Daily Realized Profit/Loss Calendar */}
+                <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Daily Realized Profit/Loss</h3>
+                  <div className="grid grid-cols-7 gap-2">
+                    {/* Calendar Header */}
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                      <div key={day} className="text-center text-xs text-gray-400 font-semibold pb-2">
+                        {day}
+                      </div>
+                    ))}
+                    
+                    {/* Calendar Days (Last 4 weeks) */}
+                    {Array.from({ length: 28 }).map((_, idx) => {
+                      const profit = Math.random() > 0.4 ? (Math.random() * 500 - 100) : 0;
+                      const isProfit = profit > 0;
+                      const isLoss = profit < 0;
+                      const isEmpty = profit === 0;
+                      
+                      return (
+                        <div
+                          key={idx}
+                          className={`aspect-square rounded p-1 text-xs flex flex-col items-center justify-center ${
+                            isProfit ? 'bg-green-900/40 border border-green-700' :
+                            isLoss ? 'bg-red-900/40 border border-red-700' :
+                            'bg-slate-700/30 border border-slate-600'
+                          }`}
+                        >
+                          <div className="text-gray-400 text-[10px]">{idx + 1}</div>
+                          {!isEmpty && (
+                            <div className={`font-semibold ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
+                              {isProfit ? '+' : ''}{profit.toFixed(0)}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Sector Exposure */}
+                <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-white mb-1">Sector Exposure</h3>
+                  <p className="text-xs text-gray-400 mb-4">Includes indirect exposures through ETFs</p>
+                  
+                  <div className="space-y-3">
+                    {[
+                      { sector: 'Technology', value: 85420, color: 'bg-blue-500' },
+                      { sector: 'Consumer Cyclical', value: 52275, color: 'bg-green-500' },
+                      { sector: 'Financial Services', value: 36172, color: 'bg-yellow-500' },
+                      { sector: 'Healthcare', value: 28340, color: 'bg-red-500' },
+                      { sector: 'Communication', value: 18520, color: 'bg-purple-500' },
+                      { sector: 'Industrials', value: 10196, color: 'bg-orange-500' }
+                    ].map(item => (
+                      <div key={item.sector} className="flex items-center gap-3">
+                        <div className="w-32 text-sm text-gray-300 truncate">{item.sector}</div>
+                        <div className="flex-1 relative">
+                          <div className="w-full bg-slate-700 rounded h-6">
+                            <div
+                              className={`${item.color} h-full rounded flex items-center justify-end pr-2`}
+                              style={{ width: `${(item.value / 90000) * 100}%` }}
+                            >
+                              <span className="text-xs font-semibold text-white">
+                                ${(item.value / 1000).toFixed(1)}k
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* X-axis labels */}
+                  <div className="flex justify-between mt-2 text-xs text-gray-500">
+                    <span>$0</span>
+                    <span>$30k</span>
+                    <span>$60k</span>
+                    <span>$90k</span>
+                  </div>
+                </div>
+
+                {/* Ticker Exposure */}
+                <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-white mb-1">Ticker Exposure</h3>
+                  <p className="text-xs text-gray-400 mb-4">Includes indirect exposures through ETFs</p>
+                  
+                  <div className="space-y-3">
+                    {[
+                      { ticker: 'NVDA', value: 47280, color: 'bg-green-500' },
+                      { ticker: 'MSFT', value: 45624, color: 'bg-red-400' },
+                      { ticker: 'TSLA', value: 39345, color: 'bg-green-500' },
+                      { ticker: 'SPY', value: 36172, color: 'bg-green-500' },
+                      { ticker: 'AAPL', value: 35700, color: 'bg-green-500' },
+                      { ticker: 'AMD', value: 26802, color: 'bg-green-500' }
+                    ].map(item => (
+                      <div key={item.ticker} className="flex items-center gap-3">
+                        <div className="w-16 text-sm text-white font-semibold">{item.ticker}</div>
+                        <div className="flex-1 relative">
+                          <div className="w-full bg-slate-700 rounded h-6">
+                            <div
+                              className={`${item.color} h-full rounded flex items-center justify-end pr-2`}
+                              style={{ width: `${(item.value / 50000) * 100}%` }}
+                            >
+                              <span className="text-xs font-semibold text-white">
+                                ${(item.value / 1000).toFixed(1)}k
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* X-axis labels */}
+                  <div className="flex justify-between mt-2 text-xs text-gray-500">
+                    <span>$0</span>
+                    <span>$10k</span>
+                    <span>$20k</span>
+                    <span>$30k</span>
+                    <span>$40k</span>
+                    <span>$50k</span>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {stocksView === "ALL" && (
+              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">All Positions</h3>
+                <div className="text-gray-400">Coming soon...</div>
+              </div>
+            )}
           </div>
         </div>
       )}
