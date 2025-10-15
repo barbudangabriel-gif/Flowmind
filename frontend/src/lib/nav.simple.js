@@ -55,25 +55,77 @@ export function buildNav(ctx) {
       ],
     },
 
-    // OPTIONS
+    // STRATEGY (All Trading Modules & Strategies)
     {
-      title: "Options",
+      title: "Strategy",
       items: [
+        { 
+          label: "Options Builder", 
+          to: "/builder", 
+          icon: "Hammer",
+          badge: { text: "PRO", tone: "success" }
+        },
         { 
           label: "IV Setups (Auto)", 
           to: "/screener/iv", 
-          icon: "Activity"
+          icon: "Activity",
+          children: [
+            { label: "Iron Condor Scanner", to: "/screener/iv?strategy=IRON_CONDOR", icon: "Target" },
+            { label: "Calendar Scanner", to: "/screener/iv?strategy=CALENDAR", icon: "Calendar" },
+            { label: "Diagonal Scanner", to: "/screener/iv?strategy=DIAGONAL", icon: "TrendingUp" },
+            { label: "Double Diagonal", to: "/screener/iv?strategy=DOUBLE_DIAGONAL", icon: "Layers" },
+          ]
         },
         { 
           label: "Sell Puts (Auto)", 
           to: "/screener/sell-puts", 
-          icon: "ArrowDownCircle"
+          icon: "ArrowDownCircle",
+          children: [
+            { label: "Put Selling Engine", to: "/screener/sell-puts", icon: "ArrowDown" },
+            { label: "Covered Calls", to: "/screener/covered-calls", icon: "Shield" },
+            { label: "Cash-Secured Puts", to: "/screener/csp", icon: "DollarSign" },
+          ]
         },
+        { 
+          label: "Investment Scoring", 
+          to: "/stocks/scoring", 
+          icon: "Target",
+          children: [
+            { label: "Stock Scorer", to: "/stocks/scoring", icon: "Star" },
+            { label: "Scoring Scanner", to: "/stocks/scanner", icon: "Search" },
+            { label: "Top Picks", to: "/stocks/top-picks", icon: "TrendingUp" },
+          ]
+        },
+        { 
+          label: "Smart Rebalancing", 
+          to: "/portfolio/rebalancing", 
+          icon: "Scale",
+          badge: { text: "AI", tone: "verified" }
+        },
+        { 
+          label: "Portfolio Analytics", 
+          to: "/portfolio/analytics", 
+          icon: "BarChart3",
+          badge: { text: "NEW", tone: "success" }
+        },
+      ],
+    },
+
+    // OPTIONS (Quick Tools)
+    {
+      title: "Options",
+      items: [
         { 
           label: "Analytics", 
           to: "/options/analytics", 
           icon: "BarChart2", 
           badge: { text: "NEW", tone: "success" } 
+        },
+        { 
+          label: "Option Chain (TS)", 
+          to: "/md/chain", 
+          icon: "Grid3X3",
+          visible: (c) => !!c.flags?.TS_LIVE 
         },
       ],
     },
@@ -149,12 +201,6 @@ export function buildNav(ctx) {
           icon: "Sparkle",
           visible: (c) => !!c.flags?.TS_LIVE, 
           badge: tsLiveBadge 
-        },
-        { 
-          label: "Option Chain (TS)", 
-          to: "/md/chain", 
-          icon: "Grid3X3",
-          visible: (c) => !!c.flags?.TS_LIVE 
         },
         { label: "Unusual Whales", to: "/providers/uw", icon: "Fish" },
       ],

@@ -699,6 +699,11 @@ from routers.options_flow import router as options_flow_router
 
 app.include_router(options_flow_router, prefix="/api")
 
+# Dashboard router
+from routers.dashboard import router as dashboard_router
+
+app.include_router(dashboard_router, prefix="/api")
+
 # WebSocket Streaming router
 from routers.stream import router as stream_router
 
