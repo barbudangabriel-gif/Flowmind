@@ -1,6 +1,6 @@
 # FlowMind Project Status
 
-**Last Updated**: October 14, 2025
+**Last Updated**: October 15, 2025
 
 ---
 
@@ -12,12 +12,25 @@
 - 100% localhost configuration (backend:8000, frontend:3000)
 - CORS restricted to localhost only
 - 86 files cleaned and updated
+- **FIS Smoke Health Tests** ✅ (October 15, 2025)
+  - Backend health: ✅ Passed
+  - Frontend health: ✅ Passed  
+  - OAuth login endpoint: ✅ Passed
+  - Portfolios API: ✅ Passed (no data yet)
+- **Portfolio Pages Dark Theme Conversion** ✅ (October 15, 2025)
+  - PortfoliosList.jsx: ✅ Full dark theme (bg-gray-950, dark cards)
+  - PortfolioDetail.jsx: ✅ Full dark theme (dark stats, tabs, forms)
+  - PortfolioCreate.jsx: ✅ Full dark theme (dark form, inputs, buttons)
 
 ### ⏳ In Progress / Waiting
 - **TradeStation OAuth Approval**: Email sent to clientexperience@tradestation.com
   - Requested callback URL: `http://localhost:8000/api/oauth/tradestation/callback`
   - Status: Awaiting response
   - Next: Test authentication flow after approval
+- **Portfolio Feature Enhancements**: Ready for Phase 2+
+  - Phase 2: Enhanced PortfoliosList (search/filter/sort, stats cards)
+  - Phase 3: PortfolioDetail tabs/charts
+  - Phase 4: CSV import improvements
 
 ### 🚧 Blocked
 - Account Balance page functionality (requires TradeStation OAuth approval)

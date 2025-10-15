@@ -60,10 +60,10 @@ export default function PortfolioDetail() {
 
   if (err) {
     return (
-      <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded">
+      <div className="p-4 text-sm text-red-400 bg-red-900/20 border border-red-700/40 rounded">
         <div className="font-semibold">Error loading portfolio</div>
         <div>{err}</div>
-        <Link to="/portfolios" className="text-blue-600 hover:text-blue-700 mt-2 inline-block">
+        <Link to="/portfolios" className="text-blue-400 hover:text-blue-300 mt-2 inline-block">
           ← Back to portfolios
         </Link>
       </div>
@@ -71,7 +71,7 @@ export default function PortfolioDetail() {
   }
 
   if (!p) {
-    return <div className="p-4 text-sm text-gray-500">Loading portfolio…</div>;
+    return <div className="p-4 text-sm text-gray-400 bg-gray-950 min-h-screen">Loading portfolio…</div>;
   }
 
   const tabs = [
@@ -83,19 +83,19 @@ export default function PortfolioDetail() {
   ];
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 bg-gray-950 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <Link to="/portfolios" className="text-blue-600 hover:text-blue-700">
+            <Link to="/portfolios" className="text-blue-400 hover:text-blue-300">
               ← Back
             </Link>
-            <h1 className="text-xl font-semibold text-gray-900">{p.name}</h1>
+            <h1 className="text-xl font-semibold text-white">{p.name}</h1>
           </div>
-          <div className="flex items-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center gap-4 text-sm text-gray-400">
             <span>NAV: <span className="font-mono text-lg">${p.cash_balance?.toFixed?.(2) ?? p.cash_balance}</span></span>
-            <span>Status: <span className={`font-medium ${p.status === 'ACTIVE' ? 'text-green-600' : 'text-gray-600'}`}>
+            <span>Status: <span className={`font-medium ${p.status === 'ACTIVE' ? 'text-green-400' : 'text-gray-400'}`}>
               {p.status}
             </span></span>
             <span>ID: <span className="font-mono text-xs">{p.id}</span></span>
@@ -106,27 +106,27 @@ export default function PortfolioDetail() {
       {/* Stats Summary */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg p-4 shadow-sm border">
-            <div className="text-sm text-gray-500">Realized P&L</div>
-            <div className={`text-xl font-semibold ${(stats.pnl_realized || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${(stats.pnl_realized || 0).toFixed(2)}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Realized P&L</div>
+            <div className={`text-xl font-semibold ${(stats.pnl_realized || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {(stats.pnl_realized || 0).toFixed(2)}
             </div>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm border">
-            <div className="text-sm text-gray-500">Total Trades</div>
-            <div className="text-xl font-semibold text-gray-900">
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Total Trades</div>
+            <div className="text-xl font-semibold text-white">
               {stats.total_trades || 0}
             </div>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm border">
-            <div className="text-sm text-gray-500">Open Positions</div>
-            <div className="text-xl font-semibold text-gray-900">
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Open Positions</div>
+            <div className="text-xl font-semibold text-white">
               {stats.positions_count || 0}
             </div>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm border">
-            <div className="text-sm text-gray-500">Cash Balance</div>
-            <div className="text-xl font-semibold text-gray-900">
+          <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
+            <div className="text-sm text-gray-400">Cash Balance</div>
+            <div className="text-xl font-semibold text-white">
               ${p.cash_balance?.toFixed?.(2) ?? 0}
             </div>
           </div>
@@ -134,7 +134,7 @@ export default function PortfolioDetail() {
       )}
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-800">
         <nav className="flex space-x-8">
           {tabs.map((tab) => (
             <button
@@ -142,8 +142,8 @@ export default function PortfolioDetail() {
               onClick={() => setActiveTab(tab.id)}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-400'
+                  : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-700'
               }`}
             >
               <span className="mr-2">{tab.icon}</span>
@@ -158,25 +158,25 @@ export default function PortfolioDetail() {
         {activeTab === 'overview' && (
           <div className="grid md:grid-cols-2 gap-6">
             {/* Allocations */}
-            <div className="border border-gray-200 rounded-xl p-4">
-              <div className="text-lg font-semibold mb-4">Module Allocations</div>
+            <div className="border border-gray-800 rounded-xl p-4 bg-slate-900/60">
+              <div className="text-lg font-semibold mb-4 text-white">Module Allocations</div>
               {(!p.modules || p.modules.length === 0) ? (
-                <div className="text-sm text-gray-500 py-4">
+                <div className="text-sm text-gray-400 py-4">
                   No module allocations configured yet
                 </div>
               ) : (
                 <div className="space-y-3">
                   {p.modules.map((m, idx) => (
-                    <div key={idx} className="border border-gray-100 rounded-lg p-3">
+                    <div key={idx} className="border border-gray-700 rounded-lg p-3 bg-slate-800/50">
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm font-medium">{m.module}</div>
+                        <div className="text-sm font-medium text-white">{m.module}</div>
                         {m.autotrade && (
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                          <span className="text-xs bg-green-900 text-green-300 px-2 py-1 rounded">
                             Auto
                           </span>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                      <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
                         <div>Budget: <span className="font-mono">${m.budget}</span></div>
                         <div>Max/Trade: <span className="font-mono">${m.max_risk_per_trade}</span></div>
                         <div>Daily Limit: <span className="font-mono">${m.daily_loss_limit}</span></div>
@@ -188,11 +188,11 @@ export default function PortfolioDetail() {
             </div>
 
             {/* Funds Management */}
-            <div className="border border-gray-200 rounded-xl p-4">
-              <div className="text-lg font-semibold mb-4">Manage Funds</div>
+            <div className="border border-gray-800 rounded-xl p-4 bg-slate-900/60">
+              <div className="text-lg font-semibold mb-4 text-white">Manage Funds</div>
               <form onSubmit={handleFundsUpdate} className="space-y-3">
                 <div>
-                  <label className="text-sm text-gray-600 mb-1 block">
+                  <label className="text-sm text-gray-400 mb-1 block">
                     Add/Remove Funds ($)
                   </label>
                   <input
@@ -201,13 +201,13 @@ export default function PortfolioDetail() {
                     value={fundsDelta}
                     onChange={e => setFundsDelta(e.target.value)}
                     placeholder="e.g. 1000 or -500"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    className="w-full border border-gray-700 bg-gray-800 text-white rounded-md px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={!fundsDelta || updating}
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm"
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors text-sm"
                 >
                   {updating ? "Updating..." : "Update Funds"}
                 </button>
