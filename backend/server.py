@@ -704,6 +704,11 @@ from routers.dashboard import router as dashboard_router
 
 app.include_router(dashboard_router, prefix="/api")
 
+# Geopolitical & News Intelligence router
+from routers.geopolitical import router as geopolitical_router
+
+app.include_router(geopolitical_router)  # Already has /api/geopolitical prefix
+
 # WebSocket Streaming router
 from routers.stream import router as stream_router
 
