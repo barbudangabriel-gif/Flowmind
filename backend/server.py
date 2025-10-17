@@ -119,22 +119,22 @@ except ImportError as e:
 portfolio_service_initialized = False
 
 async def initialize_portfolio_service():
- """Initialize portfolio management service with TradeStation data"""
- global portfolio_service_initialized
- if not portfolio_service_initialized:
- try:
- if portfolio_management_service is not None:
- await portfolio_management_service.initialize()
- portfolio_service_initialized = True
- logger.info("Portfolio management service initialized successfully")
- else:
- logger.warning(
- "Portfolio management service is disabled for security audit"
- )
- portfolio_service_initialized = False
- except Exception as e:
- logger.error(f"Failed to initialize portfolio management service: {str(e)}")
- portfolio_service_initialized = False
+    """Initialize portfolio management service with TradeStation data"""
+    global portfolio_service_initialized
+    if not portfolio_service_initialized:
+        try:
+            if portfolio_management_service is not None:
+                await portfolio_management_service.initialize()
+                portfolio_service_initialized = True
+                logger.info("Portfolio management service initialized successfully")
+            else:
+                logger.warning(
+                    "Portfolio management service is disabled for security audit"
+                )
+                portfolio_service_initialized = False
+        except Exception as e:
+            logger.error(f"Failed to initialize portfolio management service: {str(e)}")
+            portfolio_service_initialized = False
 
 # Create the main app without a prefix
 app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")

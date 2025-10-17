@@ -8,6 +8,13 @@ from .routes.mindfolios import router as mindfolios_router
 from .routers.tradestation import router as tradestation_router
 from .routers.tradestation_auth import router as tradestation_auth_router
 
+# Import from backend/routers (not app/routers)
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from routers.flow import router as flow_router
+from routers.options import router as options_router
+
 app = FastAPI(title="Flowmind API", version="1.0")
 
 # CORS middleware for frontend access
@@ -28,3 +35,5 @@ app.include_router(analytics_router)
 app.include_router(mindfolios_router)
 app.include_router(tradestation_router, prefix="/api")
 app.include_router(tradestation_auth_router, prefix="/api")
+app.include_router(flow_router, prefix="/api")
+app.include_router(options_router, prefix="/api")
