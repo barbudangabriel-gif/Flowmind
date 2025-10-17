@@ -1,4 +1,5 @@
 """TradeStation authentication dependencies."""
+
 import logging
 from typing import Dict, Any
 from fastapi import Depends, HTTPException, Request
@@ -44,5 +45,5 @@ async def get_user_token_info(user_id: str = Depends(get_user_id)) -> Dict[str, 
         "authenticated": True,
         "expires_in": expires_in,
         "expires_at": token.get("exp_ts", 0),
-        "needs_refresh": expires_in <= 60
+        "needs_refresh": expires_in <= 60,
     }

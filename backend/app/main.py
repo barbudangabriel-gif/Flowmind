@@ -11,7 +11,8 @@ from .routers.tradestation_auth import router as tradestation_auth_router
 # Import from backend/routers (not app/routers)
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from routers.flow import router as flow_router
 from routers.options import router as options_router
 
@@ -20,15 +21,17 @@ app = FastAPI(title="Flowmind API", version="1.0")
 # CORS middleware for frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, specify exact origins
+    allow_origins=["*"],  # In production, specify exact origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
 @app.get("/", include_in_schema=False)
 def root_redirect():
     return RedirectResponse(url="/api/v1/")
+
 
 app.include_router(system_router)
 app.include_router(analytics_router)

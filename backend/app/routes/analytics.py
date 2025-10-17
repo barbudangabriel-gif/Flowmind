@@ -4,6 +4,7 @@ from datetime import datetime
 
 router = APIRouter(prefix="/api/v1/analytics", tags=["analytics"])
 
+
 class IVXResponse(BaseModel):
     symbol: str
     window: int
@@ -12,6 +13,7 @@ class IVXResponse(BaseModel):
     ts: datetime
     source: str
     note: str | None = None
+
 
 @router.get("/ivx", response_model=IVXResponse, summary="IV Index (mock)")
 def ivx(
@@ -24,4 +26,5 @@ def ivx(
 
     # importul îl facem aici ca să evităm importuri circulare în timpul încărcării modulului
     from ..services.analytics_service import get_ivx
+
     return get_ivx(sym, window)

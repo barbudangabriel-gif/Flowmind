@@ -2,6 +2,7 @@
 
 Handles token refresh with retry logic, backoff, and observability.
 """
+
 from __future__ import annotations
 import time
 import logging
@@ -12,11 +13,18 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 try:
     from ..config import (
-        TS_BASE_URL, TS_CLIENT_ID, TS_CLIENT_SECRET, TS_REDIRECT_URI,
-        TOKEN_SKEW_SECONDS, HTTP_TIMEOUT, MONGO_URL, DB_NAME
+        TS_BASE_URL,
+        TS_CLIENT_ID,
+        TS_CLIENT_SECRET,
+        TS_REDIRECT_URI,
+        TOKEN_SKEW_SECONDS,
+        HTTP_TIMEOUT,
+        MONGO_URL,
+        DB_NAME,
     )
 except ImportError:
     import os
+
     TS_BASE_URL = os.getenv("TS_BASE_URL", "https://api.tradestation.com")
     TS_CLIENT_ID = os.getenv("TRADESTATION_API_KEY", "")
     TS_CLIENT_SECRET = os.getenv("TRADESTATION_API_SECRET", "")
@@ -65,7 +73,7 @@ async def get_tokens(user_id: str) -> Optional[Dict[str, Any]]:
                 token_data = {
                     "access_token": doc["access_token"],
                     "refresh_token": doc["refresh_token"],
-                    "exp_ts": doc["exp_ts"]
+                    "exp_ts": doc["exp_ts"],
                 }
                 _TOKENS[user_id] = token_data
                 log.info(f"Loaded tokens for user {user_id} from MongoDB")
@@ -79,11 +87,7 @@ async def get_tokens(user_id: str) -> Optional[Dict[str, Any]]:
 async def save_tokens(user_id: str, access: str, refresh: str, expires_in: int) -> Dict[str, Any]:
     """Save tokens to both cache and MongoDB."""
     exp_ts = int(time.time()) + int(expires_in)
-    token_data = {
-        "access_token": access,
-        "refresh_token": refresh,
-        "exp_ts": exp_ts
-    }
+    token_data = {"access_token": access, "refresh_token": refresh, "exp_ts": exp_ts}
 
     _TOKENS[user_id] = token_data
 
@@ -97,9 +101,9 @@ async def save_tokens(user_id: str, access: str, refresh: str, expires_in: int) 
                     "access_token": access,
                     "refresh_token": refresh,
                     "exp_ts": exp_ts,
-                    "updated_at": time.time()
+                    "updated_at": time.time(),
                 },
-                upsert=True
+                upsert=True,
             )
             log.info(f"Tokens saved for user {user_id} (expires in {expires_in}s)")
         except Exception as e:
@@ -156,7 +160,7 @@ def refresh_access_token(refresh_token: str) -> Dict[str, Any]:
             log.error(f"Unexpected error during token refresh: {e}")
 
         if attempt < 2:
-            sleep_time = 0.5 * (2 ** attempt)
+            sleep_time = 0.5 * (2**attempt)
             log.info(f"Retrying in {sleep_time}s...")
             time.sleep(sleep_time)
 
@@ -182,7 +186,7 @@ async def ensure_valid_token(user_id: str) -> str:
                     user_id,
                     refresh_data["access_token"],
                     refresh_data.get("refresh_token", token["refresh_token"]),
-                    refresh_data.get("expires_in", 900)
+                    refresh_data.get("expires_in", 900),
                 )
 
                 log.info(f"Token refreshed successfully for user {user_id}")
@@ -205,7 +209,7 @@ async def health_check() -> Dict[str, Any]:
         mongo_ok = False
         if _mongo_client is not None:
             try:
-                await _mongo_client.admin.command('ping')
+                await _mongo_client.admin.command("ping")
                 mongo_ok = True
             except Exception:
                 pass
@@ -217,13 +221,9 @@ async def health_check() -> Dict[str, Any]:
             "mongodb": "connected" if mongo_ok else "disconnected",
             "tradestation_config": "configured" if config_ok else "missing",
             "active_sessions": len(_TOKENS),
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
     except Exception as e:
         log.error(f"Health check failed: {e}")
-        return {
-            "status": "unhealthy",
-            "error": str(e),
-            "timestamp": time.time()
-        }
+        return {"status": "unhealthy", "error": str(e), "timestamp": time.time()}
