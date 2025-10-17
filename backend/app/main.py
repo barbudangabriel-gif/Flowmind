@@ -9,6 +9,7 @@ from .routes.mindfolios import router as mindfolios_router
 from .routers.tradestation import router as tradestation_router
 from .routers.tradestation_auth import router as tradestation_auth_router
 from .routers.flow import router as flow_router
+from .routers.builder import router as builder_router
 
 app = FastAPI(title="Flowmind API", version="1.0")
 
@@ -40,5 +41,6 @@ app.include_router(mindfolios_router)
 app.include_router(tradestation_router, prefix="/api")
 app.include_router(tradestation_auth_router, prefix="/api")
 app.include_router(flow_router, prefix="/api")
+app.include_router(builder_router, prefix="/api")
 # options router commented until properly created in app/routers/
 # app.include_router(options_router, prefix="/api")
