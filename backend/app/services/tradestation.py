@@ -1,229 +1,181 @@
-"""TradeStation Token Management Service.
-
-Handles token refresh with retry logic, backoff, and observability.
-"""
-
+# app/services/tradestation.py
 from __future__ import annotations
+
+import os
 import time
 import logging
-import requests
 import asyncio
-from typing import Dict, Any, Optional
-from motor.motor_asyncio import AsyncIOMotorClient
+from typing import Dict, Optional, Tuple
 
-try:
-    from ..config import (
-        TS_BASE_URL,
-        TS_CLIENT_ID,
-        TS_CLIENT_SECRET,
-        TS_REDIRECT_URI,
-        TOKEN_SKEW_SECONDS,
-        HTTP_TIMEOUT,
-        MONGO_URL,
-        DB_NAME,
-    )
-except ImportError:
-    import os
+import httpx
 
-    TS_BASE_URL = os.getenv("TS_BASE_URL", "https://api.tradestation.com")
-    TS_CLIENT_ID = os.getenv("TRADESTATION_API_KEY", "")
-    TS_CLIENT_SECRET = os.getenv("TRADESTATION_API_SECRET", "")
-    TS_REDIRECT_URI = os.getenv("TRADESTATION_REDIRECT_URI", "http://localhost:8080")
-    TOKEN_SKEW_SECONDS = 60
-    HTTP_TIMEOUT = 8.0
-    MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
-    DB_NAME = os.getenv("DB_NAME", "test_database")
+log = logging.getLogger("tradestation")
+if not log.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
 
-log = logging.getLogger("ts.service")
+# === Config din ENV (setează-le în .env) ===
+TS_BASE_URL = os.getenv("TS_BASE_URL", "https://api.tradestation.com")
+TS_TOKEN_URL = os.getenv("TS_TOKEN_URL", f"{TS_BASE_URL.rstrip('/')}/oauth/token")
+TS_AUTH_URL = os.getenv("TS_AUTH_URL", f"{TS_BASE_URL.rstrip('/')}/authorize")
+TS_CLIENT_ID = os.getenv("TS_CLIENT_ID", "")
+TS_CLIENT_SECRET = os.getenv("TS_CLIENT_SECRET", "")
+TS_SCOPE = os.getenv("TS_SCOPE", "openid offline_access")
 
-_mongo_client = None
-_db = None
+HTTP_TIMEOUT = float(os.getenv("TS_HTTP_TIMEOUT", "15"))
+REFRESH_SKEW = int(os.getenv("TS_REFRESH_SKEW", "60"))  # secunde
 
+# === Mem-cache simplu per user_id ===
+_TOKENS: Dict[str, Dict] = {}          # user_id -> token dict {access_token, refresh_token, expires_at}
+_LOCKS: Dict[str, asyncio.Lock] = {}   # user_id -> lock pt. refresh/obținere
 
-async def init_db():
-    """Initialize MongoDB connection for token storage."""
-    global _mongo_client, _db
-    if _mongo_client is None:
-        _mongo_client = AsyncIOMotorClient(MONGO_URL)
-        _db = _mongo_client[DB_NAME]
-        log.info("MongoDB connection initialized for token storage")
+def _now() -> int:
+    return int(time.time())
 
+def _ensure_lock(user_id: str) -> asyncio.Lock:
+    if user_id not in _LOCKS:
+        _LOCKS[user_id] = asyncio.Lock()
+    return _LOCKS[user_id]
 
-_TOKENS: Dict[str, Dict[str, Any]] = {}
-_refresh_lock: Dict[str, asyncio.Lock] = {}
+def auth_url(redirect_uri: str, state: str) -> str:
+    """Construiește URL-ul de login (implicit response_type=code)."""
+    from urllib.parse import urlencode
 
-
-def get_refresh_lock(user_id: str) -> asyncio.Lock:
-    """Get or create refresh lock for user."""
-    if user_id not in _refresh_lock:
-        _refresh_lock[user_id] = asyncio.Lock()
-    return _refresh_lock[user_id]
-
-
-async def get_tokens(user_id: str) -> Optional[Dict[str, Any]]:
-    """Get tokens from cache or MongoDB."""
-    if user_id in _TOKENS:
-        return _TOKENS[user_id]
-
-    await init_db()
-    if _db is not None:
-        try:
-            doc = await _db.ts_tokens.find_one({"user_id": user_id})
-            if doc:
-                token_data = {
-                    "access_token": doc["access_token"],
-                    "refresh_token": doc["refresh_token"],
-                    "exp_ts": doc["exp_ts"],
-                }
-                _TOKENS[user_id] = token_data
-                log.info(f"Loaded tokens for user {user_id} from MongoDB")
-                return token_data
-        except Exception as e:
-            log.error(f"Error loading tokens from MongoDB: {e}")
-
-    return None
-
-
-async def save_tokens(user_id: str, access: str, refresh: str, expires_in: int) -> Dict[str, Any]:
-    """Save tokens to both cache and MongoDB."""
-    exp_ts = int(time.time()) + int(expires_in)
-    token_data = {"access_token": access, "refresh_token": refresh, "exp_ts": exp_ts}
-
-    _TOKENS[user_id] = token_data
-
-    await init_db()
-    if _db is not None:
-        try:
-            await _db.ts_tokens.replace_one(
-                {"user_id": user_id},
-                {
-                    "user_id": user_id,
-                    "access_token": access,
-                    "refresh_token": refresh,
-                    "exp_ts": exp_ts,
-                    "updated_at": time.time(),
-                },
-                upsert=True,
-            )
-            log.info(f"Tokens saved for user {user_id} (expires in {expires_in}s)")
-        except Exception as e:
-            log.error(f"Error saving tokens to MongoDB: {e}")
-
-    return token_data
-
-
-def is_expiring(token: Dict[str, Any]) -> bool:
-    """Check if token is expiring within skew seconds."""
-    return int(time.time()) >= int(token.get("exp_ts", 0)) - TOKEN_SKEW_SECONDS
-
-
-def get_expires_in(token: Dict[str, Any]) -> int:
-    """Get seconds until token expiration."""
-    return max(0, int(token.get("exp_ts", 0)) - int(time.time()))
-
-
-def refresh_access_token(refresh_token: str) -> Dict[str, Any]:
-    """Refresh access token with retry logic and exponential backoff."""
-    url = f"{TS_BASE_URL}/oauth/token"
-    payload = {
-        "grant_type": "refresh_token",
-        "refresh_token": refresh_token,
+    params = {
+        "response_type": "code",
         "client_id": TS_CLIENT_ID,
-        "client_secret": TS_CLIENT_SECRET,
-        "redirect_uri": TS_REDIRECT_URI,
+        "redirect_uri": redirect_uri,
+        "scope": TS_SCOPE,
+        "state": state,
+    }
+    return f"{TS_AUTH_URL}?{urlencode(params)}"
+
+async def _http_client() -> httpx.AsyncClient:
+    # Reutilizabil; îl închizi în apelant dacă îl creezi manual. Aici lăsăm simplu per-call.
+    return httpx.AsyncClient(timeout=httpx.Timeout(HTTP_TIMEOUT))
+
+def _calc_expires_at(expires_in: int) -> int:
+    return _now() + max(0, int(expires_in)) - REFRESH_SKEW
+
+def _normalize_token(payload: Dict) -> Dict:
+    return {
+        "access_token": payload.get("access_token", ""),
+        "refresh_token": payload.get("refresh_token", ""),
+        "token_type": payload.get("token_type", "Bearer"),
+        "scope": payload.get("scope", TS_SCOPE),
+        "expires_at": _calc_expires_at(int(payload.get("expires_in", 0))),
+        # optional: id_token dacă e returnat
+        "id_token": payload.get("id_token"),
+        "raw": payload,
     }
 
-    log.info(f"Attempting to refresh token")
-
-    last_error = None
-    for attempt in range(3):
-        try:
-            start_time = time.time()
-            r = requests.post(url, data=payload, timeout=HTTP_TIMEOUT)
-            elapsed = time.time() - start_time
-
-            log.info(f"Token refresh attempt {attempt + 1}: {r.status_code} ({elapsed:.2f}s)")
-
-            if r.status_code == 200:
-                data = r.json()
-                log.info(f"Token refresh successful")
-                return data
-            else:
-                last_error = (r.status_code, r.text[:500])
-                log.warning(f"Token refresh failed: {r.status_code}")
-
-        except requests.RequestException as e:
-            last_error = ("EXC", str(e))
-            log.error(f"Network error during token refresh: {e}")
-        except Exception as e:
-            last_error = ("EXC", str(e))
-            log.error(f"Unexpected error during token refresh: {e}")
-
-        if attempt < 2:
-            sleep_time = 0.5 * (2**attempt)
-            log.info(f"Retrying in {sleep_time}s...")
-            time.sleep(sleep_time)
-
-    error_msg = f"Token refresh failed after 3 attempts: {last_error}"
-    log.error(error_msg)
-    raise RuntimeError(error_msg)
-
-
-async def ensure_valid_token(user_id: str) -> str:
-    """Ensure user has a valid access token, refreshing if necessary."""
-    async with get_refresh_lock(user_id):
-        token = await get_tokens(user_id)
-        if not token:
-            raise RuntimeError("not_authenticated")
-
-        if is_expiring(token):
-            log.info(f"Token expiring for user {user_id}, refreshing...")
-
-            try:
-                refresh_data = refresh_access_token(token["refresh_token"])
-
-                new_token = await save_tokens(
-                    user_id,
-                    refresh_data["access_token"],
-                    refresh_data.get("refresh_token", token["refresh_token"]),
-                    refresh_data.get("expires_in", 900),
-                )
-
-                log.info(f"Token refreshed successfully for user {user_id}")
-                return new_token["access_token"]
-
-            except Exception as e:
-                log.error(f"Failed to refresh token for user {user_id}: {e}")
-                raise RuntimeError(f"refresh_failed: {e}")
-
-        else:
-            log.debug(f"Token still valid for user {user_id}")
-            return token["access_token"]
-
-
-async def health_check() -> Dict[str, Any]:
-    """Check service health."""
-    try:
-        await init_db()
-
-        mongo_ok = False
-        if _mongo_client is not None:
-            try:
-                await _mongo_client.admin.command("ping")
-                mongo_ok = True
-            except Exception:
-                pass
-
-        config_ok = bool(TS_CLIENT_ID and TS_CLIENT_SECRET)
-
-        return {
-            "status": "healthy" if (mongo_ok and config_ok) else "degraded",
-            "mongodb": "connected" if mongo_ok else "disconnected",
-            "tradestation_config": "configured" if config_ok else "missing",
-            "active_sessions": len(_TOKENS),
-            "timestamp": time.time(),
+async def exchange_code(code: str, redirect_uri: str) -> Dict:
+    """Schimbă authorization code pentru tokens."""
+    async with await _http_client() as client:
+        data = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "client_id": TS_CLIENT_ID,
+            "client_secret": TS_CLIENT_SECRET,
         }
+        r = await client.post(TS_TOKEN_URL, data=data)
+        if r.status_code != 200:
+            log.error("TS exchange_code failed [%s]: %s", r.status_code, r.text[:500])
+            raise httpx.HTTPStatusError("exchange_code failed", request=r.request, response=r)
+        payload = r.json()
+        tok = _normalize_token(payload)
+        log.info("TS exchange_code ok; expires_at=%s", tok["expires_at"])
+        return tok
 
-    except Exception as e:
-        log.error(f"Health check failed: {e}")
-        return {"status": "unhealthy", "error": str(e), "timestamp": time.time()}
+async def refresh_tokens(refresh_token: str) -> Dict:
+    """Refreshează access token folosind refresh_token."""
+    async with await _http_client() as client:
+        data = {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "client_id": TS_CLIENT_ID,
+            "client_secret": TS_CLIENT_SECRET,
+        }
+        r = await client.post(TS_TOKEN_URL, data=data)
+        if r.status_code != 200:
+            log.warning("TS refresh failed [%s]: %s", r.status_code, r.text[:500])
+            raise httpx.HTTPStatusError("refresh failed", request=r.request, response=r)
+        payload = r.json()
+        tok = _normalize_token(payload)
+        log.info("TS refresh ok; expires_at=%s", tok["expires_at"])
+        return tok
+
+def set_token(user_id: str, token: Dict) -> None:
+    _TOKENS[user_id] = token
+
+def get_cached_token(user_id: str) -> Optional[Dict]:
+    tok = _TOKENS.get(user_id)
+    if not tok:
+        return None
+    if tok.get("expires_at", 0) <= _now():
+        return None
+    return tok
+
+async def get_valid_token(user_id: str) -> Optional[Dict]:
+    """
+    Dă-ți un access_token valid din cache; dacă e expirat încearcă refresh în mod sigur (cu lock).
+    Returnează dict token sau None dacă nu avem nimic.
+    """
+    tok = get_cached_token(user_id)
+    if tok:
+        return tok
+
+    # dacă nu avem nimic, încearcă refresh dacă avem măcar refresh_token
+    lock = _ensure_lock(user_id)
+    async with lock:
+        # alt task poate să fi făcut deja refresh
+        tok = get_cached_token(user_id)
+        if tok:
+            return tok
+
+        current = _TOKENS.get(user_id)
+        if not current or not current.get("refresh_token"):
+            return None
+
+        try:
+            new_tok = await refresh_tokens(current["refresh_token"])
+            set_token(user_id, new_tok)
+            return new_tok
+        except Exception as e:
+            log.exception("refresh error: %s", e)
+            return None
+
+def bearer(auth: Dict) -> str:
+    """Header Authorization: Bearer ..."""
+    return f'{auth.get("token_type","Bearer")} {auth.get("access_token","")}'
+
+async def call_ts_api(user_id: str, method: str, path: str, *, params: Dict | None = None, json: Dict | None = None) -> httpx.Response:
+    """
+    Utilitar mic pentru a apela API-ul TradeStation cu token valid (face refresh dacă e cazul).
+    Aruncă httpx.HTTPStatusError la 401/403/5xx.
+    """
+    token = await get_valid_token(user_id)
+    if not token:
+        raise PermissionError("no valid token for user")
+
+    headers = {"Authorization": bearer(token)}
+    url = f"{TS_BASE_URL.rstrip('/')}/{path.lstrip('/')}"
+    async with await _http_client() as client:
+        r = await client.request(method.upper(), url, params=params, json=json, headers=headers)
+        if r.status_code == 401:
+            # o singură încercare de refresh apoi retry
+            if token.get("refresh_token"):
+                try:
+                    new_tok = await refresh_tokens(token["refresh_token"])
+                    set_token(user_id, new_tok)
+                    headers["Authorization"] = bearer(new_tok)
+                    r = await client.request(method.upper(), url, params=params, json=json, headers=headers)
+                except Exception:
+                    pass
+        if r.is_error:
+            log.error("TS API %s %s failed [%s]: %s", method, path, r.status_code, r.text[:500])
+            r.raise_for_status()
+        return r
