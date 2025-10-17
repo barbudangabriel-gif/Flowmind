@@ -3,13 +3,13 @@
 **Data:** 2025-10-17  
 **Branch:** `chore/guardrails`  
 **PR:** [#2](https://github.com/barbudangabriel-gif/Flowmind/pull/2)  
-**Commits:** 7 (10c01e8 → 8585e9f)  
+**Commits:** 9 (10c01e8 → e550899)  
 
 ---
 
 ## 🎯 Ce am Livrat
 
-### ✅ Documentație Completă (8 fișiere, ~3,500 linii)
+### ✅ Documentație Completă (10 fișiere, ~4,000 linii)
 1. **COPILOT_COMMIT_CONTRACT.md** ⭐ - Reguli AI (OBLIGATORIU la fiecare sesiune)
 2. **SETUP_GUARDRAILS.md** - Ghid instalare completă
 3. **VERIFICATION_TESTING_GUIDE.md** - Proceduri testare
@@ -19,6 +19,14 @@
 7. **INSTALL_GUARDRAILS.sh** - Script instalare automată
 8. **README_GUARDRAILS.md** - Quick start
 9. **GUARDRAILS_STATUS.md** - Status report
+10. **TASK_COMPLETE.md** - Task completion summary
+11. **AUTO_DEPLOY_SETUP.md** - Auto-deploy with systemd
+
+### ✅ Auto-Deploy System (4 fișiere)
+- `.ci/auto-pull.sh` - Auto-pull script (executable)
+- `.ci/flowmind-autopull.service` - systemd service unit
+- `.ci/flowmind-autopull.timer` - systemd timer (60s interval)
+- `AUTO_DEPLOY_SETUP.md` - Complete installation guide
 
 ### ✅ Configurări (5 fișiere)
 - `frontend/.eslintrc.cjs` (NOU)
@@ -104,7 +112,17 @@ git pull
 ./INSTALL_GUARDRAILS.sh
 ```
 
-### 7. Testează Guard-Rails
+### 7. Setup Auto-Deploy (Optional)
+```bash
+# Follow AUTO_DEPLOY_SETUP.md
+mkdir -p ~/.config/systemd/user
+cp .ci/flowmind-autopull.{service,timer} ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now flowmind-autopull.timer
+journalctl --user -u flowmind-autopull.service -f
+```
+
+### 8. Testează Guard-Rails
 ```bash
 # Încearcă să faci commit cu cod prost (trebuie să eșueze)
 cd frontend
@@ -120,13 +138,14 @@ git commit -m "test"
 
 | Metrica | Valoare |
 |---------|---------|
-| Commits | 7 |
-| Fișiere create/modificate | 16 |
-| Linii adăugate | +3,483 |
+| Commits | 9 |
+| Fișiere create/modificate | 21 |
+| Linii adăugate | +4,007 |
 | Linii șterse | -3 |
-| Documente | 9 |
+| Documente | 11 |
 | Config files | 5 |
 | Governance files | 2 |
+| Auto-deploy files | 4 |
 | Layere implementate | 4/4 |
 | Probleme prevăzute | 6 tipuri |
 
