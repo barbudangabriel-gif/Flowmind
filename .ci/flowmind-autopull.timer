@@ -1,0 +1,19 @@
+[Unit]
+Description=Run Flowmind autopull every 60 seconds
+Documentation=https://github.com/barbudangabriel-gif/Flowmind
+
+[Timer]
+# Run 60 seconds after last activation
+OnUnitActiveSec=60
+
+# Allow 5 second timing variance for performance
+AccuracySec=5s
+
+# Start immediately on first activation
+OnActiveSec=10
+
+# Service to run
+Unit=flowmind-autopull.service
+
+[Install]
+WantedBy=timers.target

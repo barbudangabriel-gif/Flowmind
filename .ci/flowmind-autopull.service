@@ -1,0 +1,14 @@
+[Unit]
+Description=Auto pull Flowmind from origin/main
+Documentation=https://github.com/barbudangabriel-gif/Flowmind
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -lc '/home/%u/projects/Flowmind/.ci/auto-pull.sh'
+WorkingDirectory=/home/%u/projects/Flowmind
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+PrivateTmp=true
+NoNewPrivileges=true

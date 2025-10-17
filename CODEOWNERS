@@ -1,4 +1,29 @@
 # FlowMind Analytics - Code Ownership
-# All code owned by @Capp1971
+# Documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-* @Capp1971
+# Default owner for everything (unless overridden below)
+* @barbudangabriel-gif
+
+# Frontend - Require review for all frontend changes
+/frontend/* @barbudangabriel-gif
+
+# Backend - Require review for all backend changes
+/backend/* @barbudangabriel-gif
+
+# Configuration files - Extra scrutiny
+/.github/* @barbudangabriel-gif
+/.editorconfig @barbudangabriel-gif
+/.gitattributes @barbudangabriel-gif
+/backend/pyproject.toml @barbudangabriel-gif
+/frontend/.prettierrc @barbudangabriel-gif
+/frontend/.eslintrc.* @barbudangabriel-gif
+
+# Guard-rails documentation - Require approval for changes
+/COPILOT_COMMIT_CONTRACT.md @barbudangabriel-gif
+/SETUP_GUARDRAILS.md @barbudangabriel-gif
+/GUARDRAILS_*.md @barbudangabriel-gif
+
+# Dependencies - Critical files
+/frontend/package.json @barbudangabriel-gif
+/frontend/pnpm-lock.yaml @barbudangabriel-gif
+/backend/requirements.txt @barbudangabriel-gif
