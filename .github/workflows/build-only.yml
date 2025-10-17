@@ -1,0 +1,38 @@
+name: build-only
+on: [push, pull_request]
+
+jobs:
+  fe-build:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+  be-import:
+    name: Backend import sanity
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -U pip
+      - run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+      - run: python -c "from app.main import app; print('✅ Backend import OK')"
