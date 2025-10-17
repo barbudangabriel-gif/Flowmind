@@ -27,10 +27,22 @@ const AccountBalancePage = () => {
             
             if (response.data.data.authenticated) {
                 loadAccounts();
+            } else {
+                // Load demo data immediately if not authenticated
+                loadDemoData();
             }
         } catch (err) {
             console.error('Failed to check auth status:', err);
+            loadDemoData();
         }
+    };
+
+    const loadDemoData = () => {
+        const mockAccounts = [
+            { AccountID: 'DEMO123456', AccountType: 'Margin', Name: 'Demo Trading Account' }
+        ];
+        setAccounts(mockAccounts);
+        selectAccount(mockAccounts[0]);
     };
 
     const loadAccounts = async () => {
@@ -61,22 +73,66 @@ const AccountBalancePage = () => {
             setLoading(true);
             setError(null);
 
-            const balResponse = await axios.get(`${API}/tradestation/accounts/${account.AccountID}/balances`);
-            setBalances(balResponse.data.data);
+            // Try to fetch real data if authenticated
+            if (authStatus?.authenticated) {
+                const balResponse = await axios.get(`${API}/tradestation/accounts/${account.AccountID}/balances`);
+                setBalances(balResponse.data.data);
 
-            const posResponse = await axios.get(`${API}/tradestation/accounts/${account.AccountID}/positions`);
-            setPositions(posResponse.data.data?.Positions || []);
+                const posResponse = await axios.get(`${API}/tradestation/accounts/${account.AccountID}/positions`);
+                setPositions(posResponse.data.data?.Positions || []);
+            } else {
+                // Use demo data
+                setBalances({
+                    CashBalance: 50000,
+                    BuyingPower: 100000,
+                    AccountValue: 75000,
+                    MarketValue: 25000,
+                    UnrealizedProfitLoss: 2500,
+                    RealizedProfitLoss: 1250
+                });
+                setPositions([
+                    { 
+                        Symbol: 'TSLA', 
+                        Quantity: 100, 
+                        AveragePrice: 250.00, 
+                        Last: 252.50, 
+                        MarketValue: 25250, 
+                        UnrealizedProfitLoss: 250, 
+                        UnrealizedProfitLossPercent: 1.0 
+                    },
+                    { 
+                        Symbol: 'AAPL', 
+                        Quantity: 50, 
+                        AveragePrice: 180.00, 
+                        Last: 185.00, 
+                        MarketValue: 9250, 
+                        UnrealizedProfitLoss: 250, 
+                        UnrealizedProfitLossPercent: 2.78 
+                    },
+                    { 
+                        Symbol: 'NVDA', 
+                        Quantity: 25, 
+                        AveragePrice: 500.00, 
+                        Last: 520.00, 
+                        MarketValue: 13000, 
+                        UnrealizedProfitLoss: 500, 
+                        UnrealizedProfitLossPercent: 4.0 
+                    }
+                ]);
+            }
         } catch (err) {
             setError(`Failed to load account data: ${err.message}`);
+            // Fallback to demo data on error
             setBalances({
                 CashBalance: 50000,
                 BuyingPower: 100000,
                 AccountValue: 75000,
                 MarketValue: 25000,
-                UnrealizedProfitLoss: 2500
+                UnrealizedProfitLoss: 2500,
+                RealizedProfitLoss: 1250
             });
             setPositions([
-                { Symbol: 'TSLA', Quantity: 100, AveragePrice: 250.00, Last: 252.50, MarketValue: 25250, UnrealizedProfitLoss: 250, UnrealizedProfitLossPercent: 0.01 }
+                { Symbol: 'TSLA', Quantity: 100, AveragePrice: 250.00, Last: 252.50, MarketValue: 25250, UnrealizedProfitLoss: 250, UnrealizedProfitLossPercent: 1.0 }
             ]);
         } finally {
             setLoading(false);
