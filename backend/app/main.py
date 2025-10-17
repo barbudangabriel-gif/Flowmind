@@ -1,10 +1,23 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from .routes.system import router as system_router
 from .routes.analytics import router as analytics_router
+from .routes.mindfolios import router as mindfolios_router
+from .routers.tradestation import router as tradestation_router
+from .routers.tradestation_auth import router as tradestation_auth_router
 
 app = FastAPI(title="Flowmind API", version="1.0")
+
+# CORS middleware for frontend access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In production, specify exact origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/", include_in_schema=False)
 def root_redirect():
@@ -12,3 +25,6 @@ def root_redirect():
 
 app.include_router(system_router)
 app.include_router(analytics_router)
+app.include_router(mindfolios_router)
+app.include_router(tradestation_router, prefix="/api")
+app.include_router(tradestation_auth_router, prefix="/api")

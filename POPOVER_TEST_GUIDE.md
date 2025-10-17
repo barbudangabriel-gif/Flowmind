@@ -1,6 +1,6 @@
 # 🧪 Popover Test Guide - Sidebar Collapsed
 
-## 📋 Cum Testezi
+## Cum Testezi
 
 ### 1. Deschide Browser
 - URL: `http://localhost:3000`
@@ -18,31 +18,31 @@
 **Click pe iconița cu dot verde:**
 - Ar trebui să apară un popover la dreapta (slide-in animation)
 - Console log: `🔘 Popover toggle: [Nume] Current: null New: [key]`
-- Console log: `✅ Click outside handler attached for: [key]`
+- Console log: ` Click outside handler attached for: [key]`
 
 ### 4. Verifică Popover Content
 Popover ar trebui să arate:
 ```
 ┌─────────────────────┐
-│ 📊 PORTFOLIO        │ (header)
+│ PORTFOLIO │ (header)
 ├─────────────────────┤
-│ 📋 List Portfolios  │
+│ List Portfolios │
 │ ➕ Create Portfolio │
-│ 📈 Analytics        │
+│ Analytics │
 └─────────────────────┘
 ```
 
 ### 5. Click pe Link din Popover
 - Click pe oricare link (ex: "List Portfolios")
 - Ar trebui să navigheze la pagină
-- Console log: `❌ Closing popover`
+- Console log: ` Closing popover`
 - Popover dispare
 
 ### 6. Click Outside
 - Deschide popover din nou
 - Click ORIUNDE în afara sidebar-ului (pe main content area)
 - Console log: `🖱️ Click outside check: { clickedOnSidebar: false, ... }`
-- Console log: `❌ Closing popover`
+- Console log: ` Closing popover`
 - Popover dispare
 
 ---
@@ -52,13 +52,13 @@ Popover ar trebui să arate:
 ### La deschidere:
 ```
 🔘 Popover toggle: Portfolio Current: null New: Options-0
-✅ Click outside handler attached for: Options-0
+ Click outside handler attached for: Options-0
 ```
 
 ### La click outside:
 ```
 🖱️ Click outside check: { clickedOnSidebar: false, clickedOnPopover: false, activePopover: "Options-0" }
-❌ Closing popover
+ Closing popover
 ```
 
 ### La click pe link:
@@ -68,18 +68,18 @@ Popover ar trebui să arate:
 
 ---
 
-## ✅ Ce Ar Trebui Să Funcționeze
+## Ce Ar Trebui Să Funcționeze
 
-1. ✅ Click pe iconița cu dot verde → popover apare
-2. ✅ Popover rămâne deschis când hover peste el
-3. ✅ Click pe link → navighează + popover dispare
-4. ✅ Click outside → popover dispare
-5. ✅ Animație smooth (slide-in from left)
-6. ✅ Active state: buton devine emerald când popover e deschis
+1. Click pe iconița cu dot verde → popover apare
+2. Popover rămâne deschis când hover peste el
+3. Click pe link → navighează + popover dispare
+4. Click outside → popover dispare
+5. Animație smooth (slide-in from left)
+6. Active state: buton devine emerald când popover e deschis
 
 ---
 
-## ❌ Dacă NU Funcționează
+## Dacă NU Funcționează
 
 ### Problema: Popover nu apare deloc
 - Check console pentru erori
@@ -87,7 +87,7 @@ Popover ar trebui să arate:
 - Check: `console.log('🔘 Popover toggle: ...')` apare?
 
 ### Problema: Popover dispare imediat
-- Check: `console.log('❌ Closing popover')` apare prea repede?
+- Check: `console.log(' Closing popover')` apare prea repede?
 - Ar trebui să fie delay 100ms înainte de attach handler
 
 ### Problema: Popover nu se închide la click outside
@@ -108,7 +108,7 @@ Voi debug în continuare.
 
 ---
 
-## 📝 Note Tehnice
+## Note Tehnice
 
 ### Fix aplicat:
 1. `e.stopPropagation()` pe button click
@@ -125,4 +125,4 @@ Voi debug în continuare.
 
 ---
 
-**Ready to test!** 🚀
+**Ready to test!** 

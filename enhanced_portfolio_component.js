@@ -190,13 +190,13 @@ const EnhancedPortfolio = () => {
             <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
               <div className="flex items-center gap-1">
                 <button 
-                  className="text-gray-300 hover:text-white transition-colors flex-shrink-0"
+                  className="text-gray-300 hover:text-[rgb(252, 251, 255)] transition-colors flex-shrink-0"
                   onClick={() => toggleSymbolExpansion(ticker)}
                 >
                   <div className={`ts-double-arrow ${isExpanded ? 'expanded' : ''}`}></div>
                 </button>
                 <div className="flex flex-col min-w-0 flex-1">
-                  <span className="font-bold text-white text-base truncate">{ticker}</span>
+                  <span className="font-bold text-[rgb(252, 251, 255)] text-base truncate">{ticker}</span>
                   <span className="text-xs text-blue-200 truncate">{positions.length} positions</span>
                 </div>
               </div>
@@ -293,7 +293,7 @@ const EnhancedPortfolio = () => {
               onClick={() => setAssetFilter(filter)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 assetFilter === filter
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-600 text-[rgb(252, 251, 255)]'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
@@ -373,7 +373,7 @@ const EnhancedPortfolio = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-xl text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 rounded-xl text-[rgb(252, 251, 255)]">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Enhanced Portfolio</h1>
@@ -383,7 +383,7 @@ const EnhancedPortfolio = () => {
             <select
               value={selectedAccount || ''}
               onChange={(e) => setSelectedAccount(e.target.value)}
-              className="bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white placeholder-white/70"
+              className="bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-[rgb(252, 251, 255)] placeholder-white/70"
             >
               <option value="">Select Account</option>
               {accounts.map(account => (
@@ -407,7 +407,7 @@ const EnhancedPortfolio = () => {
       {/* Portfolio Metrics Cards */}
       {portfolioData?.portfolio_metrics && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 rounded-xl text-white shadow-lg">
+          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 rounded-xl text-[rgb(252, 251, 255)] shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-emerald-100 text-sm">Total Value</p>
@@ -417,7 +417,7 @@ const EnhancedPortfolio = () => {
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl text-white shadow-lg">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl text-[rgb(252, 251, 255)] shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-blue-100 text-sm">Positions</p>
@@ -427,20 +427,20 @@ const EnhancedPortfolio = () => {
             </div>
           </div>
           
-          <div className={`bg-gradient-to-br ${portfolioData.portfolio_metrics.total_unrealized_pnl >= 0 ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600'} p-6 rounded-xl text-white shadow-lg`}>
+          <div className={`bg-gradient-to-br ${portfolioData.portfolio_metrics.total_unrealized_pnl >= 0 ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600'} p-6 rounded-xl text-[rgb(252, 251, 255)] shadow-lg`}>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-white/80 text-sm">P&L</p>
+                <p className="text-[rgb(252, 251, 255)]/80 text-sm">P&L</p>
                 <p className="text-2xl font-bold">
                   {portfolioData.portfolio_metrics.total_unrealized_pnl > 0 ? '+' : ''}
                   {formatCurrency(portfolioData.portfolio_metrics.total_unrealized_pnl)}
                 </p>
               </div>
-              <TrendingUp size={32} className="text-white/80" />
+              <TrendingUp size={32} className="text-[rgb(252, 251, 255)]/80" />
             </div>
           </div>
           
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl text-white shadow-lg">
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl text-[rgb(252, 251, 255)] shadow-lg">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-purple-100 text-sm">Daily P&L</p>
@@ -474,7 +474,7 @@ const EnhancedPortfolio = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
                 activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-lg'
+                  ? 'bg-blue-600 text-[rgb(252, 251, 255)] shadow-lg'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >

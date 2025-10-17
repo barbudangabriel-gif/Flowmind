@@ -1,10 +1,10 @@
 # FlowMind - UI Components Guide
 
-## 📋 Overview
+## Overview
 
 This document describes the UI components and pages added to FlowMind for the Market Intelligence features integration (October 2025).
 
-## 🎨 Design System
+## Design System
 
 All components follow FlowMind's dark-only design system:
 
@@ -104,7 +104,7 @@ import MarketMoversWidget from './components/MarketMoversWidget';
 - Volume chart (Plotly): Stacked bar chart showing dark pool (purple) vs lit exchange (blue) volume
 - Filters: Ticker symbol, Minimum volume threshold
 - Recent prints table: Time, Ticker, Volume, Price, Notional value
-- Large print highlights: Yellow flame icon (🔥) for prints >$10M
+- Large print highlights: Yellow flame icon () for prints >$10M
 - Auto-refresh every 10 seconds
 - Click ticker → Navigate to Builder
 - Legend explaining colors and icons
@@ -121,10 +121,10 @@ import MarketMoversWidget from './components/MarketMoversWidget';
 **Chart Configuration**:
 ```javascript
 {
-  barmode: 'stack',
-  paper_bgcolor: '#1e293b',
-  plot_bgcolor: '#1e293b',
-  font: { color: '#cbd5e1' }
+ barmode: 'stack',
+ paper_bgcolor: '#1e293b',
+ plot_bgcolor: '#1e293b',
+ font: { color: '#cbd5e1' }
 }
 ```
 
@@ -161,11 +161,11 @@ All new pages are integrated into the sidebar under a new **"Market Intelligence
 
 ```
 └─ Market Intelligence
-   ├─ Flow Summary (existing)
-   ├─ 🌊 Dark Pool (NEW)
-   ├─ 📈 Market Movers (NEW)
-   ├─ 🏛️ Congress Trades (NEW)
-   └─ 🏢 Institutional (NEW)
+ ├─ Flow Summary (existing)
+ ├─ 🌊 Dark Pool (NEW)
+ ├─ Market Movers (NEW)
+ ├─ 🏛️ Congress Trades (NEW)
+ └─ 🏢 Institutional (NEW)
 ```
 
 **File**: `frontend/src/lib/nav.simple.js`
@@ -187,20 +187,20 @@ All components use the same API fetch pattern:
 const API = window.API_BASE || process.env.REACT_APP_BACKEND_URL || "";
 
 const fetchData = async () => {
-  try {
-    const response = await fetch(`${API}/api/flow/endpoint`);
-    const result = await response.json();
-    
-    if (result.status === 'success') {
-      setData(result.data);
-    } else {
-      setError(result.error);
-    }
-  } catch (err) {
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
+ try {
+ const response = await fetch(`${API}/api/flow/endpoint`);
+ const result = await response.json();
+ 
+ if (result.status === 'success') {
+ setData(result.data);
+ } else {
+ setError(result.error);
+ }
+ } catch (err) {
+ setError(err.message);
+ } finally {
+ setLoading(false);
+ }
 };
 ```
 
@@ -209,7 +209,7 @@ Skeleton loaders use `animate-pulse` class:
 
 ```jsx
 {loading && (
-  <div className="h-8 bg-slate-700 rounded w-48 animate-pulse"></div>
+ <div className="h-8 bg-slate-700 rounded w-48 animate-pulse"></div>
 )}
 ```
 
@@ -218,21 +218,21 @@ Error states use red accent colors:
 
 ```jsx
 {error && (
-  <div className="bg-red-900/30 border border-red-500/30 rounded-lg p-4">
-    <span className="text-red-400">⚠️ {error}</span>
-  </div>
+ <div className="bg-red-900/30 border border-red-500/30 rounded-lg p-4">
+ <span className="text-red-400"> {error}</span>
+ </div>
 )}
 ```
 
-## 🎨 Component Patterns
+## Component Patterns
 
 ### Card Component
 All pages use slate-800 cards:
 
 ```jsx
 <div className="bg-slate-800 rounded-lg p-6 shadow-lg">
-  <h2 className="text-lg font-semibold text-white mb-4">Title</h2>
-  {/* Content */}
+ <h2 className="text-lg font-semibold text-white mb-4">Title</h2>
+ {/* Content */}
 </div>
 ```
 
@@ -241,10 +241,10 @@ All pages use slate-800 cards:
 
 ```jsx
 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-  <div className="bg-slate-800 rounded-lg p-4">
-    <div className="text-slate-400 text-sm">Label</div>
-    <div className="text-2xl font-bold text-blue-400">Value</div>
-  </div>
+ <div className="bg-slate-800 rounded-lg p-4">
+ <div className="text-slate-400 text-sm">Label</div>
+ <div className="text-2xl font-bold text-blue-400">Value</div>
+ </div>
 </div>
 ```
 
@@ -253,16 +253,16 @@ Hover states and alternating rows:
 
 ```jsx
 <table className="w-full">
-  <thead>
-    <tr className="border-b border-slate-700">
-      <th className="text-left py-3 px-4 text-slate-400 text-sm">Header</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr className="border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer">
-      <td className="py-3 px-4 text-white">Data</td>
-    </tr>
-  </tbody>
+ <thead>
+ <tr className="border-b border-slate-700">
+ <th className="text-left py-3 px-4 text-slate-400 text-sm">Header</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr className="border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer">
+ <td className="py-3 px-4 text-white">Data</td>
+ </tr>
+ </tbody>
 </table>
 ```
 
@@ -271,16 +271,16 @@ Consistent filter bar pattern:
 
 ```jsx
 <div className="bg-slate-800 rounded-lg p-6">
-  <h2 className="text-lg font-semibold text-white mb-4">🔍 Filters</h2>
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <input
-      className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-    />
-  </div>
+ <h2 className="text-lg font-semibold text-white mb-4"> Filters</h2>
+ <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+ <input
+ className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+ />
+ </div>
 </div>
 ```
 
-## 📱 Responsive Design
+## Responsive Design
 
 All components are mobile-responsive:
 
@@ -309,11 +309,11 @@ All components are mobile-responsive:
 ### Polling Implementation
 ```javascript
 useEffect(() => {
-  fetchData();
-  
-  const interval = setInterval(fetchData, 30000); // 30s
-  
-  return () => clearInterval(interval); // Cleanup
+ fetchData();
+ 
+ const interval = setInterval(fetchData, 30000); // 30s
+ 
+ return () => clearInterval(interval); // Cleanup
 }, [dependencies]);
 ```
 
@@ -322,13 +322,13 @@ useEffect(() => {
 const [refreshing, setRefreshing] = useState(false);
 
 const handleRefresh = async () => {
-  setRefreshing(true);
-  await fetchData();
-  setRefreshing(false);
+ setRefreshing(true);
+ await fetchData();
+ setRefreshing(false);
 };
 ```
 
-## 🎯 Click Actions
+## Click Actions
 
 ### Navigate to Builder
 All ticker clicks navigate to Builder with pre-filled symbol:
@@ -339,11 +339,11 @@ import { useNavigate } from 'react-router-dom';
 const navigate = useNavigate();
 
 const handleTickerClick = (ticker) => {
-  navigate(`/builder?symbol=${ticker}`);
+ navigate(`/builder?symbol=${ticker}`);
 };
 ```
 
-## 📊 Chart Integration (Plotly)
+## Chart Integration (Plotly)
 
 ### Dark Theme Configuration
 All Plotly charts use dark theme:
@@ -352,16 +352,16 @@ All Plotly charts use dark theme:
 import Plot from 'react-plotly.js';
 
 <Plot
-  data={[{ x: [...], y: [...], type: 'bar' }]}
-  layout={{
-    paper_bgcolor: '#1e293b',  // slate-800
-    plot_bgcolor: '#1e293b',
-    font: { color: '#cbd5e1' }, // slate-300
-    xaxis: { gridcolor: '#334155' }, // slate-700
-    yaxis: { gridcolor: '#334155' }
-  }}
-  config={{ displayModeBar: false }}
-  style={{ width: '100%', height: '400px' }}
+ data={[{ x: [...], y: [...], type: 'bar' }]}
+ layout={{
+ paper_bgcolor: '#1e293b', // slate-800
+ plot_bgcolor: '#1e293b',
+ font: { color: '#cbd5e1' }, // slate-300
+ xaxis: { gridcolor: '#334155' }, // slate-700
+ yaxis: { gridcolor: '#334155' }
+ }}
+ config={{ displayModeBar: false }}
+ style={{ width: '100%', height: '400px' }}
 />
 ```
 
@@ -388,25 +388,25 @@ Backend tests in `/uw_correct_endpoints_test.py` cover:
 - Mock data fallback
 - Error handling
 
-## 📝 Documentation Updates
+## Documentation Updates
 
 Updated files:
-- ✅ `UW_API_CORRECT_ENDPOINTS.md` - Added 4 new API endpoints
-- ✅ `UI_COMPONENTS_GUIDE.md` - This file
-- ✅ `README.md` - (if needed) Add Market Intelligence features
+- `UW_API_CORRECT_ENDPOINTS.md` - Added 4 new API endpoints
+- `UI_COMPONENTS_GUIDE.md` - This file
+- `README.md` - (if needed) Add Market Intelligence features
 
-## 🚀 Deployment Checklist
+## Deployment Checklist
 
 Before deploying:
-1. ✅ Verify all routes in `App.js`
-2. ✅ Verify sidebar links in `nav.simple.js`
-3. ✅ Test mobile responsiveness
-4. ✅ Test auto-refresh intervals
-5. ✅ Test error states
-6. ✅ Run `npm run build` successfully
-7. ✅ Test with real UW API (set `UW_API_TOKEN`)
+1. Verify all routes in `App.js`
+2. Verify sidebar links in `nav.simple.js`
+3. Test mobile responsiveness
+4. Test auto-refresh intervals
+5. Test error states
+6. Run `npm run build` successfully
+7. Test with real UW API (set `UW_API_TOKEN`)
 
-## 🎨 Styling Guidelines
+## Styling Guidelines
 
 ### Colors
 - Positive values: `text-emerald-400`

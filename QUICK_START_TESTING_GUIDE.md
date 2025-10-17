@@ -1,12 +1,12 @@
-# 🚀 Quick Start Guide - Testing Lit Trades & Dark Pool Feeds
+# Quick Start Guide - Testing Lit Trades & Dark Pool Feeds
 
-**Purpose:** Test the newly integrated Lit Trades and Dark Pool real-time feeds  
-**Date:** October 14, 2025  
+**Purpose:** Test the newly integrated Lit Trades and Dark Pool real-time feeds 
+**Date:** October 14, 2025 
 **Prerequisites:** Backend running on port 8000, Frontend running on port 3000
 
 ---
 
-## ⚡ Quick Test (5 minutes)
+## Quick Test (5 minutes)
 
 ### 1. Start Backend
 ```bash
@@ -24,7 +24,7 @@ npm start
 
 #### A. Access Lit Trades Feed
 1. Open browser: `http://localhost:3000/flow`
-2. Click **"📊 Lit Trades"** tab
+2. Click **" Lit Trades"** tab
 3. Verify URL changes to `/flow/lit-trades`
 4. Confirm component loads with SPY ticker
 
@@ -49,7 +49,7 @@ npm start
 
 ---
 
-## 🔍 Detailed Verification
+## Detailed Verification
 
 ### Backend Health Check
 ```bash
@@ -146,12 +146,12 @@ Look for logs:
 1. Open Lit Trades feed
 2. Observe incoming trades
 3. Verify fields present:
-   - Timestamp
-   - Exchange (NASDAQ, NYSE, ARCA, etc.)
-   - Price
-   - Size
-   - Tape (A/B/C)
-   - Condition codes
+ - Timestamp
+ - Exchange (NASDAQ, NYSE, ARCA, etc.)
+ - Price
+ - Size
+ - Tape (A/B/C)
+ - Condition codes
 
 **Expected:** All fields populated, data makes sense
 
@@ -160,7 +160,7 @@ Look for logs:
 ## 🐛 Troubleshooting
 
 ### Issue: Tab not rendering
-**Symptoms:** Blank page or "Loading..." forever  
+**Symptoms:** Blank page or "Loading..." forever 
 **Check:**
 1. Browser console for errors
 2. Component import in FlowPage.jsx
@@ -175,7 +175,7 @@ npm start
 ```
 
 ### Issue: WebSocket not connecting
-**Symptoms:** "Connecting..." message persists  
+**Symptoms:** "Connecting..." message persists 
 **Check:**
 1. Backend logs for WebSocket endpoint
 2. Network tab for connection attempt
@@ -193,7 +193,7 @@ python -m uvicorn app.main:app --reload --port 8000
 ```
 
 ### Issue: No data appearing
-**Symptoms:** Connected but no trades shown  
+**Symptoms:** Connected but no trades shown 
 **Check:**
 1. UW API token configured in backend/.env
 2. Ticker is valid (default: SPY)
@@ -211,7 +211,7 @@ cat .env | grep UW_API_TOKEN
 ```
 
 ### Issue: Build errors
-**Symptoms:** Frontend won't compile  
+**Symptoms:** Frontend won't compile 
 **Check:**
 1. Missing imports
 2. Syntax errors in new components
@@ -226,30 +226,30 @@ npm run build
 
 ---
 
-## 📋 Verification Checklist
+## Verification Checklist
 
-### Backend ✅
+### Backend 
 - [ ] Server running on port 8000
 - [ ] `/health` endpoint returns 200
 - [ ] WebSocket endpoints visible in `/docs`
 - [ ] UW API token configured
 - [ ] No errors in backend logs
 
-### Frontend ✅
+### Frontend 
 - [ ] Dev server running on port 3000
 - [ ] No compilation errors
 - [ ] Components render without errors
 - [ ] No console errors in browser
 - [ ] WebSocket connections established
 
-### Navigation ✅
+### Navigation 
 - [ ] Tab buttons visible and clickable
 - [ ] Active tab highlights correctly
 - [ ] URL changes on tab click
 - [ ] Direct URL access works
 - [ ] Browser back/forward functional
 
-### Data Flow ✅
+### Data Flow 
 - [ ] Lit Trades feed shows data
 - [ ] Dark Pool feed shows data
 - [ ] Exchange information visible
@@ -257,8 +257,8 @@ npm run build
 - [ ] Stats panels update
 - [ ] Real-time updates work
 
-### UX ✅
-- [ ] Emoji indicators display (📊 🕶️)
+### UX 
+- [ ] Emoji indicators display ( 🕶️)
 - [ ] Loading states show correctly
 - [ ] Error states handled gracefully
 - [ ] Reconnection works automatically
@@ -266,26 +266,26 @@ npm run build
 
 ---
 
-## 🎯 Success Criteria
+## Success Criteria
 
 **Test PASSES if:**
-1. ✅ Both tabs accessible from FlowPage
-2. ✅ Components render without errors
-3. ✅ WebSocket connections establish successfully
-4. ✅ Real-time data displays correctly
-5. ✅ Navigation works smoothly
-6. ✅ No console errors
-7. ✅ Performance is acceptable
-8. ✅ Mobile responsive (bonus)
+1. Both tabs accessible from FlowPage
+2. Components render without errors
+3. WebSocket connections establish successfully
+4. Real-time data displays correctly
+5. Navigation works smoothly
+6. No console errors
+7. Performance is acceptable
+8. Mobile responsive (bonus)
 
 **Test FAILS if:**
-1. ❌ Components don't render
-2. ❌ WebSocket connections fail
-3. ❌ Navigation broken
-4. ❌ Console errors present
-5. ❌ Data doesn't update
-6. ❌ Performance issues
-7. ❌ Styling broken
+1. Components don't render
+2. WebSocket connections fail
+3. Navigation broken
+4. Console errors present
+5. Data doesn't update
+6. Performance issues
+7. Styling broken
 
 ---
 
@@ -294,38 +294,38 @@ npm run build
 ### Lit Trades Feed
 ```
 ┌─────────────────────────────────────────────────────┐
-│ Options Flow > 📊 Lit Trades (SPY)                 │
+│ Options Flow > Lit Trades (SPY) │
 ├─────────────────────────────────────────────────────┤
-│ Stats:  Total: 1,234  Volume: 145K  Value: $36.2M  │
+│ Stats: Total: 1,234 Volume: 145K Value: $36.2M │
 ├─────────────────────────────────────────────────────┤
-│ Exchange Distribution:                              │
-│ ████████ NASDAQ (45%)                              │
-│ ██████ NYSE (30%)                                  │
-│ ████ ARCA (15%)                                    │
+│ Exchange Distribution: │
+│ ████████ NASDAQ (45%) │
+│ ██████ NYSE (30%) │
+│ ████ ARCA (15%) │
 ├─────────────────────────────────────────────────────┤
-│ Recent Trades:                                      │
-│ 14:32:15  NASDAQ  $422.50  500  Tape C  @         │
-│ 14:32:14  NYSE    $422.48  250  Tape C  @         │
-│ 14:32:13  ARCA    $422.52  100  Tape C  @         │
+│ Recent Trades: │
+│ 14:32:15 NASDAQ $422.50 500 Tape C @ │
+│ 14:32:14 NYSE $422.48 250 Tape C @ │
+│ 14:32:13 ARCA $422.52 100 Tape C @ │
 └─────────────────────────────────────────────────────┘
 ```
 
 ### Dark Pool Feed
 ```
 ┌─────────────────────────────────────────────────────┐
-│ Options Flow > 🕶️ Dark Pool (SPY)                  │
+│ Options Flow > 🕶️ Dark Pool (SPY) │
 ├─────────────────────────────────────────────────────┤
-│ Stats:  Total: 456  Volume: 2.3M  Notional: $972M │
+│ Stats: Total: 456 Volume: 2.3M Notional: $972M │
 ├─────────────────────────────────────────────────────┤
-│ Venue Distribution:                                 │
-│ ████████ UBS ATS (35%)                             │
-│ ██████ MS Pool (25%)                               │
-│ ████ Citadel (20%)                                 │
+│ Venue Distribution: │
+│ ████████ UBS ATS (35%) │
+│ ██████ MS Pool (25%) │
+│ ████ Citadel (20%) │
 ├─────────────────────────────────────────────────────┤
-│ Recent Trades:                                      │
-│ 14:32:15  UBS ATS     $422.50  25,000  BLOCK 💎   │
-│ 14:32:12  MS Pool     $422.48  50,000  HUGE 🔥    │
-│ 14:32:10  Citadel     $422.52  15,000  BLOCK 💎   │
+│ Recent Trades: │
+│ 14:32:15 UBS ATS $422.50 25,000 BLOCK 💎 │
+│ 14:32:12 MS Pool $422.48 50,000 HUGE │
+│ 14:32:10 Citadel $422.52 15,000 BLOCK 💎 │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -341,7 +341,7 @@ npm run build
 
 ---
 
-## 💡 Pro Tips
+## Pro Tips
 
 1. **Testing with Real Data:** Connect during market hours (9:30 AM - 4:00 PM EST) for best results
 2. **Testing After Hours:** Backend will use demo/simulated data automatically
@@ -351,19 +351,19 @@ npm run build
 
 ---
 
-## ✅ Test Complete
+## Test Complete
 
 After completing all tests, you should have:
-- ✅ Verified both feeds work correctly
-- ✅ Confirmed navigation is functional
-- ✅ Validated real-time data updates
-- ✅ Documented any issues found
-- ✅ Captured screenshots (optional)
+- Verified both feeds work correctly
+- Confirmed navigation is functional
+- Validated real-time data updates
+- Documented any issues found
+- Captured screenshots (optional)
 
-**Next:** Ready for production deployment! 🚀
+**Next:** Ready for production deployment! 
 
 ---
 
-*Test Guide Version: 1.0*  
-*Last Updated: October 14, 2025*  
+*Test Guide Version: 1.0* 
+*Last Updated: October 14, 2025* 
 *Author: Gabriel Barbudan*

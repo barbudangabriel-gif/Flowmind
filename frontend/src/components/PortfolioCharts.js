@@ -1,32 +1,32 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  ScatterChart,
-  Scatter,
-  Legend
+ LineChart,
+ Line,
+ XAxis,
+ YAxis,
+ CartesianGrid,
+ Tooltip,
+ ResponsiveContainer,
+ PieChart,
+ Pie,
+ Cell,
+ BarChart,
+ Bar,
+ ScatterChart,
+ Scatter,
+ Legend
 } from 'recharts';
 import {
-  TrendingUp,
-  TrendingDown,
-  PieChart as PieChartIcon,
-  BarChart3,
-  ArrowLeft,
-  Calendar,
-  Filter,
-  Download,
-  RefreshCw
+ TrendingUp,
+ TrendingDown,
+ PieChart as PieChartIcon,
+ BarChart3,
+ ArrowLeft,
+ Calendar,
+ Filter,
+ Download,
+ RefreshCw
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -34,651 +34,651 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const PortfolioCharts = () => {
-  const { portfolioId } = useParams();
-  const navigate = useNavigate();
-  
-  // State management
-  const [activeFilter, setActiveFilter] = useState('closed'); // 'open' | 'closed' | 'all'
-  const [assetFilter, setAssetFilter] = useState('combined'); // 'stocks' | 'options' | 'combined'
-  const [allocationView, setAllocationView] = useState('stocks'); // 'stocks' | 'options' for pie chart
-  const [timeFilter, setTimeFilter] = useState('all'); // 'daily' | 'weekly' | 'monthly' | 'all' | 'custom'
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
-  const [loading, setLoading] = useState(true);
-  const [portfolioData, setPortfolioData] = useState(null);
-  const [performanceData, setPerformanceData] = useState([]);
-  const [allocationData, setAllocationData] = useState([]);
-  const [error, setError] = useState(null);
+ const { portfolioId } = useParams();
+ const navigate = useNavigate();
+ 
+ // State management
+ const [activeFilter, setActiveFilter] = useState('closed'); // 'open' | 'closed' | 'all'
+ const [assetFilter, setAssetFilter] = useState('combined'); // 'stocks' | 'options' | 'combined'
+ const [allocationView, setAllocationView] = useState('stocks'); // 'stocks' | 'options' for pie chart
+ const [timeFilter, setTimeFilter] = useState('all'); // 'daily' | 'weekly' | 'monthly' | 'all' | 'custom'
+ const [showCalendar, setShowCalendar] = useState(false);
+ const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
+ const [loading, setLoading] = useState(true);
+ const [portfolioData, setPortfolioData] = useState(null);
+ const [performanceData, setPerformanceData] = useState([]);
+ const [allocationData, setAllocationData] = useState([]);
+ const [error, setError] = useState(null);
 
-  // Colors for charts
-  const COLORS = {
-    stocks: '#10B981', // Green
-    options: '#3B82F6', // Blue  
-    combined: '#F59E0B', // Orange
-    cash: '#8B5CF6', // Purple
-    margin: '#F59E0B', // Orange
-    profit: '#10B981',
-    loss: '#EF4444'
-  };
+ // Colors for charts
+ const COLORS = {
+ stocks: '#10B981', // Green
+ options: '#3B82F6', // Blue 
+ combined: '#F59E0B', // Orange
+ cash: '#8B5CF6', // Purple
+ margin: '#F59E0B', // Orange
+ profit: '#10B981',
+ loss: '#EF4444'
+ };
 
-  // Get color for allocation pie chart
-  const getAllocationColor = (item, index) => {
-    if (item.type === 'cash') return COLORS.cash;
-    if (item.type === 'margin') return COLORS.margin;
-    if (item.type === 'margin_used') return '#EF4444'; // Red for used margin
-    if (item.type === 'stocks') return COLORS.stocks;
-    if (item.type === 'options') return COLORS.options;
-    // Fallback colors for mixed items
-    const fallbackColors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'];
-    return fallbackColors[index % fallbackColors.length];
-  };
+ // Get color for allocation pie chart
+ const getAllocationColor = (item, index) => {
+ if (item.type === 'cash') return COLORS.cash;
+ if (item.type === 'margin') return COLORS.margin;
+ if (item.type === 'margin_used') return '#EF4444'; // Red for used margin
+ if (item.type === 'stocks') return COLORS.stocks;
+ if (item.type === 'options') return COLORS.options;
+ // Fallback colors for mixed items
+ const fallbackColors = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'];
+ return fallbackColors[index % fallbackColors.length];
+ };
 
-  // Portfolio information
-  const portfolioInfo = {
-    'htech-15t': { name: 'HTech 15T', value: 139902.60, cash: 100000.00 }
-  };
+ // Portfolio information
+ const portfolioInfo = {
+ 'htech-15t': { name: 'HTech 15T', value: 139902.60, cash: 100000.00 }
+ };
 
-  const currentPortfolio = portfolioInfo[portfolioId] || portfolioInfo['htech-15t'];
+ const currentPortfolio = portfolioInfo[portfolioId] || portfolioInfo['htech-15t'];
 
-  const generateMockData = () => {
-    const dates = [];
-    const performanceData = [];
-    
-    // Generate 30 days of mock data
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      
-      const baseValue = 1000;
-      const noise = Math.sin(i * 0.2) * 100 + Math.random() * 50 - 25;
-      
-      performanceData.push({
-        date: dateStr,
-        stocks_pnl: baseValue + noise,
-        options_pnl: (baseValue * 0.3) + (noise * 0.5),
-        combined_pnl: (baseValue * 1.3) + (noise * 1.2),
-        cumulative_stocks: baseValue + noise + (i * 10),
-        cumulative_options: (baseValue * 0.3) + (noise * 0.5) + (i * 3),
-        cumulative_combined: (baseValue * 1.3) + (noise * 1.2) + (i * 13)
-      });
-    }
+ const generateMockData = () => {
+ const dates = [];
+ const performanceData = [];
+ 
+ // Generate 30 days of mock data
+ for (let i = 29; i >= 0; i--) {
+ const date = new Date();
+ date.setDate(date.getDate() - i);
+ const dateStr = date.toISOString().split('T')[0];
+ 
+ const baseValue = 1000;
+ const noise = Math.sin(i * 0.2) * 100 + Math.random() * 50 - 25;
+ 
+ performanceData.push({
+ date: dateStr,
+ stocks_pnl: baseValue + noise,
+ options_pnl: (baseValue * 0.3) + (noise * 0.5),
+ combined_pnl: (baseValue * 1.3) + (noise * 1.2),
+ cumulative_stocks: baseValue + noise + (i * 10),
+ cumulative_options: (baseValue * 0.3) + (noise * 0.5) + (i * 3),
+ cumulative_combined: (baseValue * 1.3) + (noise * 1.2) + (i * 13)
+ });
+ }
 
-    // Calculate cash/margin logic 
-    const portfolioCash = currentPortfolio.cash || 100000;
-    const totalPortfolioValue = currentPortfolio.value;
-    const calculatedMarginUsed = Math.max(0, totalPortfolioValue - portfolioCash);
-    const calculatedMarginAvailable = portfolioCash > 0 ? 0 : 25000; // Only available if no cash
-    
-    const allocationData = [
-      { name: 'AAPL', value: 25000, type: 'stocks', count: 5 },
-      { name: 'MSFT', value: 20000, type: 'stocks', count: 3 },
-      { name: 'GOOGL', value: 15000, type: 'stocks', count: 2 },
-      { name: 'NVDA', value: 12000, type: 'stocks', count: 4 },
-      { name: 'TSLA Calls', value: 8000, type: 'options', count: 10 },
-      { name: 'SPY Puts', value: 5000, type: 'options', count: 5 }
-    ];
+ // Calculate cash/margin logic 
+ const portfolioCash = currentPortfolio.cash || 100000;
+ const totalPortfolioValue = currentPortfolio.value;
+ const calculatedMarginUsed = Math.max(0, totalPortfolioValue - portfolioCash);
+ const calculatedMarginAvailable = portfolioCash > 0 ? 0 : 25000; // Only available if no cash
+ 
+ const allocationData = [
+ { name: 'AAPL', value: 25000, type: 'stocks', count: 5 },
+ { name: 'MSFT', value: 20000, type: 'stocks', count: 3 },
+ { name: 'GOOGL', value: 15000, type: 'stocks', count: 2 },
+ { name: 'NVDA', value: 12000, type: 'stocks', count: 4 },
+ { name: 'TSLA Calls', value: 8000, type: 'options', count: 10 },
+ { name: 'SPY Puts', value: 5000, type: 'options', count: 5 }
+ ];
 
-    // Add cash only if available
-    if (portfolioCash > 0) {
-      allocationData.push({ name: 'Cash', value: portfolioCash, type: 'cash', count: 1 });
-    }
+ // Add cash only if available
+ if (portfolioCash > 0) {
+ allocationData.push({ name: 'Cash', value: portfolioCash, type: 'cash', count: 1 });
+ }
 
-    // Add margin only if being used or available when no cash
-    if (calculatedMarginUsed > 0) {
-      allocationData.push({ name: 'Margin Used', value: calculatedMarginUsed, type: 'margin_used', count: 1 });
-    } else if (calculatedMarginAvailable > 0) {
-      allocationData.push({ name: 'Margin Available', value: calculatedMarginAvailable, type: 'margin', count: 1 });
-    }
+ // Add margin only if being used or available when no cash
+ if (calculatedMarginUsed > 0) {
+ allocationData.push({ name: 'Margin Used', value: calculatedMarginUsed, type: 'margin_used', count: 1 });
+ } else if (calculatedMarginAvailable > 0) {
+ allocationData.push({ name: 'Margin Available', value: calculatedMarginAvailable, type: 'margin', count: 1 });
+ }
 
-    setPerformanceData(performanceData);
-    setAllocationData(allocationData);
-    setPortfolioData({
-      total_value: currentPortfolio.value,
-      total_pnl: 2500.75,
-      cash_balance: portfolioCash,
-      margin_used: calculatedMarginUsed,
-      margin_available: calculatedMarginAvailable,
-      buying_power: portfolioCash + (portfolioCash > 0 ? 0 : 25000)
-    });
-  };
+ setPerformanceData(performanceData);
+ setAllocationData(allocationData);
+ setPortfolioData({
+ total_value: currentPortfolio.value,
+ total_pnl: 2500.75,
+ cash_balance: portfolioCash,
+ margin_used: calculatedMarginUsed,
+ margin_available: calculatedMarginAvailable,
+ buying_power: portfolioCash + (portfolioCash > 0 ? 0 : 25000)
+ });
+ };
 
-  useEffect(() => {
-    generateMockData();
-    setLoading(false);
-  }, [portfolioId, activeFilter, assetFilter, timeFilter, customDateRange]);
+ useEffect(() => {
+ generateMockData();
+ setLoading(false);
+ }, [portfolioId, activeFilter, assetFilter, timeFilter, customDateRange]);
 
-  // Filter performance data for display
-  const filteredPerformanceData = useMemo(() => {
-    return performanceData.map(item => {
-      if (assetFilter === 'stocks') {
-        return { ...item, pnl: item.stocks_pnl, cumulative: item.cumulative_stocks };
-      } else if (assetFilter === 'options') {
-        return { ...item, pnl: item.options_pnl, cumulative: item.cumulative_options };
-      } else {
-        return { ...item, pnl: item.combined_pnl, cumulative: item.cumulative_combined };
-      }
-    });
-  }, [performanceData, assetFilter]);
+ // Filter performance data for display
+ const filteredPerformanceData = useMemo(() => {
+ return performanceData.map(item => {
+ if (assetFilter === 'stocks') {
+ return { ...item, pnl: item.stocks_pnl, cumulative: item.cumulative_stocks };
+ } else if (assetFilter === 'options') {
+ return { ...item, pnl: item.options_pnl, cumulative: item.cumulative_options };
+ } else {
+ return { ...item, pnl: item.combined_pnl, cumulative: item.cumulative_combined };
+ }
+ });
+ }, [performanceData, assetFilter]);
 
-  // Filter allocation data based on allocation view (stocks/options toggle)
-  const filteredAllocationData = useMemo(() => {
-    let data = allocationData;
-    
-    // Always include cash and margin
-    const cashAndMargin = data.filter(item => item.type === 'cash' || item.type === 'margin');
-    
-    // Filter based on allocation view toggle
-    let filteredPositions;
-    if (allocationView === 'stocks') {
-      filteredPositions = data.filter(item => item.type === 'stocks');
-    } else if (allocationView === 'options') {
-      filteredPositions = data.filter(item => item.type === 'options');
-    } else {
-      // Combined view - show both stocks and options
-      filteredPositions = data.filter(item => item.type === 'stocks' || item.type === 'options');
-    }
-    
-    // Combine positions with cash and margin
-    return [...filteredPositions, ...cashAndMargin];
-  }, [allocationData, allocationView]);
+ // Filter allocation data based on allocation view (stocks/options toggle)
+ const filteredAllocationData = useMemo(() => {
+ let data = allocationData;
+ 
+ // Always include cash and margin
+ const cashAndMargin = data.filter(item => item.type === 'cash' || item.type === 'margin');
+ 
+ // Filter based on allocation view toggle
+ let filteredPositions;
+ if (allocationView === 'stocks') {
+ filteredPositions = data.filter(item => item.type === 'stocks');
+ } else if (allocationView === 'options') {
+ filteredPositions = data.filter(item => item.type === 'options');
+ } else {
+ // Combined view - show both stocks and options
+ filteredPositions = data.filter(item => item.type === 'stocks' || item.type === 'options');
+ }
+ 
+ // Combine positions with cash and margin
+ return [...filteredPositions, ...cashAndMargin];
+ }, [allocationData, allocationView]);
 
-  // Custom tooltip for performance chart
-  const PerformanceTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-medium">{label}</p>
-          {payload.map((entry, index) => (
-            <p key={index} style={{ color: entry.color }}>
-              {entry.name}: ${entry.value?.toFixed(2)}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+ // Custom tooltip for performance chart
+ const PerformanceTooltip = ({ active, payload, label }) => {
+ if (active && payload && payload.length) {
+ return (
+ <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+ <p className="font-medium">{label}</p>
+ {payload.map((entry, index) => (
+ <p key={index} style={{ color: entry.color }}>
+ {entry.name}: ${entry.value?.toFixed(2)}
+ </p>
+ ))}
+ </div>
+ );
+ }
+ return null;
+ };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading portfolio charts...</p>
-        </div>
-      </div>
-    );
-  }
+ if (loading) {
+ return (
+ <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+ <div className="text-center">
+ <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+ <p className="text-gray-600">Loading portfolio charts...</p>
+ </div>
+ </div>
+ );
+ }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigate(`/portfolios/view/${portfolioId}`)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft size={20} className="text-gray-600" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {currentPortfolio.name} Charts
-                </h1>
-                <p className="text-gray-600">Portfolio performance and allocation analysis</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <button className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <RefreshCw size={16} />
-                <span>Refresh</span>
-              </button>
-              <button className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                <Download size={16} />
-                <span>Export</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+ return (
+ <div className="min-h-screen bg-gray-50">
+ {/* Header */}
+ <div className="bg-white border-b border-gray-200">
+ <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+ <div className="flex items-center justify-between py-4">
+ <div className="flex items-center space-x-4">
+ <button
+ onClick={() => navigate(`/portfolios/view/${portfolioId}`)}
+ className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+ >
+ <ArrowLeft size={20} className="text-gray-600" />
+ </button>
+ <div>
+ <h1 className="text-2xl font-medium text-gray-900">
+ {currentPortfolio.name} Charts
+ </h1>
+ <p className="text-gray-600">Portfolio performance and allocation analysis</p>
+ </div>
+ </div>
+ 
+ <div className="flex items-center space-x-3">
+ <button className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-[rgb(252, 251, 255)] rounded-lg hover:bg-blue-700 transition-colors">
+ <RefreshCw size={16} />
+ <span>Refresh</span>
+ </button>
+ <button className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+ <Download size={16} />
+ <span>Export</span>
+ </button>
+ </div>
+ </div>
+ </div>
+ </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Filter Controls */}
-        <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Trade Status Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Trade Status</label>
-              <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-                <button
-                  onClick={() => setActiveFilter('open')}
-                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                    activeFilter === 'open'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Open
-                </button>
-                <button
-                  onClick={() => setActiveFilter('closed')}
-                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                    activeFilter === 'closed'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Closed
-                </button>
-                <button
-                  onClick={() => setActiveFilter('all')}
-                  className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                    activeFilter === 'all'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Combined
-                </button>
-              </div>
-            </div>
+ <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+ {/* Filter Controls */}
+ <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+ 
+ {/* Trade Status Filter */}
+ <div>
+ <label className="block text-xl font-medium text-gray-700 mb-2">Trade Status</label>
+ <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+ <button
+ onClick={() => setActiveFilter('open')}
+ className={`flex-1 px-3 py-2 text-xl font-medium transition-colors ${
+ activeFilter === 'open'
+ ? 'bg-green-600 text-[rgb(252, 251, 255)]'
+ : 'bg-white text-gray-700 hover:bg-gray-50'
+ }`}
+ >
+ Open
+ </button>
+ <button
+ onClick={() => setActiveFilter('closed')}
+ className={`flex-1 px-3 py-2 text-xl font-medium transition-colors ${
+ activeFilter === 'closed'
+ ? 'bg-blue-600 text-[rgb(252, 251, 255)]'
+ : 'bg-white text-gray-700 hover:bg-gray-50'
+ }`}
+ >
+ Closed
+ </button>
+ <button
+ onClick={() => setActiveFilter('all')}
+ className={`flex-1 px-3 py-2 text-xl font-medium transition-colors ${
+ activeFilter === 'all'
+ ? 'bg-purple-600 text-[rgb(252, 251, 255)]'
+ : 'bg-white text-gray-700 hover:bg-gray-50'
+ }`}
+ >
+ Combined
+ </button>
+ </div>
+ </div>
 
-            {/* Asset Type Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Asset Type</label>
-              <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-                {['stocks', 'options', 'combined'].map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setAssetFilter(type)}
-                    className={`flex-1 px-3 py-2 text-sm font-medium transition-colors ${
-                      assetFilter === type
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
+ {/* Asset Type Filter */}
+ <div>
+ <label className="block text-xl font-medium text-gray-700 mb-2">Asset Type</label>
+ <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+ {['stocks', 'options', 'combined'].map((type) => (
+ <button
+ key={type}
+ onClick={() => setAssetFilter(type)}
+ className={`flex-1 px-3 py-2 text-xl font-medium transition-colors ${
+ assetFilter === type
+ ? 'bg-blue-600 text-[rgb(252, 251, 255)]'
+ : 'bg-white text-gray-700 hover:bg-gray-50'
+ }`}
+ >
+ {type.charAt(0).toUpperCase() + type.slice(1)}
+ </button>
+ ))}
+ </div>
+ </div>
 
-            {/* Time Period Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Time Period</label>
-              <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-                {['daily', 'weekly', 'monthly', 'all'].map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => setTimeFilter(period)}
-                    className={`flex-1 px-2 py-2 text-xs font-medium transition-colors ${
-                      timeFilter === period
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {period.charAt(0).toUpperCase() + period.slice(1)}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setShowCalendar(!showCalendar)}
-                  className={`flex items-center justify-center px-3 py-2 text-xs font-medium transition-colors ${
-                    timeFilter === 'custom'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <Calendar size={14} />
-                </button>
-              </div>
-            </div>
-          </div>
+ {/* Time Period Filter */}
+ <div>
+ <label className="block text-xl font-medium text-gray-700 mb-2">Time Period</label>
+ <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+ {['daily', 'weekly', 'monthly', 'all'].map((period) => (
+ <button
+ key={period}
+ onClick={() => setTimeFilter(period)}
+ className={`flex-1 px-2 py-2 text-lg font-medium transition-colors ${
+ timeFilter === period
+ ? 'bg-blue-600 text-[rgb(252, 251, 255)]'
+ : 'bg-white text-gray-700 hover:bg-gray-50'
+ }`}
+ >
+ {period.charAt(0).toUpperCase() + period.slice(1)}
+ </button>
+ ))}
+ <button
+ onClick={() => setShowCalendar(!showCalendar)}
+ className={`flex items-center justify-center px-3 py-2 text-lg font-medium transition-colors ${
+ timeFilter === 'custom'
+ ? 'bg-blue-600 text-[rgb(252, 251, 255)]'
+ : 'bg-white text-gray-700 hover:bg-gray-50'
+ }`}
+ >
+ <Calendar size={14} />
+ </button>
+ </div>
+ </div>
+ </div>
 
-          {/* Custom Date Range */}
-          {showCalendar && (
-            <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                  <input
-                    type="date"
-                    value={customDateRange.start}
-                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                  <input
-                    type="date"
-                    value={customDateRange.end}
-                    onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setTimeFilter('custom');
-                  setShowCalendar(false);
-                }}
-                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Apply Custom Range
-              </button>
-            </div>
-          )}
-        </div>
+ {/* Custom Date Range */}
+ {showCalendar && (
+ <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+ <div className="grid grid-cols-2 gap-4">
+ <div>
+ <label className="block text-xl font-medium text-gray-700 mb-1">Start Date</label>
+ <input
+ type="date"
+ value={customDateRange.start}
+ onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
+ className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+ />
+ </div>
+ <div>
+ <label className="block text-xl font-medium text-gray-700 mb-1">End Date</label>
+ <input
+ type="date"
+ value={customDateRange.end}
+ onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
+ className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+ />
+ </div>
+ </div>
+ <button
+ onClick={() => {
+ setTimeFilter('custom');
+ setShowCalendar(false);
+ }}
+ className="mt-3 px-4 py-2 bg-blue-600 text-[rgb(252, 251, 255)] rounded-lg hover:bg-blue-700 transition-colors"
+ >
+ Apply Custom Range
+ </button>
+ </div>
+ )}
+ </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
+ {error && (
+ <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+ <p className="text-red-700">{error}</p>
+ </div>
+ )}
 
-        {/* Main Chart Area */}
-        <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">P&L Performance</h2>
-              <p className="text-gray-600">
-                {activeFilter === 'closed' ? 'Closed trades only' : activeFilter === 'open' ? 'Open positions only' : 'All positions'} • 
-                {assetFilter === 'combined' ? ' Stocks + Options' : ` ${assetFilter.charAt(0).toUpperCase() + assetFilter.slice(1)} only`}
-              </p>
-            </div>
-            
-            {/* Legend */}
-            <div className="flex items-center space-x-4">
-              {assetFilter === 'combined' ? (
-                <>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-green-500 rounded"></div>
-                    <span className="text-sm text-gray-600">Stocks</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-blue-500 rounded"></div>
-                    <span className="text-sm text-gray-600">Options</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                    <span className="text-sm text-gray-600">Combined</span>
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <div className={`w-4 h-4 rounded`} style={{ backgroundColor: COLORS[assetFilter] }}></div>
-                  <span className="text-sm text-gray-600">{assetFilter.charAt(0).toUpperCase() + assetFilter.slice(1)} P&L</span>
-                </div>
-              )}
-            </div>
-          </div>
+ {/* Main Chart Area */}
+ <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+ <div className="flex items-center justify-between mb-6">
+ <div>
+ <h2 className="text-xl font-medium text-gray-900">P&L Performance</h2>
+ <p className="text-gray-600">
+ {activeFilter === 'closed' ? 'Closed trades only' : activeFilter === 'open' ? 'Open positions only' : 'All positions'} • 
+ {assetFilter === 'combined' ? ' Stocks + Options' : ` ${assetFilter.charAt(0).toUpperCase() + assetFilter.slice(1)} only`}
+ </p>
+ </div>
+ 
+ {/* Legend */}
+ <div className="flex items-center space-x-4">
+ {assetFilter === 'combined' ? (
+ <>
+ <div className="flex items-center space-x-2">
+ <div className="w-4 h-4 bg-green-500 rounded"></div>
+ <span className="text-xl text-gray-600">Stocks</span>
+ </div>
+ <div className="flex items-center space-x-2">
+ <div className="w-4 h-4 bg-blue-500 rounded"></div>
+ <span className="text-xl text-gray-600">Options</span>
+ </div>
+ <div className="flex items-center space-x-2">
+ <div className="w-4 h-4 bg-orange-500 rounded"></div>
+ <span className="text-xl text-gray-600">Combined</span>
+ </div>
+ </>
+ ) : (
+ <div className="flex items-center space-x-2">
+ <div className={`w-4 h-4 rounded`} style={{ backgroundColor: COLORS[assetFilter] }}></div>
+ <span className="text-xl text-gray-600">{assetFilter.charAt(0).toUpperCase() + assetFilter.slice(1)} P&L</span>
+ </div>
+ )}
+ </div>
+ </div>
 
-          <div className="h-96">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={filteredPerformanceData}>
-                <CartesianGrid 
-                  strokeDasharray="3 3" 
-                  stroke="#e2e8f0" 
-                  strokeWidth={1}
-                  horizontal={true}
-                  vertical={false}
-                />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
-                />
-                <YAxis 
-                  orientation="right"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
-                  tickFormatter={(value) => `$${value.toFixed(0)}`}
-                />
-                <Tooltip content={<PerformanceTooltip />} />
-                
-                {assetFilter === 'combined' ? (
-                  <>
-                    <Line 
-                      type="monotone" 
-                      dataKey="stocks_pnl" 
-                      stroke={COLORS.stocks} 
-                      strokeWidth={2} 
-                      dot={false}
-                      name="Stocks P&L"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="options_pnl" 
-                      stroke={COLORS.options} 
-                      strokeWidth={2} 
-                      dot={false}
-                      name="Options P&L"
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="combined_pnl" 
-                      stroke={COLORS.combined} 
-                      strokeWidth={3} 
-                      dot={false}
-                      name="Combined P&L"
-                    />
-                  </>
-                ) : (
-                  <Line 
-                    type="monotone" 
-                    dataKey="pnl" 
-                    stroke={COLORS[assetFilter]} 
-                    strokeWidth={3} 
-                    dot={false}
-                    name={`${assetFilter.charAt(0).toUpperCase() + assetFilter.slice(1)} P&L`}
-                  />
-                )}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+ <div className="h-96">
+ <ResponsiveContainer width="100%" height="100%">
+ <LineChart data={filteredPerformanceData}>
+ <CartesianGrid 
+ strokeDasharray="3 3" 
+ stroke="#e2e8f0" 
+ strokeWidth={1}
+ horizontal={true}
+ vertical={false}
+ />
+ <XAxis 
+ dataKey="date" 
+ axisLine={false}
+ tickLine={false}
+ tick={{ fontSize: 12, fill: '#6B7280' }}
+ />
+ <YAxis 
+ orientation="right"
+ axisLine={false}
+ tickLine={false}
+ tick={{ fontSize: 12, fill: '#6B7280' }}
+ tickFormatter={(value) => `$${value.toFixed(0)}`}
+ />
+ <Tooltip content={<PerformanceTooltip />} />
+ 
+ {assetFilter === 'combined' ? (
+ <>
+ <Line 
+ type="monotone" 
+ dataKey="stocks_pnl" 
+ stroke={COLORS.stocks} 
+ strokeWidth={2} 
+ dot={false}
+ name="Stocks P&L"
+ />
+ <Line 
+ type="monotone" 
+ dataKey="options_pnl" 
+ stroke={COLORS.options} 
+ strokeWidth={2} 
+ dot={false}
+ name="Options P&L"
+ />
+ <Line 
+ type="monotone" 
+ dataKey="combined_pnl" 
+ stroke={COLORS.combined} 
+ strokeWidth={3} 
+ dot={false}
+ name="Combined P&L"
+ />
+ </>
+ ) : (
+ <Line 
+ type="monotone" 
+ dataKey="pnl" 
+ stroke={COLORS[assetFilter]} 
+ strokeWidth={3} 
+ dot={false}
+ name={`${assetFilter.charAt(0).toUpperCase() + assetFilter.slice(1)} P&L`}
+ />
+ )}
+ </LineChart>
+ </ResponsiveContainer>
+ </div>
+ </div>
 
-        {/* Side Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          
-          {/* Allocation Pie Chart */}
-          <div className="bg-white rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Portfolio Allocation</h3>
-                <p className="text-gray-600">Active positions distribution</p>
-              </div>
-              <PieChartIcon size={20} className="text-gray-400" />
-            </div>
+ {/* Side Charts */}
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+ 
+ {/* Allocation Pie Chart */}
+ <div className="bg-white rounded-xl p-6 shadow-sm">
+ <div className="flex items-center justify-between mb-4">
+ <div>
+ <h3 className="text-3xl font-medium text-gray-900">Portfolio Allocation</h3>
+ <p className="text-gray-600">Active positions distribution</p>
+ </div>
+ <PieChartIcon size={20} className="text-gray-400" />
+ </div>
 
-            {/* Stocks/Options Toggle Switch */}
-            <div className="flex justify-center mb-4">
-              <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-gray-50">
-                <button
-                  onClick={() => setAllocationView('stocks')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    allocationView === 'stocks'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-transparent text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  📊 Stocks
-                </button>
-                <button
-                  onClick={() => setAllocationView('options')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    allocationView === 'options'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-transparent text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  ⚡ Options
-                </button>
-              </div>
-            </div>
+ {/* Stocks/Options Toggle Switch */}
+ <div className="flex justify-center mb-4">
+ <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-gray-50">
+ <button
+ onClick={() => setAllocationView('stocks')}
+ className={`px-4 py-2 text-xl font-medium transition-colors ${
+ allocationView === 'stocks'
+ ? 'bg-green-600 text-[rgb(252, 251, 255)]'
+ : 'bg-transparent text-gray-700 hover:bg-gray-100'
+ }`}
+ >
+ Stocks
+ </button>
+ <button
+ onClick={() => setAllocationView('options')}
+ className={`px-4 py-2 text-xl font-medium transition-colors ${
+ allocationView === 'options'
+ ? 'bg-blue-600 text-[rgb(252, 251, 255)]'
+ : 'bg-transparent text-gray-700 hover:bg-gray-100'
+ }`}
+ >
+ Options
+ </button>
+ </div>
+ </div>
 
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={filteredAllocationData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({name, value}) => `${name}: $${(value/1000).toFixed(1)}k`}
-                  >
-                    {filteredAllocationData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={getAllocationColor(entry, index)} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Value']} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+ <div className="h-64">
+ <ResponsiveContainer width="100%" height="100%">
+ <PieChart>
+ <Pie
+ data={filteredAllocationData}
+ cx="50%"
+ cy="50%"
+ outerRadius={80}
+ fill="#8884d8"
+ dataKey="value"
+ label={({name, value}) => `${name}: $${(value/1000).toFixed(1)}k`}
+ >
+ {filteredAllocationData.map((entry, index) => (
+ <Cell key={`cell-${index}`} fill={getAllocationColor(entry, index)} />
+ ))}
+ </Pie>
+ <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Value']} />
+ <Legend />
+ </PieChart>
+ </ResponsiveContainer>
+ </div>
 
-            {/* Cash and Margin Information */}
-            <div className="mt-4 grid grid-cols-2 gap-4">
-              {/* Cash - only show if available */}
-              {portfolioData?.cash_balance > 0 && (
-                <div className="bg-purple-50 p-3 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-purple-700">💰 Cash Available</span>
-                    <span className="text-lg font-bold text-purple-900">
-                      ${(portfolioData.cash_balance / 1000).toFixed(0)}k
-                    </span>
-                  </div>
-                  <p className="text-xs text-purple-600 mt-1">Available for withdrawal</p>
-                </div>
-              )}
-              
-              {/* Margin - only show when used or available (when no cash) */}
-              {(portfolioData?.margin_used > 0 || portfolioData?.margin_available > 0) && (
-                <div className="bg-orange-50 p-3 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-orange-700">
-                      📈 {portfolioData?.margin_used > 0 ? 'Margin Used' : 'Margin Available'}
-                    </span>
-                    <span className="text-lg font-bold text-orange-900">
-                      ${((portfolioData?.margin_used || portfolioData?.margin_available || 0) / 1000).toFixed(0)}k
-                    </span>
-                  </div>
-                  <p className="text-xs text-orange-600 mt-1">
-                    {portfolioData?.margin_used > 0 ? 'Currently leveraged amount' : 'Available when cash depleted'}
-                  </p>
-                </div>
-              )}
-              
-              {/* Buying Power */}
-              <div className="bg-green-50 p-3 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-green-700">⚡ Buying Power</span>
-                  <span className="text-lg font-bold text-green-900">
-                    ${((portfolioData?.buying_power || 0) / 1000).toFixed(0)}k
-                  </span>
-                </div>
-                <p className="text-xs text-green-600 mt-1">Total available to trade</p>
-              </div>
-            </div>
-          </div>
+ {/* Cash and Margin Information */}
+ <div className="mt-4 grid grid-cols-2 gap-4">
+ {/* Cash - only show if available */}
+ {portfolioData?.cash_balance > 0 && (
+ <div className="bg-purple-50 p-3 rounded-lg">
+ <div className="flex items-center justify-between">
+ <span className="text-xl font-medium text-purple-700"> Cash Available</span>
+ <span className="text-3xl font-medium text-purple-900">
+ ${(portfolioData.cash_balance / 1000).toFixed(0)}k
+ </span>
+ </div>
+ <p className="text-lg text-purple-600 mt-1">Available for withdrawal</p>
+ </div>
+ )}
+ 
+ {/* Margin - only show when used or available (when no cash) */}
+ {(portfolioData?.margin_used > 0 || portfolioData?.margin_available > 0) && (
+ <div className="bg-orange-50 p-3 rounded-lg">
+ <div className="flex items-center justify-between">
+ <span className="text-xl font-medium text-orange-700">
+ {portfolioData?.margin_used > 0 ? 'Margin Used' : 'Margin Available'}
+ </span>
+ <span className="text-3xl font-medium text-orange-900">
+ ${((portfolioData?.margin_used || portfolioData?.margin_available || 0) / 1000).toFixed(0)}k
+ </span>
+ </div>
+ <p className="text-lg text-orange-600 mt-1">
+ {portfolioData?.margin_used > 0 ? 'Currently leveraged amount' : 'Available when cash depleted'}
+ </p>
+ </div>
+ )}
+ 
+ {/* Buying Power */}
+ <div className="bg-green-50 p-3 rounded-lg">
+ <div className="flex items-center justify-between">
+ <span className="text-xl font-medium text-green-700"> Buying Power</span>
+ <span className="text-3xl font-medium text-green-900">
+ ${((portfolioData?.buying_power || 0) / 1000).toFixed(0)}k
+ </span>
+ </div>
+ <p className="text-lg text-green-600 mt-1">Total available to trade</p>
+ </div>
+ </div>
+ </div>
 
-          {/* Risk/Return Scatter */}
-          <div className="bg-white rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Risk vs Return</h3>
-                <p className="text-gray-600">Position analysis</p>
-              </div>
-              <BarChart3 size={20} className="text-gray-400" />
-            </div>
+ {/* Risk/Return Scatter */}
+ <div className="bg-white rounded-xl p-6 shadow-sm">
+ <div className="flex items-center justify-between mb-6">
+ <div>
+ <h3 className="text-3xl font-medium text-gray-900">Risk vs Return</h3>
+ <p className="text-gray-600">Position analysis</p>
+ </div>
+ <BarChart3 size={20} className="text-gray-400" />
+ </div>
 
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart data={filteredAllocationData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="count" 
-                    name="Position Size" 
-                    tick={{ fontSize: 12, fill: '#6B7280' }}
-                  />
-                  <YAxis 
-                    orientation="right"
-                    dataKey="value" 
-                    name="Value" 
-                    tick={{ fontSize: 12, fill: '#6B7280' }}
-                    tickFormatter={(value) => `$${(value/1000).toFixed(0)}k`}
-                  />
-                  <Tooltip 
-                    formatter={(value, name) => [
-                      name === 'Value' ? `$${value.toLocaleString()}` : value,
-                      name
-                    ]}
-                    labelFormatter={(label) => `Position: ${label}`}
-                  />
-                  <Scatter 
-                    dataKey="value" 
-                    fill={COLORS.combined}
-                  />
-                </ScatterChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
+ <div className="h-64">
+ <ResponsiveContainer width="100%" height="100%">
+ <ScatterChart data={filteredAllocationData}>
+ <CartesianGrid strokeDasharray="3 3" />
+ <XAxis 
+ dataKey="count" 
+ name="Position Size" 
+ tick={{ fontSize: 12, fill: '#6B7280' }}
+ />
+ <YAxis 
+ orientation="right"
+ dataKey="value" 
+ name="Value" 
+ tick={{ fontSize: 12, fill: '#6B7280' }}
+ tickFormatter={(value) => `$${(value/1000).toFixed(0)}k`}
+ />
+ <Tooltip 
+ formatter={(value, name) => [
+ name === 'Value' ? `$${value.toLocaleString()}` : value,
+ name
+ ]}
+ labelFormatter={(label) => `Position: ${label}`}
+ />
+ <Scatter 
+ dataKey="value" 
+ fill={COLORS.combined}
+ />
+ </ScatterChart>
+ </ResponsiveContainer>
+ </div>
+ </div>
+ </div>
 
-        {/* Portfolio Summary Panel */}
-        <div className="bg-white rounded-xl shadow-sm">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-bold text-gray-900">Portfolio Summary</h3>
-          </div>
-          
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
-                  ${portfolioData?.total_value?.toLocaleString() || '0.00'}
-                </div>
-                <div className="text-sm text-gray-600">Total Portfolio Value</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Cash excluded from charts: ${portfolioData?.cash_balance?.toLocaleString() || '0.00'}
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <div className={`text-2xl font-bold ${
-                  (portfolioData?.total_pnl || 0) >= 0 ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {(portfolioData?.total_pnl || 0) >= 0 ? '+' : ''}${portfolioData?.total_pnl?.toFixed(2) || '0.00'}
-                </div>
-                <div className="text-sm text-gray-600">Total P&L</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {activeFilter === 'closed' ? 'Closed positions only' : activeFilter === 'open' ? 'Open positions only' : 'All positions'}
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">
-                  {filteredAllocationData.length}
-                </div>
-                <div className="text-sm text-gray-600">Active Positions</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {assetFilter === 'combined' ? 'Stocks + Options' : assetFilter}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+ {/* Portfolio Summary Panel */}
+ <div className="bg-white rounded-xl shadow-sm">
+ <div className="px-6 py-4 border-b border-gray-200">
+ <h3 className="text-3xl font-medium text-gray-900">Portfolio Summary</h3>
+ </div>
+ 
+ <div className="p-6">
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+ <div className="text-center">
+ <div className="text-2xl font-medium text-gray-900">
+ ${portfolioData?.total_value?.toLocaleString() || '0.00'}
+ </div>
+ <div className="text-xl text-gray-600">Total Portfolio Value</div>
+ <div className="text-lg text-gray-500 mt-1">
+ Cash excluded from charts: ${portfolioData?.cash_balance?.toLocaleString() || '0.00'}
+ </div>
+ </div>
+ 
+ <div className="text-center">
+ <div className={`text-2xl font-medium ${
+ (portfolioData?.total_pnl || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+ }`}>
+ {(portfolioData?.total_pnl || 0) >= 0 ? '+' : ''}${portfolioData?.total_pnl?.toFixed(2) || '0.00'}
+ </div>
+ <div className="text-xl text-gray-600">Total P&L</div>
+ <div className="text-lg text-gray-500 mt-1">
+ {activeFilter === 'closed' ? 'Closed positions only' : activeFilter === 'open' ? 'Open positions only' : 'All positions'}
+ </div>
+ </div>
+ 
+ <div className="text-center">
+ <div className="text-2xl font-medium text-gray-900">
+ {filteredAllocationData.length}
+ </div>
+ <div className="text-xl text-gray-600">Active Positions</div>
+ <div className="text-lg text-gray-500 mt-1">
+ {assetFilter === 'combined' ? 'Stocks + Options' : assetFilter}
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ );
 };
 
 export default PortfolioCharts;

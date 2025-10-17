@@ -102,13 +102,13 @@ const SimplePortfolioTable = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div className="bg-gray-600 p-3 rounded">
                         <div className="text-gray-300 mb-1">📊 Position Details</div>
-                        <div className="text-white font-semibold">#{index + 1} of {filteredPositions.length}</div>
+                        <div className="text-[rgb(252, 251, 255)] font-semibold">#{index + 1} of {filteredPositions.length}</div>
                         <div className="text-gray-400 text-xs">Index: {index}</div>
                       </div>
                       
                       <div className="bg-gray-600 p-3 rounded">
                         <div className="text-gray-300 mb-1">💰 Financial Data</div>
-                        <div className="text-white font-semibold">{formatCurrency(position.market_value)}</div>
+                        <div className="text-[rgb(252, 251, 255)] font-semibold">{formatCurrency(position.market_value)}</div>
                         <div className={`text-xs ${getPnlColor(position.unrealized_pnl)}`}>
                           P&L: {position.unrealized_pnl > 0 ? '+' : ''}{formatCurrency(position.unrealized_pnl)}
                         </div>
@@ -116,7 +116,7 @@ const SimplePortfolioTable = () => {
                       
                       <div className="bg-gray-600 p-3 rounded">
                         <div className="text-gray-300 mb-1">📈 Performance</div>
-                        <div className={`text-white font-semibold ${getPnlColor(position.unrealized_pnl_percent)}`}>
+                        <div className={`text-[rgb(252, 251, 255)] font-semibold ${getPnlColor(position.unrealized_pnl_percent)}`}>
                           {position.unrealized_pnl_percent > 0 ? '+' : ''}{formatPercent(position.unrealized_pnl_percent)}
                         </div>
                         <div className="text-gray-400 text-xs">Return %</div>
@@ -124,7 +124,7 @@ const SimplePortfolioTable = () => {
                       
                       <div className="bg-gray-600 p-3 rounded">
                         <div className="text-gray-300 mb-1">🔢 Quantity Info</div>
-                        <div className="text-white font-semibold">{Math.abs(position.quantity)} shares</div>
+                        <div className="text-[rgb(252, 251, 255)] font-semibold">{Math.abs(position.quantity)} shares</div>
                         <div className="text-gray-400 text-xs">
                           {position.quantity > 0 ? 'Long Position' : 'Short Position'}
                         </div>

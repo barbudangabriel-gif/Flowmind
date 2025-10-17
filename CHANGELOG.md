@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.0] - 2025-10-14
 
-### 🎉 Major Release - Security Hardening & Health Monitoring
+### Major Release - Security Hardening & Health Monitoring
 
 This release focuses on production readiness with comprehensive security improvements, health monitoring, and CI/CD enhancements.
 
@@ -19,46 +19,46 @@ This release focuses on production readiness with comprehensive security improve
 
 #### Health & Monitoring
 - **NEW Endpoint:** `GET /api/health/redis` - Comprehensive Redis cache health monitoring
-  - Reports: connection status, cache mode (Redis/in-memory), keys count, memory usage
-  - Supports both Redis and AsyncTTLDict fallback
-  - Response time: ~1.5ms sequential, ~320ms under concurrent load (1000 req)
-  - Use case: Production monitoring, early failure detection, capacity planning
+ - Reports: connection status, cache mode (Redis/in-memory), keys count, memory usage
+ - Supports both Redis and AsyncTTLDict fallback
+ - Response time: ~1.5ms sequential, ~320ms under concurrent load (1000 req)
+ - Use case: Production monitoring, early failure detection, capacity planning
 
 #### Documentation
 - **Comprehensive README.md** - Complete platform documentation
-  - Quick start guides for backend/frontend/Docker
-  - Architecture overview and data flow
-  - Health endpoints reference with performance benchmarks
-  - CI/CD pipeline documentation
-  - Security best practices
-  - Deployment checklist
+ - Quick start guides for backend/frontend/Docker
+ - Architecture overview and data flow
+ - Health endpoints reference with performance benchmarks
+ - CI/CD pipeline documentation
+ - Security best practices
+ - Deployment checklist
 - **WEBSOCKET_STREAMING_DOCS.md** - Complete WebSocket implementation guide
-  - ASCII architecture diagrams
-  - 6 endpoint specifications (3 verified + 3 experimental)
-  - Frontend usage patterns
-  - Rate limits and configuration
-  - Performance benchmarks (<70ms end-to-end)
-  - Troubleshooting guide
+ - ASCII architecture diagrams
+ - 6 endpoint specifications (3 verified + 3 experimental)
+ - Frontend usage patterns
+ - Rate limits and configuration
+ - Performance benchmarks (<70ms end-to-end)
+ - Troubleshooting guide
 - **ABCD_IMPROVEMENTS_2025-10-14.md** - API/Database/Testing/Security improvements
 - **SECURITY_CI_IMPROVEMENTS_2025-10-14.md** - Security hardening documentation
 
 #### Testing & Performance
 - **Performance Test Suite:** `performance_health_test.py`
-  - Load testing for all health endpoints
-  - Concurrent load simulation (1000 requests, 100 concurrent)
-  - Response time analysis (min, mean, median, P95, P99)
-  - Throughput measurement
-  - SLA validation (99% success rate, <100ms P95 target)
+ - Load testing for all health endpoints
+ - Concurrent load simulation (1000 requests, 100 concurrent)
+ - Response time analysis (min, mean, median, P95, P99)
+ - Throughput measurement
+ - SLA validation (99% success rate, <100ms P95 target)
 
 #### WebSocket Streaming (Enhanced)
 - **3 Experimental Feeds with REST Fallback:**
-  - `LiveMarketMovers.jsx` - REST fallback polling every 30s
-  - `LiveDarkPool.jsx` - REST fallback polling every 60s
-  - `LiveCongressFeed.jsx` - REST fallback polling every 5min
+ - `LiveMarketMovers.jsx` - REST fallback polling every 30s
+ - `LiveDarkPool.jsx` - REST fallback polling every 60s
+ - `LiveCongressFeed.jsx` - REST fallback polling every 5min
 - **Automatic Data Source Detection:**
-  - Visual indicators showing active source (● WebSocket / 🔄 REST / ○ None)
-  - Seamless failover on WebSocket unavailability
-  - Zero downtime architecture
+ - Visual indicators showing active source (● WebSocket / 🔄 REST / ○ None)
+ - Seamless failover on WebSocket unavailability
+ - Zero downtime architecture
 
 ---
 
@@ -66,28 +66,28 @@ This release focuses on production readiness with comprehensive security improve
 
 #### Security Improvements
 - **Eliminated 76% of CWE-330 warnings** (58 → 0 in 5 critical files)
-  - `backend/services/uw_flow.py`: `random` → `secrets` (demo flow data)
-  - `backend/unusual_whales_service.py`: `random` → `secrets` (mock data generation)
-  - `backend/smart_rebalancing_service.py`: `random` → `secrets` (ML simulations)
-  - `backend/routers/options.py`: `random` → `secrets` (demo chains)
-  - `backend/iv_service/provider_stub.py`: `random` → `secrets` (stub IV data)
+ - `backend/services/uw_flow.py`: `random` → `secrets` (demo flow data)
+ - `backend/unusual_whales_service.py`: `random` → `secrets` (mock data generation)
+ - `backend/smart_rebalancing_service.py`: `random` → `secrets` (ML simulations)
+ - `backend/routers/options.py`: `random` → `secrets` (demo chains)
+ - `backend/iv_service/provider_stub.py`: `random` → `secrets` (stub IV data)
 - **Impact:** Follows security best practices for demo data generation
 - **Note:** Remaining `random` usage in 4 files is for legitimate ML/scientific purposes
 
 #### CI/CD Enhancements
 - **Backend Pipeline Stage Enhanced:**
-  - Added Redis service for testing
-  - Automated health endpoint validation (4 endpoints)
-  - Tests: `/health`, `/healthz`, `/readyz`, `/api/health/redis`
-  - Fails fast if endpoints broken or Redis unavailable
-  - Production parity: tests with real Redis (not fallback)
+ - Added Redis service for testing
+ - Automated health endpoint validation (4 endpoints)
+ - Tests: `/health`, `/healthz`, `/readyz`, `/api/health/redis`
+ - Fails fast if endpoints broken or Redis unavailable
+ - Production parity: tests with real Redis (not fallback)
 - **New Dependencies:** `httpx` for health endpoint testing in CI
 
 #### API Improvements
 - **Deprecated Methods Preserved:**
-  - `uw_client.py`: `trades()`, `news()`, `congress()`, `insiders()`
-  - Added warning logs to guide migration
-  - Backward compatible (no breaking changes)
+ - `uw_client.py`: `trades()`, `news()`, `congress()`, `insiders()`
+ - Added warning logs to guide migration
+ - Backward compatible (no breaking changes)
 
 ---
 
@@ -115,7 +115,7 @@ This release focuses on production readiness with comprehensive security improve
 - `/readyz`: 343ms mean, 980ms P95, 2.91 req/s
 - `/api/health/redis`: 321ms mean, 940ms P95, 3.11 req/s
 
-**All endpoints: 100% success rate** ✅
+**All endpoints: 100% success rate** 
 
 **Note:** Production performance significantly better (no container overhead).
 
@@ -201,9 +201,9 @@ npm audit --audit-level=high
 
 - **Repository:** https://github.com/barbudangabriel-gif/Flowmind
 - **Commits:** 
-  - `a7b6cd2` - WebSocket docs + REST fallback
-  - `7d758aa` - ABCD improvements
-  - `9f8a467` - Security + CI health checks
+ - `a7b6cd2` - WebSocket docs + REST fallback
+ - `7d758aa` - ABCD improvements
+ - `9f8a467` - Security + CI health checks
 - **Documentation:** See root-level .md files
 
 ---

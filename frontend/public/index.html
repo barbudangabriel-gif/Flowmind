@@ -22,6 +22,66 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
         <title>FlowMind Analytics - Where Data Flows, Intelligence Grows</title>
+        <style>
+            /* Hide Emergent badge forcefully */
+            #emergent-badge,
+            a[href*="emergent.sh"],
+            a[href*="utm_source=emergent-badge"] {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+            }
+        </style>
+        <script>
+            // Aggressive badge removal - runs immediately and continuously
+            (function() {
+                const removeBadge = () => {
+                    // Remove by ID
+                    const badge = document.getElementById('emergent-badge');
+                    if (badge) {
+                        badge.remove();
+                        console.log('Removed emergent-badge by ID');
+                    }
+                    
+                    // Remove by href
+                    const links = document.querySelectorAll('a[href*="emergent.sh"]');
+                    links.forEach(link => {
+                        link.remove();
+                        console.log('Removed emergent badge by href');
+                    });
+                    
+                    // Remove by text content
+                    const allLinks = document.querySelectorAll('a');
+                    allLinks.forEach(link => {
+                        if (link.textContent && link.textContent.includes('Emergent')) {
+                            link.remove();
+                            console.log('Removed emergent badge by text content');
+                        }
+                    });
+                };
+                
+                // Run immediately
+                removeBadge();
+                
+                // Run on DOM ready
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', removeBadge);
+                } else {
+                    removeBadge();
+                }
+                
+                // Run continuously every 100ms
+                setInterval(removeBadge, 100);
+                
+                // Watch for new nodes being added
+                const observer = new MutationObserver(removeBadge);
+                observer.observe(document.documentElement, {
+                    childList: true,
+                    subtree: true
+                });
+            })();
+        </script>
     </head>
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -36,53 +96,7 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
-        <a
-            id="emergent-badge"
-            target="_blank"
-            href="https://app.emergent.sh/?utm_source=emergent-badge"
-            style="
-                display: flex !important;
-                align-items: center !important;
-                position: fixed !important;
-                bottom: 20px;
-                right: 20px;
-                text-decoration: none;
-                padding: 6px 10px;
-                font-family: -apple-system, BlinkMacSystemFont,
-                    &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu, Cantarell,
-                    &quot;Open Sans&quot;, &quot;Helvetica Neue&quot;,
-                    sans-serif !important;
-                font-size: 12px !important;
-                z-index: 9999 !important;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-                border-radius: 8px !important;
-                background-color: #ffffff !important;
-                border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            "
-        >
-            <div
-                style="display: flex; flex-direction: row; align-items: center"
-            >
-                <img
-                    style="width: 20px; height: 20px; margin-right: 8px"
-                    src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4"
-                />
-                <p
-                    style="
-                        color: #000000;
-                        font-family: -apple-system, BlinkMacSystemFont,
-                            &quot;Segoe UI&quot;, Roboto, Oxygen, Ubuntu,
-                            Cantarell, &quot;Open Sans&quot;,
-                            &quot;Helvetica Neue&quot;, sans-serif !important;
-                        font-size: 12px !important;
-                        align-items: center;
-                        margin-bottom: 0;
-                    "
-                >
-                    Made with Emergent
-                </p>
-            </div>
-        </a>
+
         <script>
             !(function (t, e) {
                 var o, n, p, r;
@@ -149,6 +163,125 @@
                 api_host: "https://us.i.posthog.com",
                 person_profiles: "identified_only", // or 'always' to create profiles for anonymous users as well
             });
+        </script>
+        
+        <!-- BADGE KILLER - Must run AFTER all other scripts -->
+        <script>
+            (function() {
+                console.log('[BADGE KILLER] Script loaded');
+                
+                const removeBadge = () => {
+                    let removed = false;
+                    
+                    // 1. Remove by ID from main DOM
+                    const badge = document.getElementById('emergent-badge');
+                    if (badge) {
+                        badge.remove();
+                        removed = true;
+                        console.log('[BADGE KILLER] Removed from main DOM by ID');
+                    }
+                    
+                    // 2. Remove by href from main DOM
+                    const links = document.querySelectorAll('a[href*="emergent.sh"], a[href*="utm_source=emergent"]');
+                    if (links.length > 0) {
+                        links.forEach(link => {
+                            link.remove();
+                            removed = true;
+                            console.log('[BADGE KILLER] Removed link:', link.href);
+                        });
+                    }
+                    
+                    // 3. Remove by text content from main DOM
+                    document.querySelectorAll('a').forEach(link => {
+                        if (link.textContent && link.textContent.toLowerCase().includes('emergent')) {
+                            link.remove();
+                            removed = true;
+                            console.log('[BADGE KILLER] Removed by text content:', link.textContent);
+                        }
+                    });
+                    
+                    // 4. Check and remove from ALL iframes
+                    document.querySelectorAll('iframe').forEach(iframe => {
+                        try {
+                            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                            const iframeBadge = iframeDoc.getElementById('emergent-badge');
+                            if (iframeBadge) {
+                                iframeBadge.remove();
+                                removed = true;
+                                console.log('[BADGE KILLER] Removed from iframe');
+                            }
+                            
+                            iframeDoc.querySelectorAll('a[href*="emergent"]').forEach(link => {
+                                link.remove();
+                                removed = true;
+                                console.log('[BADGE KILLER] Removed from iframe:', link.href);
+                            });
+                        } catch (e) {
+                            // Cross-origin iframe, can't access
+                            console.log('[BADGE KILLER] Cannot access iframe (cross-origin):', iframe.src);
+                        }
+                    });
+                    
+                    // 5. Check Shadow DOM
+                    document.querySelectorAll('*').forEach(el => {
+                        if (el.shadowRoot) {
+                            const shadowBadge = el.shadowRoot.getElementById('emergent-badge');
+                            if (shadowBadge) {
+                                shadowBadge.remove();
+                                removed = true;
+                                console.log('[BADGE KILLER] Removed from shadow DOM');
+                            }
+                            
+                            el.shadowRoot.querySelectorAll('a[href*="emergent"]').forEach(link => {
+                                link.remove();
+                                removed = true;
+                                console.log('[BADGE KILLER] Removed from shadow DOM:', link.href);
+                            });
+                        }
+                    });
+                    
+                    if (removed) {
+                        console.log('[BADGE KILLER] ✅ Badge removed!');
+                    }
+                };
+                
+                // Run immediately
+                removeBadge();
+                
+                // Run after window load
+                window.addEventListener('load', () => {
+                    console.log('[BADGE KILLER] Window loaded, deep scanning...');
+                    removeBadge();
+                    
+                    // Also scan after a delay (for lazy-loaded scripts)
+                    setTimeout(removeBadge, 1000);
+                    setTimeout(removeBadge, 3000);
+                    setTimeout(removeBadge, 5000);
+                });
+                
+                // Run continuously
+                const interval = setInterval(removeBadge, 200);
+                
+                // Watch for DOM changes
+                const observer = new MutationObserver((mutations) => {
+                    removeBadge();
+                });
+                
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+                
+                console.log('[BADGE KILLER] ✅ Active and monitoring (main DOM + iframes + shadow DOM)');
+                
+                // Debug: Log all links on page after 2 seconds
+                setTimeout(() => {
+                    console.log('[BADGE KILLER DEBUG] All links on page:');
+                    document.querySelectorAll('a').forEach((link, idx) => {
+                        console.log(`  ${idx}: ${link.textContent?.substring(0, 50)} -> ${link.href}`);
+                    });
+                }, 2000);
+            })();
         </script>
     </body>
 </html>

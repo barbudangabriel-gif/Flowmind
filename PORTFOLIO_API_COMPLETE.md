@@ -1,16 +1,16 @@
 # 💼 Portfolio API Endpoints - FlowMind
 
-## 📋 Overview
+## Overview
 
 FlowMind oferă un sistem complet de management portofoliu cu:
-- ✅ Portofolii multi-cont (manual tracking)
-- ✅ Integrare directă TradeStation (live positions)
-- ✅ Tranzacții FIFO (First-In-First-Out)
-- ✅ Realized & Unrealized P&L
-- ✅ Module allocations (IV Service, Sell Puts, etc.)
-- ✅ Import CSV
-- ✅ Buckets system (organizare poziții)
-- ✅ Analytics & equity curves
+- Portofolii multi-cont (manual tracking)
+- Integrare directă TradeStation (live positions)
+- Tranzacții FIFO (First-In-First-Out)
+- Realized & Unrealized P&L
+- Module allocations (IV Service, Sell Puts, etc.)
+- Import CSV
+- Buckets system (organizare poziții)
+- Analytics & equity curves
 
 ## 🏗️ Architecture
 
@@ -34,7 +34,7 @@ FlowMind oferă un sistem complet de management portofoliu cu:
 4. Realized P&L: (170-150)*100 + (170-160)*20 = $2200
 5. Remaining: [30 @ $160]
 
-## 📊 Core Portfolio Endpoints
+## Core Portfolio Endpoints
 
 ### 1. List Portfolios
 ```http
@@ -44,23 +44,23 @@ GET /api/portfolios
 **Response:**
 ```json
 [
-  {
-    "id": "uuid-123",
-    "name": "My Trading Account",
-    "cash_balance": 25000.00,
-    "status": "ACTIVE",
-    "modules": [
-      {
-        "module": "IV_SERVICE",
-        "budget": 10000.0,
-        "max_risk_per_trade": 500.0,
-        "daily_loss_limit": 1000.0,
-        "autotrade": false
-      }
-    ],
-    "created_at": "2025-10-01T10:00:00Z",
-    "updated_at": "2025-10-14T15:30:00Z"
-  }
+ {
+ "id": "uuid-123",
+ "name": "My Trading Account",
+ "cash_balance": 25000.00,
+ "status": "ACTIVE",
+ "modules": [
+ {
+ "module": "IV_SERVICE",
+ "budget": 10000.0,
+ "max_risk_per_trade": 500.0,
+ "daily_loss_limit": 1000.0,
+ "autotrade": false
+ }
+ ],
+ "created_at": "2025-10-01T10:00:00Z",
+ "updated_at": "2025-10-14T15:30:00Z"
+ }
 ]
 ```
 
@@ -72,17 +72,17 @@ POST /api/portfolios
 **Request:**
 ```json
 {
-  "name": "Options Trading 2025",
-  "starting_balance": 50000.0,
-  "modules": [
-    {
-      "module": "IV_SERVICE",
-      "budget": 20000.0,
-      "max_risk_per_trade": 1000.0,
-      "daily_loss_limit": 2000.0,
-      "autotrade": false
-    }
-  ]
+ "name": "Options Trading 2025",
+ "starting_balance": 50000.0,
+ "modules": [
+ {
+ "module": "IV_SERVICE",
+ "budget": 20000.0,
+ "max_risk_per_trade": 1000.0,
+ "daily_loss_limit": 2000.0,
+ "autotrade": false
+ }
+ ]
 }
 ```
 
@@ -101,8 +101,8 @@ PATCH /api/portfolios/{portfolio_id}
 **Request:**
 ```json
 {
-  "name": "Updated Portfolio Name",
-  "status": "PAUSED"
+ "name": "Updated Portfolio Name",
+ "status": "PAUSED"
 }
 ```
 
@@ -114,8 +114,8 @@ POST /api/portfolios/{portfolio_id}/funds
 **Request:**
 ```json
 {
-  "amount": 5000.0,
-  "action": "ADD"  // or "REMOVE"
+ "amount": 5000.0,
+ "action": "ADD" // or "REMOVE"
 }
 ```
 
@@ -127,15 +127,15 @@ POST /api/portfolios/{portfolio_id}/allocate
 **Request:**
 ```json
 {
-  "module": "IV_SERVICE",
-  "budget": 15000.0,
-  "max_risk_per_trade": 750.0,
-  "daily_loss_limit": 1500.0,
-  "autotrade": true
+ "module": "IV_SERVICE",
+ "budget": 15000.0,
+ "max_risk_per_trade": 750.0,
+ "daily_loss_limit": 1500.0,
+ "autotrade": true
 }
 ```
 
-## 📈 Statistics & Analytics
+## Statistics & Analytics
 
 ### 7. Portfolio Stats
 ```http
@@ -145,25 +145,25 @@ GET /api/portfolios/{portfolio_id}/stats
 **Response:**
 ```json
 {
-  "portfolio_id": "uuid-123",
-  "name": "My Trading Account",
-  "cash_balance": 25000.00,
-  "total_invested": 30000.00,
-  "unrealized_pnl": 3500.00,
-  "realized_pnl": 1200.00,
-  "total_pnl": 4700.00,
-  "return_percent": 15.67,
-  "total_transactions": 45,
-  "active_positions": 8,
-  "symbols_traded": ["AAPL", "TSLA", "NVDA", "..."],
-  "module_allocations": {
-    "IV_SERVICE": {
-      "budget": 10000.0,
-      "used": 7500.0,
-      "available": 2500.0,
-      "pnl": 850.0
-    }
-  }
+ "portfolio_id": "uuid-123",
+ "name": "My Trading Account",
+ "cash_balance": 25000.00,
+ "total_invested": 30000.00,
+ "unrealized_pnl": 3500.00,
+ "realized_pnl": 1200.00,
+ "total_pnl": 4700.00,
+ "return_percent": 15.67,
+ "total_transactions": 45,
+ "active_positions": 8,
+ "symbols_traded": ["AAPL", "TSLA", "NVDA", "..."],
+ "module_allocations": {
+ "IV_SERVICE": {
+ "budget": 10000.0,
+ "used": 7500.0,
+ "available": 2500.0,
+ "pnl": 850.0
+ }
+ }
 }
 ```
 
@@ -180,14 +180,14 @@ GET /api/portfolios/{portfolio_id}/analytics/equity
 **Response:**
 ```json
 {
-  "portfolio_id": "uuid-123",
-  "dates": ["2025-10-01", "2025-10-02", "..."],
-  "equity": [50000, 50250, 50100, "..."],
-  "cash": [25000, 24500, 24800, "..."],
-  "invested": [25000, 25750, 25300, "..."],
-  "realized_pnl": [0, 100, 150, "..."],
-  "unrealized_pnl": [0, 150, -50, "..."],
-  "total_return_percent": 2.5
+ "portfolio_id": "uuid-123",
+ "dates": ["2025-10-01", "2025-10-02", "..."],
+ "equity": [50000, 50250, 50100, "..."],
+ "cash": [25000, 24500, 24800, "..."],
+ "invested": [25000, 25750, 25300, "..."],
+ "realized_pnl": [0, 100, 150, "..."],
+ "unrealized_pnl": [0, 150, -50, "..."],
+ "total_return_percent": 2.5
 }
 ```
 
@@ -203,7 +203,7 @@ date,equity,cash,invested,realized_pnl,unrealized_pnl
 2025-10-02,50250.00,24500.00,25750.00,100.00,150.00
 ```
 
-## 💰 Transactions
+## Transactions
 
 ### 10. List Transactions
 ```http
@@ -219,20 +219,20 @@ GET /api/portfolios/{portfolio_id}/transactions
 **Response:**
 ```json
 [
-  {
-    "id": "tx-uuid-456",
-    "portfolio_id": "uuid-123",
-    "account_id": "broker_account_1",
-    "datetime": "2025-10-14T14:30:00Z",
-    "symbol": "AAPL",
-    "side": "BUY",
-    "qty": 100,
-    "price": 175.50,
-    "fee": 1.00,
-    "currency": "USD",
-    "notes": "Opening position",
-    "created_at": "2025-10-14T14:30:05Z"
-  }
+ {
+ "id": "tx-uuid-456",
+ "portfolio_id": "uuid-123",
+ "account_id": "broker_account_1",
+ "datetime": "2025-10-14T14:30:00Z",
+ "symbol": "AAPL",
+ "side": "BUY",
+ "qty": 100,
+ "price": 175.50,
+ "fee": 1.00,
+ "currency": "USD",
+ "notes": "Opening position",
+ "created_at": "2025-10-14T14:30:05Z"
+ }
 ]
 ```
 
@@ -244,14 +244,14 @@ POST /api/portfolios/{portfolio_id}/transactions
 **Request:**
 ```json
 {
-  "datetime": "2025-10-14T14:30:00Z",
-  "symbol": "TSLA",
-  "side": "BUY",
-  "qty": 50,
-  "price": 250.75,
-  "fee": 0.50,
-  "account_id": "my_broker_account",
-  "notes": "Entry on breakout"
+ "datetime": "2025-10-14T14:30:00Z",
+ "symbol": "TSLA",
+ "side": "BUY",
+ "qty": 50,
+ "price": 250.75,
+ "fee": 0.50,
+ "account_id": "my_broker_account",
+ "notes": "Entry on breakout"
 }
 ```
 
@@ -269,7 +269,7 @@ POST /api/portfolios/{portfolio_id}/import-csv
 **Request:**
 ```json
 {
-  "csv_data": "datetime,symbol,side,qty,price,fee,notes\n2025-10-01T10:00:00Z,AAPL,BUY,100,150.00,1.00,Opening\n2025-10-02T11:00:00Z,AAPL,SELL,50,155.00,0.50,Partial close"
+ "csv_data": "datetime,symbol,side,qty,price,fee,notes\n2025-10-01T10:00:00Z,AAPL,BUY,100,150.00,1.00,Opening\n2025-10-02T11:00:00Z,AAPL,SELL,50,155.00,0.50,Partial close"
 }
 ```
 
@@ -283,10 +283,10 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 **Response:**
 ```json
 {
-  "status": "success",
-  "imported": 2,
-  "failed": 0,
-  "errors": []
+ "status": "success",
+ "imported": 2,
+ "failed": 0,
+ "errors": []
 }
 ```
 
@@ -300,22 +300,22 @@ GET /api/portfolios/{portfolio_id}/positions
 **Response:**
 ```json
 [
-  {
-    "symbol": "AAPL",
-    "qty": 150,
-    "cost_basis": 22575.00,
-    "avg_cost": 150.50,
-    "unrealized_pnl": 2250.00,
-    "market_value": 24825.00
-  },
-  {
-    "symbol": "TSLA",
-    "qty": 50,
-    "cost_basis": 12537.50,
-    "avg_cost": 250.75,
-    "unrealized_pnl": -125.00,
-    "market_value": 12412.50
-  }
+ {
+ "symbol": "AAPL",
+ "qty": 150,
+ "cost_basis": 22575.00,
+ "avg_cost": 150.50,
+ "unrealized_pnl": 2250.00,
+ "market_value": 24825.00
+ },
+ {
+ "symbol": "TSLA",
+ "qty": 50,
+ "cost_basis": 12537.50,
+ "avg_cost": 250.75,
+ "unrealized_pnl": -125.00,
+ "market_value": 12412.50
+ }
 ]
 ```
 
@@ -329,16 +329,16 @@ GET /api/portfolios/{portfolio_id}/realized-pnl
 **Response:**
 ```json
 [
-  {
-    "symbol": "NVDA",
-    "realized": 1250.00,
-    "trades": 3
-  },
-  {
-    "symbol": "MSFT",
-    "realized": -85.00,
-    "trades": 1
-  }
+ {
+ "symbol": "NVDA",
+ "realized": 1250.00,
+ "trades": 3
+ },
+ {
+ "symbol": "MSFT",
+ "realized": -85.00,
+ "trades": 1
+ }
 ]
 ```
 
@@ -354,43 +354,43 @@ GET /api/portfolios/positions-ts
 **Response:**
 ```json
 {
-  "status": "success",
-  "positions_grid": [
-    {
-      "symbol": "AAPL",
-      "asset_type": "Stock",
-      "total_quantity": 250,
-      "weighted_avg_price": 173.45,
-      "total_market_value": 43362.50,
-      "total_unrealized_pnl": 875.00,
-      "unrealized_pnl_percent": 2.06,
-      "accounts": [
-        {
-          "account_id": "ABC12345",
-          "account_name": "Trading Account 1",
-          "quantity": 150,
-          "avg_price": 170.50
-        },
-        {
-          "account_id": "XYZ67890",
-          "account_name": "IRA Account",
-          "quantity": 100,
-          "avg_price": 177.50
-        }
-      ]
-    }
-  ],
-  "total_positions": 8,
-  "total_accounts": 2,
-  "timestamp": "2025-10-14T20:15:00Z"
+ "status": "success",
+ "positions_grid": [
+ {
+ "symbol": "AAPL",
+ "asset_type": "Stock",
+ "total_quantity": 250,
+ "weighted_avg_price": 173.45,
+ "total_market_value": 43362.50,
+ "total_unrealized_pnl": 875.00,
+ "unrealized_pnl_percent": 2.06,
+ "accounts": [
+ {
+ "account_id": "ABC12345",
+ "account_name": "Trading Account 1",
+ "quantity": 150,
+ "avg_price": 170.50
+ },
+ {
+ "account_id": "XYZ67890",
+ "account_name": "IRA Account",
+ "quantity": 100,
+ "avg_price": 177.50
+ }
+ ]
+ }
+ ],
+ "total_positions": 8,
+ "total_accounts": 2,
+ "timestamp": "2025-10-14T20:15:00Z"
 }
 ```
 
 **Features:**
-- ✅ Multi-account aggregation
-- ✅ Weighted average price calculation
-- ✅ Real-time P&L from TradeStation
-- ✅ Account-level breakdown per symbol
+- Multi-account aggregation
+- Weighted average price calculation
+- Real-time P&L from TradeStation
+- Account-level breakdown per symbol
 
 ### 16. TradeStation Auth URL
 ```http
@@ -400,10 +400,10 @@ GET /api/portfolios/ts/auth-url
 **Response:**
 ```json
 {
-  "status": "success",
-  "auth_url": "https://signin.tradestation.com/authorize?client_id=...",
-  "state": "random_state_token",
-  "message": "Navigate to auth_url to complete OAuth2 flow"
+ "status": "success",
+ "auth_url": "https://signin.tradestation.com/authorize?client_id=...",
+ "state": "random_state_token",
+ "message": "Navigate to auth_url to complete OAuth2 flow"
 }
 ```
 
@@ -415,10 +415,10 @@ POST /api/portfolios/ts/callback?code={auth_code}&state={state}
 **Response:**
 ```json
 {
-  "status": "success",
-  "message": "OAuth2 authentication completed successfully",
-  "authenticated": true,
-  "environment": "LIVE"
+ "status": "success",
+ "message": "OAuth2 authentication completed successfully",
+ "authenticated": true,
+ "environment": "LIVE"
 }
 ```
 
@@ -435,10 +435,10 @@ POST /api/portfolios/ts/subscribe
 **Response:**
 ```json
 {
-  "status": "success",
-  "subscribed_symbols": ["AAPL", "TSLA", "NVDA"],
-  "message": "Subscribed to 3 symbols for live quotes",
-  "polling_interval": "30s"
+ "status": "success",
+ "subscribed_symbols": ["AAPL", "TSLA", "NVDA"],
+ "message": "Subscribed to 3 symbols for live quotes",
+ "polling_interval": "30s"
 }
 ```
 
@@ -452,7 +452,7 @@ POST /api/portfolios/ts/unsubscribe
 ["AAPL", "TSLA"]
 ```
 
-## 🗂️ Buckets System
+## Buckets System
 
 **Buckets** = Organizarea pozițiilor în categorii (Long-term, Swing, Day Trade, etc.)
 
@@ -464,24 +464,24 @@ GET /api/portfolios/{portfolio_id}/buckets
 **Response:**
 ```json
 [
-  {
-    "id": "bucket-uuid-789",
-    "portfolio_id": "uuid-123",
-    "name": "Long-term Holdings",
-    "description": "Buy and hold positions",
-    "symbols": ["AAPL", "MSFT", "GOOGL"],
-    "color": "#4CAF50",
-    "created_at": "2025-10-01T10:00:00Z"
-  },
-  {
-    "id": "bucket-uuid-790",
-    "portfolio_id": "uuid-123",
-    "name": "Swing Trades",
-    "description": "2-4 week positions",
-    "symbols": ["TSLA", "NVDA"],
-    "color": "#FF9800",
-    "created_at": "2025-10-05T12:00:00Z"
-  }
+ {
+ "id": "bucket-uuid-789",
+ "portfolio_id": "uuid-123",
+ "name": "Long-term Holdings",
+ "description": "Buy and hold positions",
+ "symbols": ["AAPL", "MSFT", "GOOGL"],
+ "color": "#4CAF50",
+ "created_at": "2025-10-01T10:00:00Z"
+ },
+ {
+ "id": "bucket-uuid-790",
+ "portfolio_id": "uuid-123",
+ "name": "Swing Trades",
+ "description": "2-4 week positions",
+ "symbols": ["TSLA", "NVDA"],
+ "color": "#FF9800",
+ "created_at": "2025-10-05T12:00:00Z"
+ }
 ]
 ```
 
@@ -493,10 +493,10 @@ POST /api/portfolios/{portfolio_id}/buckets
 **Request:**
 ```json
 {
-  "name": "Day Trades",
-  "description": "Intraday positions",
-  "symbols": ["SPY", "QQQ"],
-  "color": "#F44336"
+ "name": "Day Trades",
+ "description": "Intraday positions",
+ "symbols": ["SPY", "QQQ"],
+ "color": "#F44336"
 }
 ```
 
@@ -514,11 +514,11 @@ POST /api/portfolios/{portfolio_id}/buckets
 **Allocation Structure:**
 ```json
 {
-  "module": "IV_SERVICE",
-  "budget": 10000.0,
-  "max_risk_per_trade": 500.0,
-  "daily_loss_limit": 1000.0,
-  "autotrade": false
+ "module": "IV_SERVICE",
+ "budget": 10000.0,
+ "max_risk_per_trade": 500.0,
+ "daily_loss_limit": 1000.0,
+ "autotrade": false
 }
 ```
 
@@ -530,7 +530,7 @@ POST /api/portfolios/{portfolio_id}/buckets
 5. If `autotrade: true`, module executes automatically
 6. View module performance in `/stats`
 
-## 🎯 Best Practices
+## Best Practices
 
 ### Portfolio Management
 1. **Separate portfolios** pentru strategii diferite (Long-term, Options, Day Trading)
@@ -556,17 +556,17 @@ POST /api/portfolios/{portfolio_id}/buckets
 3. **Module attribution:** Track P&L per strategy
 4. **Risk monitoring:** Daily loss limits per module
 
-## 🔒 Security & Access Control
+## Security & Access Control
 
 **Current:** Single-user system (no auth required)
 **Future:** User authentication + portfolio ownership validation
 
 **Data Privacy:**
-- ✅ Redis keys namespaced by portfolio ID
-- ✅ TradeStation tokens stored securely (MongoDB)
-- ✅ No sensitive data in logs
+- Redis keys namespaced by portfolio ID
+- TradeStation tokens stored securely (MongoDB)
+- No sensitive data in logs
 
-## 📊 Performance Considerations
+## Performance Considerations
 
 **Caching:**
 - Portfolio objects: In-memory + Redis
@@ -607,6 +607,6 @@ POST /api/portfolios/{portfolio_id}/buckets
 
 ---
 
-**Last Updated:** October 14, 2025  
-**API Version:** 3.0.0  
-**Status:** Production Ready ✅
+**Last Updated:** October 14, 2025 
+**API Version:** 3.0.0 
+**Status:** Production Ready 

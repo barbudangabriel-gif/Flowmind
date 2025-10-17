@@ -8,7 +8,7 @@
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - **Backend:** Python 3.11+, FastAPI, Redis (optional, has fallback)
@@ -21,7 +21,7 @@
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+source .venv/bin/activate # or .venv\Scripts\activate on Windows
 pip install -r requirements.txt
 python -m uvicorn server:app --reload --port 8000
 ```
@@ -30,7 +30,7 @@ python -m uvicorn server:app --reload --port 8000
 ```bash
 cd frontend
 npm install
-npm start  # Runs on http://localhost:3000
+npm start # Runs on http://localhost:3000
 ```
 
 **Docker Compose (Full Stack):**
@@ -82,13 +82,13 @@ docker-compose up --build
 
 ```json
 {
-  "status": "healthy",
-  "mode": "redis",  // or "in-memory"
-  "connected": true,
-  "keys_total": 1234,
-  "memory_used": "2.5MB",
-  "fallback_active": false,
-  "timestamp": "2025-10-14T14:52:00Z"
+ "status": "healthy",
+ "mode": "redis", // or "in-memory"
+ "connected": true,
+ "keys_total": 1234,
+ "memory_used": "2.5MB",
+ "fallback_active": false,
+ "timestamp": "2025-10-14T14:52:00Z"
 }
 ```
 
@@ -105,16 +105,16 @@ curl http://localhost:8000/api/health/redis | jq
 
 ---
 
-## 🔒 Security
+## Security
 
 ### Recent Security Hardening (Oct 14, 2025)
 
-✅ **Eliminated 76% of CWE-330 warnings**
+ **Eliminated 76% of CWE-330 warnings**
 - Replaced `random` → `secrets` in 5 backend files
 - Demo data generation follows security best practices
 - Zero HIGH/MEDIUM security issues
 
-✅ **CI/CD Security Gates**
+ **CI/CD Security Gates**
 - Bandit (Python SAST): `-ll` (low severity or higher)
 - npm audit: `--audit-level=high`
 - pip-audit: `--strict`
@@ -124,7 +124,7 @@ See: [ABCD_IMPROVEMENTS_2025-10-14.md](./ABCD_IMPROVEMENTS_2025-10-14.md), [SECU
 
 ---
 
-## 📊 Performance
+## Performance
 
 ### Health Endpoints Benchmarks (Dev Container)
 
@@ -177,25 +177,25 @@ python flow_backend_test.py
 **Linting & Security:**
 ```bash
 cd backend
-ruff check .                              # Linter
-mypy . --ignore-missing-imports          # Type checking
-bandit -ll -r .                          # Security audit
-pip-audit --strict                       # Dependency vulnerabilities
+ruff check . # Linter
+mypy . --ignore-missing-imports # Type checking
+bandit -ll -r . # Security audit
+pip-audit --strict # Dependency vulnerabilities
 ```
 
 ### Frontend Tests
 
 ```bash
 cd frontend
-npm run lint                             # ESLint
-npm run build                            # Production build test
-npm audit --audit-level=high            # Dependency audit
-npm test                                 # Jest tests (if configured)
+npm run lint # ESLint
+npm run build # Production build test
+npm audit --audit-level=high # Dependency audit
+npm test # Jest tests (if configured)
 ```
 
 ---
 
-## 🚀 CI/CD (GitLab)
+## CI/CD (GitLab)
 
 ### Pipeline Stages
 1. **Build:** Docker image creation
@@ -213,19 +213,19 @@ npm test                                 # Jest tests (if configured)
 
 ```yaml
 backend:
-  services:
-    - redis:latest  # Real Redis for testing
-  script:
-    - # ... existing linting/testing ...
-    
-    # Health endpoint validation
-    - python -m uvicorn server:app --host 0.0.0.0 --port 8000 &
-    - sleep 5
-    - curl -f http://localhost:8000/health || exit 1
-    - curl -f http://localhost:8000/healthz || exit 1
-    - curl -f http://localhost:8000/readyz || exit 1
-    - curl -f http://localhost:8000/api/health/redis || exit 1
-    - echo "✅ All health endpoints working"
+ services:
+ - redis:latest # Real Redis for testing
+ script:
+ - # ... existing linting/testing ...
+ 
+ # Health endpoint validation
+ - python -m uvicorn server:app --host 0.0.0.0 --port 8000 &
+ - sleep 5
+ - curl -f http://localhost:8000/health || exit 1
+ - curl -f http://localhost:8000/healthz || exit 1
+ - curl -f http://localhost:8000/readyz || exit 1
+ - curl -f http://localhost:8000/api/health/redis || exit 1
+ - echo " All health endpoints working"
 ```
 
 **Benefits:**
@@ -275,17 +275,17 @@ DB_NAME=flowmind
 
 # Cache
 REDIS_URL=redis://localhost:6379/0
-FM_FORCE_FALLBACK=0              # 1 to force in-memory cache
-FM_REDIS_REQUIRED=0              # 1 to fail if Redis unavailable
+FM_FORCE_FALLBACK=0 # 1 to force in-memory cache
+FM_REDIS_REQUIRED=0 # 1 to fail if Redis unavailable
 
 # APIs
-UW_API_TOKEN=your_uw_token       # Unusual Whales Pro tier
-TS_CLIENT_ID=your_ts_id          # TradeStation OAuth
+UW_API_TOKEN=your_uw_token # Unusual Whales Pro tier
+TS_CLIENT_ID=your_ts_id # TradeStation OAuth
 TS_CLIENT_SECRET=your_ts_secret
 TS_REDIRECT_URI=http://localhost:8000/callback
 
 # Features
-WARMUP_ENABLED=1                 # Cache warmup on startup
+WARMUP_ENABLED=1 # Cache warmup on startup
 ```
 
 **Frontend (.env.local):**
@@ -295,7 +295,7 @@ REACT_APP_BACKEND_URL=http://localhost:8000
 
 ---
 
-## 🎯 Key Features
+## Key Features
 
 ### Options Strategy Builder
 - 54+ pre-configured strategies (spreads, condors, butterflies, etc.)
@@ -379,7 +379,7 @@ curl https://your-domain.com/api/health/redis
 
 ---
 
-## 📞 Support
+## Support
 
 - **Issues:** [GitHub Issues](https://github.com/barbudangabriel-gif/Flowmind/issues)
 - **Docs:** See [documentation directory](./docs) or root-level .md files
@@ -402,9 +402,9 @@ See LICENSE file (if applicable)
 
 ---
 
-**Last Updated:** October 14, 2025  
-**Version:** 3.0.0  
-**Status:** ✅ Production Ready
+**Last Updated:** October 14, 2025 
+**Version:** 3.0.0 
+**Status:** Production Ready
 
 ---
 

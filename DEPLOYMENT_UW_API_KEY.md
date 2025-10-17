@@ -1,11 +1,11 @@
-# 🚀 FlowMind Deployment - UW API Key Injection
+# FlowMind Deployment - UW API Key Injection
 
-**Status:** Ready for deployment with corrected UW API endpoints  
+**Status:** Ready for deployment with corrected UW API endpoints 
 **Date:** October 13, 2025
 
 ---
 
-## ✅ Pre-Deployment Checklist
+## Pre-Deployment Checklist
 
 - [x] Fixed all hallucinated UW API endpoints
 - [x] Updated `uw_client.py` with correct routes
@@ -68,7 +68,7 @@ docker-compose up -d --build
 docker-compose logs -f backend
 
 # Should see:
-# ✅ "🐋 Unusual Whales: Configured"
+# "🐋 Unusual Whales: Configured"
 ```
 
 4. **Verify API is working**:
@@ -89,12 +89,12 @@ docker build -t flowmind-backend ./backend
 
 # Run with API key
 docker run -d \
-  --name flowmind-backend \
-  -p 8000:8000 \
-  -e UW_API_TOKEN="your_actual_key_here" \
-  -e UW_BASE_URL="https://api.unusualwhales.com" \
-  -e REDIS_HOST="redis" \
-  flowmind-backend
+ --name flowmind-backend \
+ -p 8000:8000 \
+ -e UW_API_TOKEN="your_actual_key_here" \
+ -e UW_BASE_URL="https://api.unusualwhales.com" \
+ -e REDIS_HOST="redis" \
+ flowmind-backend
 
 # Check logs
 docker logs -f flowmind-backend
@@ -109,8 +109,8 @@ docker logs -f flowmind-backend
 ```bash
 # Create secret from literal value
 kubectl create secret generic uw-api-credentials \
-  --from-literal=api-token='your_actual_key_here' \
-  --namespace=flowmind
+ --from-literal=api-token='your_actual_key_here' \
+ --namespace=flowmind
 
 # Verify secret exists
 kubectl get secrets -n flowmind
@@ -124,54 +124,54 @@ kubectl describe secret uw-api-credentials -n flowmind
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: flowmind-backend
-  namespace: flowmind
+ name: flowmind-backend
+ namespace: flowmind
 spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: flowmind-backend
-  template:
-    metadata:
-      labels:
-        app: flowmind-backend
-    spec:
-      containers:
-      - name: backend
-        image: flowmind-backend:latest
-        ports:
-        - containerPort: 8000
-        env:
-        # Unusual Whales API - from secret
-        - name: UW_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: uw-api-credentials
-              key: api-token
-        - name: UW_BASE_URL
-          value: "https://api.unusualwhales.com"
-        # Redis
-        - name: REDIS_HOST
-          value: "redis-service"
-        - name: REDIS_PORT
-          value: "6379"
-        # Feature flags
-        - name: UW_LIVE
-          value: "1"  # Enable live data in production
-        - name: UW_MIN_PREMIUM
-          value: "25000"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /readyz
-            port: 8000
-          initialDelaySeconds: 10
-          periodSeconds: 5
+ replicas: 3
+ selector:
+ matchLabels:
+ app: flowmind-backend
+ template:
+ metadata:
+ labels:
+ app: flowmind-backend
+ spec:
+ containers:
+ - name: backend
+ image: flowmind-backend:latest
+ ports:
+ - containerPort: 8000
+ env:
+ # Unusual Whales API - from secret
+ - name: UW_API_TOKEN
+ valueFrom:
+ secretKeyRef:
+ name: uw-api-credentials
+ key: api-token
+ - name: UW_BASE_URL
+ value: "https://api.unusualwhales.com"
+ # Redis
+ - name: REDIS_HOST
+ value: "redis-service"
+ - name: REDIS_PORT
+ value: "6379"
+ # Feature flags
+ - name: UW_LIVE
+ value: "1" # Enable live data in production
+ - name: UW_MIN_PREMIUM
+ value: "25000"
+ livenessProbe:
+ httpGet:
+ path: /health
+ port: 8000
+ initialDelaySeconds: 30
+ periodSeconds: 10
+ readinessProbe:
+ httpGet:
+ path: /readyz
+ port: 8000
+ initialDelaySeconds: 10
+ periodSeconds: 5
 ```
 
 ### 3. Apply Configuration
@@ -187,7 +187,7 @@ kubectl get pods -n flowmind
 kubectl logs -f deployment/flowmind-backend -n flowmind
 
 # Should see:
-# ✅ "🐋 Unusual Whales: Configured"
+# "🐋 Unusual Whales: Configured"
 ```
 
 ---
@@ -201,34 +201,34 @@ kubectl logs -f deployment/flowmind-backend -n flowmind
 name: Deploy FlowMind
 
 on:
-  push:
-    branches: [main]
+ push:
+ branches: [main]
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Build Backend
-        run: |
-          cd backend
-          docker build -t flowmind-backend .
-      
-      - name: Deploy to Production
-        env:
-          UW_API_TOKEN: ${{ secrets.UW_API_SECRET }}
-          UW_BASE_URL: https://api.unusualwhales.com
-        run: |
-          # Inject API key into deployment
-          source scripts/inject_uw_api_key.sh
-          
-          # Deploy (example using docker-compose)
-          docker-compose up -d --build
-          
-          # Verify deployment
-          sleep 10
-          curl http://localhost:8000/health
+ deploy:
+ runs-on: ubuntu-latest
+ steps:
+ - uses: actions/checkout@v3
+ 
+ - name: Build Backend
+ run: |
+ cd backend
+ docker build -t flowmind-backend .
+ 
+ - name: Deploy to Production
+ env:
+ UW_API_TOKEN: ${{ secrets.UW_API_SECRET }}
+ UW_BASE_URL: https://api.unusualwhales.com
+ run: |
+ # Inject API key into deployment
+ source scripts/inject_uw_api_key.sh
+ 
+ # Deploy (example using docker-compose)
+ docker-compose up -d --build
+ 
+ # Verify deployment
+ sleep 10
+ curl http://localhost:8000/health
 ```
 
 ---
@@ -255,8 +255,8 @@ curl http://your-domain.com/api/flow/summary | jq '{mode: .mode, count: (.items 
 
 # Expected output:
 # {
-#   "mode": "LIVE",
-#   "count": 24
+# "mode": "LIVE",
+# "count": 24
 # }
 
 # Test live flow for specific symbol
@@ -288,9 +288,9 @@ docker-compose logs backend | grep -i "unusual\|uw\|flow"
 kubectl logs -f deployment/flowmind-backend -n flowmind | grep -i "unusual\|uw\|flow"
 
 # Should see:
-# ✅ "🐋 Unusual Whales: Configured"
-# ✅ Flow requests returning data
-# ❌ Should NOT see: "404 Not Found", "API token not configured", "using demo mode"
+# "🐋 Unusual Whales: Configured"
+# Flow requests returning data
+# Should NOT see: "404 Not Found", "API token not configured", "using demo mode"
 ```
 
 ---
@@ -335,7 +335,7 @@ Client error '404 Not Found' for url 'https://api.unusualwhales.com/api/flow-ale
 
 ```bash
 curl -H "Authorization: Bearer YOUR_KEY" \
-  https://api.unusualwhales.com/api/flow-alerts?limit=1
+ https://api.unusualwhales.com/api/flow-alerts?limit=1
 ```
 
 ---
@@ -376,43 +376,43 @@ Rate limit exceeded
 
 ---
 
-## 📊 Monitoring After Deployment
+## Monitoring After Deployment
 
 ### Key Metrics to Watch
 
 1. **UW API Success Rate**
-   - Should be > 99%
-   - Check: `docker logs backend | grep "UW.*error" | wc -l`
+ - Should be > 99%
+ - Check: `docker logs backend | grep "UW.*error" | wc -l`
 
 2. **Demo Mode Usage**
-   - Should be < 1% in production
-   - Check: `curl /api/flow/summary | jq '.mode'` → should be "LIVE"
+ - Should be < 1% in production
+ - Check: `curl /api/flow/summary | jq '.mode'` → should be "LIVE"
 
 3. **Response Times**
-   - Flow endpoints: < 500ms
-   - Check: Add timing logs or use Prometheus metrics
+ - Flow endpoints: < 500ms
+ - Check: Add timing logs or use Prometheus metrics
 
 4. **Error Rates**
-   - 5xx errors: < 0.1%
-   - 4xx errors: < 1%
+ - 5xx errors: < 0.1%
+ - 4xx errors: < 1%
 
 ### Setup Alerts (Optional)
 
 ```bash
 # Example: Alert if demo mode detected in production
 while true; do
-  MODE=$(curl -s http://localhost:8000/api/flow/summary | jq -r '.mode')
-  if [ "$MODE" == "DEMO" ]; then
-    echo "⚠️  ALERT: Backend in DEMO mode! Check UW API key."
-    # Send notification (email, Slack, etc.)
-  fi
-  sleep 300  # Check every 5 minutes
+ MODE=$(curl -s http://localhost:8000/api/flow/summary | jq -r '.mode')
+ if [ "$MODE" == "DEMO" ]; then
+ echo " ALERT: Backend in DEMO mode! Check UW API key."
+ # Send notification (email, Slack, etc.)
+ fi
+ sleep 300 # Check every 5 minutes
 done
 ```
 
 ---
 
-## ✅ Deployment Complete Checklist
+## Deployment Complete Checklist
 
 After deployment, verify:
 
@@ -429,7 +429,7 @@ After deployment, verify:
 
 ---
 
-## 📞 Support Contacts
+## Support Contacts
 
 - **UW API Support:** Dan @ Unusual Whales (support@unusualwhales.com)
 - **UW API Docs:** https://api.unusualwhales.com/docs
@@ -437,6 +437,6 @@ After deployment, verify:
 
 ---
 
-**Deployment Status:** Ready ✅  
-**Last Updated:** October 13, 2025  
+**Deployment Status:** Ready 
+**Last Updated:** October 13, 2025 
 **Migration:** UW API hallucinated endpoints → Correct endpoints

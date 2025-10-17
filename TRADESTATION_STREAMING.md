@@ -15,14 +15,14 @@ TS_REFRESH_TOKEN=YOUR_TS_REFRESH_TOKEN
 # TS_BASE_URL=https://api.tradestation.com
 ```
 
-## 📊 Required TradeStation API Scopes
+## Required TradeStation API Scopes
 
 Your TradeStation app must have these scopes:
-- ✅ **offline_access** - For refresh token functionality
-- ✅ **MarketData** - For OHLCV data access
-- ✅ **Streaming** - For real-time data streaming (optional)
+- **offline_access** - For refresh token functionality
+- **MarketData** - For OHLCV data access
+- **Streaming** - For real-time data streaming (optional)
 
-## 🚀 API Endpoints Implemented
+## API Endpoints Implemented
 
 ### REST Endpoints:
 - `GET /api/ohlcv?symbol=AAPL&tf=D&limit=500` - Snapshot OHLCV data
@@ -31,7 +31,7 @@ Your TradeStation app must have these scopes:
 ### Streaming Endpoints:
 - `GET /api/ohlcv/stream?symbol=AAPL&tf=1&barsBack=1000` - SSE stream
 
-## 📈 Timeframe Mapping
+## Timeframe Mapping
 
 | FlowMind | TradeStation | Description |
 |----------|--------------|-------------|
@@ -57,7 +57,7 @@ curl 'http://localhost:3000/api/ohlcv/stream?symbol=AAPL&tf=1&barsBack=500'
 curl 'http://localhost:8001/api/tradestation/stream/AAPL?tf=1&limit=100'
 ```
 
-## 📱 React Integration
+## React Integration
 
 ### Using REST Data:
 ```jsx
@@ -65,9 +65,9 @@ import { fetchOHLCV } from '../lib/fetchOHLCV';
 
 // In your component
 useEffect(() => {
-  fetchOHLCV("AAPL", "5", 1000)
-    .then(bars => setCandleData(bars))
-    .catch(console.error);
+ fetchOHLCV("AAPL", "5", 1000)
+ .then(bars => setCandleData(bars))
+ .catch(console.error);
 }, []);
 ```
 
@@ -77,52 +77,52 @@ import { useTSStream } from '../lib/useTSStream';
 
 // In your component
 const { bars, status, isLive } = useTSStream({ 
-  symbol: "AAPL", 
-  tf: "1", 
-  barsBack: 1000 
+ symbol: "AAPL", 
+ tf: "1", 
+ barsBack: 1000 
 });
 
 // bars updates automatically with real-time data
 useEffect(() => {
-  if (candleSeries && bars.length > 0) {
-    candleSeries.setData(bars);
-  }
+ if (candleSeries && bars.length > 0) {
+ candleSeries.setData(bars);
+ }
 }, [bars]);
 ```
 
-## 🔒 Security Notes
+## Security Notes
 
-- ✅ API credentials stored în environment variables
-- ✅ Server-side token refresh pentru security
-- ✅ No client-side credential exposure
-- ✅ Proper error handling și rate limiting
+- API credentials stored în environment variables
+- Server-side token refresh pentru security
+- No client-side credential exposure
+- Proper error handling și rate limiting
 
-## 📊 Data Format
+## Data Format
 
 All endpoints return standardized format:
 ```json
 {
-  "time": 1640995200,     // UNIX timestamp (seconds)
-  "open": 152.34,         // Opening price
-  "high": 154.12,         // High price  
-  "low": 151.89,          // Low price
-  "close": 153.45,        // Closing price
-  "volume": 1234567       // Trading volume
+ "time": 1640995200, // UNIX timestamp (seconds)
+ "open": 152.34, // Opening price
+ "high": 154.12, // High price 
+ "low": 151.89, // Low price
+ "close": 153.45, // Closing price
+ "volume": 1234567 // Trading volume
 }
 ```
 
-## 🎯 Integration Benefits
+## Integration Benefits
 
-- ✅ **Real-time Updates**: Live bar updates via SSE
-- ✅ **Historical Data**: Complete snapshot loading
-- ✅ **Professional Quality**: TradeStation institutional data
-- ✅ **Performance Optimized**: Efficient streaming + caching
-- ✅ **Error Resilient**: Automatic reconnection și fallbacks
+- **Real-time Updates**: Live bar updates via SSE
+- **Historical Data**: Complete snapshot loading
+- **Professional Quality**: TradeStation institutional data
+- **Performance Optimized**: Efficient streaming + caching
+- **Error Resilient**: Automatic reconnection și fallbacks
 
-## 🚀 Ready for Live Trading!
+## Ready for Live Trading!
 
 Once configured cu proper TradeStation credentials, FlowMind Analytics va avea access la:
-- 📊 **Real-time market data** pentru all major symbols
-- 📈 **Professional charting** cu live updates
-- 🎯 **Institutional quality** data feeds
-- ⚡ **Low latency** streaming pentru active trading
+- **Real-time market data** pentru all major symbols
+- **Professional charting** cu live updates
+- **Institutional quality** data feeds
+- **Low latency** streaming pentru active trading

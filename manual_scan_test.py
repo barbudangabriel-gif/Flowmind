@@ -16,212 +16,208 @@ sys.path.append("/app/backend")
 # Load environment
 load_dotenv("/app/backend/.env")
 
-
 async def run_manual_scan():
-    """Run a manual scan to test the complete workflow"""
-    print("🚀 MANUAL SCANNER TEST - COMPLETE WORKFLOW")
-    print("=" * 80)
+ """Run a manual scan to test the complete workflow"""
+ print(" MANUAL SCANNER TEST - COMPLETE WORKFLOW")
+ print("=" * 80)
 
-    try:
-        # Import scanner components
-        from investment_scoring import StockScanner, investment_scorer
+ try:
+ # Import scanner components
+ from investment_scoring import StockScanner, investment_scorer
 
-        print("✅ Imported scanner components")
+ print(" Imported scanner components")
 
-        # Initialize scanner
-        scanner = StockScanner(investment_scorer)
-        print("✅ Initialized scanner")
+ # Initialize scanner
+ scanner = StockScanner(investment_scorer)
+ print(" Initialized scanner")
 
-        # Check MongoDB before scan
-        mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
-        db_name = os.environ.get("DB_NAME", "test_database")
+ # Check MongoDB before scan
+ mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+ db_name = os.environ.get("DB_NAME", "test_database")
 
-        client = AsyncIOMotorClient(mongo_url)
-        db = client[db_name]
-        collection = db["scanned_stocks"]
+ client = AsyncIOMotorClient(mongo_url)
+ db = client[db_name]
+ collection = db["scanned_stocks"]
 
-        initial_count = await collection.count_documents({})
-        print(f"📊 Initial documents in MongoDB: {initial_count}")
+ initial_count = await collection.count_documents({})
+ print(f" Initial documents in MongoDB: {initial_count}")
 
-        # Run the scan (limit to first 10 tickers for testing)
-        print("\n🔄 Starting manual scan (limited to 10 tickers for testing)...")
+ # Run the scan (limit to first 10 tickers for testing)
+ print("\n🔄 Starting manual scan (limited to 10 tickers for testing)...")
 
-        # Get tickers
-        all_tickers = await scanner.get_all_tickers_from_ts()
-        test_tickers = all_tickers[:10]  # Limit to 10 for testing
+ # Get tickers
+ all_tickers = await scanner.get_all_tickers_from_ts()
+ test_tickers = all_tickers[:10] # Limit to 10 for testing
 
-        print(f"📊 Testing with {len(test_tickers)} tickers: {test_tickers}")
+ print(f" Testing with {len(test_tickers)} tickers: {test_tickers}")
 
-        # Manual scan process
-        scanned_results = []
-        processed = 0
-        errors = 0
+ # Manual scan process
+ scanned_results = []
+ processed = 0
+ errors = 0
 
-        for ticker in test_tickers:
-            try:
-                print(f"   🔍 Scanning {ticker} ({processed + 1}/{len(test_tickers)})")
+ for ticker in test_tickers:
+ try:
+ print(f" Scanning {ticker} ({processed + 1}/{len(test_tickers)})")
 
-                # Get stock data
-                from enhanced_ticker_data import enhanced_ticker_manager
+ # Get stock data
+ from enhanced_ticker_data import enhanced_ticker_manager
 
-                stock_data = await enhanced_ticker_manager.get_real_time_quote(ticker)
+ stock_data = await enhanced_ticker_manager.get_real_time_quote(ticker)
 
-                if not stock_data:
-                    print(f"     ⚠️ No stock data for {ticker}")
-                    continue
+ if not stock_data:
+ print(f" No stock data for {ticker}")
+ continue
 
-                # Calculate score
-                result = await investment_scorer.calculate_investment_score(stock_data)
+ # Calculate score
+ result = await investment_scorer.calculate_investment_score(stock_data)
 
-                if result and "total_score" in result:
-                    # Add required fields
-                    result["ticker"] = ticker
-                    result["scanned_at"] = datetime.utcnow()
-                    result["scan_id"] = (
-                        f"manual_test_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
-                    )
+ if result and "total_score" in result:
+ # Add required fields
+ result["ticker"] = ticker
+ result["scanned_at"] = datetime.utcnow()
+ result["scan_id"] = (
+ f"manual_test_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+ )
 
-                    scanned_results.append(result)
-                    print(
-                        f"     ✅ {ticker}: Score {result['total_score']:.1f}, Rating: {result.get('rating', 'N/A')}"
-                    )
-                else:
-                    print(f"     ❌ Failed to calculate score for {ticker}")
+ scanned_results.append(result)
+ print(
+ f" {ticker}: Score {result['total_score']:.1f}, Rating: {result.get('rating', 'N/A')}"
+ )
+ else:
+ print(f" Failed to calculate score for {ticker}")
 
-                processed += 1
+ processed += 1
 
-                # Small delay
-                await asyncio.sleep(0.2)
+ # Small delay
+ await asyncio.sleep(0.2)
 
-            except Exception as e:
-                errors += 1
-                print(f"     ❌ Error scanning {ticker}: {str(e)}")
-                continue
+ except Exception as e:
+ errors += 1
+ print(f" Error scanning {ticker}: {str(e)}")
+ continue
 
-        print("\n📊 Scan completed:")
-        print(f"   - Processed: {processed}")
-        print(f"   - Successful: {len(scanned_results)}")
-        print(f"   - Errors: {errors}")
+ print("\n Scan completed:")
+ print(f" - Processed: {processed}")
+ print(f" - Successful: {len(scanned_results)}")
+ print(f" - Errors: {errors}")
 
-        if not scanned_results:
-            print("❌ No results to save")
-            return False
+ if not scanned_results:
+ print(" No results to save")
+ return False
 
-        # Sort results by score
-        scanned_results.sort(key=lambda x: x.get("total_score", 0), reverse=True)
+ # Sort results by score
+ scanned_results.sort(key=lambda x: x.get("total_score", 0), reverse=True)
 
-        print(f"\n💾 Saving {len(scanned_results)} results to MongoDB...")
+ print(f"\n💾 Saving {len(scanned_results)} results to MongoDB...")
 
-        # Clear old results
-        delete_result = await collection.delete_many({})
-        print(f"   Deleted {delete_result.deleted_count} old documents")
+ # Clear old results
+ delete_result = await collection.delete_many({})
+ print(f" Deleted {delete_result.deleted_count} old documents")
 
-        # Insert new results
-        insert_result = await collection.insert_many(scanned_results)
-        print(f"   Inserted {len(insert_result.inserted_ids)} new documents")
+ # Insert new results
+ insert_result = await collection.insert_many(scanned_results)
+ print(f" Inserted {len(insert_result.inserted_ids)} new documents")
 
-        # Verify save
-        final_count = await collection.count_documents({})
-        print(f"   Final document count: {final_count}")
+ # Verify save
+ final_count = await collection.count_documents({})
+ print(f" Final document count: {final_count}")
 
-        # Get top 5 results
-        print("\n🏆 Top 5 Results:")
-        top_cursor = collection.find({}).sort("total_score", -1).limit(5)
-        top_stocks = await top_cursor.to_list(length=5)
+ # Get top 5 results
+ print("\n Top 5 Results:")
+ top_cursor = collection.find({}).sort("total_score", -1).limit(5)
+ top_stocks = await top_cursor.to_list(length=5)
 
-        for i, stock in enumerate(top_stocks):
-            ticker = stock.get("ticker", "N/A")
-            score = stock.get("total_score", 0)
-            rating = stock.get("rating", "N/A")
-            print(f"   #{i+1}: {ticker} - Score: {score:.1f} - Rating: {rating}")
+ for i, stock in enumerate(top_stocks):
+ ticker = stock.get("ticker", "N/A")
+ score = stock.get("total_score", 0)
+ rating = stock.get("rating", "N/A")
+ print(f" #{i+1}: {ticker} - Score: {score:.1f} - Rating: {rating}")
 
-        client.close()
+ client.close()
 
-        print("\n✅ Manual scan completed successfully!")
-        print(f"📊 Results: {len(scanned_results)} stocks scanned and saved to MongoDB")
+ print("\n Manual scan completed successfully!")
+ print(f" Results: {len(scanned_results)} stocks scanned and saved to MongoDB")
 
-        return True
+ return True
 
-    except Exception as e:
-        print(f"❌ Manual scan failed: {str(e)}")
-        import traceback
+ except Exception as e:
+ print(f" Manual scan failed: {str(e)}")
+ import traceback
 
-        traceback.print_exc()
-        return False
-
+ traceback.print_exc()
+ return False
 
 async def test_api_endpoints_after_scan():
-    """Test API endpoints after manual scan"""
-    print("\n🔗 Testing API Endpoints After Manual Scan")
-    print("=" * 50)
+ """Test API endpoints after manual scan"""
+ print("\n🔗 Testing API Endpoints After Manual Scan")
+ print("=" * 50)
 
-    import requests
+ import requests
 
-    base_url = "http://localhost:8000/api"
+ base_url = "http://localhost:8000/api"
 
-    try:
-        # Test scanner status
-        print("📊 Testing scanner status...")
-        response = requests.get(f"{base_url}/scanner/status", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            print(f"   ✅ Status: {data.get('status')}")
-            print(f"   ✅ Total stocks: {data.get('total_stocks_scanned', 0)}")
-            print(f"   ✅ Database status: {data.get('database_status')}")
-        else:
-            print(f"   ❌ Status endpoint failed: {response.status_code}")
+ try:
+ # Test scanner status
+ print(" Testing scanner status...")
+ response = requests.get(f"{base_url}/scanner/status", timeout=10)
+ if response.status_code == 200:
+ data = response.json()
+ print(f" Status: {data.get('status')}")
+ print(f" Total stocks: {data.get('total_stocks_scanned', 0)}")
+ print(f" Database status: {data.get('database_status')}")
+ else:
+ print(f" Status endpoint failed: {response.status_code}")
 
-        # Test top stocks
-        print("\n🏆 Testing top stocks...")
-        response = requests.get(f"{base_url}/scanner/top-stocks?limit=5", timeout=15)
-        if response.status_code == 200:
-            data = response.json()
-            stocks = data.get("top_stocks", [])
-            print(f"   ✅ Retrieved {len(stocks)} top stocks")
+ # Test top stocks
+ print("\n Testing top stocks...")
+ response = requests.get(f"{base_url}/scanner/top-stocks?limit=5", timeout=15)
+ if response.status_code == 200:
+ data = response.json()
+ stocks = data.get("top_stocks", [])
+ print(f" Retrieved {len(stocks)} top stocks")
 
-            for i, stock in enumerate(stocks[:3]):
-                ticker = stock.get("ticker", "N/A")
-                score = stock.get("score", "N/A")
-                rating = stock.get("rating", "N/A")
-                print(f"     #{i+1}: {ticker} - {score} - {rating}")
-        else:
-            print(f"   ❌ Top stocks endpoint failed: {response.status_code}")
+ for i, stock in enumerate(stocks[:3]):
+ ticker = stock.get("ticker", "N/A")
+ score = stock.get("score", "N/A")
+ rating = stock.get("rating", "N/A")
+ print(f" #{i+1}: {ticker} - {score} - {rating}")
+ else:
+ print(f" Top stocks endpoint failed: {response.status_code}")
 
-        return True
+ return True
 
-    except Exception as e:
-        print(f"❌ API endpoint testing failed: {str(e)}")
-        return False
-
+ except Exception as e:
+ print(f" API endpoint testing failed: {str(e)}")
+ return False
 
 async def main():
-    """Main function"""
-    print("🧪 MANUAL SCANNER WORKFLOW TEST")
-    print("=" * 80)
+ """Main function"""
+ print("🧪 MANUAL SCANNER WORKFLOW TEST")
+ print("=" * 80)
 
-    # Run manual scan
-    scan_success = await run_manual_scan()
+ # Run manual scan
+ scan_success = await run_manual_scan()
 
-    if scan_success:
-        # Test API endpoints
-        api_success = await test_api_endpoints_after_scan()
+ if scan_success:
+ # Test API endpoints
+ api_success = await test_api_endpoints_after_scan()
 
-        if api_success:
-            print("\n🎉 COMPLETE SUCCESS!")
-            print("✅ Manual scan worked")
-            print("✅ MongoDB persistence worked")
-            print("✅ API endpoints worked")
-            print(
-                "\n💡 CONCLUSION: Scanner components work, but async task in server.py may not be completing properly"
-            )
-        else:
-            print("\n⚠️ PARTIAL SUCCESS")
-            print("✅ Manual scan worked")
-            print("❌ API endpoints had issues")
-    else:
-        print("\n❌ SCAN FAILED")
-        print("Scanner workflow has fundamental issues")
-
+ if api_success:
+ print("\n COMPLETE SUCCESS!")
+ print(" Manual scan worked")
+ print(" MongoDB persistence worked")
+ print(" API endpoints worked")
+ print(
+ "\n CONCLUSION: Scanner components work, but async task in server.py may not be completing properly"
+ )
+ else:
+ print("\n PARTIAL SUCCESS")
+ print(" Manual scan worked")
+ print(" API endpoints had issues")
+ else:
+ print("\n SCAN FAILED")
+ print("Scanner workflow has fundamental issues")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+ asyncio.run(main())

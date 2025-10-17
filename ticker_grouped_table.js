@@ -28,7 +28,7 @@ const renderTickerGroupedTable = () => {
           <td className="px-3 py-2 border-r border-gray-600 w-32 min-w-32">
             <div className="flex items-center gap-1">
               <button 
-                className="text-gray-300 hover:text-white transition-colors flex-shrink-0"
+                className="text-gray-300 hover:text-[rgb(252, 251, 255)] transition-colors flex-shrink-0"
                 onClick={() => {
                   console.log(`Toggle ${ticker} positions (${totalPositions} positions)`);
                   toggleSymbolExpansion(ticker);
@@ -38,7 +38,7 @@ const renderTickerGroupedTable = () => {
               </button>
               
               <div className="flex flex-col min-w-0 flex-1">
-                <span className="font-bold text-white text-base truncate">{ticker}</span>
+                <span className="font-bold text-[rgb(252, 251, 255)] text-base truncate">{ticker}</span>
                 <span className="text-xs text-blue-200 truncate">
                   {totalPositions} positions {isExpanded ? '▼' : '▶'}
                 </span>

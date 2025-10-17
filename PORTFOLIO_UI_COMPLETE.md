@@ -1,33 +1,33 @@
-# 🎨 FlowMind Portfolio UI - Complete Guide
+# FlowMind Portfolio UI - Complete Guide
 
-## 📋 Overview
+## Overview
 
 FlowMind oferă un UI complet pentru management portofoliu cu:
-- ✅ Multi-portfolio support
-- ✅ TradeStation live integration
-- ✅ Real-time P&L tracking
-- ✅ Transaction history
-- ✅ CSV import/export
-- ✅ Analytics & charts
-- ✅ Buckets organization
-- ✅ Dark theme optimized
+- Multi-portfolio support
+- TradeStation live integration
+- Real-time P&L tracking
+- Transaction history
+- CSV import/export
+- Analytics & charts
+- Buckets organization
+- Dark theme optimized
 
 ## 🗺️ Navigation Structure
 
 ### Sidebar Menu
 ```
-📊 Account
-  └── 💼 Portfolios (expandable)
-      ├── Portfolio 1
-      ├── Portfolio 2
-      └── + Create Portfolio
+ Account
+ └── 💼 Portfolios (expandable)
+ ├── Portfolio 1
+ ├── Portfolio 2
+ └── + Create Portfolio
 ```
 
 **Location:** `/portfolios`
 **Icon:** Briefcase (💼)
 **Dynamic:** Shows all user portfolios + "Create" button
 
-## 📱 Pages & Components
+## Pages & Components
 
 ### 1. **Portfolios List** (`/portfolios`)
 **File:** `frontend/src/pages/PortfoliosList.jsx`
@@ -35,10 +35,10 @@ FlowMind oferă un UI complet pentru management portofoliu cu:
 **Features:**
 - Grid layout (responsive: 1 col mobile, 2 tablet, 3 desktop)
 - Portfolio cards showing:
-  - Name
-  - NAV (Net Asset Value)
-  - Status (ACTIVE/PAUSED/CLOSED)
-  - Module allocations
+ - Name
+ - NAV (Net Asset Value)
+ - Status (ACTIVE/PAUSED/CLOSED)
+ - Module allocations
 - "+ Create Portfolio" button (top-right)
 - Empty state with call-to-action
 
@@ -47,14 +47,14 @@ FlowMind oferă un UI complet pentru management portofoliu cu:
 **UI Elements:**
 ```jsx
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  <Link to={`/portfolios/${id}`}>
-    <div className="border rounded-xl p-4 hover:bg-gray-50">
-      <h3>{name}</h3>
-      <div>NAV: ${cash_balance}</div>
-      <div>Status: {status}</div>
-      <div>Modules: {modules.join(", ")}</div>
-    </div>
-  </Link>
+ <Link to={`/portfolios/${id}`}>
+ <div className="border rounded-xl p-4 hover:bg-gray-50">
+ <h3>{name}</h3>
+ <div>NAV: ${cash_balance}</div>
+ <div>Status: {status}</div>
+ <div>Modules: {modules.join(", ")}</div>
+ </div>
+ </Link>
 </div>
 ```
 
@@ -66,73 +66,73 @@ FlowMind oferă un UI complet pentru management portofoliu cu:
 **Layout:**
 ```
 ┌─────────────────────────────────────────┐
-│ Header: Portfolio Name + NAV + Status  │
+│ Header: Portfolio Name + NAV + Status │
 ├─────────────────────────────────────────┤
-│ Stats Cards (4-column grid):           │
-│ [Realized P&L] [Total Trades] [Open]  │
-│ [Cash Balance]                          │
+│ Stats Cards (4-column grid): │
+│ [Realized P&L] [Total Trades] [Open] │
+│ [Cash Balance] │
 ├─────────────────────────────────────────┤
-│ Tab Navigation:                         │
-│ [Overview] [Analytics] [Positions]      │
-│ [Transactions] [Import CSV]             │
+│ Tab Navigation: │
+│ [Overview] [Analytics] [Positions] │
+│ [Transactions] [Import CSV] │
 ├─────────────────────────────────────────┤
-│ Tab Content (dynamic)                   │
+│ Tab Content (dynamic) │
 └─────────────────────────────────────────┘
 ```
 
 **Tabs:**
 
-#### Tab 1: Overview 📊
+#### Tab 1: Overview 
 - Portfolio summary
 - Recent transactions (last 10)
 - Quick actions:
-  - Add/Remove funds
-  - Add transaction
-  - Module allocation
+ - Add/Remove funds
+ - Add transaction
+ - Module allocation
 
-#### Tab 2: Analytics & Buckets 📈
+#### Tab 2: Analytics & Buckets 
 **Component:** `AnalyticsPanel`
 - Equity curve chart
 - P&L breakdown
 - Buckets management
-  - Create/edit buckets
-  - Assign symbols to buckets
-  - Color coding
+ - Create/edit buckets
+ - Assign symbols to buckets
+ - Color coding
 
 #### Tab 3: Positions & P&L 💼
 **Component:** `PositionsTable`
 - Current open positions
 - Columns:
-  - Symbol
-  - Quantity
-  - Avg Cost
-  - Cost Basis
-  - Market Value (requires live price)
-  - Unrealized P&L
-  - P&L %
+ - Symbol
+ - Quantity
+ - Avg Cost
+ - Cost Basis
+ - Market Value (requires live price)
+ - Unrealized P&L
+ - P&L %
 - FIFO-based calculation
 - Real-time updates (if connected to TS)
 
-#### Tab 4: Transactions 📋
+#### Tab 4: Transactions 
 **Component:** `TransactionsTable`
 - Full transaction history
 - Filters:
-  - Symbol
-  - Date range
-  - Side (BUY/SELL)
+ - Symbol
+ - Date range
+ - Side (BUY/SELL)
 - Pagination
 - Export to CSV button
 - Columns:
-  - Date/Time
-  - Symbol
-  - Side
-  - Quantity
-  - Price
-  - Fee
-  - Total
-  - Notes
+ - Date/Time
+ - Symbol
+ - Side
+ - Quantity
+ - Price
+ - Fee
+ - Total
+ - Notes
 
-#### Tab 5: Import CSV 📤
+#### Tab 5: Import CSV 
 **Component:** `CSVImport`
 - Drag & drop file upload
 - CSV format validation
@@ -153,22 +153,22 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 
 **Form Fields:**
 1. **Name** (required)
-   - Text input
-   - Validation: 3-50 characters
+ - Text input
+ - Validation: 3-50 characters
 
 2. **Starting Balance** (required)
-   - Number input
-   - Default: $10,000
-   - Validation: > 0
+ - Number input
+ - Default: $10,000
+ - Validation: > 0
 
 3. **Module Allocations** (optional)
-   - Multi-module selector
-   - Per module:
-     - Module type (dropdown)
-     - Budget allocation
-     - Max risk per trade
-     - Daily loss limit
-     - Auto-trade toggle
+ - Multi-module selector
+ - Per module:
+ - Module type (dropdown)
+ - Budget allocation
+ - Max risk per trade
+ - Daily loss limit
+ - Auto-trade toggle
 
 **Module Types:**
 - IV_SERVICE (Implied Volatility)
@@ -201,18 +201,18 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 **Position Card:**
 ```jsx
 <div className="position-card">
-  <div className="symbol">{symbol}</div>
-  <div className="accounts-grid">
-    {accounts.map(acc => (
-      <div key={acc.id}>
-        {acc.name}: {acc.qty} @ ${acc.avg}
-      </div>
-    ))}
-  </div>
-  <div className="totals">
-    Total: {totalQty} @ ${weightedAvg}
-    P&L: ${unrealized} ({pct}%)
-  </div>
+ <div className="symbol">{symbol}</div>
+ <div className="accounts-grid">
+ {accounts.map(acc => (
+ <div key={acc.id}>
+ {acc.name}: {acc.qty} @ ${acc.avg}
+ </div>
+ ))}
+ </div>
+ <div className="totals">
+ Total: {totalQty} @ ${weightedAvg}
+ P&L: ${unrealized} ({pct}%)
+ </div>
 </div>
 ```
 
@@ -222,7 +222,7 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 
 ---
 
-## 🎨 Design System
+## Design System
 
 ### Colors (Dark Theme Only)
 
@@ -263,36 +263,36 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 **Card:**
 ```jsx
 <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-  {/* Content */}
+ {/* Content */}
 </div>
 ```
 
 **Button Primary:**
 ```jsx
 <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-  Click Me
+ Click Me
 </button>
 ```
 
 **Button Secondary:**
 ```jsx
 <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors">
-  Cancel
+ Cancel
 </button>
 ```
 
 **Input:**
 ```jsx
 <input 
-  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-  type="text"
+ className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+ type="text"
 />
 ```
 
 **Badge (Status):**
 ```jsx
 <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-  ACTIVE
+ ACTIVE
 </span>
 ```
 
@@ -308,9 +308,9 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 **Props:**
 ```typescript
 interface PositionsTableProps {
-  portfolioId: string;
-  positions: Position[];
-  onRefresh: () => void;
+ portfolioId: string;
+ positions: Position[];
+ onRefresh: () => void;
 }
 ```
 
@@ -328,13 +328,13 @@ interface PositionsTableProps {
 **Props:**
 ```typescript
 interface TransactionsTableProps {
-  portfolioId: string;
-  transactions: Transaction[];
-  filters?: {
-    symbol?: string;
-    startDate?: string;
-    endDate?: string;
-  };
+ portfolioId: string;
+ transactions: Transaction[];
+ filters?: {
+ symbol?: string;
+ startDate?: string;
+ endDate?: string;
+ };
 }
 ```
 
@@ -401,17 +401,17 @@ interface TransactionsTableProps {
 **UI:**
 ```jsx
 <form>
-  <input type="text" placeholder="Bucket name" />
-  <textarea placeholder="Description" />
-  <input type="color" defaultValue="#4CAF50" />
-  <SymbolMultiSelect />
-  <button>Create Bucket</button>
+ <input type="text" placeholder="Bucket name" />
+ <textarea placeholder="Description" />
+ <input type="color" defaultValue="#4CAF50" />
+ <SymbolMultiSelect />
+ <button>Create Bucket</button>
 </form>
 ```
 
 ---
 
-## 📊 Data Flow
+## Data Flow
 
 ### Loading Portfolio Data
 
@@ -437,15 +437,15 @@ setState({ portfolio, stats, positions, transactions });
 ```javascript
 // Poll TradeStation positions every 30s
 useEffect(() => {
-  const fetchTSPositions = async () => {
-    const data = await fetch('/api/portfolios/positions-ts');
-    setPositions(data.positions_grid);
-  };
-  
-  fetchTSPositions(); // Initial load
-  const interval = setInterval(fetchTSPositions, 30000); // 30s
-  
-  return () => clearInterval(interval);
+ const fetchTSPositions = async () => {
+ const data = await fetch('/api/portfolios/positions-ts');
+ setPositions(data.positions_grid);
+ };
+ 
+ fetchTSPositions(); // Initial load
+ const interval = setInterval(fetchTSPositions, 30000); // 30s
+ 
+ return () => clearInterval(interval);
 }, []);
 ```
 
@@ -469,8 +469,8 @@ const code = params.get('code');
 const state = params.get('state');
 
 await fetch('/api/portfolios/ts/callback', {
-  method: 'POST',
-  body: JSON.stringify({ code, state })
+ method: 'POST',
+ body: JSON.stringify({ code, state })
 });
 ```
 
@@ -482,7 +482,7 @@ Backend auto-refreshes tokens 60s before expiry.
 
 ---
 
-## 🎯 User Flows
+## User Flows
 
 ### Flow 1: Create First Portfolio
 
@@ -518,7 +518,7 @@ Backend auto-refreshes tokens 60s before expiry.
 4. User approves access
 5. TradeStation redirects to `/auth/callback`
 6. Tokens stored automatically
-7. User sees "Connected ✅" status
+7. User sees "Connected " status
 8. Real-time positions load automatically
 
 ---
@@ -535,15 +535,15 @@ Backend auto-refreshes tokens 60s before expiry.
 
 ---
 
-## 🚀 Performance Optimizations
+## Performance Optimizations
 
 ### 1. **Lazy Loading**
 ```javascript
 // Load positions only when tab is active
 useEffect(() => {
-  if (activeTab === 'positions') {
-    loadPositions();
-  }
+ if (activeTab === 'positions') {
+ loadPositions();
+ }
 }, [activeTab]);
 ```
 
@@ -551,8 +551,8 @@ useEffect(() => {
 ```javascript
 // Memoize expensive calculations
 const totalPnL = useMemo(() => 
-  positions.reduce((sum, p) => sum + p.unrealized_pnl, 0),
-  [positions]
+ positions.reduce((sum, p) => sum + p.unrealized_pnl, 0),
+ [positions]
 );
 ```
 
@@ -560,8 +560,8 @@ const totalPnL = useMemo(() =>
 ```javascript
 // Debounce transaction search
 const debouncedSearch = useMemo(
-  () => debounce(searchTransactions, 300),
-  []
+ () => debounce(searchTransactions, 300),
+ []
 );
 ```
 
@@ -570,7 +570,7 @@ For large transaction lists (1000+), implement virtual scrolling via `react-wind
 
 ---
 
-## 📱 Responsive Design
+## Responsive Design
 
 ### Breakpoints
 - Mobile: `< 640px` (1 column)
@@ -630,24 +630,24 @@ For large transaction lists (1000+), implement virtual scrolling via `react-wind
 ```
 frontend/src/
 ├── pages/
-│   ├── PortfoliosList.jsx          # Main list view
-│   ├── PortfolioDetail.jsx         # Detail page with tabs
-│   └── PortfolioCreate.jsx         # Creation form
+│ ├── PortfoliosList.jsx # Main list view
+│ ├── PortfolioDetail.jsx # Detail page with tabs
+│ └── PortfolioCreate.jsx # Creation form
 ├── components/
-│   ├── PositionsTable.jsx          # Positions grid
-│   ├── TransactionsTable.jsx       # Transaction history
-│   ├── CSVImport.jsx               # CSV import UI
-│   ├── AnalyticsPanel.jsx          # Charts & analytics
-│   ├── BucketForm.jsx              # Bucket management
-│   ├── TradeStationMainPortfolio.js # TS integration
-│   └── AllPortfolios.js            # Portfolio overview
+│ ├── PositionsTable.jsx # Positions grid
+│ ├── TransactionsTable.jsx # Transaction history
+│ ├── CSVImport.jsx # CSV import UI
+│ ├── AnalyticsPanel.jsx # Charts & analytics
+│ ├── BucketForm.jsx # Bucket management
+│ ├── TradeStationMainPortfolio.js # TS integration
+│ └── AllPortfolios.js # Portfolio overview
 ├── services/
-│   └── portfolioClient.js          # API client
+│ └── portfolioClient.js # API client
 ├── hooks/
-│   └── usePortfolioManagement.js   # Custom hooks
+│ └── usePortfolioManagement.js # Custom hooks
 └── lib/
-    ├── portfolioAPI.js             # API helpers
-    └── nav.simple.js               # Navigation structure
+ ├── portfolioAPI.js # API helpers
+ └── nav.simple.js # Navigation structure
 ```
 
 ---
@@ -659,15 +659,15 @@ frontend/src/
 1. **Define tab in PortfolioDetail.jsx:**
 ```javascript
 const tabs = [
-  // ...existing tabs
-  { id: 'new-feature', label: 'New Feature', icon: '🚀' }
+ // ...existing tabs
+ { id: 'new-feature', label: 'New Feature', icon: '' }
 ];
 ```
 
 2. **Add tab content:**
 ```javascript
 {activeTab === 'new-feature' && (
-  <NewFeatureComponent portfolioId={id} />
+ <NewFeatureComponent portfolioId={id} />
 )}
 ```
 
@@ -675,8 +675,8 @@ const tabs = [
 ```javascript
 // components/NewFeatureComponent.jsx
 export default function NewFeatureComponent({ portfolioId }) {
-  // Component logic
-  return <div>New Feature Content</div>;
+ // Component logic
+ return <div>New Feature Content</div>;
 }
 ```
 
@@ -688,7 +688,7 @@ export default function NewFeatureComponent({ portfolioId }) {
 
 ---
 
-**Last Updated:** October 14, 2025  
-**UI Framework:** React + Tailwind CSS  
-**Status:** Production Ready ✅  
+**Last Updated:** October 14, 2025 
+**UI Framework:** React + Tailwind CSS 
+**Status:** Production Ready 
 **Dark Theme:** Enforced (no light mode)

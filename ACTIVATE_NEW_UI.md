@@ -1,4 +1,4 @@
-# 🎨 Activare Noua Interfață FlowMind (Simple Sidebar - Shell Only Dark)
+# Activare Noua Interfață FlowMind (Simple Sidebar - Shell Only Dark)
 
 ## 📍 Locație
 
@@ -12,7 +12,7 @@
 - Component: `AppContent` (App.js, implicit)
 - Sidebar: Mega menu vechi din App.js
 
-## 🚀 Activare
+## Activare
 
 ### Metoda 1: Browser Console (Permanent)
 
@@ -39,60 +39,60 @@ location.reload();
 
 ## ✨ Caracteristici Noua Interfață
 
-### 🎯 Design
+### Design
 - **Minimalist**: Sidebar compact (64px lățime)
 - **Dark Theme**: Culori slate-900/slate-800
 - **Safe Components**: Error boundaries pentru fiecare secțiune
 - **Lucide Icons**: Icoane moderne, consistente
 
-### 📊 Secțiuni Navigation
+### Secțiuni Navigation
 
 1. **Overview**
-   - Dashboard
+ - Dashboard
 
 2. **Account**
-   - Account Balance
-   - Portfolios (dinamic din context)
-   - Create Portfolio
+ - Account Balance
+ - Portfolios (dinamic din context)
+ - Create Portfolio
 
 3. **Stocks**
-   - Investment Scoring
-   - Scoring Scanner
+ - Investment Scoring
+ - Scoring Scanner
 
 4. **Options**
-   - IV Setups (Auto) - Requires IV service
-   - Sell Puts (Auto) - Requires IV service
-   - Analytics (NEW badge)
+ - IV Setups (Auto) - Requires IV service
+ - Sell Puts (Auto) - Requires IV service
+ - Analytics (NEW badge)
 
 5. **Trades**
-   - Preview Queue
-   - Orders (SIM)
-   - Orders (Live) - Visible doar cu flag ORDERS_LIVE
+ - Preview Queue
+ - Orders (SIM)
+ - Orders (Live) - Visible doar cu flag ORDERS_LIVE
 
 6. **Analytics**
-   - Backtests
-   - Verified Chains (badge dinamic)
+ - Backtests
+ - Verified Chains (badge dinamic)
 
 7. **Data Providers**
-   - TradeStation
-   - Quotes (TS) - Visible doar cu TS_LIVE
-   - Option Chain (TS) - Visible doar cu TS_LIVE
-   - Unusual Whales
+ - TradeStation
+ - Quotes (TS) - Visible doar cu TS_LIVE
+ - Option Chain (TS) - Visible doar cu TS_LIVE
+ - Unusual Whales
 
 8. **Ops / Diagnostics** (Admin only)
-   - Redis Diag
-   - Backtest Ops
-   - Emergent Status
+ - Redis Diag
+ - Backtest Ops
+ - Emergent Status
 
 9. **Settings**
-   - Risk & Gates
-   - Accounts
-   - API Keys
+ - Risk & Gates
+ - Accounts
+ - API Keys
 
 10. **Help**
-    - Docs
+ - Docs
 
-### 🔒 Context-Aware Features
+### Context-Aware Features
 
 **Badges Dinamice:**
 - IV Service: `{ text: "IV", tone: "success" }` sau `{ text: "OFF", tone: "warn" }`
@@ -107,23 +107,23 @@ location.reload();
 - `ctx.role === "admin"` → Ops/Diagnostics vizibil
 - Default: user → secțiuni normale
 
-### 📦 Context Structure
+### Context Structure
 ```javascript
 const ctx = {
-  role: "user" | "admin",
-  flags: {
-    ORDERS_LIVE: boolean,
-    TS_LIVE: boolean,
-    ...
-  },
-  metrics: {
-    ivOnline: boolean,
-    verifiedRatio: number,
-    ...
-  },
-  portfolios: [
-    { id, name, nav: number }
-  ]
+ role: "user" | "admin",
+ flags: {
+ ORDERS_LIVE: boolean,
+ TS_LIVE: boolean,
+ ...
+ },
+ metrics: {
+ ivOnline: boolean,
+ verifiedRatio: number,
+ ...
+ },
+ portfolios: [
+ { id, name, nav: number }
+ ]
 }
 ```
 
@@ -141,11 +141,11 @@ import BuilderChart from '../components/BuilderChart';
 
 // Usage:
 <BuilderChart
-  pnlData={pnlData}
-  maxProfit={maxProfit}
-  maxLoss={maxLoss}
-  breakevens={breakevens}
-  currentSpot={spot}
+ pnlData={pnlData}
+ maxProfit={maxProfit}
+ maxLoss={maxLoss}
+ breakevens={breakevens}
+ currentSpot={spot}
 />
 ```
 
@@ -161,12 +161,12 @@ npm test -- BuilderChart.test.jsx
 1. Activează noua UI: `?new_sidebar=1`
 2. Navighează la `/builder`
 3. Verifică:
-   - Sidebar compact pe stânga
-   - TopBar dark cu "Build ▾" mega menu
-   - BuilderChart rendering corect
-   - Dark theme consistent
+ - Sidebar compact pe stânga
+ - TopBar dark cu "Build ▾" mega menu
+ - BuilderChart rendering corect
+ - Dark theme consistent
 
-## 📋 Feature Comparison
+## Feature Comparison
 
 | Feature | Old UI | New UI (Simple Sidebar) |
 |---------|--------|-------------------------|
@@ -181,8 +181,8 @@ npm test -- BuilderChart.test.jsx
 
 ## 🎬 Next Steps
 
-1. ✅ **Activate New UI** → Rulează comanda din Console
-2. ✅ **Verify BuilderChart** → Merge pe `/builder`
+1. **Activate New UI** → Rulează comanda din Console
+2. **Verify BuilderChart** → Merge pe `/builder`
 3. 🔄 **Backend Validation** → Test cache decorators
 4. 🔄 **Metrics Endpoint** → Install `slowapi`, test `/metrics`
 5. 🔄 **Unit Tests** → Run BuilderChart tests
@@ -198,7 +198,7 @@ npm test -- BuilderChart.test.jsx
 - **BuilderChart tests** → Dependencies installed, needs execution
 - **Mobile responsive** → New UI optimized for desktop-first
 
-## 💡 Pro Tips
+## Pro Tips
 
 **Development Workflow:**
 ```bash
@@ -219,15 +219,15 @@ location.reload();
 ```javascript
 // Toggle in Console
 const toggle = () => {
-  const current = localStorage.getItem('flowmind_new_sidebar');
-  if (current === 'true') {
-    localStorage.removeItem('flowmind_new_sidebar');
-    console.log('🔴 Switched to OLD UI');
-  } else {
-    localStorage.setItem('flowmind_new_sidebar', 'true');
-    console.log('🟢 Switched to NEW UI');
-  }
-  location.reload();
+ const current = localStorage.getItem('flowmind_new_sidebar');
+ if (current === 'true') {
+ localStorage.removeItem('flowmind_new_sidebar');
+ console.log(' Switched to OLD UI');
+ } else {
+ localStorage.setItem('flowmind_new_sidebar', 'true');
+ console.log(' Switched to NEW UI');
+ }
+ location.reload();
 };
 toggle();
 ```
@@ -240,6 +240,6 @@ toggle();
 
 ---
 
-**Version:** v2.1.0-minimal  
-**Last Updated:** October 13, 2025  
-**Status:** ✅ Production Ready
+**Version:** v2.1.0-minimal 
+**Last Updated:** October 13, 2025 
+**Status:** Production Ready

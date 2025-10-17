@@ -1,31 +1,31 @@
-# ⚡ QUICK START - FlowMind Market Intelligence
+# QUICK START - FlowMind Market Intelligence
 
-## 🎯 Ce ai realizat azi:
+## Ce ai realizat azi:
 
-✅ **4 UW Features COMPLETE:**
-1. Market Movers (📈)
+ **4 UW Features COMPLETE:**
+1. Market Movers ()
 2. Congress Trades (🏛️)
 3. Dark Pool (👁️)
 4. Institutional Holdings (🏢)
 
-✅ **13 files** changed | **+3,024** lines | **19/19** tests PASSING  
-✅ **Commit:** `cce6186` | **Pushed:** GitHub ✓
+ **13 files** changed | **+3,024** lines | **19/19** tests PASSING 
+ **Commit:** `cce6186` | **Pushed:** GitHub ✓
 
 ---
 
-## 🚀 RAPID START (3 variante):
+## RAPID START (3 variante):
 
-### 1️⃣ Demo Static (30 secunde) ⚡
+### 1️⃣ Demo Static (30 secunde) 
 ```bash
 cd /workspaces/Flowmind
 python3 -m http.server 3000 &
 # Deschide: http://localhost:3000/index.html
 ```
-✅ Zero setup | ✅ Mock data | ✅ Toate features
+ Zero setup | Mock data | Toate features
 
 ---
 
-### 2️⃣ Backend LIVE (2 minute) 🔥
+### 2️⃣ Backend LIVE (2 minute) 
 ```bash
 cd /workspaces/Flowmind/backend
 export FM_FORCE_FALLBACK=1 UW_API_TOKEN=demo
@@ -53,7 +53,7 @@ Navighează:
 
 ---
 
-## 📋 Files Cheie:
+## Files Cheie:
 
 **Backend:**
 - `backend/integrations/uw_client.py` - API client
@@ -98,16 +98,16 @@ curl $BASE/flow/institutional/TSLA
 
 ---
 
-## 🎨 UI Features:
+## UI Features:
 
-✅ Dark theme (slate-900/800/700)  
-✅ Auto-refresh (10-30s)  
-✅ Plotly charts (dark config)  
-✅ Responsive grid  
-✅ Hover effects  
-✅ Party badges (D/R/I)  
-✅ Transaction badges (BUY/SELL)  
-✅ Large print alerts (>$10M)
+ Dark theme (slate-900/800/700) 
+ Auto-refresh (10-30s) 
+ Plotly charts (dark config) 
+ Responsive grid 
+ Hover effects 
+ Party badges (D/R/I) 
+ Transaction badges (BUY/SELL) 
+ Large print alerts (>$10M)
 
 ---
 
@@ -115,8 +115,8 @@ curl $BASE/flow/institutional/TSLA
 
 **Backend nu pornește:**
 ```bash
-export FM_FORCE_FALLBACK=1  # Bypass Redis/MongoDB
-pkill -f uvicorn            # Kill old process
+export FM_FORCE_FALLBACK=1 # Bypass Redis/MongoDB
+pkill -f uvicorn # Kill old process
 ```
 
 **Frontend CORS errors:**
@@ -128,20 +128,20 @@ cat frontend/.env.local
 
 **Port in use:**
 ```bash
-pkill -f "http.server 3000"  # Static server
-pkill -f "uvicorn"           # Backend
-pkill -f "react-scripts"     # Frontend
+pkill -f "http.server 3000" # Static server
+pkill -f "uvicorn" # Backend
+pkill -f "react-scripts" # Frontend
 ```
 
 ---
 
-## 📊 Arhitectură:
+## Arhitectură:
 
 ```
 Frontend (React 19)
-    ↓ HTTP /api/*
+ ↓ HTTP /api/*
 Backend (FastAPI)
-    ↓ REST API
+ ↓ REST API
 UW Client → Unusual Whales API (or mock data)
 ```
 
@@ -154,22 +154,22 @@ UW Client → Unusual Whales API (or mock data)
 
 ---
 
-## ✅ Ce funcționează ACUM:
+## Ce funcționează ACUM:
 
-✅ Backend API (4 endpoints)  
-✅ Frontend Pages (4 pages + 1 widget)  
-✅ Navigation (Market Intelligence section)  
-✅ Tests (19/19 PASSING)  
-✅ Mock data fallback  
-✅ Dark theme  
-✅ Auto-refresh  
-✅ Plotly charts  
-✅ Responsive design  
-✅ Git commit + push
+ Backend API (4 endpoints) 
+ Frontend Pages (4 pages + 1 widget) 
+ Navigation (Market Intelligence section) 
+ Tests (19/19 PASSING) 
+ Mock data fallback 
+ Dark theme 
+ Auto-refresh 
+ Plotly charts 
+ Responsive design 
+ Git commit + push
 
 ---
 
-## 🎯 Pentru Production:
+## Pentru Production:
 
 ```bash
 # 1. Add real UW API key
@@ -196,7 +196,7 @@ cd frontend && npm run build
 
 ---
 
-## 💡 Pro Tips:
+## Pro Tips:
 
 1. **Quick Test:** Folosește static demo (index.html)
 2. **Backend Only:** Test cu curl înainte de frontend
@@ -211,7 +211,7 @@ cd frontend && npm run build
 - Commit: https://github.com/barbudangabriel-gif/Flowmind/commit/cce6186
 - Demo: file:///workspaces/Flowmind/index.html
 
-**Status:** ✅ READY TO GO! 🚀
+**Status:** READY TO GO! 
 
 ---
 

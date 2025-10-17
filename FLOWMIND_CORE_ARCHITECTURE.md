@@ -1,37 +1,37 @@
 # FlowMind Core Architecture v2.0
 
-## 🎯 MASTER STRUCTURE (3 Pillars + Foundation)
+## MASTER STRUCTURE (3 Pillars + Foundation)
 
 ```
-📊 OVERVIEW
+ OVERVIEW
 └── Dashboard
 
-📈 STOCKS
+ STOCKS
 └── Investment Scoring (AI stock analysis module)
-    ├── Stock Scorer
-    ├── Scanner
-    └── Top Picks
+ ├── Stock Scorer
+ ├── Scanner
+ └── Top Picks
 
 💼 PORTFOLIOS
 ├── View All Mindfolio
 ├── Create New Mindfolio
 └── [Each Mindfolio Detail Page]
-    ├── Overview / Positions / Transactions
-    ├── Smart Rebalancing (per-portfolio module)
-    └── Mindfolio Charts (per-portfolio analytics)
+ ├── Overview / Positions / Transactions
+ ├── Smart Rebalancing (per-portfolio module)
+ └── Mindfolio Charts (per-portfolio analytics)
 
-📊 OPTIONS ANALYTICS (All options functionality)
+ OPTIONS ANALYTICS (All options functionality)
 ├── 🔨 Options Builder (manual construction + 54+ strategy library)
-├── 🎯 Options Optimizer (auto-suggest best strategies)
-├── ⚡ IV Service (auto trading module)
-│   ├── Iron Condor Scanner
-│   ├── Calendar Scanner
-│   ├── Diagonal Scanner
-│   └── Double Diagonal Scanner
-├── 💰 Sell Puts for Income (auto trading module)
-│   ├── Cash-Secured Puts Engine
-│   └── Covered Calls (activated when assigned)
-├── 📈 Flow Summary (Unusual Whales)
+├── Options Optimizer (auto-suggest best strategies)
+├── IV Service (auto trading module)
+│ ├── Iron Condor Scanner
+│ ├── Calendar Scanner
+│ ├── Diagonal Scanner
+│ └── Double Diagonal Scanner
+├── Sell Puts for Income (auto trading module)
+│ ├── Cash-Secured Puts Engine
+│ └── Covered Calls (activated when assigned)
+├── Flow Summary (Unusual Whales)
 ├── 🌊 Dark Pool
 ├── 🏛️ Congress Trades
 └── 🏢 Institutional Flows
@@ -44,7 +44,7 @@
 
 ---
 
-## 🚀 THE 2 CORE TRADING MODULES
+## THE 2 CORE TRADING MODULES
 
 ### 1. **IV Service** (Volatility-Based Auto Trading)
 - **Parent Section:** OPTIONS ANALYTICS
@@ -52,16 +52,16 @@
 - **Backend:** `backend/iv_service/`
 - **Purpose:** Automated scanner for IV-based multi-leg strategies
 - **Strategies Executed:**
-  - Iron Condor
-  - Calendar Spreads
-  - Diagonal Spreads
-  - Double Diagonal Spreads
+ - Iron Condor
+ - Calendar Spreads
+ - Diagonal Spreads
+ - Double Diagonal Spreads
 - **Key Features:**
-  - IV rank/percentile-based detection
-  - Term structure analysis
-  - Auto-optimization
-  - Backtesting integration
-  - Quality gates
+ - IV rank/percentile-based detection
+ - Term structure analysis
+ - Auto-optimization
+ - Backtesting integration
+ - Quality gates
 
 ### 2. **Sell Puts for Income** (Premium Harvesting Auto Trading)
 - **Parent Section:** OPTIONS ANALYTICS
@@ -69,17 +69,17 @@
 - **Backend:** `backend/options_selling_service.py`, `backend/sell_puts_engine.py`
 - **Purpose:** Income generation via cash-secured puts + covered calls
 - **Strategy Flow:**
-  1. **Cash-Secured Puts** (primary) → Sell puts for premium
-  2. **If Assigned** → Receive shares
-  3. **Covered Calls** (secondary) → Sell calls against shares
+ 1. **Cash-Secured Puts** (primary) → Sell puts for premium
+ 2. **If Assigned** → Receive shares
+ 3. **Covered Calls** (secondary) → Sell calls against shares
 - **Key Features:**
-  - Delta: 0.25-0.30 typical
-  - DTE: 20-40 days
-  - IV Rank: >40
-  - VIX gates: 15-25
-  - Roll management (delta breach, DTE threshold)
-  - Assignment detection → auto-switch to Covered Calls
-  - Capital allocation modes (equal vs greedy)
+ - Delta: 0.25-0.30 typical
+ - DTE: 20-40 days
+ - IV Rank: >40
+ - VIX gates: 15-25
+ - Roll management (delta breach, DTE threshold)
+ - Assignment detection → auto-switch to Covered Calls
+ - Capital allocation modes (equal vs greedy)
 
 **Important:** These are the ONLY 2 trading modules. Everything else is either:
 - A tool (Builder, Optimizer)
@@ -90,8 +90,8 @@
 
 ## 📚 THE 54+ OPTIONS STRATEGIES (Library/Education)
 
-**Location:** OPTIONS ANALYTICS → Options Builder  
-**Purpose:** Educational reference + Templates for manual construction  
+**Location:** OPTIONS ANALYTICS → Options Builder 
+**Purpose:** Educational reference + Templates for manual construction 
 **Backend:** `backend/services/builder_engine.py`, `backend/options_calculator.py`
 
 **Critical:** These are **NOT modules**. They are **strategy templates/vehicles** that users select when manually constructing trades in the Builder.
@@ -147,32 +147,32 @@ These modules exist **inside each portfolio**, not at the global level:
 - **Location:** Inside portfolio detail view (tab or section)
 - **Backend:** `backend/portfolio_charts_service.py`
 - **Features:**
-  - P&L over time
-  - Greek exposure charts
-  - Risk metrics dashboard
-  - Performance attribution
-  - Drawdown analysis
+ - P&L over time
+ - Greek exposure charts
+ - Risk metrics dashboard
+ - Performance attribution
+ - Drawdown analysis
 
 ### 2. Smart Rebalancing (Optimization Module)
 - **Location:** Inside portfolio detail view
 - **Backend:** `backend/smart_rebalancing_service.py`
 - **Features:**
-  - AI-driven allocation suggestions
-  - Risk-adjusted rebalancing
-  - Tax-loss harvesting awareness
-  - Drift detection
-  - Optimal trade suggestions
+ - AI-driven allocation suggestions
+ - Risk-adjusted rebalancing
+ - Tax-loss harvesting awareness
+ - Drift detection
+ - Optimal trade suggestions
 
 ### 3. Core Mindfolio Functions
 - **Location:** Mindfolio detail main view
 - **Backend:** `backend/mindfolio.py`
 - **Features:**
-  - Positions (FIFO tracking)
-  - Transactions (CRUD)
-  - Cash management (add/withdraw funds)
-  - Module allocation
-  - Import CSV
-  - Realized/Unrealized P&L
+ - Positions (FIFO tracking)
+ - Transactions (CRUD)
+ - Cash management (add/withdraw funds)
+ - Module allocation
+ - Import CSV
+ - Realized/Unrealized P&L
 
 **Key Point:** Charts and Rebalancing are NOT global. Each portfolio instance has its own.
 
@@ -183,89 +183,89 @@ These modules exist **inside each portfolio**, not at the global level:
 ```javascript
 // nav.simple.js structure
 
-📊 Overview
+ Overview
 └── Dashboard
 
-📈 Stocks
+ Stocks
 └── Investment Scoring
-    ├── Stock Scorer
-    ├── Scanner
-    └── Top Picks
+ ├── Stock Scorer
+ ├── Scanner
+ └── Top Picks
 
 💼 Mindfolio
 ├── View All Mindfolio
 ├── Create New Mindfolio
 ├── [Dynamic: User's Mindfolio]
-│   └── Mindfolio Detail
-│       ├── Overview (positions, transactions)
-│       ├── Charts (analytics module)
-│       └── Rebalancing (optimization module)
+│ └── Mindfolio Detail
+│ ├── Overview (positions, transactions)
+│ ├── Charts (analytics module)
+│ └── Rebalancing (optimization module)
 └── TradeStation Account (if connected)
 
-📊 Options Analytics
+ Options Analytics
 ├── 🔨 Options Builder
-│   └── Strategy Library (54+ templates dropdown)
-├── 🎯 Options Optimizer
-├── ⚡ IV Service
-│   ├── Iron Condor Scanner
-│   ├── Calendar Scanner
-│   ├── Diagonal Scanner
-│   └── Double Diagonal Scanner
-├── 💰 Sell Puts for Income
-│   ├── Cash-Secured Puts Engine
-│   └── Covered Calls (when assigned)
-├── 📈 Flow Summary (UW)
+│ └── Strategy Library (54+ templates dropdown)
+├── Options Optimizer
+├── IV Service
+│ ├── Iron Condor Scanner
+│ ├── Calendar Scanner
+│ ├── Diagonal Scanner
+│ └── Double Diagonal Scanner
+├── Sell Puts for Income
+│ ├── Cash-Secured Puts Engine
+│ └── Covered Calls (when assigned)
+├── Flow Summary (UW)
 ├── 🌊 Dark Pool
 ├── 🏛️ Congress Trades
 └── 🏢 Institutional Flows
 
 🔧 System
 ├── Trades
-│   ├── Preview Queue
-│   └── Orders (SIM / LIVE)
+│ ├── Preview Queue
+│ └── Orders (SIM / LIVE)
 ├── Analytics
-│   ├── Backtests
-│   └── Verified Chains
+│ ├── Backtests
+│ └── Verified Chains
 └── Data Providers
-    ├── TradeStation
-    └── Unusual Whales
+ ├── TradeStation
+ └── Unusual Whales
 ```
 
 ---
 
-## 📋 DEVELOPMENT RULES (Critical - Read Before Any Code)
+## DEVELOPMENT RULES (Critical - Read Before Any Code)
 
 ### 1. **Stocks Pillar**
-✅ **DO:**
+ **DO:**
 - Enhance Investment Scoring features
 - Add new stock metrics/scoring factors
 - Improve scanner capabilities
 
-❌ **DON'T:**
+ **DON'T:**
 - Create "Stock Trading Module"
 - Mix stock analysis with options
 - Add portfolio features here
 
 ### 2. **Mindfolio Pillar**
-✅ **DO:**
+ **DO:**
 - Enhance portfolio CRUD
 - Add features to Charts or Rebalancing modules
 - Improve transaction import
 - Add new per-portfolio analytics
 
-❌ **DON'T:**
+ **DON'T:**
 - Create global portfolio analytics (it's per-portfolio)
 - Mix trading strategies here
 - Create "Mindfolio Trading Module"
 
 ### 3. **Options Analytics Pillar**
-✅ **DO:**
+ **DO:**
 - Enhance Builder with new features
 - Improve IV Service or Sell Puts modules
 - Add new market intelligence (Flow, etc.)
 - Extend strategy library (the 54+)
 
-❌ **DON'T:**
+ **DON'T:**
 - Create new trading modules (only 2 exist: IV Service + Sell Puts)
 - Turn strategy templates into modules
 - Create "Long Call Module" or "Iron Condor Module"
@@ -287,8 +287,8 @@ Before coding, ask:
 - These are **templates**, NOT modules
 - Live in Builder as a dropdown/library
 - Used for:
-  - Education (show what each strategy does)
-  - Manual construction (user picks template)
+ - Education (show what each strategy does)
+ - Manual construction (user picks template)
 - **Never** create a sidebar item for individual strategies
 
 ---
@@ -346,7 +346,7 @@ Before coding, ask:
 
 ---
 
-## ✅ THIS IS THE FOUNDATION
+## THIS IS THE FOUNDATION
 
 **All future development MUST align with this architecture.**
 

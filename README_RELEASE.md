@@ -27,7 +27,7 @@ setup_rate_limit(app, s.rate_limit)
 ## Kubernetes
 ```bash
 kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/secret.example.yaml   # replace with real Secret or external secrets
+kubectl apply -f k8s/secret.example.yaml # replace with real Secret or external secrets
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/prometheus-rules.yaml
 ```

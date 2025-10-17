@@ -1,13 +1,13 @@
 # 🔐 Unusual Whales API Token - Instrucțiuni
 
-**Status:** ⚠️ Token UW invalid - Trebuie actualizat  
+**Status:** Token UW invalid - Trebuie actualizat 
 **Data:** 2025-10-14
 
 ---
 
-## 🔍 Situația Curentă:
+## Situația Curentă:
 
-### ❌ Ce NU funcționează:
+### Ce NU funcționează:
 ```
 UW_API_TOKEN=5809ee6a8dc1d10f2c829ab0e947c1b7
 ```
@@ -17,51 +17,51 @@ UW_API_TOKEN=5809ee6a8dc1d10f2c829ab0e947c1b7
 
 ---
 
-## 📧 Ce știm din Email-ul de la Dan Wagner:
+## Ce știm din Email-ul de la Dan Wagner:
 
-✅ **Ai acces la:**
+ **Ai acces la:**
 - Unusual Whales **Pro tier**
 - **WebSocket streaming** (wss://api.unusualwhales.com/socket)
 - **All REST endpoints** (minus politician_portfolios)
 - **120 req/min**, **3 concurrent connections**, **15K hits/day**
 
-✅ **Documentație oficială:**
+ **Documentație oficială:**
 - API Docs: https://api.unusualwhales.com/docs#/
 - WebSocket Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.SocketController.channels
 - OpenAPI Spec: https://api.unusualwhales.com/api/openapi
 
 ---
 
-## 🎯 Ce trebuie să faci pentru WebSocket:
+## Ce trebuie să faci pentru WebSocket:
 
-### **Opțiunea 1: Găsește token-ul real (RECOMANDAT)** 🔍
+### **Opțiunea 1: Găsește token-ul real (RECOMANDAT)** 
 
 1. **Check email-uri de la Unusual Whales:**
-   - Caută email-uri cu "API key", "token", "Pro tier"
-   - Ar trebui să ai primit un email cu token-ul când ai făcut upgrade
+ - Caută email-uri cu "API key", "token", "Pro tier"
+ - Ar trebui să ai primit un email cu token-ul când ai făcut upgrade
 
 2. **Check Unusual Whales dashboard:**
-   - Login la https://unusualwhales.com
-   - Navighează la "API" sau "Settings"
-   - Token-ul ar trebui să fie acolo
+ - Login la https://unusualwhales.com
+ - Navighează la "API" sau "Settings"
+ - Token-ul ar trebui să fie acolo
 
 3. **Contact Unusual Whales support:**
-   - Email: support@unusualwhales.com
-   - Spune-le că ai Pro tier și ai nevoie de token pentru WebSocket
+ - Email: support@unusualwhales.com
+ - Spune-le că ai Pro tier și ai nevoie de token pentru WebSocket
 
 ### **Opțiunea 2: Implementăm FĂRĂ WebSocket acum** ⏭️
 
 Putem implementa sistemul cu:
-- ✅ **Mock data** pentru development
-- ✅ **Polling** în loc de WebSocket (60s interval)
-- ✅ **Fallback logic** când WebSocket nu e disponibil
+- **Mock data** pentru development
+- **Polling** în loc de WebSocket (60s interval)
+- **Fallback logic** când WebSocket nu e disponibil
 - 🔜 **WebSocket ready** când ai token-ul
 
 ---
 
-## 🚀 Plan de Acțiune:
+## Plan de Acțiune:
 
-### **PLAN A: AI TOKEN-UL?** 🎉
+### **PLAN A: AI TOKEN-UL?** 
 ```bash
 # 1. Actualizează .env files:
 cd /workspaces/Flowmind
@@ -72,8 +72,8 @@ nano backend/.env
 export UW_API_TOKEN=your_real_token
 python test_uw_websocket.py
 
-# 3. Dacă funcționează (✅ messages received):
-#    → Continuăm cu implementarea WebSocket!
+# 3. Dacă funcționează ( messages received):
+# → Continuăm cu implementarea WebSocket!
 ```
 
 ### **PLAN B: NU AI TOKEN-UL ACUM?** 🛠️
@@ -82,15 +82,15 @@ python test_uw_websocket.py
 # WebSocket va fi "dormant" până când ai token
 
 # Avantaje:
-# ✅ Totul funcționează local (mock data)
-# ✅ UI/UX complet implementat
-# ✅ Când ai token → simple env var change
-# ✅ Zero code changes needed după
+# Totul funcționează local (mock data)
+# UI/UX complet implementat
+# Când ai token → simple env var change
+# Zero code changes needed după
 ```
 
 ---
 
-## 💡 Recomandarea Mea:
+## Recomandarea Mea:
 
 **Aleg PLAN B** pentru că:
 
@@ -101,7 +101,7 @@ python test_uw_websocket.py
 
 ---
 
-## 📝 TODO List:
+## TODO List:
 
 ### **Prioritate ACUM (PLAN B):**
 - [ ] Implementez WebSocket client (cu fallback la mock data)
@@ -117,7 +117,7 @@ python test_uw_websocket.py
 - [ ] Restart backend
 - [ ] Verify WebSocket connection: `GET /api/stream/status`
 - [ ] Test live data în UI
-- [ ] 🎉 PROFIT!
+- [ ] PROFIT!
 
 ---
 
@@ -125,13 +125,13 @@ python test_uw_websocket.py
 
 **Care plan alegi?**
 
-**A) PLAN A** - Găsesc token-ul ACUM (trebuie să check email/dashboard UW)  
-**B) PLAN B** - Implementăm cu mock data, WebSocket când ai token  
+**A) PLAN A** - Găsesc token-ul ACUM (trebuie să check email/dashboard UW) 
+**B) PLAN B** - Implementăm cu mock data, WebSocket când ai token 
 **C) Altceva** - Spune-mi ce preferi!
 
 ---
 
-## 📞 Next Steps:
+## Next Steps:
 
 După ce alegi:
 - **PLAN A:** Îmi dai token-ul → testăm → implementăm

@@ -1,27 +1,27 @@
 # 📡 Unusual Whales WebSocket Implementation Reference
 
-**Date:** 2025-10-14  
-**Source:** Official UW API Documentation  
+**Date:** 2025-10-14 
+**Source:** Official UW API Documentation 
 **FlowMind Implementation:** `backend/integrations/uw_websocket_client.py`
 
 ---
 
-## 🎯 Official WebSocket Channels (from UW Docs)
+## Official WebSocket Channels (from UW Docs)
 
 ### Complete Channel List
 
 | Channel | Description | Daily Volume | FlowMind Status |
 |---------|-------------|--------------|-----------------|
-| `option_trades` | All live option trades | ~6-10M records | ✅ Supported |
-| `option_trades:TICKER` | Trades for specific ticker | Varies | ✅ Implemented |
-| `flow-alerts` | Live flow alerts (unfiltered) | Varies | ✅ Implemented |
-| `price:TICKER` | Live price updates | Real-time | ✅ Implemented |
-| `news` | Live headline news | Real-time | ⚠️ **Need to verify** |
-| `lit_trades` | Live lit (exchange) trades | Real-time | ✅ **IMPLEMENTED (2025-10-14)** |
-| `off_lit_trades` | Live off-lit (dark pool) trades | Real-time | ✅ **IMPLEMENTED (2025-10-14)** |
-| `gex:TICKER` | Live GEX updates per ticker | Real-time | ✅ Implemented |
-| `gex_strike:TICKER` | Live GEX per strike | Real-time | ⚠️ **Need to verify** |
-| `gex_strike_expiry:TICKER` | Live GEX per strike & expiry | Real-time | ✅ **IMPLEMENTED (2025-10-14)** |
+| `option_trades` | All live option trades | ~6-10M records | Supported |
+| `option_trades:TICKER` | Trades for specific ticker | Varies | Implemented |
+| `flow-alerts` | Live flow alerts (unfiltered) | Varies | Implemented |
+| `price:TICKER` | Live price updates | Real-time | Implemented |
+| `news` | Live headline news | Real-time | **Need to verify** |
+| `lit_trades` | Live lit (exchange) trades | Real-time | **IMPLEMENTED (2025-10-14)** |
+| `off_lit_trades` | Live off-lit (dark pool) trades | Real-time | **IMPLEMENTED (2025-10-14)** |
+| `gex:TICKER` | Live GEX updates per ticker | Real-time | Implemented |
+| `gex_strike:TICKER` | Live GEX per strike | Real-time | **Need to verify** |
+| `gex_strike_expiry:TICKER` | Live GEX per strike & expiry | Real-time | **IMPLEMENTED (2025-10-14)** |
 
 ---
 
@@ -35,8 +35,8 @@ wss://api.unusualwhales.com/socket?token=<YOUR_API_TOKEN>
 ### Join Channel Message Format
 ```json
 {
-  "channel": "option_trades",
-  "msg_type": "join"
+ "channel": "option_trades",
+ "msg_type": "join"
 }
 ```
 
@@ -52,300 +52,300 @@ wss://api.unusualwhales.com/socket?token=<YOUR_API_TOKEN>
 
 ---
 
-## ✅ FlowMind Implementation Verification
+## FlowMind Implementation Verification
 
 ### Current Implementation Check
 
 **File:** `backend/integrations/uw_websocket_client.py`
 
-#### Connection Method ✅
+#### Connection Method 
 ```python
 self.uri = f"wss://api.unusualwhales.com/socket?token={api_token}"
 self.ws = await websockets.connect(
-    self.uri,
-    ping_interval=20,
-    ping_timeout=10
+ self.uri,
+ ping_interval=20,
+ ping_timeout=10
 )
 ```
-**Status:** ✅ Matches official spec
+**Status:** Matches official spec
 
-#### Subscribe Method ✅
+#### Subscribe Method 
 ```python
 async def subscribe(self, channel: str, callback: Callable):
-    subscribe_msg = {
-        "channel": channel,
-        "msg_type": "join"
-    }
-    await self.ws.send(json.dumps(subscribe_msg))
+ subscribe_msg = {
+ "channel": channel,
+ "msg_type": "join"
+ }
+ await self.ws.send(json.dumps(subscribe_msg))
 ```
-**Status:** ✅ Matches official spec
+**Status:** Matches official spec
 
-#### Message Handler ✅
+#### Message Handler 
 ```python
 async def listen(self):
-    async for message in self.ws:
-        data = json.loads(message)
-        channel, payload = data
-        # Handle message
+ async for message in self.ws:
+ data = json.loads(message)
+ channel, payload = data
+ # Handle message
 ```
-**Status:** ✅ Matches official spec
+**Status:** Matches official spec
 
 ---
 
-## ❌ Missing Channels Implementation
+## Missing Channels Implementation
 
 ### 1. `news` Channel
-**Status:** ⚠️ Ambiguous - need to verify if implemented
+**Status:** Ambiguous - need to verify if implemented
 
 **Expected Implementation:**
 ```python
 # backend/routers/stream.py
 @router.websocket("/ws/news")
 async def ws_news(websocket: WebSocket):
-    """Stream live headline news"""
-    await websocket.accept()
-    
-    # Subscribe to UW news channel
-    await uw_ws_client.subscribe("news", lambda ch, data: 
-        websocket.send_json({"channel": ch, "data": data})
-    )
+ """Stream live headline news"""
+ await websocket.accept()
+ 
+ # Subscribe to UW news channel
+ await uw_ws_client.subscribe("news", lambda ch, data: 
+ websocket.send_json({"channel": ch, "data": data})
+ )
 ```
 
 **Frontend Component:**
 ```jsx
 // frontend/src/pages/LiveNewsFeed.jsx
 export default function LiveNewsFeed() {
-    const { messages, status } = useWebSocket('/ws/news');
-    
-    return (
-        <div className="news-feed">
-            {messages.map(msg => (
-                <NewsCard key={msg.id} headline={msg} />
-            ))}
-        </div>
-    );
+ const { messages, status } = useWebSocket('/ws/news');
+ 
+ return (
+ <div className="news-feed">
+ {messages.map(msg => (
+ <NewsCard key={msg.id} headline={msg} />
+ ))}
+ </div>
+ );
 }
 ```
 
 ### 2. `lit_trades` Channel
-**Status:** ❌ Not implemented
+**Status:** Not implemented
 
 **Implementation:**
 ```python
 # backend/routers/stream.py
 @router.websocket("/ws/lit-trades")
 async def ws_lit_trades(websocket: WebSocket, ticker: Optional[str] = None):
-    """
-    Stream live lit (exchange-based) trades
-    
-    Args:
-        ticker: Optional ticker filter
-    """
-    await websocket.accept()
-    
-    channel = "lit_trades" if not ticker else f"lit_trades:{ticker}"
-    
-    async def handler(ch, data):
-        await websocket.send_json({
-            "channel": ch,
-            "data": data,
-            "timestamp": datetime.utcnow().isoformat()
-        })
-    
-    await uw_ws_client.subscribe(channel, handler)
+ """
+ Stream live lit (exchange-based) trades
+ 
+ Args:
+ ticker: Optional ticker filter
+ """
+ await websocket.accept()
+ 
+ channel = "lit_trades" if not ticker else f"lit_trades:{ticker}"
+ 
+ async def handler(ch, data):
+ await websocket.send_json({
+ "channel": ch,
+ "data": data,
+ "timestamp": datetime.utcnow().isoformat()
+ })
+ 
+ await uw_ws_client.subscribe(channel, handler)
 ```
 
 **Data Format Expected:**
 ```json
 {
-  "ticker": "AAPL",
-  "price": 175.50,
-  "size": 100,
-  "timestamp": "2025-10-14T14:30:00Z",
-  "exchange": "NASDAQ",
-  "conditions": ["@", "F"]
+ "ticker": "AAPL",
+ "price": 175.50,
+ "size": 100,
+ "timestamp": "2025-10-14T14:30:00Z",
+ "exchange": "NASDAQ",
+ "conditions": ["@", "F"]
 }
 ```
 
 ### 3. `off_lit_trades` Channel
-**Status:** ❌ Not implemented
+**Status:** Not implemented
 
 **Implementation:**
 ```python
 # backend/routers/stream.py
 @router.websocket("/ws/off-lit-trades")
 async def ws_off_lit_trades(websocket: WebSocket, ticker: Optional[str] = None):
-    """
-    Stream live off-lit (dark pool) trades
-    
-    Args:
-        ticker: Optional ticker filter
-    """
-    await websocket.accept()
-    
-    channel = "off_lit_trades" if not ticker else f"off_lit_trades:{ticker}"
-    
-    async def handler(ch, data):
-        await websocket.send_json({
-            "channel": ch,
-            "data": data,
-            "timestamp": datetime.utcnow().isoformat(),
-            "venue_type": "dark_pool"
-        })
-    
-    await uw_ws_client.subscribe(channel, handler)
+ """
+ Stream live off-lit (dark pool) trades
+ 
+ Args:
+ ticker: Optional ticker filter
+ """
+ await websocket.accept()
+ 
+ channel = "off_lit_trades" if not ticker else f"off_lit_trades:{ticker}"
+ 
+ async def handler(ch, data):
+ await websocket.send_json({
+ "channel": ch,
+ "data": data,
+ "timestamp": datetime.utcnow().isoformat(),
+ "venue_type": "dark_pool"
+ })
+ 
+ await uw_ws_client.subscribe(channel, handler)
 ```
 
 **Frontend Component:**
 ```jsx
 // frontend/src/pages/LiveOffLitTradesFeed.jsx
 export default function LiveOffLitTradesFeed() {
-    const { messages, status } = useWebSocket('/ws/off-lit-trades');
-    
-    return (
-        <div className="dark-pool-feed">
-            <h3>🌑 Live Dark Pool Activity</h3>
-            {messages.map(trade => (
-                <DarkPoolTradeCard key={trade.id} trade={trade} />
-            ))}
-        </div>
-    );
+ const { messages, status } = useWebSocket('/ws/off-lit-trades');
+ 
+ return (
+ <div className="dark-pool-feed">
+ <h3>🌑 Live Dark Pool Activity</h3>
+ {messages.map(trade => (
+ <DarkPoolTradeCard key={trade.id} trade={trade} />
+ ))}
+ </div>
+ );
 }
 ```
 
 ### 4. `gex_strike_expiry:TICKER` Channel
-**Status:** ✅ **IMPLEMENTED** (2025-10-14)
+**Status:** **IMPLEMENTED** (2025-10-14)
 
 **Implementation:**
 ```python
 # backend/routers/stream.py (COMPLETED)
 @router.websocket("/ws/gex-strike-expiry/{ticker}")
 async def stream_gex_strike_expiry(websocket: WebSocket, ticker: str):
-    """
-    🆕 Stream live GEX updates per strike and expiry
-    
-    Most granular GEX data available - shows gamma exposure
-    broken down by both strike price and expiration date.
-    
-    Use Cases:
-    - Zero-DTE (0DTE) gamma analysis
-    - Strike-level exposure tracking
-    - Expiration-specific positioning
-    - Gamma squeeze detection
-    
-    Message Format:
-    {
-      "channel": "gex_strike_expiry:SPY",
-      "timestamp": "2025-10-14T14:30:00Z",
-      "ticker": "SPY",
-      "data": {
-        "strike": 450,
-        "expiry": "2025-10-18",
-        "call_gex": 125000000,
-        "put_gex": -85000000,
-        "net_gex": 40000000,
-        "call_oi": 25000,
-        "put_oi": 18000,
-        "call_volume": 5000,
-        "put_volume": 3500
-      }
-    }
-    """
-    ticker = ticker.upper()
-    channel = f"gex_strike_expiry:{ticker}"
-    
-    if not uw_client:
-        await websocket.close(code=1011, reason="WebSocket streaming not available")
-        return
-    
-    await ws_manager.connect(websocket, channel)
-    
-    async def gex_strike_expiry_handler(ch: str, payload: dict):
-        message = {
-            "channel": ch,
-            "timestamp": datetime.now().isoformat(),
-            "ticker": ticker,
-            "data": payload
-        }
-        await ws_manager.broadcast(channel, message)
-    
-    if not ws_manager.has_subscribers(channel):
-        await uw_client.subscribe(channel, gex_strike_expiry_handler)
-    else:
-        uw_client.message_handlers[channel] = gex_strike_expiry_handler
-    
-    try:
-        while True:
-            try:
-                data = await websocket.receive_text()
-            except WebSocketDisconnect:
-                break
-    except Exception as e:
-        logger.error(f"Error in GEX strike/expiry stream: {e}")
-    finally:
-        await ws_manager.disconnect(websocket, channel)
-        if not ws_manager.has_subscribers(channel):
-            await uw_client.unsubscribe(channel)
+ """
+ 🆕 Stream live GEX updates per strike and expiry
+ 
+ Most granular GEX data available - shows gamma exposure
+ broken down by both strike price and expiration date.
+ 
+ Use Cases:
+ - Zero-DTE (0DTE) gamma analysis
+ - Strike-level exposure tracking
+ - Expiration-specific positioning
+ - Gamma squeeze detection
+ 
+ Message Format:
+ {
+ "channel": "gex_strike_expiry:SPY",
+ "timestamp": "2025-10-14T14:30:00Z",
+ "ticker": "SPY",
+ "data": {
+ "strike": 450,
+ "expiry": "2025-10-18",
+ "call_gex": 125000000,
+ "put_gex": -85000000,
+ "net_gex": 40000000,
+ "call_oi": 25000,
+ "put_oi": 18000,
+ "call_volume": 5000,
+ "put_volume": 3500
+ }
+ }
+ """
+ ticker = ticker.upper()
+ channel = f"gex_strike_expiry:{ticker}"
+ 
+ if not uw_client:
+ await websocket.close(code=1011, reason="WebSocket streaming not available")
+ return
+ 
+ await ws_manager.connect(websocket, channel)
+ 
+ async def gex_strike_expiry_handler(ch: str, payload: dict):
+ message = {
+ "channel": ch,
+ "timestamp": datetime.now().isoformat(),
+ "ticker": ticker,
+ "data": payload
+ }
+ await ws_manager.broadcast(channel, message)
+ 
+ if not ws_manager.has_subscribers(channel):
+ await uw_client.subscribe(channel, gex_strike_expiry_handler)
+ else:
+ uw_client.message_handlers[channel] = gex_strike_expiry_handler
+ 
+ try:
+ while True:
+ try:
+ data = await websocket.receive_text()
+ except WebSocketDisconnect:
+ break
+ except Exception as e:
+ logger.error(f"Error in GEX strike/expiry stream: {e}")
+ finally:
+ await ws_manager.disconnect(websocket, channel)
+ if not ws_manager.has_subscribers(channel):
+ await uw_client.unsubscribe(channel)
 ```
 
-**Frontend Component:** ✅ **IMPLEMENTED**
+**Frontend Component:** **IMPLEMENTED**
 ```jsx
 // frontend/src/pages/LiveGexStrikeExpiryFeed.jsx (COMPLETED)
 export default function LiveGexStrikeExpiryFeed({ ticker = 'SPY', autoRefresh = true, view = 'heatmap' }) {
-    const [gexData, setGexData] = useState([]);
-    const [selectedExpiry, setSelectedExpiry] = useState(null);
-    
-    const wsUrl = `/api/stream/ws/gex-strike-expiry/${ticker.toUpperCase()}`;
-    const { messages, status, error } = useWebSocket(wsUrl);
+ const [gexData, setGexData] = useState([]);
+ const [selectedExpiry, setSelectedExpiry] = useState(null);
+ 
+ const wsUrl = `/api/stream/ws/gex-strike-expiry/${ticker.toUpperCase()}`;
+ const { messages, status, error } = useWebSocket(wsUrl);
 
-    // Process incoming messages and build strike × expiry matrix
-    // Supports dual view modes: heatmap (color-coded) and table (detailed)
-    // Heatmap: Green (positive GEX) to Red (negative GEX)
-    // Interactive: Click expiry to filter, hover for details
-    
-    return (
-        <div className="bg-gray-900 rounded-lg shadow-lg p-6 text-white">
-            <h2 className="text-2xl font-bold">Gamma Exposure Matrix</h2>
-            <p className="text-gray-400 text-sm mt-1">{ticker} - Strike × Expiry GEX</p>
-            
-            {/* Heatmap visualization with strikes (rows) × expiries (columns) */}
-            {view === 'heatmap' ? <HeatmapView /> : <TableView />}
-            
-            {/* Real-time status indicator */}
-            <StatusIndicator status={status} />
-        </div>
-    );
+ // Process incoming messages and build strike × expiry matrix
+ // Supports dual view modes: heatmap (color-coded) and table (detailed)
+ // Heatmap: Green (positive GEX) to Red (negative GEX)
+ // Interactive: Click expiry to filter, hover for details
+ 
+ return (
+ <div className="bg-gray-900 rounded-lg shadow-lg p-6 text-white">
+ <h2 className="text-2xl font-bold">Gamma Exposure Matrix</h2>
+ <p className="text-gray-400 text-sm mt-1">{ticker} - Strike × Expiry GEX</p>
+ 
+ {/* Heatmap visualization with strikes (rows) × expiries (columns) */}
+ {view === 'heatmap' ? <HeatmapView /> : <TableView />}
+ 
+ {/* Real-time status indicator */}
+ <StatusIndicator status={status} />
+ </div>
+ );
 }
 ```
 
 ---
 
-## 🔍 Implementation Priority
+## Implementation Priority
 
 ### Phase 1: Critical Additions (Week 1)
-1. ~~**`gex_strike_expiry:TICKER`** ⚠️ HIGH~~ ✅ **COMPLETED 2025-10-14**
-   - Most granular GEX data
-   - Essential for zero-DTE traders
-   - Effort: 3-4 hours
+1. ~~**`gex_strike_expiry:TICKER`** HIGH~~ **COMPLETED 2025-10-14**
+ - Most granular GEX data
+ - Essential for zero-DTE traders
+ - Effort: 3-4 hours
 
 ### Phase 2: Market Structure (Week 2)
-2. **`lit_trades`** 🟡 MEDIUM
-   - Exchange-based execution tracking
-   - Effort: 2-3 hours
+2. **`lit_trades`** MEDIUM
+ - Exchange-based execution tracking
+ - Effort: 2-3 hours
 
-3. **`off_lit_trades`** 🟡 MEDIUM
-   - Dark pool execution tracking
-   - Complements existing dark pool endpoint
-   - Effort: 2-3 hours
+3. **`off_lit_trades`** MEDIUM
+ - Dark pool execution tracking
+ - Complements existing dark pool endpoint
+ - Effort: 2-3 hours
 
 ### Phase 3: Information Flow (Week 2-3)
-4. **`news`** 🟢 LOW/VERIFY
-   - Check if already implemented
-   - If not: 1-2 hours
+4. **`news`** LOW/VERIFY
+ - Check if already implemented
+ - If not: 1-2 hours
 
 ---
 
-## 📋 Testing Checklist
+## Testing Checklist
 
 ### Connection Tests
 - [ ] Verify WebSocket URL format matches UW spec
@@ -406,22 +406,22 @@ Available Channels (Official UW API):
 ### 2. Add Channel Validation
 ```python
 VALID_CHANNEL_PATTERNS = [
-    r"^option_trades$",
-    r"^option_trades:[A-Z]+$",
-    r"^flow-alerts$",
-    r"^price:[A-Z]+$",
-    r"^news$",
-    r"^lit_trades$",
-    r"^off_lit_trades$",
-    r"^gex:[A-Z]+$",
-    r"^gex_strike:[A-Z]+$",
-    r"^gex_strike_expiry:[A-Z]+$"
+ r"^option_trades$",
+ r"^option_trades:[A-Z]+$",
+ r"^flow-alerts$",
+ r"^price:[A-Z]+$",
+ r"^news$",
+ r"^lit_trades$",
+ r"^off_lit_trades$",
+ r"^gex:[A-Z]+$",
+ r"^gex_strike:[A-Z]+$",
+ r"^gex_strike_expiry:[A-Z]+$"
 ]
 
 def validate_channel(channel: str) -> bool:
-    """Validate channel name against official UW patterns"""
-    import re
-    return any(re.match(pattern, channel) for pattern in VALID_CHANNEL_PATTERNS)
+ """Validate channel name against official UW patterns"""
+ import re
+ return any(re.match(pattern, channel) for pattern in VALID_CHANNEL_PATTERNS)
 ```
 
 ### 3. Add Missing Router Endpoints
@@ -462,25 +462,25 @@ import websocket
 import json
 
 def on_message(ws, msg):
-    msg = json.loads(msg)
-    channel, payload = msg
-    print(f"Channel {channel}: {payload}")
+ msg = json.loads(msg)
+ channel, payload = msg
+ print(f"Channel {channel}: {payload}")
 
 def on_open(ws):
-    msg = {"channel":"option_trades","msg_type":"join"}
-    ws.send(json.dumps(msg))
+ msg = {"channel":"option_trades","msg_type":"join"}
+ ws.send(json.dumps(msg))
 
 ws = websocket.WebSocketApp(
-    "wss://api.unusualwhales.com/socket?token=<TOKEN>",
-    on_open=on_open,
-    on_message=on_message
+ "wss://api.unusualwhales.com/socket?token=<TOKEN>",
+ on_open=on_open,
+ on_message=on_message
 )
 ws.run_forever(reconnect=5)
 ```
 
 ---
 
-## ✅ Action Items
+## Action Items
 
 ### Immediate (This Week)
 1. [ ] Verify current `news` channel implementation status
@@ -502,7 +502,7 @@ ws.run_forever(reconnect=5)
 
 ---
 
-**Status:** ✅ **Specification Documented**  
-**Compliance:** 7/10 channels verified implemented  
-**Next Action:** Verify `news` and `gex_strike` channels, implement `gex_strike_expiry`  
+**Status:** **Specification Documented** 
+**Compliance:** 7/10 channels verified implemented 
+**Next Action:** Verify `news` and `gex_strike` channels, implement `gex_strike_expiry` 
 **Risk:** **LOW** - All changes are additive

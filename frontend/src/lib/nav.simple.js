@@ -11,242 +11,183 @@ const ivDependentDisabled = (ctx) => !ctx.metrics?.ivOnline;
 const ivDisabledReason = () => "IV service offline";
 
 export function buildNav(ctx) {
-  return [
-    // OVERVIEW
-    {
-      title: "Overview",
-      items: [
-        { label: "Dashboard", to: "/dashboard", icon: "LayoutDashboard" },
-      ],
-    },
+ return [
+ // OVERVIEW
+ {
+ title: "Overview",
+ items: [
+ { label: "Dashboard", to: "/dashboard", icon: "LayoutDashboard" },
+ ],
+ },
 
-    // ACCOUNT & MINDFOLIO
-    {
-      title: "Account",
-      items: [
-        { label: "Account Balance", to: "/account/balance", icon: "Wallet" },
-        {
-          label: "Mindfolio Manager", 
-          to: "/mindfolio",  // Direct link to mindfolio list
-          icon: "Briefcase",
-          children: [
-            // View all mindfolios
-            { label: "View All Mindfolios", to: "/mindfolio", icon: "List" },
-            // Dynamic mindfolios
-            ...((ctx.mindfolios || []).map(p => ({
-              label: p.name,
-              to: `/mindfolio/${p.id}`,
-              icon: "FolderKanban",
-              badge: p.nav ? { text: `$${Math.round(p.nav/1000)}k`, tone: "default" } : undefined,
-            }))),
-            // Create new
-            { label: "+ Create Mindfolio", to: "/mindfolio/new", icon: "PlusCircle" },
-          ],
-        },
-      ],
-    },
+ // ACCOUNTS
+ {
+ title: "Accounts",
+ items: [
+ { label: "Account Balance", to: "/account/balance", icon: "Wallet" },
+ ],
+ },
 
-    // STOCKS
-    {
-      title: "Stocks",
-      items: [
-        { label: "Investment Scoring", to: "/stocks/scoring", icon: "Target" },
-        { label: "Scoring Scanner", to: "/stocks/scanner", icon: "Search" },
-      ],
-    },
+ // MINDFOLIO MANAGER
+ {
+ title: "Mindfolio Manager",
+ items: [
+ // View all mindfolios with dynamic children
+ { 
+ label: "View All Mindfolios", 
+ to: "/mindfolio", 
+ icon: "List",
+ children: [
+ // Dynamic mindfolios
+ ...((ctx.mindfolios || []).map(p => ({
+ label: p.name,
+ to: `/mindfolio/${p.id}`,
+ icon: "FolderKanban",
+ badge: p.nav ? { text: `$${Math.round(p.nav/1000)}k`, tone: "default" } : undefined,
+ }))),
+ // Placeholder if no mindfolios
+ ...((ctx.mindfolios || []).length === 0 ? [
+ { label: "No mindfolios yet", to: "/mindfolio/new", icon: "FileX" }
+ ] : [])
+ ]
+ },
+ // Create new
+ { label: "+ Create Mindfolio", to: "/mindfolio/new", icon: "PlusCircle" },
+ // Mindfolio Analytics
+ { label: "Mindfolio Analytics", to: "/mindfolio/analytics", icon: "BarChart3" },
+ // Smart Rebalancing
+ { label: "Smart Rebalancing", to: "/mindfolio/rebalancing", icon: "Scale" },
+ ],
+ },
 
-    // STRATEGY (All Trading Modules & Strategies)
-    {
-      title: "Strategy",
-      items: [
-        { 
-          label: "Options Builder", 
-          to: "/builder", 
-          icon: "Hammer",
-          badge: { text: "PRO", tone: "success" }
-        },
-        { 
-          label: "IV Setups (Auto)", 
-          to: "/screener/iv", 
-          icon: "Activity",
-          children: [
-            { label: "Iron Condor Scanner", to: "/screener/iv?strategy=IRON_CONDOR", icon: "Target" },
-            { label: "Calendar Scanner", to: "/screener/iv?strategy=CALENDAR", icon: "Calendar" },
-            { label: "Diagonal Scanner", to: "/screener/iv?strategy=DIAGONAL", icon: "TrendingUp" },
-            { label: "Double Diagonal", to: "/screener/iv?strategy=DOUBLE_DIAGONAL", icon: "Layers" },
-          ]
-        },
-        { 
-          label: "Sell Puts (Auto)", 
-          to: "/screener/sell-puts", 
-          icon: "ArrowDownCircle",
-          children: [
-            { label: "Put Selling Engine", to: "/screener/sell-puts", icon: "ArrowDown" },
-            { label: "Covered Calls", to: "/screener/covered-calls", icon: "Shield" },
-            { label: "Cash-Secured Puts", to: "/screener/csp", icon: "DollarSign" },
-          ]
-        },
-        { 
-          label: "Investment Scoring", 
-          to: "/stocks/scoring", 
-          icon: "Target",
-          children: [
-            { label: "Stock Scorer", to: "/stocks/scoring", icon: "Star" },
-            { label: "Scoring Scanner", to: "/stocks/scanner", icon: "Search" },
-            { label: "Top Picks", to: "/stocks/top-picks", icon: "TrendingUp" },
-          ]
-        },
-        { 
-          label: "Smart Rebalancing", 
-          to: "/mindfolio/rebalancing", 
-          icon: "Scale",
-          badge: { text: "AI", tone: "verified" }
-        },
-        { 
-          label: "Mindfolio Analytics", 
-          to: "/mindfolio/analytics", 
-          icon: "BarChart3",
-          badge: { text: "NEW", tone: "success" }
-        },
-      ],
-    },
+ // STOCKS
+ {
+ title: "Stocks Data",
+ items: [
+ { label: "Investment Scoring", to: "/stocks/scoring", icon: "Target" },
+ { label: "Scoring Scanner", to: "/stocks/scanner", icon: "Search" },
+ { label: "Stock Scorer", to: "/stocks/scoring", icon: "Star" },
+ { label: "Top Picks", to: "/stocks/top-picks", icon: "TrendingUp" },
+ ],
+ },
 
-    // OPTIONS (Quick Tools)
-    {
-      title: "Options",
-      items: [
-        { 
-          label: "Analytics", 
-          to: "/options/analytics", 
-          icon: "BarChart2", 
-          badge: { text: "NEW", tone: "success" } 
-        },
-        { 
-          label: "Option Chain (TS)", 
-          to: "/md/chain", 
-          icon: "Grid3X3",
-          visible: (c) => !!c.flags?.TS_LIVE 
-        },
-      ],
-    },
+ // OPTIONS (Quick Tools)
+ {
+ title: "Options Data",
+ items: [
+ { 
+ label: "Builder", 
+ to: "/builder", 
+ icon: "Hammer",
+ badge: { text: "PRO", tone: "success" }
+ },
+ { 
+ label: "Analytics", 
+ to: "/options/analytics", 
+ icon: "BarChart2",
+ children: [
+ { label: "Backtests", to: "/analytics/backtests", icon: "BarChart3" },
+ { label: "Verified Chains", to: "/analytics/verified", icon: "ShieldCheck" },
+ ]
+ },
+ { 
+ label: "Algos", 
+ to: "/screener/iv", 
+ icon: "Bot",
+ children: [
+ { label: "IV Setups (Auto)", to: "/screener/iv", icon: "Activity" },
+ { label: "Iron Condor Scanner", to: "/screener/iv?strategy=IRON_CONDOR", icon: "Target" },
+ { label: "Calendar Scanner", to: "/screener/iv?strategy=CALENDAR", icon: "Calendar" },
+ { label: "Diagonal Scanner", to: "/screener/iv?strategy=DIAGONAL", icon: "TrendingUp" },
+ { label: "Double Diagonal", to: "/screener/iv?strategy=DOUBLE_DIAGONAL", icon: "Layers" },
+ { label: "Sell Puts (Auto)", to: "/screener/sell-puts", icon: "ArrowDownCircle" },
+ { label: "Put Selling Engine", to: "/screener/sell-puts", icon: "ArrowDown" },
+ { label: "Covered Calls", to: "/screener/covered-calls", icon: "Shield" },
+ { label: "Cash-Secured Puts", to: "/screener/csp", icon: "DollarSign" },
+ { label: "Preview Queue", to: "/trades/preview", icon: "ClipboardList" },
+ { label: "Orders (SIM)", to: "/trades/orders/sim", icon: "ReceiptText" },
+ { label: "Orders (LIVE)", to: "/trades/orders/live", icon: "CreditCard" },
+ ]
+ },
+ { 
+ label: "Option Chain (TS)", 
+ to: "/md/chain", 
+ icon: "Grid3X3",
+ visible: (c) => !!c.flags?.TS_LIVE 
+ },
+ ],
+ },
 
-    // MARKET INTELLIGENCE
-    {
-      title: "Market Intelligence",
-      items: [
-        { 
-          label: "Flow Summary", 
-          to: "/flow", 
-          icon: "TrendingUp" 
-        },
-        { 
-          label: "Dark Pool", 
-          to: "/dark-pool", 
-          icon: "Droplet",
-          badge: { text: "NEW", tone: "success" }
-        },
-        { 
-          label: "Market Movers", 
-          to: "/market-movers", 
-          icon: "Activity",
-          badge: { text: "NEW", tone: "success" }
-        },
-        { 
-          label: "Congress Trades", 
-          to: "/congress-trades", 
-          icon: "Building",
-          badge: { text: "NEW", tone: "success" }
-        },
-        { 
-          label: "Institutional", 
-          to: "/institutional", 
-          icon: "Building2",
-          badge: { text: "NEW", tone: "success" }
-        },
-      ],
-    },
+ // MARKET INTELLIGENCE
+ {
+ title: "Market Intelligence",
+ items: [
+ { 
+ label: "Flow Summary", 
+ to: "/flow", 
+ icon: "TrendingUp" 
+ },
+ { 
+ label: "Dark Pool", 
+ to: "/dark-pool", 
+ icon: "Droplet",
+ badge: { text: "NEW", tone: "success" }
+ },
+ { 
+ label: "Market Movers", 
+ to: "/market-movers", 
+ icon: "Activity",
+ badge: { text: "NEW", tone: "success" }
+ },
+ { 
+ label: "Congress Trades", 
+ to: "/congress-trades", 
+ icon: "Building",
+ badge: { text: "NEW", tone: "success" }
+ },
+ { 
+ label: "Institutional", 
+ to: "/institutional", 
+ icon: "Building2",
+ badge: { text: "NEW", tone: "success" }
+ },
+ ],
+ },
 
-    // TRADES
-    {
-      title: "Trades",
-      items: [
-        { label: "Preview Queue", to: "/trades/preview", icon: "ClipboardList" },
-        { label: "Orders (SIM)", to: "/trades/orders/sim", icon: "ReceiptText" },
-        { 
-          label: "Orders (Live)", 
-          to: "/trades/orders/live", 
-          icon: "CreditCard",
-          visible: (c) => !!c.flags?.ORDERS_LIVE 
-        },
-      ],
-    },
+ // SETTINGS
+ {
+ title: "Settings",
+ items: [
+ { label: "Risk & Gates", to: "/settings/gates", icon: "Shield" },
+ { label: "Screensaver", to: "/settings/screensaver", icon: "Monitor" },
+ { 
+ label: "Data & APIs", 
+ to: "/settings/keys", 
+ icon: "KeyRound",
+ children: [
+ { label: "TradeStation", to: "/providers/ts", icon: "Building2" },
+ { label: "Unusual Whales", to: "/providers/uw", icon: "Fish" },
+ { label: "API Keys", to: "/settings/keys", icon: "Key" },
+ ]
+ },
+ { 
+ label: "System Diagnostics", 
+ to: "/ops/redis", 
+ icon: "ServerCog",
+ children: [
+ { label: "Redis Cache", to: "/ops/redis", icon: "Database" },
+ { label: "Backtest Ops", to: "/ops/bt", icon: "DatabaseZap" },
+ ]
+ },
+ ],
+ },
 
-    // ANALYTICS
-    {
-      title: "Analytics",
-      items: [
-        { label: "Backtests", to: "/analytics/backtests", icon: "BarChart3" },
-        { label: "Verified Chains", to: "/analytics/verified", icon: "ShieldCheck", badge: verifiedBadge },
-      ],
-    },
-
-    // DATA PROVIDERS
-    {
-      title: "Data Providers",
-      items: [
-        { label: "TradeStation", to: "/providers/ts", icon: "Building2" },
-        { 
-          label: "Quotes (TS)", 
-          to: "/md/quotes", 
-          icon: "Sparkle",
-          visible: (c) => !!c.flags?.TS_LIVE, 
-          badge: tsLiveBadge 
-        },
-        { label: "Unusual Whales", to: "/providers/uw", icon: "Fish" },
-      ],
-    },
-
-    // OPS / DIAGNOSTICS (admin only)
-    {
-      title: "Ops / Diagnostics",
-      items: [
-        { 
-          label: "Redis Diag", 
-          to: "/ops/redis", 
-          icon: "ServerCog", 
-          visible: (c) => c.role === "admin" 
-        },
-        { 
-          label: "Backtest Ops", 
-          to: "/ops/bt", 
-          icon: "DatabaseZap", 
-          visible: (c) => c.role === "admin" 
-        },
-        { 
-          label: "Emergent Status", 
-          to: "/ops/emergent", 
-          icon: "Heartbeat", 
-          visible: (c) => c.role === "admin" 
-        },
-      ],
-    },
-
-    // SETTINGS
-    {
-      title: "Settings",
-      items: [
-        { label: "Risk & Gates", to: "/settings/gates", icon: "Shield" },
-        { label: "Accounts", to: "/settings/accounts", icon: "UserCog" },
-        { label: "API Keys", to: "/settings/keys", icon: "KeyRound" },
-      ],
-    },
-
-    // HELP
-    {
-      title: "Help",
-      items: [
-        { label: "Docs", to: "/help/docs", icon: "BookOpenCheck" },
-      ],
-    },
-  ];
+ // HELP
+ {
+ title: "Help",
+ items: [
+ { label: "Docs", to: "/help/docs", icon: "BookOpenCheck" },
+ ],
+ },
+ ];
 }

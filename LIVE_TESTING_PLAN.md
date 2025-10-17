@@ -1,14 +1,14 @@
 # 🧪 Live Testing Plan - October 14, 2025
 
-**Session:** 6 - Live Testing & Validation  
-**Objective:** Validate all newly implemented features through frontend  
+**Session:** 6 - Live Testing & Validation 
+**Objective:** Validate all newly implemented features through frontend 
 **Status:** 🔄 IN PROGRESS
 
 ---
 
-## 📋 Test Checklist
+## Test Checklist
 
-### Backend Health Check ✅
+### Backend Health Check 
 - [x] Backend running on port 8000
 - [x] Server: `server:app` (with stream router)
 - [x] UW WebSocket: Connected
@@ -22,10 +22,10 @@
 
 ---
 
-## 🎯 Feature Tests
+## Feature Tests
 
 ### 1. GEX Strike Expiry Feed (Session 1)
-**Route:** `/flow/gex-strike-expiry` (if added to routing)  
+**Route:** `/flow/gex-strike-expiry` (if added to routing) 
 **Status:** ⏳ Pending
 
 **Test Steps:**
@@ -43,13 +43,13 @@
 
 ---
 
-### 2. Lit Trades Feed (Session 2) 📊
-**Route:** `/flow/lit-trades`  
+### 2. Lit Trades Feed (Session 2) 
+**Route:** `/flow/lit-trades` 
 **Status:** ⏳ Pending
 
 **Test Steps:**
 - [ ] Navigate to Flow page
-- [ ] Click "📊 Lit Trades" tab
+- [ ] Click " Lit Trades" tab
 - [ ] Verify route changes to `/flow/lit-trades`
 - [ ] Confirm LiveLitTradesFeed renders
 - [ ] Check WebSocket connection
@@ -63,19 +63,19 @@
 - Component loads without errors
 - WebSocket connects to `/ws/lit-trades/SPY`
 - Real-time trades display with:
-  - Timestamp
-  - Exchange
-  - Price
-  - Size
-  - Tape
-  - Condition codes
+ - Timestamp
+ - Exchange
+ - Price
+ - Size
+ - Tape
+ - Condition codes
 - Exchange distribution chart updates
 - Volume/value metrics accurate
 
 ---
 
 ### 3. Dark Pool Feed (Session 2) 🕶️
-**Route:** `/flow/dark-pool`  
+**Route:** `/flow/dark-pool` 
 **Status:** ⏳ Pending
 
 **Test Steps:**
@@ -95,12 +95,12 @@
 - Component loads without errors
 - WebSocket connects to `/ws/off-lit-trades/SPY`
 - Real-time dark pool trades display with:
-  - Timestamp
-  - Venue
-  - Price
-  - Size
-  - Block indicators (💎)
-  - Size category
+ - Timestamp
+ - Venue
+ - Price
+ - Size
+ - Block indicators (💎)
+ - Size category
 - Venue distribution chart updates
 - Notional value metrics accurate
 
@@ -112,7 +112,7 @@
 **Test Steps:**
 - [ ] Verify all Flow tabs visible
 - [ ] Test tab navigation sequence:
-  - Summary → Live → Hist → 📊 Lit Trades → 🕶️ Dark Pool → News
+ - Summary → Live → Hist → Lit Trades → 🕶️ Dark Pool → News
 - [ ] Check active tab highlighting
 - [ ] Verify URL updates on tab click
 - [ ] Test browser back/forward buttons
@@ -120,7 +120,7 @@
 
 **Expected Behavior:**
 - All tabs render correctly
-- Emoji indicators display (📊 🕶️)
+- Emoji indicators display ( 🕶️)
 - Active tab has correct styling
 - URL syncs with selected tab
 - Browser navigation works
@@ -128,7 +128,7 @@
 
 ---
 
-## 🔍 Technical Validation
+## Technical Validation
 
 ### WebSocket Connections
 - [ ] Check browser DevTools → Network → WS tab
@@ -152,7 +152,7 @@
 
 ---
 
-## 📊 Data Validation
+## Data Validation
 
 ### Lit Trades
 - [ ] Exchange names valid (NASDAQ, NYSE, ARCA, BATS, IEX)
@@ -167,10 +167,10 @@
 - [ ] Venue names valid (UBS ATS, MS Pool, Citadel, Goldman, Liquidnet)
 - [ ] Block detection correct (size >= 10000)
 - [ ] Size categories accurate:
-  - MEGA: >= 100,000 shares
-  - HUGE: >= 50,000 shares
-  - BLOCK: >= 10,000 shares
-  - LARGE: >= 5,000 shares
+ - MEGA: >= 100,000 shares
+ - HUGE: >= 50,000 shares
+ - BLOCK: >= 10,000 shares
+ - LARGE: >= 5,000 shares
 - [ ] Notional value calculation correct
 - [ ] Dark pool percentage reasonable
 
@@ -179,18 +179,18 @@
 ## 🐛 Known Issues to Monitor
 
 ### CORS (Resolved for Frontend)
-- ✅ Frontend origin (localhost:3000) allowed
-- ✅ WebSocket connections work from browser
-- ⚠️ Python test script blocked (documented)
+- Frontend origin (localhost:3000) allowed
+- WebSocket connections work from browser
+- Python test script blocked (documented)
 
 ### Demo Mode
-- ⚠️ UW API may be in demo mode if token not configured
-- ⚠️ Data may be simulated/synthetic
-- ✅ Fallback gracefully to demo data
+- UW API may be in demo mode if token not configured
+- Data may be simulated/synthetic
+- Fallback gracefully to demo data
 
 ---
 
-## ✅ Success Criteria
+## Success Criteria
 
 ### Must Have
 - [x] Backend running without errors
@@ -208,41 +208,41 @@
 
 ---
 
-## 📝 Test Execution Log
+## Test Execution Log
 
 ### Attempt 1: [Time]
-**Status:**  
-**Issues:**  
-**Resolution:**  
+**Status:** 
+**Issues:** 
+**Resolution:** 
 
 ### Attempt 2: [Time]
-**Status:**  
-**Issues:**  
-**Resolution:**  
+**Status:** 
+**Issues:** 
+**Resolution:** 
 
 ---
 
-## 🎯 Next Steps After Testing
+## Next Steps After Testing
 
 1. **If Tests Pass:**
-   - Document success in test log
-   - Create video/screenshots for documentation
-   - Mark as production-ready
-   - Plan deployment
+ - Document success in test log
+ - Create video/screenshots for documentation
+ - Mark as production-ready
+ - Plan deployment
 
 2. **If Issues Found:**
-   - Document issues clearly
-   - Prioritize by severity
-   - Create fixes
-   - Retest
+ - Document issues clearly
+ - Prioritize by severity
+ - Create fixes
+ - Retest
 
 3. **Enhancements Identified:**
-   - Add to backlog
-   - Prioritize for next sprint
-   - Create tickets
+ - Add to backlog
+ - Prioritize for next sprint
+ - Create tickets
 
 ---
 
-*Test Plan Created: October 14, 2025*  
-*Tester: Gabriel Barbudan*  
+*Test Plan Created: October 14, 2025* 
+*Tester: Gabriel Barbudan* 
 *Environment: Development (Codespace)*

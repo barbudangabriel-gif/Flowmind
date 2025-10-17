@@ -1,36 +1,36 @@
 # 🌅 Test Mâine Dimineață - 15 Octombrie 2025
 
-## ⏰ CÂND: 9:30 AM - 10:00 AM EST (Deschiderea Pieței US)
+## CÂND: 9:30 AM - 10:00 AM EST (Deschiderea Pieței US)
 
-## 🎯 CE TESTEZ
+## CE TESTEZ
 
 ### 1. Lit Trades Feed (Trade-uri Publice)
 **Endpoint:** `ws://localhost:8000/api/stream/ws/lit-trades/SPY`
 **Frontend:** http://localhost:3000/flow/lit-trades
 
 **Ce aștept să văd:**
-- ✅ Trade-uri în timp real pe SPY
-- ✅ Price, Size, Timestamp pentru fiecare trade
-- ✅ Updates automate (fără refresh)
+- Trade-uri în timp real pe SPY
+- Price, Size, Timestamp pentru fiecare trade
+- Updates automate (fără refresh)
 
 ### 2. Off-Lit Trades Feed (Dark Pool)
 **Endpoint:** `ws://localhost:8000/api/stream/ws/off-lit-trades/SPY`
 **Frontend:** http://localhost:3000/flow/off-lit-trades
 
 **Ce aștept să văd:**
-- ✅ Trade-uri dark pool pe SPY
-- ✅ Date similare cu lit trades
-- ✅ Volume mai mari (caracteristic dark pool)
+- Trade-uri dark pool pe SPY
+- Date similare cu lit trades
+- Volume mai mari (caracteristic dark pool)
 
 ### 3. Combined Feed
 **Frontend:** http://localhost:3000/flow/combined
 
 **Ce aștept să văd:**
-- ✅ Ambele feed-uri side-by-side
-- ✅ Comparație în timp real
-- ✅ UI responsive și smooth
+- Ambele feed-uri side-by-side
+- Comparație în timp real
+- UI responsive și smooth
 
-## 🚀 PAȘI DE URMAT
+## PAȘI DE URMAT
 
 ### Pas 1: Pornește Backend (5 min înainte de 9:30 AM EST)
 ```bash
@@ -62,7 +62,7 @@ python test_real_flow.py
 
 **Aștept să văd:** Messages received > 0
 
-## ✅ CRITERII DE SUCCES
+## CRITERII DE SUCCES
 
 - [ ] Backend se conectează la UW fără erori
 - [ ] WebSocket endpoints acceptă conexiuni
@@ -72,17 +72,17 @@ python test_real_flow.py
 - [ ] Dark pool feed arată volume mai mari
 - [ ] Nu sunt erori în console (backend sau frontend)
 
-## 📝 CE DOCUMENTEZ
+## CE DOCUMENTEZ
 
 Dacă totul funcționează:
 ```bash
 # Salvez screenshot-uri din browser
 # Salvez output-ul din test_real_flow.py
 # Comit confirmarea:
-git commit -m "test: ✅ Verified live data flow during market hours
+git commit -m "test: Verified live data flow during market hours
 
 - Lit trades feed: X messages/minute
-- Off-lit trades feed: Y messages/minute  
+- Off-lit trades feed: Y messages/minute 
 - All 3 UI components functional
 - Real-time updates confirmed
 
@@ -94,7 +94,7 @@ Dacă nu funcționează:
 - Verific UW API status
 - Debug cu inspect_uw_messages.py
 
-## 🔍 DEBUG RAPID (dacă nu văd date)
+## DEBUG RAPID (dacă nu văd date)
 
 ### Check 1: Backend logs
 ```bash
@@ -115,7 +115,7 @@ python inspect_uw_messages.py
 - NYSE trading hours: 9:30 AM - 4:00 PM EST
 - Verifică dacă nu e holiday: https://www.nyse.com/markets/hours-calendars
 
-## 📊 REZULTATE AȘTEPTATE
+## REZULTATE AȘTEPTATE
 
 **La 9:30 AM EST:**
 - SPY este extrem de activ (cel mai tranzacționat ETF)
@@ -127,37 +127,37 @@ python inspect_uw_messages.py
 - Încearcă alt simbol activ: AAPL, TSLA, QQQ
 - Verifică UW API status
 
-## 💡 NOTE IMPORTANTE
+## NOTE IMPORTANTE
 
 **Context Azi (14 Oct):**
 - Testat la ~16:00 EST (piață închisă)
-- Toate canalele subscribe OK ✅
-- Cod implementat corect ✅
+- Toate canalele subscribe OK 
+- Cod implementat corect 
 - Doar așteptăm ore de piață ⏳
 
 **Canale verificate funcționale:**
-- ✅ lit_trades:SPY
-- ✅ off_lit_trades:SPY
-- ✅ option_trades:SPY
-- ✅ gex:SPY
-- ✅ flow-alerts
-- ✅ dark_pool
+- lit_trades:SPY
+- off_lit_trades:SPY
+- option_trades:SPY
+- gex:SPY
+- flow-alerts
+- dark_pool
 
 **Implementare:**
 - Backend: `/workspaces/Flowmind/backend/routers/stream.py` (lines 781-888)
 - Frontend: `LiveLitTradesFeed.jsx`, `LiveOffLitTradesFeed.jsx`, `CombinedFlowFeed.jsx`
 - Test: `test_real_flow.py`
 
-## 🎯 OBIECTIV FINAL
+## OBIECTIV FINAL
 
 Confirm că implementarea funcționează 100% cu date reale în ore de piață, apoi:
-- ✅ Update documentația
-- ✅ Comit confirmarea
-- ✅ Mark feature ca COMPLETE
-- 🚀 Move to next feature
+- Update documentația
+- Comit confirmarea
+- Mark feature ca COMPLETE
+- Move to next feature
 
 ---
 
-**Created:** October 14, 2025, 20:10 UTC  
-**Test Date:** October 15, 2025, 9:30 AM EST  
+**Created:** October 14, 2025, 20:10 UTC 
+**Test Date:** October 15, 2025, 9:30 AM EST 
 **Status:** ⏳ Awaiting market open

@@ -1,6 +1,6 @@
 # 📡 FlowMind - Real-Time WebSocket Streaming Documentation
 
-## 🎯 Overview
+## Overview
 
 FlowMind implements a **hybrid WebSocket streaming architecture** with 3 verified channels and 3 experimental channels from Unusual Whales API. This document covers the complete streaming infrastructure, API endpoints, and usage examples.
 
@@ -10,49 +10,49 @@ FlowMind implements a **hybrid WebSocket streaming architecture** with 3 verifie
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Unusual Whales API                           │
-│                 wss://api.unusualwhales.com                     │
+│ Unusual Whales API │
+│ wss://api.unusualwhales.com │
 └──────────────────────────┬──────────────────────────────────────┘
-                           │
-                           │ WebSocket Connection
-                           │ (1 shared connection)
-                           ▼
+ │
+ │ WebSocket Connection
+ │ (1 shared connection)
+ ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    FlowMind Backend                             │
-│                  (FastAPI + asyncio)                            │
-│                                                                 │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  UWWebSocketClient (Singleton)                           │  │
-│  │  - Auto-reconnect with exponential backoff               │  │
-│  │  - Multi-channel subscription management                 │  │
-│  │  - Health monitoring (ping/pong)                         │  │
-│  └──────────────┬───────────────────────────────────────────┘  │
-│                 │                                               │
-│                 │ Message Broadcasting                          │
-│                 ▼                                               │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  WebSocket Connection Manager                            │  │
-│  │  - Per-channel client tracking                           │  │
-│  │  - Broadcast to all subscribed frontends                 │  │
-│  └──────────────────────────────────────────────────────────┘  │
+│ FlowMind Backend │
+│ (FastAPI + asyncio) │
+│ │
+│ ┌──────────────────────────────────────────────────────────┐ │
+│ │ UWWebSocketClient (Singleton) │ │
+│ │ - Auto-reconnect with exponential backoff │ │
+│ │ - Multi-channel subscription management │ │
+│ │ - Health monitoring (ping/pong) │ │
+│ └──────────────┬───────────────────────────────────────────┘ │
+│ │ │
+│ │ Message Broadcasting │
+│ ▼ │
+│ ┌──────────────────────────────────────────────────────────┐ │
+│ │ WebSocket Connection Manager │ │
+│ │ - Per-channel client tracking │ │
+│ │ - Broadcast to all subscribed frontends │ │
+│ └──────────────────────────────────────────────────────────┘ │
 └──────────────────────────┬──────────────────────────────────────┘
-                           │
-                           │ WebSocket Connections
-                           │ (Multiple frontend clients)
-                           ▼
+ │
+ │ WebSocket Connections
+ │ (Multiple frontend clients)
+ ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                 Frontend Clients (React)                        │
-│                                                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │ Flow Feed    │  │ GEX Feed     │  │ Trades Feed  │         │
-│  │ (verified)   │  │ (verified)   │  │ (verified)   │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
-│                                                                 │
-│  🧪 Experimental (with REST fallback):                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │ Market       │  │ Dark Pool    │  │ Congress     │         │
-│  │ Movers       │  │ Activity     │  │ Trades       │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
+│ Frontend Clients (React) │
+│ │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ │
+│ │ Flow Feed │ │ GEX Feed │ │ Trades Feed │ │
+│ │ (verified) │ │ (verified) │ │ (verified) │ │
+│ └──────────────┘ └──────────────┘ └──────────────┘ │
+│ │
+│ 🧪 Experimental (with REST fallback): │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ │
+│ │ Market │ │ Dark Pool │ │ Congress │ │
+│ │ Movers │ │ Activity │ │ Trades │ │
+│ └──────────────┘ └──────────────┘ └──────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -60,31 +60,31 @@ FlowMind implements a **hybrid WebSocket streaming architecture** with 3 verifie
 
 ## 🔌 WebSocket Endpoints
 
-### ✅ Verified Channels (100% Functional)
+### Verified Channels (100% Functional)
 
 #### 1. **Flow Alerts**
 ```
 Endpoint: ws://localhost:8000/api/stream/ws/flow
-Channel:  flow-alerts
-Status:   ✅ CONFIRMED WORKING
+Channel: flow-alerts
+Status: CONFIRMED WORKING
 ```
 
 **Data Format:**
 ```json
 {
-  "channel": "flow-alerts",
-  "timestamp": "2025-10-14T12:34:56.789Z",
-  "data": {
-    "ticker_symbol": "TSLA",
-    "put_call": "CALL",
-    "strike": 250.0,
-    "expiration_date": "2025-11-15",
-    "ask_side_premium": 265000,
-    "bid_side_premium": 258000,
-    "traded_at": "2025-10-14T14:32:45Z",
-    "is_sweep": true,
-    "sentiment": "bullish"
-  }
+ "channel": "flow-alerts",
+ "timestamp": "2025-10-14T12:34:56.789Z",
+ "data": {
+ "ticker_symbol": "TSLA",
+ "put_call": "CALL",
+ "strike": 250.0,
+ "expiration_date": "2025-11-15",
+ "ask_side_premium": 265000,
+ "bid_side_premium": 258000,
+ "traded_at": "2025-10-14T14:32:45Z",
+ "is_sweep": true,
+ "sentiment": "bullish"
+ }
 }
 ```
 
@@ -99,27 +99,27 @@ Status:   ✅ CONFIRMED WORKING
 #### 2. **Gamma Exposure (GEX)**
 ```
 Endpoint: ws://localhost:8000/api/stream/ws/gex/{ticker}
-Channel:  gex:SPY, gex:TSLA, gex:AAPL, etc.
-Status:   ✅ CONFIRMED WORKING
+Channel: gex:SPY, gex:TSLA, gex:AAPL, etc.
+Status: CONFIRMED WORKING
 ```
 
 **Data Format:**
 ```json
 {
-  "channel": "gex:SPY",
-  "timestamp": "2025-10-14T12:34:56.789Z",
-  "data": {
-    "ticker": "SPY",
-    "total_gex": 125000000,
-    "call_gex": 85000000,
-    "put_gex": 40000000,
-    "zero_gamma_level": 445.5,
-    "strikes": [
-      {"strike": 440, "gex": 5000000},
-      {"strike": 445, "gex": 25000000},
-      {"strike": 450, "gex": 15000000}
-    ]
-  }
+ "channel": "gex:SPY",
+ "timestamp": "2025-10-14T12:34:56.789Z",
+ "data": {
+ "ticker": "SPY",
+ "total_gex": 125000000,
+ "call_gex": 85000000,
+ "put_gex": 40000000,
+ "zero_gamma_level": 445.5,
+ "strikes": [
+ {"strike": 440, "gex": 5000000},
+ {"strike": 445, "gex": 25000000},
+ {"strike": 450, "gex": 15000000}
+ ]
+ }
 }
 ```
 
@@ -134,26 +134,26 @@ Status:   ✅ CONFIRMED WORKING
 #### 3. **Option Trades**
 ```
 Endpoint: ws://localhost:8000/api/stream/ws/option-trades/{ticker}
-Channel:  option_trades:TSLA, option_trades:AAPL, etc.
-Status:   ✅ CONFIRMED WORKING
+Channel: option_trades:TSLA, option_trades:AAPL, etc.
+Status: CONFIRMED WORKING
 ```
 
 **Data Format:**
 ```json
 {
-  "channel": "option_trades:TSLA",
-  "timestamp": "2025-10-14T12:34:56.789Z",
-  "data": {
-    "ticker": "TSLA",
-    "strike": 250,
-    "expiry": "2025-11-15",
-    "type": "CALL",
-    "side": "BUY",
-    "price": 5.30,
-    "quantity": 100,
-    "premium": 53000,
-    "timestamp": "2025-10-14T12:34:56Z"
-  }
+ "channel": "option_trades:TSLA",
+ "timestamp": "2025-10-14T12:34:56.789Z",
+ "data": {
+ "ticker": "TSLA",
+ "strike": 250,
+ "expiry": "2025-11-15",
+ "type": "CALL",
+ "side": "BUY",
+ "price": 5.30,
+ "quantity": 100,
+ "premium": 53000,
+ "timestamp": "2025-10-14T12:34:56Z"
+ }
 }
 ```
 
@@ -165,35 +165,35 @@ Status:   ✅ CONFIRMED WORKING
 
 ---
 
-### ⚠️ Experimental Channels (with REST Fallback)
+### Experimental Channels (with REST Fallback)
 
 #### 4. **Market Movers**
 ```
-Endpoint:  ws://localhost:8000/api/stream/ws/market-movers
-Channel:   market_movers (unverified)
-Status:    ⚠️ EXPERIMENTAL
-Fallback:  GET /api/market/movers (polling every 30s)
+Endpoint: ws://localhost:8000/api/stream/ws/market-movers
+Channel: market_movers (unverified)
+Status: EXPERIMENTAL
+Fallback: GET /api/market/movers (polling every 30s)
 ```
 
 #### 5. **Dark Pool**
 ```
-Endpoint:  ws://localhost:8000/api/stream/ws/dark-pool
-Channel:   dark_pool (unverified)
-Status:    ⚠️ EXPERIMENTAL
-Fallback:  GET /api/dark-pool (polling every 60s)
+Endpoint: ws://localhost:8000/api/stream/ws/dark-pool
+Channel: dark_pool (unverified)
+Status: EXPERIMENTAL
+Fallback: GET /api/dark-pool (polling every 60s)
 ```
 
 #### 6. **Congress Trades**
 ```
-Endpoint:  ws://localhost:8000/api/stream/ws/congress
-Channel:   congress_trades (unverified)
-Status:    ⚠️ EXPERIMENTAL
-Fallback:  GET /api/congress-trades (polling every 5min)
+Endpoint: ws://localhost:8000/api/stream/ws/congress
+Channel: congress_trades (unverified)
+Status: EXPERIMENTAL
+Fallback: GET /api/congress-trades (polling every 5min)
 ```
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Backend Setup
 
@@ -231,7 +231,7 @@ http://localhost:3000/streaming
 
 ---
 
-## 💻 Frontend Usage
+## Frontend Usage
 
 ### Basic Connection
 
@@ -239,17 +239,17 @@ http://localhost:3000/streaming
 import useWebSocket from '../hooks/useWebSocket';
 
 function MyComponent() {
-  const endpoint = '/api/stream/ws/flow';
-  const { messages, connected, error } = useWebSocket(endpoint);
-  
-  return (
-    <div>
-      {connected ? '✅ Connected' : '❌ Disconnected'}
-      {messages.map((msg, idx) => (
-        <div key={idx}>{JSON.stringify(msg)}</div>
-      ))}
-    </div>
-  );
+ const endpoint = '/api/stream/ws/flow';
+ const { messages, connected, error } = useWebSocket(endpoint);
+ 
+ return (
+ <div>
+ {connected ? ' Connected' : ' Disconnected'}
+ {messages.map((msg, idx) => (
+ <div key={idx}>{JSON.stringify(msg)}</div>
+ ))}
+ </div>
+ );
 }
 ```
 
@@ -259,17 +259,17 @@ function MyComponent() {
 import { useWebSocketContext } from '../context/WebSocketContext';
 
 function MyComponent() {
-  const { subscribe, connections } = useWebSocketContext();
-  
-  useEffect(() => {
-    const unsubscribe = subscribe('flow-alerts', (message) => {
-      console.log('Flow alert:', message);
-    });
-    
-    return unsubscribe;
-  }, [subscribe]);
-  
-  return <div>Status: {connections['flow-alerts'].status}</div>;
+ const { subscribe, connections } = useWebSocketContext();
+ 
+ useEffect(() => {
+ const unsubscribe = subscribe('flow-alerts', (message) => {
+ console.log('Flow alert:', message);
+ });
+ 
+ return unsubscribe;
+ }, [subscribe]);
+ 
+ return <div>Status: {connections['flow-alerts'].status}</div>;
 }
 ```
 
@@ -280,15 +280,15 @@ import GammaExposureFeed from '../components/streaming/GammaExposureFeed';
 import OptionTradesFeed from '../components/streaming/OptionTradesFeed';
 
 function Dashboard() {
-  return (
-    <div>
-      {/* GEX for SPY */}
-      <GammaExposureFeed defaultTicker="SPY" />
-      
-      {/* Option trades for TSLA */}
-      <OptionTradesFeed defaultTicker="TSLA" />
-    </div>
-  );
+ return (
+ <div>
+ {/* GEX for SPY */}
+ <GammaExposureFeed defaultTicker="SPY" />
+ 
+ {/* Option trades for TSLA */}
+ <OptionTradesFeed defaultTicker="TSLA" />
+ </div>
+ );
 }
 ```
 
@@ -305,8 +305,8 @@ UW_API_TOKEN=your-token-here
 
 # Optional
 REDIS_URL=redis://localhost:6379/0
-FM_FORCE_FALLBACK=1                 # Force in-memory cache
-FM_REDIS_REQUIRED=1                 # Fail if Redis unavailable
+FM_FORCE_FALLBACK=1 # Force in-memory cache
+FM_REDIS_REQUIRED=1 # Fail if Redis unavailable
 ```
 
 **Frontend (`frontend/.env.local`):**
@@ -323,31 +323,31 @@ REACT_APP_BACKEND_URL=http://localhost:8000
 
 ---
 
-## 📊 Features
+## Features
 
 ### Core Features (Verified Channels)
-- ✅ Real-time options flow alerts
-- ✅ Live gamma exposure tracking
-- ✅ Ticker-specific option trades
-- ✅ Auto-reconnect on disconnect
-- ✅ Multi-channel subscription management
-- ✅ Connection status indicators
-- ✅ Message history and logging
+- Real-time options flow alerts
+- Live gamma exposure tracking
+- Ticker-specific option trades
+- Auto-reconnect on disconnect
+- Multi-channel subscription management
+- Connection status indicators
+- Message history and logging
 
 ### Experimental Features (Toggle Required)
-- ⚠️ Market movers streaming (with REST fallback)
-- ⚠️ Dark pool activity (with REST fallback)
-- ⚠️ Congress trades (with REST fallback)
-- ⚠️ Automatic REST polling when WebSocket unavailable
+- Market movers streaming (with REST fallback)
+- Dark pool activity (with REST fallback)
+- Congress trades (with REST fallback)
+- Automatic REST polling when WebSocket unavailable
 
 ### User Experience
-- 🎯 Clean default view (3 verified feeds)
+- Clean default view (3 verified feeds)
 - 🧪 Opt-in experimental feeds
 - 🔄 Seamless REST fallback
-- 🎨 Dark theme throughout
-- 📱 Responsive design
+- Dark theme throughout
+- Responsive design
 - ⏸️ Pause/resume per feed
-- 🔍 Advanced filtering
+- Advanced filtering
 
 ---
 
@@ -369,17 +369,17 @@ python test_gex_endpoint.py
 ### Expected Results
 
 ```
-✅ flow-alerts: Connected, receiving messages
-✅ gex:SPY: Connected, receiving messages
-✅ option_trades:TSLA: Connected, receiving messages
-⏱️  market-movers: Connected (no data yet)
-⏱️  dark-pool: Connected (no data yet)
-⏱️  congress: Connected (no data yet)
+ flow-alerts: Connected, receiving messages
+ gex:SPY: Connected, receiving messages
+ option_trades:TSLA: Connected, receiving messages
+⏱️ market-movers: Connected (no data yet)
+⏱️ dark-pool: Connected (no data yet)
+⏱️ congress: Connected (no data yet)
 ```
 
 ---
 
-## 📈 Performance
+## Performance
 
 ### Benchmarks (Typical)
 
@@ -477,7 +477,7 @@ python test_uw_websocket.py
 
 ---
 
-## 📝 License
+## License
 
 Proprietary - FlowMind Platform
 
@@ -492,6 +492,6 @@ For issues or questions:
 
 ---
 
-**Last Updated:** 2025-10-14  
-**Version:** 1.0.0  
-**Status:** ✅ Production Ready
+**Last Updated:** 2025-10-14 
+**Version:** 1.0.0 
+**Status:** Production Ready

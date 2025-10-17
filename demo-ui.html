@@ -1,512 +1,512 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowMind - Market Intelligence Demo (Mock Data)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
-    <style>
-        body { background: #0f172a; color: white; font-family: system-ui; }
-        .gradient-text { background: linear-gradient(135deg, #60a5fa 0%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    </style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>FlowMind - Market Intelligence Demo (Mock Data)</title>
+ <script src="https://cdn.tailwindcss.com"></script>
+ <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+ <style>
+ body { background: #0f172a; color: white; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial; }
+ .gradient-text { background: linear-gradient(135deg, #60a5fa 0%, #34d399 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+ </style>
 </head>
 <body class="p-8">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-5xl font-bold mb-3 gradient-text">
-                🎉 FlowMind Market Intelligence
-            </h1>
-            <p class="text-slate-400 text-lg">4 Noi Features - Unusual Whales API Integration</p>
-            <div class="mt-4 flex gap-3">
-                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">✅ Backend Complete</span>
-                <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-semibold">✅ Frontend Complete</span>
-                <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm font-semibold">✅ Dark Theme</span>
-                <span class="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-sm font-semibold">✅ 19/19 Tests Passing</span>
-            </div>
-        </div>
+ <div class="max-w-7xl mx-auto">
+ <!-- Header -->
+ <div class="mb-8">
+ <h1 class="text-5xl font-bold mb-3 gradient-text">
+ FlowMind Market Intelligence
+ </h1>
+ <p class="text-slate-400 text-lg">4 Noi Features - Unusual Whales API Integration</p>
+ <div class="mt-4 flex gap-3">
+ <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold"> Backend Complete</span>
+ <span class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-semibold"> Frontend Complete</span>
+ <span class="px-3 py-1 bg-purple-500/20 text-purple-400 rounded-full text-sm font-semibold"> Dark Theme</span>
+ <span class="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-full text-sm font-semibold"> 19/19 Tests Passing</span>
+ </div>
+ </div>
 
-        <!-- Feature 1: Market Movers -->
-        <div class="bg-slate-800 rounded-xl p-6 mb-6 shadow-xl border border-slate-700">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-3xl font-bold flex items-center gap-3">
-                    📈 Market Movers
-                    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">NEW</span>
-                </h2>
-                <div class="text-sm text-slate-400">
-                    <span class="inline-block w-2 h-2 bg-emerald-400 rounded-full animate-pulse mr-2"></span>
-                    Auto-refresh: 30s
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Gainers -->
-                <div>
-                    <h3 class="text-emerald-400 font-semibold mb-3 text-lg flex items-center gap-2">
-                        🚀 Top Gainers
-                    </h3>
-                    <div class="space-y-2">
-                        <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-xl">NVDA</div>
-                                    <div class="text-xs text-slate-400">NVIDIA Corp</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-emerald-400 font-bold text-lg">+8.42%</div>
-                                    <div class="text-sm text-slate-300">$485.20</div>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 mt-1">Vol: 52.0M</div>
-                        </div>
-                        <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-xl">AMD</div>
-                                    <div class="text-xs text-slate-400">Advanced Micro</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-emerald-400 font-bold text-lg">+5.67%</div>
-                                    <div class="text-sm text-slate-300">$128.90</div>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 mt-1">Vol: 38.5M</div>
-                        </div>
-                        <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-xl">META</div>
-                                    <div class="text-xs text-slate-400">Meta Platforms</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-emerald-400 font-bold text-lg">+3.21%</div>
-                                    <div class="text-sm text-slate-300">$512.30</div>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 mt-1">Vol: 22.1M</div>
-                        </div>
-                    </div>
-                </div>
+ <!-- Feature 1: Market Movers -->
+ <div class="bg-slate-800 rounded-xl p-6 mb-6 shadow-xl border border-slate-700">
+ <div class="flex items-center justify-between mb-4">
+ <h2 class="text-3xl font-bold flex items-center gap-3">
+ Market Movers
+ <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">NEW</span>
+ </h2>
+ <div class="text-sm text-slate-400">
+ <span class="inline-block w-2 h-2 bg-emerald-400 rounded-full animate-pulse mr-2"></span>
+ Auto-refresh: 30s
+ </div>
+ </div>
+ 
+ <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+ <!-- Gainers -->
+ <div>
+ <h3 class="text-emerald-400 font-semibold mb-3 text-lg flex items-center gap-2">
+ Top Gainers
+ </h3>
+ <div class="space-y-2">
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-xl">NVDA</div>
+ <div class="text-xs text-slate-400">NVIDIA Corp</div>
+ </div>
+ <div class="text-right">
+ <div class="text-emerald-400 font-bold text-lg">+8.42%</div>
+ <div class="text-sm text-slate-300">$485.20</div>
+ </div>
+ </div>
+ <div class="text-xs text-slate-500 mt-1">Vol: 52.0M</div>
+ </div>
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-xl">AMD</div>
+ <div class="text-xs text-slate-400">Advanced Micro</div>
+ </div>
+ <div class="text-right">
+ <div class="text-emerald-400 font-bold text-lg">+5.67%</div>
+ <div class="text-sm text-slate-300">$128.90</div>
+ </div>
+ </div>
+ <div class="text-xs text-slate-500 mt-1">Vol: 38.5M</div>
+ </div>
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-xl">META</div>
+ <div class="text-xs text-slate-400">Meta Platforms</div>
+ </div>
+ <div class="text-right">
+ <div class="text-emerald-400 font-bold text-lg">+3.21%</div>
+ <div class="text-sm text-slate-300">$512.30</div>
+ </div>
+ </div>
+ <div class="text-xs text-slate-500 mt-1">Vol: 22.1M</div>
+ </div>
+ </div>
+ </div>
 
-                <!-- Losers -->
-                <div>
-                    <h3 class="text-red-400 font-semibold mb-3 text-lg flex items-center gap-2">
-                        📉 Top Losers
-                    </h3>
-                    <div class="space-y-2">
-                        <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-xl">TSLA</div>
-                                    <div class="text-xs text-slate-400">Tesla Inc</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-red-400 font-bold text-lg">-4.15%</div>
-                                    <div class="text-sm text-slate-300">$242.30</div>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 mt-1">Vol: 35.2M</div>
-                        </div>
-                        <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-xl">INTC</div>
-                                    <div class="text-xs text-slate-400">Intel Corp</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-red-400 font-bold text-lg">-3.28%</div>
-                                    <div class="text-sm text-slate-300">$42.15</div>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 mt-1">Vol: 28.8M</div>
-                        </div>
-                        <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-xl">DIS</div>
-                                    <div class="text-xs text-slate-400">Walt Disney</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-red-400 font-bold text-lg">-2.89%</div>
-                                    <div class="text-sm text-slate-300">$95.20</div>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 mt-1">Vol: 18.3M</div>
-                        </div>
-                    </div>
-                </div>
+ <!-- Losers -->
+ <div>
+ <h3 class="text-red-400 font-semibold mb-3 text-lg flex items-center gap-2">
+ Top Losers
+ </h3>
+ <div class="space-y-2">
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-xl">TSLA</div>
+ <div class="text-xs text-slate-400">Tesla Inc</div>
+ </div>
+ <div class="text-right">
+ <div class="text-red-400 font-bold text-lg">-4.15%</div>
+ <div class="text-sm text-slate-300">$242.30</div>
+ </div>
+ </div>
+ <div class="text-xs text-slate-500 mt-1">Vol: 35.2M</div>
+ </div>
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-xl">INTC</div>
+ <div class="text-xs text-slate-400">Intel Corp</div>
+ </div>
+ <div class="text-right">
+ <div class="text-red-400 font-bold text-lg">-3.28%</div>
+ <div class="text-sm text-slate-300">$42.15</div>
+ </div>
+ </div>
+ <div class="text-xs text-slate-500 mt-1">Vol: 28.8M</div>
+ </div>
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-xl">DIS</div>
+ <div class="text-xs text-slate-400">Walt Disney</div>
+ </div>
+ <div class="text-right">
+ <div class="text-red-400 font-bold text-lg">-2.89%</div>
+ <div class="text-sm text-slate-300">$95.20</div>
+ </div>
+ </div>
+ <div class="text-xs text-slate-500 mt-1">Vol: 18.3M</div>
+ </div>
+ </div>
+ </div>
 
-                <!-- Most Active -->
-                <div>
-                    <h3 class="text-blue-400 font-semibold mb-3 text-lg flex items-center gap-2">
-                        🔥 Most Active
-                    </h3>
-                    <div class="space-y-2">
-                        <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-xl">AAPL</div>
-                                    <div class="text-xs text-slate-400">Apple Inc</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-blue-400 font-bold text-lg">+0.52%</div>
-                                    <div class="text-sm text-slate-300">$178.50</div>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 mt-1">Vol: 85.0M ⚡</div>
-                        </div>
-                        <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-xl">SPY</div>
-                                    <div class="text-xs text-slate-400">S&P 500 ETF</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-blue-400 font-bold text-lg">+0.32%</div>
-                                    <div class="text-sm text-slate-300">$452.80</div>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 mt-1">Vol: 72.5M ⚡</div>
-                        </div>
-                        <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <div class="font-bold text-xl">QQQ</div>
-                                    <div class="text-xs text-slate-400">Nasdaq 100 ETF</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-blue-400 font-bold text-lg">+1.15%</div>
-                                    <div class="text-sm text-slate-300">$385.20</div>
-                                </div>
-                            </div>
-                            <div class="text-xs text-slate-500 mt-1">Vol: 68.2M ⚡</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 text-sm text-slate-500 text-center">
-                Click pe ticker → Redirectionează la Builder pentru opțiuni
-            </div>
-        </div>
+ <!-- Most Active -->
+ <div>
+ <h3 class="text-blue-400 font-semibold mb-3 text-lg flex items-center gap-2">
+ Most Active
+ </h3>
+ <div class="space-y-2">
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-xl">AAPL</div>
+ <div class="text-xs text-slate-400">Apple Inc</div>
+ </div>
+ <div class="text-right">
+ <div class="text-blue-400 font-bold text-lg">+0.52%</div>
+ <div class="text-sm text-slate-300">$178.50</div>
+ </div>
+ </div>
+ <div class="text-xs text-slate-500 mt-1">Vol: 85.0M </div>
+ </div>
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-xl">SPY</div>
+ <div class="text-xs text-slate-400">S&P 500 ETF</div>
+ </div>
+ <div class="text-right">
+ <div class="text-blue-400 font-bold text-lg">+0.32%</div>
+ <div class="text-sm text-slate-300">$452.80</div>
+ </div>
+ </div>
+ <div class="text-xs text-slate-500 mt-1">Vol: 72.5M </div>
+ </div>
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-3 rounded-lg cursor-pointer">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-xl">QQQ</div>
+ <div class="text-xs text-slate-400">Nasdaq 100 ETF</div>
+ </div>
+ <div class="text-right">
+ <div class="text-blue-400 font-bold text-lg">+1.15%</div>
+ <div class="text-sm text-slate-300">$385.20</div>
+ </div>
+ </div>
+ <div class="text-xs text-slate-500 mt-1">Vol: 68.2M </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ <div class="mt-4 text-sm text-slate-500 text-center">
+ Click pe ticker → Redirectionează la Builder pentru opțiuni
+ </div>
+ </div>
 
-        <!-- Feature 2: Congress Trades -->
-        <div class="bg-slate-800 rounded-xl p-6 mb-6 shadow-xl border border-slate-700">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-3xl font-bold flex items-center gap-3">
-                    🏛️ Congress Trades
-                    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">NEW</span>
-                </h2>
-                <div class="flex gap-2">
-                    <button class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-sm">Filters</button>
-                    <button class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm">All Parties</button>
-                </div>
-            </div>
+ <!-- Feature 2: Congress Trades -->
+ <div class="bg-slate-800 rounded-xl p-6 mb-6 shadow-xl border border-slate-700">
+ <div class="flex items-center justify-between mb-4">
+ <h2 class="text-3xl font-bold flex items-center gap-3">
+ 🏛️ Congress Trades
+ <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">NEW</span>
+ </h2>
+ <div class="flex gap-2">
+ <button class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-sm">Filters</button>
+ <button class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm">All Parties</button>
+ </div>
+ </div>
 
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-4 gap-4 mb-4">
-                <div class="bg-gradient-to-br from-green-500/10 to-green-500/5 p-4 rounded-lg border border-green-500/20">
-                    <div class="text-xs text-slate-400 mb-1">Total Buy Volume</div>
-                    <div class="text-2xl font-bold text-green-400">$45.2M</div>
-                </div>
-                <div class="bg-gradient-to-br from-red-500/10 to-red-500/5 p-4 rounded-lg border border-red-500/20">
-                    <div class="text-xs text-slate-400 mb-1">Total Sell Volume</div>
-                    <div class="text-2xl font-bold text-red-400">$32.8M</div>
-                </div>
-                <div class="bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-4 rounded-lg border border-blue-500/20">
-                    <div class="text-xs text-slate-400 mb-1">This Week</div>
-                    <div class="text-2xl font-bold text-blue-400">127</div>
-                    <div class="text-xs text-slate-400">trades</div>
-                </div>
-                <div class="bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-4 rounded-lg border border-purple-500/20">
-                    <div class="text-xs text-slate-400 mb-1">Most Active</div>
-                    <div class="text-sm font-bold text-purple-400">Nancy Pelosi</div>
-                    <div class="text-xs text-slate-400">15 trades</div>
-                </div>
-            </div>
+ <!-- Summary Cards -->
+ <div class="grid grid-cols-4 gap-4 mb-4">
+ <div class="bg-gradient-to-br from-green-500/10 to-green-500/5 p-4 rounded-lg border border-green-500/20">
+ <div class="text-xs text-slate-400 mb-1">Total Buy Volume</div>
+ <div class="text-2xl font-bold text-green-400">$45.2M</div>
+ </div>
+ <div class="bg-gradient-to-br from-red-500/10 to-red-500/5 p-4 rounded-lg border border-red-500/20">
+ <div class="text-xs text-slate-400 mb-1">Total Sell Volume</div>
+ <div class="text-2xl font-bold text-red-400">$32.8M</div>
+ </div>
+ <div class="bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-4 rounded-lg border border-blue-500/20">
+ <div class="text-xs text-slate-400 mb-1">This Week</div>
+ <div class="text-2xl font-bold text-blue-400">127</div>
+ <div class="text-xs text-slate-400">trades</div>
+ </div>
+ <div class="bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-4 rounded-lg border border-purple-500/20">
+ <div class="text-xs text-slate-400 mb-1">Most Active</div>
+ <div class="text-sm font-bold text-purple-400">Nancy Pelosi</div>
+ <div class="text-xs text-slate-400">15 trades</div>
+ </div>
+ </div>
 
-            <!-- Trades List -->
-            <div class="space-y-2">
-                <div class="bg-slate-700/50 hover:bg-slate-700 transition p-4 rounded-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="font-bold text-lg">Nancy Pelosi</div>
-                            <div class="text-slate-400 mt-1">NVDA - BUY</div>
-                            <div class="text-xs text-slate-500 mt-1">2025-10-10 • Disclosed: 2025-10-13</div>
-                        </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <div class="flex gap-2">
-                                <span class="px-2 py-1 bg-blue-500 text-white rounded text-xs font-semibold">D</span>
-                                <span class="px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold">BUY</span>
-                            </div>
-                            <div class="text-sm font-semibold">$50,001-$100,000</div>
-                            <div class="text-xs text-slate-400">@ $485.20</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-slate-700/50 hover:bg-slate-700 transition p-4 rounded-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="font-bold text-lg">Dan Crenshaw</div>
-                            <div class="text-slate-400 mt-1">AAPL - SELL</div>
-                            <div class="text-xs text-slate-500 mt-1">2025-10-09 • Disclosed: 2025-10-12</div>
-                        </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <div class="flex gap-2">
-                                <span class="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold">R</span>
-                                <span class="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold">SELL</span>
-                            </div>
-                            <div class="text-sm font-semibold">$15,001-$50,000</div>
-                            <div class="text-xs text-slate-400">@ $178.50</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-slate-700/50 hover:bg-slate-700 transition p-4 rounded-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="font-bold text-lg">Tommy Tuberville</div>
-                            <div class="text-slate-400 mt-1">TSLA - BUY</div>
-                            <div class="text-xs text-slate-500 mt-1">2025-10-08 • Disclosed: 2025-10-11</div>
-                        </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <div class="flex gap-2">
-                                <span class="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold">R</span>
-                                <span class="px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold">BUY</span>
-                            </div>
-                            <div class="text-sm font-semibold">$100,001-$250,000</div>
-                            <div class="text-xs text-slate-400">@ $242.30</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+ <!-- Trades List -->
+ <div class="space-y-2">
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-4 rounded-lg">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-lg">Nancy Pelosi</div>
+ <div class="text-slate-400 mt-1">NVDA - BUY</div>
+ <div class="text-xs text-slate-500 mt-1">2025-10-10 • Disclosed: 2025-10-13</div>
+ </div>
+ <div class="flex flex-col items-end gap-2">
+ <div class="flex gap-2">
+ <span class="px-2 py-1 bg-blue-500 text-white rounded text-xs font-semibold">D</span>
+ <span class="px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold">BUY</span>
+ </div>
+ <div class="text-sm font-semibold">$50,001-$100,000</div>
+ <div class="text-xs text-slate-400">@ $485.20</div>
+ </div>
+ </div>
+ </div>
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-4 rounded-lg">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-lg">Dan Crenshaw</div>
+ <div class="text-slate-400 mt-1">AAPL - SELL</div>
+ <div class="text-xs text-slate-500 mt-1">2025-10-09 • Disclosed: 2025-10-12</div>
+ </div>
+ <div class="flex flex-col items-end gap-2">
+ <div class="flex gap-2">
+ <span class="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold">R</span>
+ <span class="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold">SELL</span>
+ </div>
+ <div class="text-sm font-semibold">$15,001-$50,000</div>
+ <div class="text-xs text-slate-400">@ $178.50</div>
+ </div>
+ </div>
+ </div>
+ <div class="bg-slate-700/50 hover:bg-slate-700 transition p-4 rounded-lg">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-lg">Tommy Tuberville</div>
+ <div class="text-slate-400 mt-1">TSLA - BUY</div>
+ <div class="text-xs text-slate-500 mt-1">2025-10-08 • Disclosed: 2025-10-11</div>
+ </div>
+ <div class="flex flex-col items-end gap-2">
+ <div class="flex gap-2">
+ <span class="px-2 py-1 bg-red-500 text-white rounded text-xs font-semibold">R</span>
+ <span class="px-2 py-1 bg-green-500 text-white rounded text-xs font-semibold">BUY</span>
+ </div>
+ <div class="text-sm font-semibold">$100,001-$250,000</div>
+ <div class="text-xs text-slate-400">@ $242.30</div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <!-- Feature 3: Dark Pool -->
-        <div class="bg-slate-800 rounded-xl p-6 mb-6 shadow-xl border border-slate-700">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-3xl font-bold flex items-center gap-3">
-                    👁️ Dark Pool Trades
-                    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">NEW</span>
-                </h2>
-                <div class="text-sm text-slate-400">
-                    <span class="inline-block w-2 h-2 bg-purple-400 rounded-full animate-pulse mr-2"></span>
-                    Auto-refresh: 10s
-                </div>
-            </div>
+ <!-- Feature 3: Dark Pool -->
+ <div class="bg-slate-800 rounded-xl p-6 mb-6 shadow-xl border border-slate-700">
+ <div class="flex items-center justify-between mb-4">
+ <h2 class="text-3xl font-bold flex items-center gap-3">
+ 👁️ Dark Pool Trades
+ <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">NEW</span>
+ </h2>
+ <div class="text-sm text-slate-400">
+ <span class="inline-block w-2 h-2 bg-purple-400 rounded-full animate-pulse mr-2"></span>
+ Auto-refresh: 10s
+ </div>
+ </div>
 
-            <div id="darkPoolChart" class="mb-4"></div>
+ <div id="darkPoolChart" class="mb-4"></div>
 
-            <div class="space-y-2">
-                <div class="bg-slate-700/50 p-4 rounded-lg border-l-4 border-orange-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="font-bold text-2xl">TSLA</div>
-                            <div class="text-sm text-slate-400">15:32:15 UTC</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-purple-400 font-bold text-2xl">$36.38M</div>
-                            <div class="text-sm text-slate-300">150K shares @ $242.50</div>
-                            <div class="text-xs text-orange-400 mt-1">🔥 Large Print >$10M</div>
-                        </div>
-                    </div>
-                    <div class="mt-2 pt-2 border-t border-slate-600 text-sm text-slate-400">
-                        Dark: $36.38M | Lit: $10.91M (77% off-exchange)
-                    </div>
-                </div>
-                <div class="bg-slate-700/50 p-4 rounded-lg border-l-4 border-purple-400">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="font-bold text-2xl">NVDA</div>
-                            <div class="text-sm text-slate-400">15:28:42 UTC</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-purple-400 font-bold text-2xl">$9.22M</div>
-                            <div class="text-sm text-slate-300">19K shares @ $485.20</div>
-                        </div>
-                    </div>
-                    <div class="mt-2 pt-2 border-t border-slate-600 text-sm text-slate-400">
-                        Dark: $9.22M | Lit: $4.25M (68% off-exchange)
-                    </div>
-                </div>
-            </div>
-        </div>
+ <div class="space-y-2">
+ <div class="bg-slate-700/50 p-4 rounded-lg border-l-4 border-orange-500">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-2xl">TSLA</div>
+ <div class="text-sm text-slate-400">15:32:15 UTC</div>
+ </div>
+ <div class="text-right">
+ <div class="text-purple-400 font-bold text-2xl">$36.38M</div>
+ <div class="text-sm text-slate-300">150K shares @ $242.50</div>
+ <div class="text-xs text-orange-400 mt-1"> Large Print >$10M</div>
+ </div>
+ </div>
+ <div class="mt-2 pt-2 border-t border-slate-600 text-sm text-slate-400">
+ Dark: $36.38M | Lit: $10.91M (77% off-exchange)
+ </div>
+ </div>
+ <div class="bg-slate-700/50 p-4 rounded-lg border-l-4 border-purple-400">
+ <div class="flex justify-between items-start">
+ <div>
+ <div class="font-bold text-2xl">NVDA</div>
+ <div class="text-sm text-slate-400">15:28:42 UTC</div>
+ </div>
+ <div class="text-right">
+ <div class="text-purple-400 font-bold text-2xl">$9.22M</div>
+ <div class="text-sm text-slate-300">19K shares @ $485.20</div>
+ </div>
+ </div>
+ <div class="mt-2 pt-2 border-t border-slate-600 text-sm text-slate-400">
+ Dark: $9.22M | Lit: $4.25M (68% off-exchange)
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <!-- Feature 4: Institutional Holdings -->
-        <div class="bg-slate-800 rounded-xl p-6 mb-6 shadow-xl border border-slate-700">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-3xl font-bold flex items-center gap-3">
-                    🏢 Institutional Holdings
-                    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">NEW</span>
-                </h2>
-                <div class="flex gap-2">
-                    <input type="text" placeholder="Ticker..." value="TSLA" class="px-3 py-1 bg-slate-700 rounded text-sm border border-slate-600 focus:border-blue-400 outline-none">
-                    <select class="px-3 py-1 bg-slate-700 rounded text-sm border border-slate-600 focus:border-blue-400 outline-none">
-                        <option>2024-Q3</option>
-                        <option>2024-Q2</option>
-                        <option>2024-Q1</option>
-                    </select>
-                </div>
-            </div>
+ <!-- Feature 4: Institutional Holdings -->
+ <div class="bg-slate-800 rounded-xl p-6 mb-6 shadow-xl border border-slate-700">
+ <div class="flex items-center justify-between mb-4">
+ <h2 class="text-3xl font-bold flex items-center gap-3">
+ 🏢 Institutional Holdings
+ <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm font-semibold">NEW</span>
+ </h2>
+ <div class="flex gap-2">
+ <input type="text" placeholder="Ticker..." value="TSLA" class="px-3 py-1 bg-slate-700 rounded text-sm border border-slate-600 focus:border-blue-400 outline-none">
+ <select class="px-3 py-1 bg-slate-700 rounded text-sm border border-slate-600 focus:border-blue-400 outline-none">
+ <option>2024-Q3</option>
+ <option>2024-Q2</option>
+ <option>2024-Q1</option>
+ </select>
+ </div>
+ </div>
 
-            <!-- Summary Cards -->
-            <div class="grid grid-cols-3 gap-4 mb-4">
-                <div class="bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-4 rounded-lg border border-blue-500/20">
-                    <div class="text-xs text-slate-400 mb-1">Total Ownership</div>
-                    <div class="text-3xl font-bold text-blue-400">62.5%</div>
-                    <div class="text-xs text-slate-400 mt-1">500M shares</div>
-                </div>
-                <div class="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-4 rounded-lg border border-emerald-500/20">
-                    <div class="text-xs text-slate-400 mb-1">Change QoQ</div>
-                    <div class="text-3xl font-bold text-emerald-400">+2.3%</div>
-                    <div class="text-xs text-slate-400 mt-1">↑ Increased</div>
-                </div>
-                <div class="bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-4 rounded-lg border border-purple-500/20">
-                    <div class="text-xs text-slate-400 mb-1">Top Holder</div>
-                    <div class="text-lg font-bold text-purple-400">Vanguard</div>
-                    <div class="text-xs text-slate-400 mt-1">15.0% ownership</div>
-                </div>
-            </div>
+ <!-- Summary Cards -->
+ <div class="grid grid-cols-3 gap-4 mb-4">
+ <div class="bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-4 rounded-lg border border-blue-500/20">
+ <div class="text-xs text-slate-400 mb-1">Total Ownership</div>
+ <div class="text-3xl font-bold text-blue-400">62.5%</div>
+ <div class="text-xs text-slate-400 mt-1">500M shares</div>
+ </div>
+ <div class="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 p-4 rounded-lg border border-emerald-500/20">
+ <div class="text-xs text-slate-400 mb-1">Change QoQ</div>
+ <div class="text-3xl font-bold text-emerald-400">+2.3%</div>
+ <div class="text-xs text-slate-400 mt-1">↑ Increased</div>
+ </div>
+ <div class="bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-4 rounded-lg border border-purple-500/20">
+ <div class="text-xs text-slate-400 mb-1">Top Holder</div>
+ <div class="text-lg font-bold text-purple-400">Vanguard</div>
+ <div class="text-xs text-slate-400 mt-1">15.0% ownership</div>
+ </div>
+ </div>
 
-            <!-- Pie Chart -->
-            <div id="institutionalChart" class="mb-4"></div>
+ <!-- Pie Chart -->
+ <div id="institutionalChart" class="mb-4"></div>
 
-            <!-- Holdings Table -->
-            <div class="space-y-2">
-                <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
-                    <div>
-                        <div class="font-bold text-lg">1. Vanguard Group</div>
-                        <div class="text-sm text-slate-400">75.0M shares</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold text-blue-400 text-xl">15.0%</div>
-                        <div class="text-sm text-emerald-400">+2.0%</div>
-                    </div>
-                </div>
-                <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
-                    <div>
-                        <div class="font-bold text-lg">2. BlackRock</div>
-                        <div class="text-sm text-slate-400">60.0M shares</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold text-blue-400 text-xl">12.0%</div>
-                        <div class="text-sm text-red-400">-0.8%</div>
-                    </div>
-                </div>
-                <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
-                    <div>
-                        <div class="font-bold text-lg">3. State Street</div>
-                        <div class="text-sm text-slate-400">50.0M shares</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold text-blue-400 text-xl">10.0%</div>
-                        <div class="text-sm text-emerald-400">+1.5%</div>
-                    </div>
-                </div>
-                <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
-                    <div>
-                        <div class="font-bold text-lg">4. Fidelity</div>
-                        <div class="text-sm text-slate-400">40.0M shares</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold text-blue-400 text-xl">8.0%</div>
-                        <div class="text-sm text-emerald-400">+3.2%</div>
-                    </div>
-                </div>
-                <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
-                    <div>
-                        <div class="font-bold text-lg">5. Invesco</div>
-                        <div class="text-sm text-slate-400">35.0M shares</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold text-blue-400 text-xl">7.0%</div>
-                        <div class="text-sm text-slate-300">0.0%</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+ <!-- Holdings Table -->
+ <div class="space-y-2">
+ <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
+ <div>
+ <div class="font-bold text-lg">1. Vanguard Group</div>
+ <div class="text-sm text-slate-400">75.0M shares</div>
+ </div>
+ <div class="text-right">
+ <div class="font-bold text-blue-400 text-xl">15.0%</div>
+ <div class="text-sm text-emerald-400">+2.0%</div>
+ </div>
+ </div>
+ <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
+ <div>
+ <div class="font-bold text-lg">2. BlackRock</div>
+ <div class="text-sm text-slate-400">60.0M shares</div>
+ </div>
+ <div class="text-right">
+ <div class="font-bold text-blue-400 text-xl">12.0%</div>
+ <div class="text-sm text-red-400">-0.8%</div>
+ </div>
+ </div>
+ <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
+ <div>
+ <div class="font-bold text-lg">3. State Street</div>
+ <div class="text-sm text-slate-400">50.0M shares</div>
+ </div>
+ <div class="text-right">
+ <div class="font-bold text-blue-400 text-xl">10.0%</div>
+ <div class="text-sm text-emerald-400">+1.5%</div>
+ </div>
+ </div>
+ <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
+ <div>
+ <div class="font-bold text-lg">4. Fidelity</div>
+ <div class="text-sm text-slate-400">40.0M shares</div>
+ </div>
+ <div class="text-right">
+ <div class="font-bold text-blue-400 text-xl">8.0%</div>
+ <div class="text-sm text-emerald-400">+3.2%</div>
+ </div>
+ </div>
+ <div class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center">
+ <div>
+ <div class="font-bold text-lg">5. Invesco</div>
+ <div class="text-sm text-slate-400">35.0M shares</div>
+ </div>
+ <div class="text-right">
+ <div class="font-bold text-blue-400 text-xl">7.0%</div>
+ <div class="text-sm text-slate-300">0.0%</div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <!-- Footer -->
-        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
-            <div class="text-2xl font-bold mb-2">✅ Implementation Complete!</div>
-            <div class="text-slate-400 mb-4">
-                All 4 UW Market Intelligence features are live with full backend + frontend integration
-            </div>
-            <div class="flex justify-center gap-4 text-sm">
-                <div class="px-3 py-2 bg-slate-700 rounded">
-                    <div class="text-slate-400">Files Changed</div>
-                    <div class="font-bold text-lg">13</div>
-                </div>
-                <div class="px-3 py-2 bg-slate-700 rounded">
-                    <div class="text-slate-400">Lines Added</div>
-                    <div class="font-bold text-lg text-emerald-400">+3,024</div>
-                </div>
-                <div class="px-3 py-2 bg-slate-700 rounded">
-                    <div class="text-slate-400">Tests Passing</div>
-                    <div class="font-bold text-lg text-blue-400">19/19</div>
-                </div>
-                <div class="px-3 py-2 bg-slate-700 rounded">
-                    <div class="text-slate-400">Commit</div>
-                    <div class="font-bold text-lg text-purple-400">cce6186</div>
-                </div>
-            </div>
-        </div>
-    </div>
+ <!-- Footer -->
+ <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 text-center">
+ <div class="text-2xl font-bold mb-2"> Implementation Complete!</div>
+ <div class="text-slate-400 mb-4">
+ All 4 UW Market Intelligence features are live with full backend + frontend integration
+ </div>
+ <div class="flex justify-center gap-4 text-sm">
+ <div class="px-3 py-2 bg-slate-700 rounded">
+ <div class="text-slate-400">Files Changed</div>
+ <div class="font-bold text-lg">13</div>
+ </div>
+ <div class="px-3 py-2 bg-slate-700 rounded">
+ <div class="text-slate-400">Lines Added</div>
+ <div class="font-bold text-lg text-emerald-400">+3,024</div>
+ </div>
+ <div class="px-3 py-2 bg-slate-700 rounded">
+ <div class="text-slate-400">Tests Passing</div>
+ <div class="font-bold text-lg text-blue-400">19/19</div>
+ </div>
+ <div class="px-3 py-2 bg-slate-700 rounded">
+ <div class="text-slate-400">Commit</div>
+ <div class="font-bold text-lg text-purple-400">cce6186</div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-    <script>
-        // Dark Pool Chart
-        const darkPoolData = [
-            {
-                x: ['TSLA', 'NVDA', 'AAPL', 'AMD', 'META'],
-                y: [36.38, 9.22, 15.50, 8.10, 12.30],
-                name: 'Dark Pool',
-                type: 'bar',
-                marker: { color: 'rgba(168, 85, 247, 0.8)' }
-            },
-            {
-                x: ['TSLA', 'NVDA', 'AAPL', 'AMD', 'META'],
-                y: [10.91, 4.25, 8.20, 3.50, 5.80],
-                name: 'Lit Exchange',
-                type: 'bar',
-                marker: { color: 'rgba(96, 165, 250, 0.8)' }
-            }
-        ];
+ <script>
+ // Dark Pool Chart
+ const darkPoolData = [
+ {
+ x: ['TSLA', 'NVDA', 'AAPL', 'AMD', 'META'],
+ y: [36.38, 9.22, 15.50, 8.10, 12.30],
+ name: 'Dark Pool',
+ type: 'bar',
+ marker: { color: 'rgba(168, 85, 247, 0.8)' }
+ },
+ {
+ x: ['TSLA', 'NVDA', 'AAPL', 'AMD', 'META'],
+ y: [10.91, 4.25, 8.20, 3.50, 5.80],
+ name: 'Lit Exchange',
+ type: 'bar',
+ marker: { color: 'rgba(96, 165, 250, 0.8)' }
+ }
+ ];
 
-        const darkPoolLayout = {
-            barmode: 'stack',
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            font: { color: '#cbd5e1' },
-            xaxis: { gridcolor: '#334155' },
-            yaxis: { gridcolor: '#334155', title: 'Volume ($M)' },
-            margin: { t: 20, b: 40, l: 50, r: 20 },
-            height: 300
-        };
+ const darkPoolLayout = {
+ barmode: 'stack',
+ paper_bgcolor: 'rgba(0,0,0,0)',
+ plot_bgcolor: 'rgba(0,0,0,0)',
+ font: { color: '#cbd5e1' },
+ xaxis: { gridcolor: '#334155' },
+ yaxis: { gridcolor: '#334155', title: 'Volume ($M)' },
+ margin: { t: 20, b: 40, l: 50, r: 20 },
+ height: 300
+ };
 
-        Plotly.newPlot('darkPoolChart', darkPoolData, darkPoolLayout, {responsive: true});
+ Plotly.newPlot('darkPoolChart', darkPoolData, darkPoolLayout, {responsive: true});
 
-        // Institutional Pie Chart
-        const instData = [{
-            values: [15.0, 12.0, 10.0, 8.0, 7.0],
-            labels: ['Vanguard', 'BlackRock', 'State Street', 'Fidelity', 'Invesco'],
-            type: 'pie',
-            marker: {
-                colors: ['#60a5fa', '#a855f7', '#ec4899', '#f97316', '#10b981']
-            },
-            textinfo: 'label+percent',
-            textfont: { color: '#ffffff' },
-            hoverinfo: 'label+value+percent'
-        }];
+ // Institutional Pie Chart
+ const instData = [{
+ values: [15.0, 12.0, 10.0, 8.0, 7.0],
+ labels: ['Vanguard', 'BlackRock', 'State Street', 'Fidelity', 'Invesco'],
+ type: 'pie',
+ marker: {
+ colors: ['#60a5fa', '#a855f7', '#ec4899', '#f97316', '#10b981']
+ },
+ textinfo: 'label+percent',
+ textfont: { color: '#ffffff' },
+ hoverinfo: 'label+value+percent'
+ }];
 
-        const instLayout = {
-            paper_bgcolor: 'rgba(0,0,0,0)',
-            plot_bgcolor: 'rgba(0,0,0,0)',
-            font: { color: '#cbd5e1' },
-            margin: { t: 20, b: 20, l: 20, r: 20 },
-            height: 300,
-            showlegend: false
-        };
+ const instLayout = {
+ paper_bgcolor: 'rgba(0,0,0,0)',
+ plot_bgcolor: 'rgba(0,0,0,0)',
+ font: { color: '#cbd5e1' },
+ margin: { t: 20, b: 20, l: 20, r: 20 },
+ height: 300,
+ showlegend: false
+ };
 
-        Plotly.newPlot('institutionalChart', instData, instLayout, {responsive: true});
-    </script>
+ Plotly.newPlot('institutionalChart', instData, instLayout, {responsive: true});
+ </script>
 </body>
 </html>

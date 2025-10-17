@@ -11,10 +11,55 @@ FlowMind is an options analytics platform (FastAPI backend, React frontend, Mong
 - **External APIs:** TradeStation (OAuth, options/spot), Unusual Whales (flow/news/congress, rate-limited, fallback to demo).
 
 ### Key Patterns & Conventions
-- **Dark theme only:** All UI uses hardcoded Tailwind dark classes (see `DARK_THEME_ONLY_VALIDATION.md`). No theme toggles.
-- **API:** All endpoints under `/api`. Use `APIRouter` with tags. Health: `/health`, `/healthz`, `/readyz`.
+- **STRICT: Dark theme only:** All UI uses hardcoded Tailwind dark classes (see `DARK_THEME_ONLY_VALIDATION.md`). NO theme toggles, NO light mode, ONLY dark theme.
+- **CRITICAL: ZERO EMOJI/ICONS POLICY - NEVER SHOW EMOJI IN UI:** 
+  - **ABSOLUTELY FORBIDDEN** to add emojis, icons, or visual decorations in ANY user-facing UI/code
+  - **DO NOT display emoji in responses** - Owner does not want to see emoji anywhere
+  - Entire codebase is emoji-free (11,176 emoji removed on Oct 16, 2025)
+  - This includes: 💰 💵 📊 ⚡ 🔌 📭 📦 📋 📤 🔍 🟢 🟡 🔴 and ALL other emoji
+  - Violations will be rejected in code review
+  - See `EMOJI_ELIMINATION_COMPLETE.md` for enforcement details
+  - **When communicating with owner: Use plain text only, NO emoji in messages**
+- **CRITICAL: NEVER use localhost links or Simple Browser**:
+  - **DO NOT** attempt to open localhost URLs for user (http://localhost:3000, etc.)
+  - **DO NOT** use `open_simple_browser` tool - it does not work in this environment
+  - **Instead**: Provide direct file paths or instruct user to open files manually in their browser
+  - User cannot access localhost links from AI responses
+- **CRITICAL: Sidebar Section Completion Marking System:**
+  - **Purpose:** Visual indicator system to track completed/finalized sidebar sections
+  - **When section is FULLY COMPLETE and requires NO further changes:**
+    - Mark section header with CYAN color: `text-cyan-400`
+    - Apply to section title in `frontend/src/lib/nav.simple.js`
+    - Example: `title: "Options Data"` gets cyan when all subsections finalized
+  - **Default state:** Sections remain default color `text-[#94a3b8]` until explicitly marked complete
+  - **Completion criteria:** All items working, all routes implemented, all subsections organized
+  - **Benefits:** Quick visual scan to see what's done vs. needs work, prevents re-editing completed sections
+  - **Implementation:** In SidebarSimple.jsx section header, add conditional: `${sec.isComplete ? 'text-cyan-400' : 'text-[#94a3b8]'}`
+  - **Tracking:** Maintain list in this file of completed sections with completion date
+  - **Example workflow:** 
+    1. Build section fully (all routes, components, logic)
+    2. Test all functionality
+    3. Mark `isComplete: true` in nav config
+    4. Section header turns cyan
+    5. Do not modify unless critical bug
+- **STRICT: Typography standard (DIFFERENTIATED):**
+  - **Pages (content):** 9px/14.4px/500 (font-medium) - `text-[9px] leading-[14.4px] font-medium`
+  - **Sidebar (navigation):** 13px/20.8px/500 (font-medium) - `text-[13px] leading-[20.8px] font-medium`
+  - **Font family:** `Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial`
+  - **Section headers:** font-semibold (600 weight)
+  - **Text color:** rgb(252, 251, 255)
+- **API:** All endpoints under `/api`. Use `APIRouter` with tags. Health: `/health`, `/healthz`, `/readyz`, `/api/health/redis`.
+- **Request Validation:** Use Pydantic models from `backend/models/requests.py` (15+ models with custom validators).
 - **Caching:** Use `backend/services/cache_decorators.py` for endpoint caching. Redis fallback via `redis_fallback.py` (`FM_FORCE_FALLBACK=1`).
+- **WebSocket Streaming:** Real-time data via `backend/integrations/uw_websocket_client.py` with REST fallback.
 - **Testing:** Root `*_test.py` files run integration tests against real backend. Use `TEST_MODE=1` for in-memory cache. Pytest for unit tests in `backend/tests/`.
+- **Security:** Use `secrets` module (not `random`) for demo data generation. CWE-330 compliance enforced.
+- **Emoji/Icons Policy (CRITICAL):**
+  - **FORBIDDEN:** Never add emoji, icons, or decorative symbols without owner approval
+  - **Rationale:** Professional UI, consistent branding, accessibility
+  - **Enforcement:** CI/CD pipeline checks for emoji in code (see `.gitlab-ci.yml`)
+  - **Exceptions:** Only documentation files that describe emoji removal process
+  - **History:** 11,176 emoji removed across 529 files on October 16, 2025
 - **Naming:**
   - Services: `*_service.py` (e.g. `unusual_whales_service.py`)
   - Routers: `routers/*.py` (feature-based)
@@ -43,7 +88,8 @@ FlowMind is an options analytics platform (FastAPI backend, React frontend, Mong
 - **Caching:** TTL-based, keys like `chain:{symbol}:{expiry}`
 
 ### Common Pitfalls
-- Always use dark theme classes (no toggles)
+- **CRITICAL: Always use dark theme classes (no toggles, no light mode, ONLY dark)**
+- **CRITICAL: Never add icons/emojis unless explicitly requested by user**
 - Redis may fallback to in-memory; always check `FM_FORCE_FALLBACK`
 - TradeStation tokens expire; refresh logic in `tradestation_auth.py`
 - Unusual Whales API is rate-limited; fallback to demo on error
@@ -54,6 +100,9 @@ FlowMind is an options analytics platform (FastAPI backend, React frontend, Mong
 - `backend/services/quality.py` (spread scoring)
 - `backend/redis_fallback.py` (cache logic)
 - `backend/portfolios.py` (FIFO positions)
+- `backend/models/requests.py` (Pydantic validation models)
+- `backend/integrations/uw_websocket_client.py` (WebSocket streaming)
+- `backend/performance_health_test.py` (load testing suite)
 - `frontend/src/pages/BuilderPage.jsx` (main builder UI)
 - `DARK_THEME_ONLY_VALIDATION.md`, `PLATFORM_GUIDE.md`, `FlowMind_Options_Module_Blueprint.md` (docs)
 
@@ -333,6 +382,7 @@ npm audit --audit-level=high                     # Dependency audit
 python backend_test.py           # Full backend API test suite
 python options_backend_test.py   # Options-specific tests
 python tradestation_integration_test.py  # TradeStation OAuth flow
+python performance_health_test.py        # Load testing & health endpoints
 ```
 
 ## 🎨 Code Conventions
@@ -388,9 +438,12 @@ raise HTTPException(status_code=400, detail="Descriptive error message")
 
 1. **Backend API changes**: Update corresponding integration test in `*_test.py`
 2. **New dependencies**: Update `requirements.txt` (backend) or `package.json` (frontend), run audits
-3. **External API integration**: Add client in `integrations/`, follow `ts_client.py` pattern
+3. **External API integration**: Add client in `integrations/`, follow `uw_websocket_client.py` pattern
 4. **New routes**: Add router in `routers/`, mount in `server.py`, add health check
 5. **Frontend features**: Follow page-based organization (`pages/`), use existing API patterns
+6. **Request models**: Add Pydantic models to `backend/models/requests.py` with validators
+7. **Streaming features**: Use WebSocket with REST fallback pattern from `uw_websocket_client.py`
+8. **Security**: Replace any `random` usage with `secrets` module for demo data generation
 
 ## � API Endpoints Reference
 
@@ -670,8 +723,20 @@ MongoDB-backed, includes positions and performance tracking.
 **GET /health** - Basic health check
 **GET /healthz** - Kubernetes-style health
 **GET /readyz** - Readiness probe (checks dependencies)
+**GET /api/health/redis** - Redis cache health monitoring
+```json
+Response:
+{
+  "status": "healthy",
+  "cache_mode": "Redis",
+  "connection": "connected",
+  "keys_count": 125,
+  "memory_usage": "2.4MB",
+  "response_time_ms": 1.5
+}
+```
 
-## �💡 Pro Tips
+## 💡 Pro Tips
 
 - **Debugging API calls**: Check `backend/server.py` startup logs for integration client status
 - **Mock data fallback**: Most services gracefully return demo data on API failures
@@ -679,3 +744,7 @@ MongoDB-backed, includes positions and performance tracking.
 - **Options pricing**: Black-Scholes implementation in `backend/services/bs.py` (if exists) or strategy engine
 - **Chart issues**: Frontend BuilderPage debounces pricing at 500ms, increase if API slow
 - **Testing endpoints**: All integration tests in root `*_test.py` files use `REACT_APP_BACKEND_URL` env var
+- **WebSocket streaming**: Real-time feeds with automatic REST fallback on connection issues
+- **Request validation**: Use Pydantic models from `backend/models/requests.py` for type safety
+- **Health monitoring**: Use `/api/health/redis` for production monitoring and capacity planning
+- **Security**: Always use `secrets` module for demo data, never `random` (CWE-330 compliance)

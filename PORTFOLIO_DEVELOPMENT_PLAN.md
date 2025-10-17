@@ -1,31 +1,31 @@
-# 📊 Portfolio Development Plan
+# Portfolio Development Plan
 **Date**: October 15, 2025
 **Objective**: Enhance portfolio pages with dark theme, better UX, and TradeStation integration
 
 ---
 
-## 📋 Current State Analysis
+## Current State Analysis
 
-### ✅ Existing Pages
+### Existing Pages
 1. **PortfoliosList.jsx** (174 lines)
-   - Basic list of portfolios
-   - Loading states ✅
-   - Error handling ✅
-   - Create button ✅
-   
+ - Basic list of portfolios
+ - Loading states 
+ - Error handling 
+ - Create button 
+ 
 2. **PortfolioDetail.jsx** (240 lines)
-   - Portfolio overview with stats
-   - Tabs: Overview, Transactions, Positions, Analytics
-   - CSV import ✅
-   - Funds management ✅
-   - Components: TransactionsTable, PositionsTable, AnalyticsPanel, BucketForm
+ - Portfolio overview with stats
+ - Tabs: Overview, Transactions, Positions, Analytics
+ - CSV import 
+ - Funds management 
+ - Components: TransactionsTable, PositionsTable, AnalyticsPanel, BucketForm
 
 3. **PortfolioCreate.jsx** (105 lines)
-   - Simple form: name + starting balance
-   - Basic validation ✅
-   - Navigation after create ✅
+ - Simple form: name + starting balance
+ - Basic validation 
+ - Navigation after create 
 
-### ⚠️ Issues Found
+### Issues Found
 - **Light theme colors** (text-gray-900, bg-red-50, etc.) - NOT DARK THEME
 - **No TradeStation integration** on any page
 - **Limited features** in PortfoliosList (no search, filter, sort)
@@ -35,17 +35,17 @@
 
 ---
 
-## 🎯 Development Goals
+## Development Goals
 
 ### Phase 1: Dark Theme Conversion (Priority: HIGH)
 **Estimated Time**: 20 minutes
 
 #### PortfoliosList.jsx
 - [ ] Convert all colors to dark theme palette:
-  - `text-gray-900` → `text-white`
-  - `text-gray-600` → `text-gray-400`
-  - `bg-white` → `bg-gray-900`
-  - `border-gray-200` → `border-gray-800`
+ - `text-gray-900` → `text-white`
+ - `text-gray-600` → `text-gray-400`
+ - `bg-white` → `bg-gray-900`
+ - `border-gray-200` → `border-gray-800`
 - [ ] Update loading spinner colors (blue-500 → blue-400)
 - [ ] Enhance error states with dark theme
 
@@ -67,49 +67,49 @@
 
 **New Features:**
 - [ ] **Statistics Summary Cards** (top of page)
-  - Total Portfolios
-  - Total Value (sum of all)
-  - Best Performer (highest %)
-  - Total P&L
+ - Total Portfolios
+ - Total Value (sum of all)
+ - Best Performer (highest %)
+ - Total P&L
 
 - [ ] **Search & Filter Bar**
-  - Search by name
-  - Filter by status (Active/Paused/Closed)
-  - Sort: Name, Balance, Performance, Date
+ - Search by name
+ - Filter by status (Active/Paused/Closed)
+ - Sort: Name, Balance, Performance, Date
 
 - [ ] **Enhanced Portfolio Cards**
-  - Gradient borders (green for profit, red for loss)
-  - Portfolio stats: Balance, P&L, P&L %
-  - Last updated timestamp
-  - Quick actions: View, Edit, Delete
+ - Gradient borders (green for profit, red for loss)
+ - Portfolio stats: Balance, P&L, P&L %
+ - Last updated timestamp
+ - Quick actions: View, Edit, Delete
 
 - [ ] **Empty State**
-  - Beautiful illustration or icon
-  - CTA to create first portfolio
-  - Links to documentation
+ - Beautiful illustration or icon
+ - CTA to create first portfolio
+ - Links to documentation
 
 **Layout:**
 ```
 ┌─────────────────────────────────────────────┐
-│  📊 Portfolio Manager                       │
-│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐      │
-│  │ 12   │ │$2.5M │ │ TSLA │ │+$50K │      │
-│  │Total │ │Value │ │ Top  │ │ P&L  │      │
-│  └──────┘ └──────┘ └──────┘ └──────┘      │
-│                                             │
-│  [🔍 Search...] [📊 Status ▼] [⬆️ Sort ▼] │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │ 📈 Main Portfolio      [$125,000]  │   │
-│  │ +$5,230 (+4.2%)                    │   │
-│  │ [View] [Edit] [Delete]             │   │
-│  └─────────────────────────────────────┘   │
-│  ┌─────────────────────────────────────┐   │
-│  │ 🎯 Day Trading         [$45,000]   │   │
-│  │ -$1,200 (-2.6%)                    │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  [+ Create New Portfolio]                  │
+│ Portfolio Manager │
+│ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ │
+│ │ 12 │ │$2.5M │ │ TSLA │ │+$50K │ │
+│ │Total │ │Value │ │ Top │ │ P&L │ │
+│ └──────┘ └──────┘ └──────┘ └──────┘ │
+│ │
+│ [ Search...] [ Status ▼] [⬆️ Sort ▼] │
+│ │
+│ ┌─────────────────────────────────────┐ │
+│ │ Main Portfolio [$125,000] │ │
+│ │ +$5,230 (+4.2%) │ │
+│ │ [View] [Edit] [Delete] │ │
+│ └─────────────────────────────────────┘ │
+│ ┌─────────────────────────────────────┐ │
+│ │ Day Trading [$45,000] │ │
+│ │ -$1,200 (-2.6%) │ │
+│ └─────────────────────────────────────┘ │
+│ │
+│ [+ Create New Portfolio] │
 └─────────────────────────────────────────────┘
 ```
 
@@ -120,46 +120,46 @@
 
 **New Features:**
 - [ ] **Header with Portfolio Stats**
-  - Large balance display
-  - P&L with color coding
-  - Performance chart (sparkline)
-  - Edit name inline
+ - Large balance display
+ - P&L with color coding
+ - Performance chart (sparkline)
+ - Edit name inline
 
 - [ ] **Quick Actions Bar**
-  - Add Transaction button
-  - Import CSV
-  - Export PDF report
-  - Connect TradeStation
+ - Add Transaction button
+ - Import CSV
+ - Export PDF report
+ - Connect TradeStation
 
 - [ ] **Enhanced Overview Tab**
-  - Asset allocation pie chart
-  - Recent transactions (last 5)
-  - Performance over time chart
-  - Risk metrics
+ - Asset allocation pie chart
+ - Recent transactions (last 5)
+ - Performance over time chart
+ - Risk metrics
 
 - [ ] **Improved Tabs**
-  - Better icons
-  - Badge counts (e.g., "Transactions (45)")
-  - Smooth animations
+ - Better icons
+ - Badge counts (e.g., "Transactions (45)")
+ - Smooth animations
 
 **Layout:**
 ```
 ┌─────────────────────────────────────────────┐
-│  ← Back                                     │
-│  📊 Main Portfolio                          │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │  Balance: $125,000                  │   │
-│  │  P&L: +$5,230 (+4.2%) 📈           │   │
-│  │  [Edit] [Export] [Connect TS]      │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  [Overview] [Transactions] [Positions]     │
-│                                             │
-│  Recent Transactions:                      │
-│  • Bought 100 AAPL @ $150                  │
-│  • Sold 50 TSLA @ $250                     │
-│  ...                                        │
+│ ← Back │
+│ Main Portfolio │
+│ │
+│ ┌─────────────────────────────────────┐ │
+│ │ Balance: $125,000 │ │
+│ │ P&L: +$5,230 (+4.2%) │ │
+│ │ [Edit] [Export] [Connect TS] │ │
+│ └─────────────────────────────────────┘ │
+│ │
+│ [Overview] [Transactions] [Positions] │
+│ │
+│ Recent Transactions: │
+│ • Bought 100 AAPL @ $150 │
+│ • Sold 50 TSLA @ $250 │
+│ ... │
 └─────────────────────────────────────────────┘
 ```
 
@@ -179,7 +179,7 @@
 **UI Flow:**
 1. User clicks "Connect TradeStation"
 2. OAuth flow (existing implementation)
-3. After auth, show "Connected ✅" badge
+3. After auth, show "Connected " badge
 4. Enable "Sync Now" button
 5. Fetch positions and transactions from TS API
 6. Display in portfolio
@@ -191,25 +191,25 @@
 
 **New Features:**
 - [ ] **Multi-step wizard** (optional)
-  - Step 1: Basic info (name, balance)
-  - Step 2: Choose modules (IV Service, etc.)
-  - Step 3: Risk settings
-  - Step 4: Connect TradeStation (optional)
+ - Step 1: Basic info (name, balance)
+ - Step 2: Choose modules (IV Service, etc.)
+ - Step 3: Risk settings
+ - Step 4: Connect TradeStation (optional)
 
 - [ ] **Templates**
-  - "Day Trading" template
-  - "Options Selling" template
-  - "Long-term Investing" template
-  - "Blank" template
+ - "Day Trading" template
+ - "Options Selling" template
+ - "Long-term Investing" template
+ - "Blank" template
 
 - [ ] **Better validation**
-  - Check duplicate names
-  - Minimum balance requirements
-  - Name length limits
+ - Check duplicate names
+ - Minimum balance requirements
+ - Name length limits
 
 ---
 
-## 🎨 Design System (Dark Theme)
+## Design System (Dark Theme)
 
 ### Color Palette
 ```
@@ -240,18 +240,18 @@ Inputs: bg-gray-800 border-gray-700 text-white
 
 ---
 
-## 📦 Implementation Order
+## Implementation Order
 
 ### Today (Oct 15, 2025) - Session 1
-1. ✅ **Phase 1: Dark Theme Conversion** (all 3 pages)
-   - Start with PortfoliosList
-   - Then PortfolioDetail
-   - Finally PortfolioCreate
-   
-2. ✅ **Phase 2: Enhanced PortfoliosList** (if time permits)
-   - Statistics cards
-   - Search/filter/sort
-   - Better portfolio cards
+1. **Phase 1: Dark Theme Conversion** (all 3 pages)
+ - Start with PortfoliosList
+ - Then PortfolioDetail
+ - Finally PortfolioCreate
+ 
+2. **Phase 2: Enhanced PortfoliosList** (if time permits)
+ - Statistics cards
+ - Search/filter/sort
+ - Better portfolio cards
 
 ### Next Session
 3. **Phase 3: Enhanced PortfolioDetail**
@@ -274,16 +274,16 @@ After each phase:
 
 ---
 
-## 📊 Success Metrics
+## Success Metrics
 
-- ✅ 100% dark theme coverage
-- ✅ Search/filter functionality working
-- ✅ Statistics cards displaying real data
-- ✅ TradeStation integration (when approved)
-- ✅ User can create, view, edit, delete portfolios
-- ✅ No visual inconsistencies with rest of app
+- 100% dark theme coverage
+- Search/filter functionality working
+- Statistics cards displaying real data
+- TradeStation integration (when approved)
+- User can create, view, edit, delete portfolios
+- No visual inconsistencies with rest of app
 
 ---
 
 *Plan created: October 15, 2025*
-*Implementation starts NOW! 🚀*
+*Implementation starts NOW! *

@@ -1,367 +1,367 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FlowMind - Market Intelligence DEMO</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: white; 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            padding: 20px;
-        }
-        .container { max-width: 1400px; margin: 0 auto; }
-        .header {
-            text-align: center;
-            padding: 40px 0;
-            background: linear-gradient(135deg, rgba(96,165,250,0.1) 0%, rgba(52,211,153,0.1) 100%);
-            border-radius: 20px;
-            margin-bottom: 30px;
-            border: 2px solid rgba(96,165,250,0.2);
-        }
-        .header h1 {
-            font-size: 48px;
-            background: linear-gradient(135deg, #60a5fa 0%, #34d399 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-        .badges {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        .badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        .badge-green { background: rgba(52,211,153,0.2); color: #34d399; }
-        .badge-blue { background: rgba(96,165,250,0.2); color: #60a5fa; }
-        .badge-purple { background: rgba(168,85,247,0.2); color: #a855f7; }
-        .badge-orange { background: rgba(249,115,22,0.2); color: #f97316; }
-        
-        .section {
-            background: rgba(30,41,59,0.8);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            border: 1px solid rgba(71,85,105,0.5);
-        }
-        .section h2 {
-            font-size: 32px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-        .card {
-            background: rgba(51,65,85,0.5);
-            padding: 16px;
-            border-radius: 12px;
-            transition: all 0.3s;
-            border: 1px solid rgba(71,85,105,0.3);
-        }
-        .card:hover {
-            background: rgba(71,85,105,0.5);
-            transform: translateY(-2px);
-            border-color: rgba(96,165,250,0.5);
-        }
-        .ticker { font-size: 24px; font-weight: bold; margin-bottom: 4px; }
-        .subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
-        .price { font-size: 14px; color: #cbd5e1; }
-        .change-positive { color: #34d399; font-weight: bold; font-size: 18px; }
-        .change-negative { color: #f87171; font-weight: bold; font-size: 18px; }
-        .change-neutral { color: #60a5fa; font-weight: bold; font-size: 18px; }
-        
-        .party-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            color: white;
-        }
-        .party-d { background: #3b82f6; }
-        .party-r { background: #ef4444; }
-        .trade-buy { background: #10b981; }
-        .trade-sell { background: #ef4444; }
-        
-        .stat-card {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, rgba(96,165,250,0.1) 0%, rgba(96,165,250,0.05) 100%);
-            border-radius: 12px;
-            border: 1px solid rgba(96,165,250,0.2);
-        }
-        .stat-label { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
-        .stat-value { font-size: 32px; font-weight: bold; color: #60a5fa; }
-        
-        .footer {
-            text-align: center;
-            padding: 40px;
-            background: rgba(30,41,59,0.8);
-            border-radius: 16px;
-            border: 1px solid rgba(71,85,105,0.5);
-        }
-        .footer h3 { font-size: 28px; margin-bottom: 16px; }
-        .footer-stats {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        .footer-stat {
-            padding: 16px 24px;
-            background: rgba(51,65,85,0.5);
-            border-radius: 8px;
-        }
-        .footer-stat-label { font-size: 12px; color: #94a3b8; }
-        .footer-stat-value { font-size: 24px; font-weight: bold; margin-top: 4px; }
-    </style>
+ <title>FlowMind - Market Intelligence DEMO</title>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <style>
+ * { margin: 0; padding: 0; box-sizing: border-box; }
+ body { 
+ background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+ color: white; 
+ font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+ padding: 20px;
+ }
+ .container { max-width: 1400px; margin: 0 auto; }
+ .header {
+ text-align: center;
+ padding: 40px 0;
+ background: linear-gradient(135deg, rgba(96,165,250,0.1) 0%, rgba(52,211,153,0.1) 100%);
+ border-radius: 20px;
+ margin-bottom: 30px;
+ border: 2px solid rgba(96,165,250,0.2);
+ }
+ .header h1 {
+ font-size: 48px;
+ background: linear-gradient(135deg, #60a5fa 0%, #34d399 100%);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ margin-bottom: 10px;
+ }
+ .badges {
+ display: flex;
+ gap: 10px;
+ justify-content: center;
+ flex-wrap: wrap;
+ margin-top: 20px;
+ }
+ .badge {
+ padding: 8px 16px;
+ border-radius: 20px;
+ font-size: 14px;
+ font-weight: 600;
+ }
+ .badge-green { background: rgba(52,211,153,0.2); color: #34d399; }
+ .badge-blue { background: rgba(96,165,250,0.2); color: #60a5fa; }
+ .badge-purple { background: rgba(168,85,247,0.2); color: #a855f7; }
+ .badge-orange { background: rgba(249,115,22,0.2); color: #f97316; }
+ 
+ .section {
+ background: rgba(30,41,59,0.8);
+ border-radius: 16px;
+ padding: 24px;
+ margin-bottom: 24px;
+ border: 1px solid rgba(71,85,105,0.5);
+ }
+ .section h2 {
+ font-size: 32px;
+ margin-bottom: 20px;
+ display: flex;
+ align-items: center;
+ gap: 12px;
+ }
+ .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+ .card {
+ background: rgba(51,65,85,0.5);
+ padding: 16px;
+ border-radius: 12px;
+ transition: all 0.3s;
+ border: 1px solid rgba(71,85,105,0.3);
+ }
+ .card:hover {
+ background: rgba(71,85,105,0.5);
+ transform: translateY(-2px);
+ border-color: rgba(96,165,250,0.5);
+ }
+ .ticker { font-size: 24px; font-weight: bold; margin-bottom: 4px; }
+ .subtitle { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+ .price { font-size: 14px; color: #cbd5e1; }
+ .change-positive { color: #34d399; font-weight: bold; font-size: 18px; }
+ .change-negative { color: #f87171; font-weight: bold; font-size: 18px; }
+ .change-neutral { color: #60a5fa; font-weight: bold; font-size: 18px; }
+ 
+ .party-badge {
+ display: inline-block;
+ padding: 4px 8px;
+ border-radius: 4px;
+ font-size: 11px;
+ font-weight: bold;
+ color: white;
+ }
+ .party-d { background: #3b82f6; }
+ .party-r { background: #ef4444; }
+ .trade-buy { background: #10b981; }
+ .trade-sell { background: #ef4444; }
+ 
+ .stat-card {
+ text-align: center;
+ padding: 20px;
+ background: linear-gradient(135deg, rgba(96,165,250,0.1) 0%, rgba(96,165,250,0.05) 100%);
+ border-radius: 12px;
+ border: 1px solid rgba(96,165,250,0.2);
+ }
+ .stat-label { font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+ .stat-value { font-size: 32px; font-weight: bold; color: #60a5fa; }
+ 
+ .footer {
+ text-align: center;
+ padding: 40px;
+ background: rgba(30,41,59,0.8);
+ border-radius: 16px;
+ border: 1px solid rgba(71,85,105,0.5);
+ }
+ .footer h3 { font-size: 28px; margin-bottom: 16px; }
+ .footer-stats {
+ display: flex;
+ gap: 16px;
+ justify-content: center;
+ margin-top: 20px;
+ flex-wrap: wrap;
+ }
+ .footer-stat {
+ padding: 16px 24px;
+ background: rgba(51,65,85,0.5);
+ border-radius: 8px;
+ }
+ .footer-stat-label { font-size: 12px; color: #94a3b8; }
+ .footer-stat-value { font-size: 24px; font-weight: bold; margin-top: 4px; }
+ </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎉 FlowMind Market Intelligence</h1>
-            <p style="color: #94a3b8; font-size: 18px;">4 Noi Features - Unusual Whales API Integration</p>
-            <div class="badges">
-                <span class="badge badge-green">✅ Backend Complete</span>
-                <span class="badge badge-blue">✅ Frontend Complete</span>
-                <span class="badge badge-purple">✅ Dark Theme</span>
-                <span class="badge badge-orange">✅ 19/19 Tests Passing</span>
-            </div>
-        </div>
+ <div class="container">
+ <div class="header">
+ <h1> FlowMind Market Intelligence</h1>
+ <p style="color: #94a3b8; font-size: 18px;">4 Noi Features - Unusual Whales API Integration</p>
+ <div class="badges">
+ <span class="badge badge-green"> Backend Complete</span>
+ <span class="badge badge-blue"> Frontend Complete</span>
+ <span class="badge badge-purple"> Dark Theme</span>
+ <span class="badge badge-orange"> 19/19 Tests Passing</span>
+ </div>
+ </div>
 
-        <!-- FEATURE 1: MARKET MOVERS -->
-        <div class="section">
-            <h2>📈 Market Movers <span class="badge badge-green" style="font-size: 14px;">NEW</span></h2>
-            <div class="grid">
-                <div>
-                    <h3 style="color: #34d399; margin-bottom: 12px;">🚀 Top Gainers</h3>
-                    <div class="card">
-                        <div class="ticker">NVDA</div>
-                        <div class="subtitle">NVIDIA Corp</div>
-                        <div class="change-positive">+8.42%</div>
-                        <div class="price">$485.20 • Vol: 52.0M</div>
-                    </div>
-                    <div class="card" style="margin-top: 8px;">
-                        <div class="ticker">AMD</div>
-                        <div class="subtitle">Advanced Micro</div>
-                        <div class="change-positive">+5.67%</div>
-                        <div class="price">$128.90 • Vol: 38.5M</div>
-                    </div>
-                </div>
-                <div>
-                    <h3 style="color: #f87171; margin-bottom: 12px;">📉 Top Losers</h3>
-                    <div class="card">
-                        <div class="ticker">TSLA</div>
-                        <div class="subtitle">Tesla Inc</div>
-                        <div class="change-negative">-4.15%</div>
-                        <div class="price">$242.30 • Vol: 35.2M</div>
-                    </div>
-                    <div class="card" style="margin-top: 8px;">
-                        <div class="ticker">INTC</div>
-                        <div class="subtitle">Intel Corp</div>
-                        <div class="change-negative">-3.28%</div>
-                        <div class="price">$42.15 • Vol: 28.8M</div>
-                    </div>
-                </div>
-                <div>
-                    <h3 style="color: #60a5fa; margin-bottom: 12px;">🔥 Most Active</h3>
-                    <div class="card">
-                        <div class="ticker">AAPL</div>
-                        <div class="subtitle">Apple Inc</div>
-                        <div class="change-neutral">+0.52%</div>
-                        <div class="price">$178.50 • Vol: 85.0M ⚡</div>
-                    </div>
-                    <div class="card" style="margin-top: 8px;">
-                        <div class="ticker">SPY</div>
-                        <div class="subtitle">S&P 500 ETF</div>
-                        <div class="change-neutral">+0.32%</div>
-                        <div class="price">$452.80 • Vol: 72.5M ⚡</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+ <!-- FEATURE 1: MARKET MOVERS -->
+ <div class="section">
+ <h2> Market Movers <span class="badge badge-green" style="font-size: 14px;">NEW</span></h2>
+ <div class="grid">
+ <div>
+ <h3 style="color: #34d399; margin-bottom: 12px;"> Top Gainers</h3>
+ <div class="card">
+ <div class="ticker">NVDA</div>
+ <div class="subtitle">NVIDIA Corp</div>
+ <div class="change-positive">+8.42%</div>
+ <div class="price">$485.20 • Vol: 52.0M</div>
+ </div>
+ <div class="card" style="margin-top: 8px;">
+ <div class="ticker">AMD</div>
+ <div class="subtitle">Advanced Micro</div>
+ <div class="change-positive">+5.67%</div>
+ <div class="price">$128.90 • Vol: 38.5M</div>
+ </div>
+ </div>
+ <div>
+ <h3 style="color: #f87171; margin-bottom: 12px;"> Top Losers</h3>
+ <div class="card">
+ <div class="ticker">TSLA</div>
+ <div class="subtitle">Tesla Inc</div>
+ <div class="change-negative">-4.15%</div>
+ <div class="price">$242.30 • Vol: 35.2M</div>
+ </div>
+ <div class="card" style="margin-top: 8px;">
+ <div class="ticker">INTC</div>
+ <div class="subtitle">Intel Corp</div>
+ <div class="change-negative">-3.28%</div>
+ <div class="price">$42.15 • Vol: 28.8M</div>
+ </div>
+ </div>
+ <div>
+ <h3 style="color: #60a5fa; margin-bottom: 12px;"> Most Active</h3>
+ <div class="card">
+ <div class="ticker">AAPL</div>
+ <div class="subtitle">Apple Inc</div>
+ <div class="change-neutral">+0.52%</div>
+ <div class="price">$178.50 • Vol: 85.0M </div>
+ </div>
+ <div class="card" style="margin-top: 8px;">
+ <div class="ticker">SPY</div>
+ <div class="subtitle">S&P 500 ETF</div>
+ <div class="change-neutral">+0.32%</div>
+ <div class="price">$452.80 • Vol: 72.5M </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <!-- FEATURE 2: CONGRESS TRADES -->
-        <div class="section">
-            <h2>🏛️ Congress Trades <span class="badge badge-green" style="font-size: 14px;">NEW</span></h2>
-            
-            <div class="grid" style="margin-bottom: 20px;">
-                <div class="stat-card">
-                    <div class="stat-label">Total Buy Volume</div>
-                    <div class="stat-value" style="color: #10b981;">$45.2M</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Total Sell Volume</div>
-                    <div class="stat-value" style="color: #ef4444;">$32.8M</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">This Week</div>
-                    <div class="stat-value">127</div>
-                    <div class="stat-label">trades</div>
-                </div>
-            </div>
+ <!-- FEATURE 2: CONGRESS TRADES -->
+ <div class="section">
+ <h2>🏛️ Congress Trades <span class="badge badge-green" style="font-size: 14px;">NEW</span></h2>
+ 
+ <div class="grid" style="margin-bottom: 20px;">
+ <div class="stat-card">
+ <div class="stat-label">Total Buy Volume</div>
+ <div class="stat-value" style="color: #10b981;">$45.2M</div>
+ </div>
+ <div class="stat-card">
+ <div class="stat-label">Total Sell Volume</div>
+ <div class="stat-value" style="color: #ef4444;">$32.8M</div>
+ </div>
+ <div class="stat-card">
+ <div class="stat-label">This Week</div>
+ <div class="stat-value">127</div>
+ <div class="stat-label">trades</div>
+ </div>
+ </div>
 
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <div class="ticker">Nancy Pelosi</div>
-                        <div class="subtitle">NVDA - BUY • 2025-10-10</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <span class="party-badge party-d">D</span>
-                        <span class="party-badge trade-buy">BUY</span>
-                        <div style="margin-top: 8px; font-size: 14px; font-weight: bold;">$50,001-$100,000</div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <div class="ticker">Dan Crenshaw</div>
-                        <div class="subtitle">AAPL - SELL • 2025-10-09</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <span class="party-badge party-r">R</span>
-                        <span class="party-badge trade-sell">SELL</span>
-                        <div style="margin-top: 8px; font-size: 14px; font-weight: bold;">$15,001-$50,000</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+ <div class="card">
+ <div style="display: flex; justify-content: space-between; align-items: start;">
+ <div>
+ <div class="ticker">Nancy Pelosi</div>
+ <div class="subtitle">NVDA - BUY • 2025-10-10</div>
+ </div>
+ <div style="text-align: right;">
+ <span class="party-badge party-d">D</span>
+ <span class="party-badge trade-buy">BUY</span>
+ <div style="margin-top: 8px; font-size: 14px; font-weight: bold;">$50,001-$100,000</div>
+ </div>
+ </div>
+ </div>
+ <div class="card">
+ <div style="display: flex; justify-content: space-between; align-items: start;">
+ <div>
+ <div class="ticker">Dan Crenshaw</div>
+ <div class="subtitle">AAPL - SELL • 2025-10-09</div>
+ </div>
+ <div style="text-align: right;">
+ <span class="party-badge party-r">R</span>
+ <span class="party-badge trade-sell">SELL</span>
+ <div style="margin-top: 8px; font-size: 14px; font-weight: bold;">$15,001-$50,000</div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <!-- FEATURE 3: DARK POOL -->
-        <div class="section">
-            <h2>👁️ Dark Pool Trades <span class="badge badge-green" style="font-size: 14px;">NEW</span></h2>
-            
-            <div class="card" style="border-left: 4px solid #f97316;">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <div class="ticker">TSLA</div>
-                        <div class="subtitle">15:32:15 UTC</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="color: #a855f7; font-size: 28px; font-weight: bold;">$36.38M</div>
-                        <div class="subtitle">150K shares @ $242.50</div>
-                        <div style="color: #f97316; font-size: 12px; margin-top: 4px;">🔥 Large Print >$10M</div>
-                    </div>
-                </div>
-                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(71,85,105,0.5); font-size: 14px; color: #94a3b8;">
-                    Dark: $36.38M | Lit: $10.91M (77% off-exchange)
-                </div>
-            </div>
-            <div class="card" style="border-left: 4px solid #a855f7;">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <div class="ticker">NVDA</div>
-                        <div class="subtitle">15:28:42 UTC</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="color: #a855f7; font-size: 28px; font-weight: bold;">$9.22M</div>
-                        <div class="subtitle">19K shares @ $485.20</div>
-                    </div>
-                </div>
-                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(71,85,105,0.5); font-size: 14px; color: #94a3b8;">
-                    Dark: $9.22M | Lit: $4.25M (68% off-exchange)
-                </div>
-            </div>
-        </div>
+ <!-- FEATURE 3: DARK POOL -->
+ <div class="section">
+ <h2>👁️ Dark Pool Trades <span class="badge badge-green" style="font-size: 14px;">NEW</span></h2>
+ 
+ <div class="card" style="border-left: 4px solid #f97316;">
+ <div style="display: flex; justify-content: space-between; align-items: start;">
+ <div>
+ <div class="ticker">TSLA</div>
+ <div class="subtitle">15:32:15 UTC</div>
+ </div>
+ <div style="text-align: right;">
+ <div style="color: #a855f7; font-size: 28px; font-weight: bold;">$36.38M</div>
+ <div class="subtitle">150K shares @ $242.50</div>
+ <div style="color: #f97316; font-size: 12px; margin-top: 4px;"> Large Print >$10M</div>
+ </div>
+ </div>
+ <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(71,85,105,0.5); font-size: 14px; color: #94a3b8;">
+ Dark: $36.38M | Lit: $10.91M (77% off-exchange)
+ </div>
+ </div>
+ <div class="card" style="border-left: 4px solid #a855f7;">
+ <div style="display: flex; justify-content: space-between; align-items: start;">
+ <div>
+ <div class="ticker">NVDA</div>
+ <div class="subtitle">15:28:42 UTC</div>
+ </div>
+ <div style="text-align: right;">
+ <div style="color: #a855f7; font-size: 28px; font-weight: bold;">$9.22M</div>
+ <div class="subtitle">19K shares @ $485.20</div>
+ </div>
+ </div>
+ <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(71,85,105,0.5); font-size: 14px; color: #94a3b8;">
+ Dark: $9.22M | Lit: $4.25M (68% off-exchange)
+ </div>
+ </div>
+ </div>
 
-        <!-- FEATURE 4: INSTITUTIONAL HOLDINGS -->
-        <div class="section">
-            <h2>🏢 Institutional Holdings (TSLA) <span class="badge badge-green" style="font-size: 14px;">NEW</span></h2>
-            
-            <div class="grid" style="margin-bottom: 20px;">
-                <div class="stat-card">
-                    <div class="stat-label">Total Ownership</div>
-                    <div class="stat-value">62.5%</div>
-                    <div class="stat-label">500M shares</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Change QoQ</div>
-                    <div class="stat-value" style="color: #10b981;">+2.3%</div>
-                    <div class="stat-label">↑ Increased</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Top Holder</div>
-                    <div class="stat-value" style="font-size: 20px;">Vanguard</div>
-                    <div class="stat-label">15.0% ownership</div>
-                </div>
-            </div>
+ <!-- FEATURE 4: INSTITUTIONAL HOLDINGS -->
+ <div class="section">
+ <h2>🏢 Institutional Holdings (TSLA) <span class="badge badge-green" style="font-size: 14px;">NEW</span></h2>
+ 
+ <div class="grid" style="margin-bottom: 20px;">
+ <div class="stat-card">
+ <div class="stat-label">Total Ownership</div>
+ <div class="stat-value">62.5%</div>
+ <div class="stat-label">500M shares</div>
+ </div>
+ <div class="stat-card">
+ <div class="stat-label">Change QoQ</div>
+ <div class="stat-value" style="color: #10b981;">+2.3%</div>
+ <div class="stat-label">↑ Increased</div>
+ </div>
+ <div class="stat-card">
+ <div class="stat-label">Top Holder</div>
+ <div class="stat-value" style="font-size: 20px;">Vanguard</div>
+ <div class="stat-label">15.0% ownership</div>
+ </div>
+ </div>
 
-            <div class="grid">
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between;">
-                        <div>
-                            <div class="ticker">1. Vanguard Group</div>
-                            <div class="subtitle">75.0M shares</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div class="change-neutral">15.0%</div>
-                            <div style="color: #10b981; font-size: 14px;">+2.0%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between;">
-                        <div>
-                            <div class="ticker">2. BlackRock</div>
-                            <div class="subtitle">60.0M shares</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div class="change-neutral">12.0%</div>
-                            <div style="color: #ef4444; font-size: 14px;">-0.8%</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between;">
-                        <div>
-                            <div class="ticker">3. State Street</div>
-                            <div class="subtitle">50.0M shares</div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div class="change-neutral">10.0%</div>
-                            <div style="color: #10b981; font-size: 14px;">+1.5%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+ <div class="grid">
+ <div class="card">
+ <div style="display: flex; justify-content: space-between;">
+ <div>
+ <div class="ticker">1. Vanguard Group</div>
+ <div class="subtitle">75.0M shares</div>
+ </div>
+ <div style="text-align: right;">
+ <div class="change-neutral">15.0%</div>
+ <div style="color: #10b981; font-size: 14px;">+2.0%</div>
+ </div>
+ </div>
+ </div>
+ <div class="card">
+ <div style="display: flex; justify-content: space-between;">
+ <div>
+ <div class="ticker">2. BlackRock</div>
+ <div class="subtitle">60.0M shares</div>
+ </div>
+ <div style="text-align: right;">
+ <div class="change-neutral">12.0%</div>
+ <div style="color: #ef4444; font-size: 14px;">-0.8%</div>
+ </div>
+ </div>
+ </div>
+ <div class="card">
+ <div style="display: flex; justify-content: space-between;">
+ <div>
+ <div class="ticker">3. State Street</div>
+ <div class="subtitle">50.0M shares</div>
+ </div>
+ <div style="text-align: right;">
+ <div class="change-neutral">10.0%</div>
+ <div style="color: #10b981; font-size: 14px;">+1.5%</div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
 
-        <!-- FOOTER -->
-        <div class="footer">
-            <h3>✅ Implementation Complete!</h3>
-            <p style="color: #94a3b8; font-size: 16px;">All 4 UW Market Intelligence features are live with full backend + frontend integration</p>
-            <div class="footer-stats">
-                <div class="footer-stat">
-                    <div class="footer-stat-label">Files Changed</div>
-                    <div class="footer-stat-value">13</div>
-                </div>
-                <div class="footer-stat">
-                    <div class="footer-stat-label">Lines Added</div>
-                    <div class="footer-stat-value" style="color: #34d399;">+3,024</div>
-                </div>
-                <div class="footer-stat">
-                    <div class="footer-stat-label">Tests Passing</div>
-                    <div class="footer-stat-value" style="color: #60a5fa;">19/19</div>
-                </div>
-                <div class="footer-stat">
-                    <div class="footer-stat-label">Commit</div>
-                    <div class="footer-stat-value" style="color: #a855f7;">cce6186</div>
-                </div>
-            </div>
-        </div>
-    </div>
+ <!-- FOOTER -->
+ <div class="footer">
+ <h3> Implementation Complete!</h3>
+ <p style="color: #94a3b8; font-size: 16px;">All 4 UW Market Intelligence features are live with full backend + frontend integration</p>
+ <div class="footer-stats">
+ <div class="footer-stat">
+ <div class="footer-stat-label">Files Changed</div>
+ <div class="footer-stat-value">13</div>
+ </div>
+ <div class="footer-stat">
+ <div class="footer-stat-label">Lines Added</div>
+ <div class="footer-stat-value" style="color: #34d399;">+3,024</div>
+ </div>
+ <div class="footer-stat">
+ <div class="footer-stat-label">Tests Passing</div>
+ <div class="footer-stat-value" style="color: #60a5fa;">19/19</div>
+ </div>
+ <div class="footer-stat">
+ <div class="footer-stat-label">Commit</div>
+ <div class="footer-stat-value" style="color: #a855f7;">cce6186</div>
+ </div>
+ </div>
+ </div>
+ </div>
 </body>
 </html>
