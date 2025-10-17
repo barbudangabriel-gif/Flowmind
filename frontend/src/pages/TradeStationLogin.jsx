@@ -6,8 +6,8 @@ const TradeStationLogin = () => {
     const [loading, setLoading] = useState(false);
 
     const CLIENT_ID = 'XEs0URG1rMrGDUFRKVhlDaclvQKq8Qpj';
-    const REDIRECT_URI = 'http://localhost:8000/api/oauth/tradestation/callback';
-    const MODE = 'SIMULATION'; // or 'LIVE'
+    const REDIRECT_URI = 'https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestation/callback';
+    const MODE = 'LIVE'; // SIMULATION not accessible from Codespaces
     
     const AUTH_URL = MODE === 'LIVE' 
         ? 'https://signin.tradestation.com/authorize'
