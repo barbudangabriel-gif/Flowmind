@@ -1,763 +1,276 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { FLAT_BUILD_LIST, toSlug } from '../lib/buildStrategies';
-import BuildHoverMegaMenu from '../components/nav/BuildHoverMegaMenu';
-import { useOptionsStore } from '../stores/optionsStore';
-import { useBootstrapApp } from '../hooks/useBootstrapApp';
-import { SpreadQualityMeter } from '../components/SpreadQualityMeter';
-import { StrategyPicker } from '../components/StrategyPicker';
-import BuilderHeaderV2 from '../components/build/BuilderHeaderV2';
-import RailsBar from '../components/build/RailsBar';
-import StatsRow from '../components/build/StatsRow';
-import ControlsBar from '../components/build/ControlsBar';
-import GreeksStrip from '../components/build/GreeksStrip';
-import BuilderTable from '../components/build/BuilderTable';
-import { StrikeRailPro } from '../components/StrikeRailPro';
-import { GhostPagerOverlay } from '../components/GhostPagerOverlay';
-import { GraphPaneSR2 } from '../components/GraphPaneSR2';
-import ExpiryRail from '../components/ExpiryRail';
-import TradeButton from '../components/builder/TradeButton';
-import HistoryModal from '../components/builder/HistoryModal';
-import QualityBadge from '../components/common/QualityBadge';
-import CatalogModal from '../components/build/CatalogModal';
-import { SQMBadge, ModeBadge, PerfBadge } from '../components/StatusBadges';
-import { useChain } from '../options/api/useChain';
-import { useExpirations } from '../hooks/useExpirations';
-import { useQuality } from '../hooks/useQuality';
-import { withRetry } from '../utils/withRetry';
-import BuilderChart from '../components/BuilderChart';
+import React, { useEffect, useMemo, useState } from 'react';
+import useDebouncedEffect from '../lib/useDebouncedEffect';
+import { priceStrategy } from '../lib/builderApi';
 
-// ==========================
-// Utils
-// ==========================
+// ===== UI helpers (neutru, fără culori) =====
+const Card = (p) => <div {...p} className={'rounded-xl border border-gray-300 bg-white ' + (p.className||'')} />;
+const SectionTitle = ({ title, right }) => (
+  <div className="flex items-center justify-between py-2">
+    <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+    {right}
+  </div>
+);
+const Button = ({ className='', ...p }) => (
+  <button {...p} className={'h-9 px-3 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-60 ' + className} />
+);
+const Segmented = ({ value, items, onChange }) => (
+  <div role="tablist" className="inline-flex overflow-hidden rounded-lg border border-gray-300">
+    {items.map(x => (
+      <button key={x} role="tab" aria-selected={value===x}
+        onClick={()=>onChange(x)}
+        className={'px-3 py-1 text-sm ' + (value===x?'bg-gray-200':'bg-white hover:bg-gray-50')}>
+        {x}
+      </button>
+    ))}
+  </div>
+);
 
-// Find strategy by slug from buildStrategies.js
-function findStrategyBySlug(slug) {
- return FLAT_BUILD_LIST.find(s => s.slug === slug);
+// ===== mock data (în Sprint 2 le înlocuim cu API-urile reale pentru expirations/chain) =====
+async function fetchExpirations(symbol) {
+  await new Promise(r=>setTimeout(r,150));
+  return [
+    { label:'Oct 25', date:'2025-10-25' },
+    { label:'Nov 25', date:'2025-11-25' },
+    { label:'Dec 25', date:'2025-12-25' },
+  ];
+}
+async function fetchChainSummary(symbol, expiry) {
+  await new Promise(r=>setTimeout(r,150));
+  if (!expiry) return { strikes: [], hasData:false };
+  return { strikes:[80,85,90,95,100,105,110], hasData:true };
 }
 
-// Basic strategy definitions with legs 
-function getStrategyLegs(strategyName) {
- const spot = 250; // Default spot price for TSLA
- 
- switch(strategyName.toLowerCase().replace(/\s+/g, '_')) {
- case 'long_call':
- return [{ type: 'CALL', side: 'BUY', strike: spot + 5, qty: 1, active: true }];
- case 'long_put':
- return [{ type: 'PUT', side: 'BUY', strike: spot - 5, qty: 1, active: true }];
- case 'bull_call_spread':
- return [
- { type: 'CALL', side: 'BUY', strike: spot, qty: 1, active: true },
- { type: 'CALL', side: 'SELL', strike: spot + 10, qty: 1, active: false }
- ];
- case 'bear_put_spread':
- return [
- { type: 'PUT', side: 'BUY', strike: spot, qty: 1, active: true },
- { type: 'PUT', side: 'SELL', strike: spot - 10, qty: 1, active: false }
- ];
- case 'iron_condor':
- return [
- { type: 'PUT', side: 'SELL', strike: spot - 20, qty: 1, active: false },
- { type: 'PUT', side: 'BUY', strike: spot - 30, qty: 1, active: false },
- { type: 'CALL', side: 'SELL', strike: spot + 20, qty: 1, active: false },
- { type: 'CALL', side: 'BUY', strike: spot + 30, qty: 1, active: false }
- ];
- default:
- return [{ type: 'CALL', side: 'BUY', strike: spot + 5, qty: 1, active: true }];
- }
+// ===== Header =====
+function HeaderBar({ symbol, onSymbol, error }) {
+  return (
+    <div className="sticky top-0 z-10 border-b border-gray-200 bg-gray-50/60 backdrop-blur">
+      <div className="mx-auto max-w-7xl px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Segmented value={'Build'} items={['Build','Optimize','Flow']} onChange={()=>{}} />
+            <div className="h-6 w-px bg-gray-300" />
+            <input
+              aria-label="Symbol"
+              value={symbol}
+              onChange={(e)=>onSymbol(e.target.value.toUpperCase())}
+              className="h-9 w-32 rounded-md border border-gray-300 bg-white px-3"
+              placeholder="Symbol"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button>Demo</Button>
+            <Segmented value={'SQM'} items={['SQM','RAW']} onChange={()=>{}} />
+          </div>
+        </div>
+
+        {error && (
+          <div className="mt-3 rounded-md border border-gray-300 bg-white p-2 text-sm text-gray-700">
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-function inferStanceFromDelta(deltaSum) {
- if (typeof deltaSum !== 'number') return 'neutral';
- if (Math.abs(deltaSum) < 0.1) return 'neutral';
- if (deltaSum > 0.1) return 'bullish';
- if (deltaSum < -0.1) return 'bearish';
- return 'neutral';
+// ===== Panels =====
+function ExpirationsPanel({ items, value, onChange }) {
+  return (
+    <Card className="p-3">
+      <SectionTitle title="Expirations" />
+      {items.length===0 ? (
+        <div className="py-6 text-sm text-gray-500">No expirations available</div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {items.map(x=>(
+            <button key={x.date}
+              onClick={()=>onChange(x.date)}
+              className={'h-9 rounded-lg border border-gray-300 bg-white px-3 text-sm hover:bg-gray-50 ' + (value===x.date?'outline outline-2 outline-gray-400':'')}>
+              {x.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
 }
 
-async function fetchPricing(builder) {
- const API = window.API_BASE || process.env.REACT_APP_BACKEND_URL || "";
- 
- const payload = {
- symbol: builder.symbol,
- expiry: builder.expiry || '2025-02-21',
- dte: Math.max(1, builder.dte || 30),
- legs: Array.isArray(builder.legs) ? builder.legs : [],
- qty: Math.max(1, builder.qty || 1),
- iv_mult: Math.min(2, Math.max(0.8, builder.params.iv_mult || 1)),
- range_pct: Math.min(0.3, Math.max(0.05, builder.params.range_pct || 0.15)),
- mode: 'pl_usd',
- strategyId: builder.strategyId || 'long_call'
- };
-
- const response = await withRetry(() => 
- fetch(`${API}/api/builder/price`, {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify(payload)
- }).then(r => { 
- if (!r.ok) throw new Error(`price ${r.status}`); 
- return r.json(); 
- })
- );
- 
- return response;
+function StrikesPanel({ summary, value, onChange }) {
+  return (
+    <Card className="p-3">
+      <SectionTitle title="Strike Prices" />
+      {summary.hasData ? (
+        <div className="flex flex-wrap gap-2">
+          {summary.strikes.map(s=>(
+            <button key={s}
+              onClick={()=>onChange(s)}
+              className={'h-9 rounded-md border border-gray-300 bg-white px-3 text-sm hover:bg-gray-50 ' + (value===s?'outline outline-2 outline-gray-400':'')}>
+              {s}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="py-8 text-center text-sm text-gray-500">No options chain available</div>
+      )}
+    </Card>
+  );
 }
 
+function MetricsBar({ data, loading }) {
+  const items = useMemo(()=>[
+    { k:'Net Debit', v: data?.netDebit ?? '$0' },
+    { k:'Max Loss', v: data?.maxLoss ?? '$0' },
+    { k:'Max Profit', v: data?.maxProfit ?? '$0' },
+    { k:'Chance of Profit', v: data?.prob ?? '—' },
+    { k:'Breakeven', v: data?.breakeven ?? '—' },
+  ], [data]);
+  return (
+    <Card className="p-0 overflow-hidden">
+      <div className="grid grid-cols-2 gap-px md:grid-cols-5">
+        {items.map(x=>(
+          <div key={x.k} className="p-3">
+            <div className="text-xs text-gray-500">{x.k}</div>
+            <div className="text-base font-medium text-gray-900">
+              {loading ? '…' : x.v}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function GreeksPanel({ data, loading }) {
+  const items = [
+    { k:'Delta', v: data?.delta ?? '0.0000' },
+    { k:'Gamma', v: data?.gamma ?? '—' },
+    { k:'Vega',  v: data?.vega  ?? '—' },
+    { k:'Rho',   v: data?.rho   ?? '—' },
+  ];
+  return (
+    <Card className="p-3">
+      <SectionTitle title="Greeks" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {items.map(x=>(
+          <div key={x.k} className="rounded-lg border border-gray-200 p-3">
+            <div className="text-xs text-gray-500">{x.k}</div>
+            <div className="text-sm font-medium text-gray-900">{loading ? '…' : x.v}</div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+function SliderRow({ label, value, onChange, min=0, max=100, step=1 }) {
+  return (
+    <div className="flex items-center gap-3 py-2">
+      <div className="w-56 text-sm text-gray-700">{label}</div>
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={(e)=>onChange(Number(e.target.value))}
+        className="flex-1" aria-label={label} />
+      <div className="w-16 text-right text-sm tabular-nums text-gray-700">{value}%</div>
+    </div>
+  );
+}
+
+// ===== Page =====
 export default function BuilderPage() {
- // Extract strategyId from URL parameters 
- const { strategyId } = useParams();
- const navigate = useNavigate();
- const { pathname } = useLocation();
- 
- // Bootstrap app - inițializare fără blocking UI
- const params = useMemo(() => ({
- symbol: 'TSLA',
- strategyId: strategyId || 'long_call'
- }), [strategyId]);
- 
- const { ready, initializing } = useBootstrapApp(params);
- 
- // Access options store for consistent state management
- const { previewItem, setPreviewItem } = useOptionsStore();
- 
- // NU mai blocăm UI - doar logăm status
- console.log('BuilderPage render - ready:', ready, 'initializing:', initializing);
- 
- // State for persistent header Build menu
- const [showBuildMenu, setShowBuildMenu] = useState(false);
- const [hoverTimer, setHoverTimer] = useState(null);
- 
- const handleBuildEnter = () => {
- if (hoverTimer) clearTimeout(hoverTimer);
- setShowBuildMenu(true);
- };
+  const [symbol, setSymbol] = useState('TSLA');
 
- const handleBuildLeave = () => {
- const timer = setTimeout(() => setShowBuildMenu(false), 300);
- setHoverTimer(timer);
- };
+  const [expirations, setExpirations] = useState([]);
+  const [expiry, setExpiry] = useState();
+  const [summary, setSummary] = useState({ strikes: [], hasData:false });
+  const [strike, setStrike] = useState();
 
- const handleMenuEnter = () => {
- if (hoverTimer) clearTimeout(hoverTimer);
- };
+  const [rangePct, setRangePct] = useState(15);
+  const [ivPct, setIvPct] = useState(25);
 
- const handleMenuLeave = () => {
- const timer = setTimeout(() => setShowBuildMenu(false), 100);
- setHoverTimer(timer);
- };
+  const [price, setPrice] = useState(null);
+  const [pLoading, setPLoading] = useState(false);
+  const [error, setError] = useState('');
 
- // Tab component (exactly like OptimizePage) 
- const Tab = ({ label, to, dropdown = false }) => {
- let active = false;
- 
- if (to === 'build' && pathname.includes('/build')) active = true;
- else if (to === 'optimize' && pathname === '/optimize') active = true;
- else if (to === 'flow' && pathname === '/flow') active = true;
- 
- const base = 'px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors font-medium';
- 
- // Special handling for Build tab with dropdown menu
- if (to === 'build' && dropdown) {
- return (
- <div className="relative">
- <button
- onClick={() => navigate('/options/analytics')}
- onMouseEnter={handleBuildEnter}
- onMouseLeave={handleBuildLeave}
- className={`${base} ${active ? 'bg-slate-800' : ''}`}
- title={label}
- >
- {label} ▾
- </button>
- 
- {showBuildMenu && (
- <div 
- onMouseEnter={handleMenuEnter}
- onMouseLeave={handleMenuLeave}
- >
- <BuildHoverMegaMenu
- symbol="TSLA"
- onClose={() => setShowBuildMenu(false)}
- onItemHover={(item) => setPreviewItem(item)}
- />
- </div>
- )}
- </div>
- );
- }
- 
- return (
- <button
- onClick={() => {
- if (to === 'build') navigate('/options/analytics');
- else if (to === 'optimize') navigate('/optimize');
- else if (to === 'flow') navigate('/flow');
- }}
- className={`${base} ${active ? 'bg-slate-800' : ''}`}
- title={label}
- >
- {label}{dropdown ? ' ▾' : ''}
- </button>
- );
- };
- 
- // Central state management
- const [builder, setBuilder] = useState({
- symbol: 'TSLA',
- expiry: '',
- legs: [],
- qty: 1,
- dte: 30,
- strategyId: strategyId || 'long_call',
- params: { 
- iv_mult: 1.0, 
- range_pct: 0.15 
- }
- });
+  // expirations
+  useEffect(()=>{
+    let alive = true;
+    setError('');
+    fetchExpirations(symbol)
+      .then(r=> alive && setExpirations(r))
+      .catch(e=> alive && setError(String(e?.message||e)));
+    return ()=>{ alive=false; };
+  }, [symbol]);
 
- const [pricing, setPricing] = useState(null);
- const [mode, setMode] = useState("graph"); // "table" | "pl$" | "pl%" | "contract" | "%risk"
- const [dataMode, setDataMode] = useState('DEMO');
- 
- // Chart options state
- const [showProbability, setShowProbability] = useState(true);
- const [highContrast, setHighContrast] = useState(false);
- 
- // Core page state
- const [pageReady, setPageReady] = useState(true); // Force ready for debugging
- const [coreError, setCoreError] = useState(null);
- const [perfMetrics, setPerfMetrics] = useState({});
- 
- // UI state
- const [catalogOpen, setCatalogOpen] = useState(false);
- const [historyModalOpen, setHistoryModalOpen] = useState(false);
- const chartRef = useRef(null);
+  // chain summary
+  useEffect(()=>{
+    let alive = true;
+    setError('');
+    fetchChainSummary(symbol, expiry)
+      .then(r=> alive && setSummary(r))
+      .catch(e=> alive && setError(String(e?.message||e)));
+    return ()=>{ alive=false; };
+  }, [symbol, expiry]);
 
- // Initialize strategy from URL parameter
- useEffect(() => {
- console.log('Strategy initialization effect running, strategyId:', strategyId);
- if (strategyId) {
- const strategy = findStrategyBySlug(strategyId);
- console.log('Found strategy:', strategy);
- if (strategy) {
- const legs = getStrategyLegs(strategy.name);
- console.log('Generated legs:', legs);
- setBuilder(prev => ({
- ...prev,
- strategyId: strategyId,
- legs: legs
- }));
- }
- }
- // Set page ready after strategy initialization
- console.log('Setting pageReady to true');
- setPageReady(true);
- }, [strategyId]);
+  // pricing: debounce pentru a nu spama backend-ul
+  useDebouncedEffect(()=>{
+    if (!symbol || !expiry || !strike) {
+      setPrice(null);
+      return;
+    }
+    const payload = {
+      symbol,
+      expiry,
+      legs: [{ type:'CALL', side:'BUY', strike }],   // simplu, 1 leg; extindem ulterior
+      rangePct,
+      ivPct,
+    };
+    setPLoading(true);
+    setError('');
+    priceStrategy(payload)
+      .then(data => setPrice(data))
+      .catch(e  => setError(String(e?.message||e)))
+      .finally(()=> setPLoading(false));
+  }, [symbol, expiry, strike, rangePct, ivPct], 350);
 
- // Parse deep-link fail-safe (doesn't throw)
- useEffect(() => {
- try {
- const url = new URL(window.location.href);
- const s = url.searchParams.get('s');
- if (s) {
- const json = JSON.parse(decodeURIComponent(escape(atob(s))));
- setBuilder(prev => ({
- ...prev,
- symbol: json.symbol || prev.symbol,
- expiry: json.expiry || prev.expiry,
- legs: Array.isArray(json.legs) && json.legs.length ? json.legs : prev.legs,
- strategyId: json.strategyId || prev.strategyId,
- dte: json.dte || prev.dte,
- qty: json.qty || prev.qty
- }));
- }
- } catch (e) {
- console.warn('Deep-link parse error:', e);
- // Builder has fallback - ignore error
- }
- }, []);
+  return (
+    <div className="min-h-screen bg-gray-100 text-gray-900">
+      <HeaderBar symbol={symbol} onSymbol={setSymbol} error={error} />
 
- // Debounced pricing fetch
- useEffect(() => {
- let alive = true;
- 
- console.log('Pricing fetch effect triggered, builder state:', builder);
- 
- const timeoutId = setTimeout(async () => {
- try {
- setCoreError(null);
- console.log('Starting pricing fetch...');
- 
- const t0 = performance.now();
- const data = await fetchPricing(builder);
- const dt = performance.now() - t0;
- 
- console.log('Pricing fetch completed in', dt, 'ms');
- setPerfMetrics(prev => ({ ...prev, priceMs: dt }));
- 
- // Log slow operations
- if (dt > 1200) {
- console.warn('price slow', Math.round(dt), 'ms');
- }
- 
- if (!alive) return;
- 
- // Detect data mode from response
- setDataMode(data?.meta?.mode || (data?.demo ? 'DEMO' : 'LIVE'));
- setPricing(data);
- console.log('Pricing data set:', data);
- 
- } catch (e) {
- console.warn('Builder core error:', e);
- if (!alive) return;
- setCoreError(e?.message ?? 'builder-core-error');
- setDataMode('DEMO'); // Always demo on error
- // Set fallback pricing so UI can still render
- setPricing({
- net_price: 0,
- max_profit: 0,
- max_loss: 0,
- breakevens: [],
- greeks: { delta: 0 },
- chart_data: []
- });
- }
- }, 200); // 200ms debounce
+      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-12">
+        {/* stânga */}
+        <div className="lg:col-span-8 space-y-6">
+          <ExpirationsPanel items={expirations} value={expiry} onChange={setExpiry} />
+          <StrikesPanel summary={summary} value={strike} onChange={setStrike} />
+          <MetricsBar data={price?.metrics} loading={pLoading} />
+          <Card className="p-6 text-center text-sm text-gray-500">Chain area (tabel/grafice) – Sprint 2</Card>
+        </div>
 
- return () => { 
- alive = false; 
- clearTimeout(timeoutId);
- };
- }, [builder]); // Re-run when builder state changes
+        {/* dreapta */}
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="p-3">
+            <SectionTitle title="Strategy" right={<span className="text-xs text-gray-500">0 legs</span>} />
+            <div className="text-sm text-gray-700">Long Call</div>
+          </Card>
 
- // External data hooks
- const { list: expirations } = useExpirations(builder.symbol);
- const { data: chain } = useChain({ symbol: builder.symbol, expiry: builder.expiry });
+          <GreeksPanel data={price?.greeks} loading={pLoading} />
 
- // Patch D - SQM/Quality - live connected to IV/Range
- const { score: sqm, mode: sqmMode } = useQuality(
- { 
- legs: builder.legs, 
- spot: pricing?.meta?.spot || 250, 
- ivMult: builder.params.iv_mult, 
- rangePct: builder.params.range_pct, 
- dte: builder.dte, 
- symbol: builder.symbol 
- },
- { enabled: pageReady }
- );
+          <Card className="p-3">
+            <SectionTitle title="Parameters" />
+            <SliderRow label="Range" value={rangePct} onChange={setRangePct} min={0} max={100} />
+            <SliderRow label="Implied Volatility" value={ivPct} onChange={setIvPct} min={0} max={300} />
+          </Card>
 
- // Handlers
- const handleParamsChange = (patch) => {
- setBuilder(prev => ({
- ...prev,
- params: { ...prev.params, ...patch }
- }));
- };
-
- const handleStrike = (strike) => {
- setBuilder(prev => ({
- ...prev,
- legs: prev.legs.map(leg => 
- leg.active ? { ...leg, strike } : leg
- )
- }));
- };
-
- const handleTrade = () => {
- console.log('Trade button clicked', {
- builder,
- deltaSum: pricing?.greeks?.delta
- });
- };
-
- // Loading state - only for core essentials
- console.log('BuilderPage render - pageReady:', pageReady, 'strategyId:', strategyId);
- 
- if (!pageReady) {
- return (
- <div className="min-h-screen bg-slate-900 flex items-center justify-center">
- <div className="text-center">
- <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
- <div className="text-slate-300">Loading Options Builder...</div>
- <div className="text-xs text-slate-500 mt-1">Preparing advanced features</div>
- <div className="text-xs text-slate-400 mt-2">Strategy: {strategyId || 'none'}</div>
- </div>
- </div>
- );
- }
-
- const stance = inferStanceFromDelta(pricing?.greeks?.delta);
-
- return (
- <div className="min-h-screen bg-slate-900 text-white">
- <div className="max-w-7xl mx-auto p-4">
- 
- {/* Persistent Header: Build | Optimize | Flow */}
- <div className="flex items-center gap-2 mb-6">
- <Tab label="Build" to="build" dropdown />
- <Tab label="Optimize" to="optimize" />
- <Tab label="Flow" to="flow" />
- </div>
- 
- {/* Core Error Display */}
- {coreError && (
- <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 mb-4">
- <div className="text-sm text-red-300">Core error: {String(coreError)}</div>
- </div>
- )}
-
- {/* Header */}
- <BuilderHeaderV2
- symbol={builder.symbol}
- meta={{ 
- price: pricing?.meta?.spot, 
- change: 2.45, // Mock data - you can get from pricing
- changePct: 1.2,
- mode: dataMode 
- }}
- sqm={{ score: sqm, degraded: sqmMode === 'degraded' }}
- stance={stance}
- legs={builder.legs}
- strategyId={builder.strategyId}
- onCatalog={() => setCatalogOpen(true)}
- onHistorical={() => setHistoryModalOpen(true)}
- onTrade={handleTrade}
- />
-
- {/* Rails */}
- <RailsBar
- symbol={builder.symbol}
- expiry={builder.expiry}
- onExpiry={(e) => setBuilder(prev => ({ ...prev, expiry: e }))}
- chain={chain}
- onStrike={handleStrike}
- expirations={expirations}
- />
-
- {/* Stats Row */}
- <StatsRow p={pricing} />
-
- {/* Chart & Content */}
- <div className="space-y-4">
- {mode === 'graph' && (
- <div>
- <BuilderChart 
- ref={chartRef} 
- data={pricing} 
- showProbability={showProbability}
- />
- <GreeksStrip greeks={pricing?.greeks} />
- </div>
- )}
- 
- {mode !== 'graph' && (
- <BuilderTable 
- pricing={pricing} 
- builder={builder} 
- variant={mode}
- />
- )}
- </div>
-
- {/* Controls */}
- <ControlsBar
- builder={builder}
- pricing={pricing}
- mode={mode}
- setMode={setMode}
- onParams={handleParamsChange}
- showProbability={showProbability}
- setShowProbability={setShowProbability}
- highContrast={highContrast}
- setHighContrast={setHighContrast}
- />
-
- {/* Modals */}
- <HistoryModal 
- open={historyModalOpen} 
- onClose={() => setHistoryModalOpen(false)} 
- symbol={builder.symbol}
- legs={builder.legs}
- expiry={builder.expiry}
- dte={builder.dte}
- />
-
- <CatalogModal 
- open={catalogOpen} 
- onOpenChange={setCatalogOpen} 
- symbol={builder.symbol}
- />
- </div>
- </div>
- );
-}
-function qs() {
- const p = new URLSearchParams(window.location.search);
- return Object.fromEntries(p.entries());
-}
-function safeJson(s) {
- try { return s ? JSON.parse(s) : null; } catch { return null; }
-}
-function b64urlDecode(s) {
- if (!s) return null;
- try {
- const pad = '='.repeat((4 - (s.length % 4)) % 4);
- const norm = (s + pad).replace(/-/g, '+').replace(/_/g, '/');
- const json = atob(norm);
- const data = safeJson(json);
- 
- // Robust validation with safe fallback
- if (!data || typeof data !== 'object') {
- return { strategyId: 'long_call', legs: [], params: { iv_mult: 1, range_pct: 0.15 } };
- }
- 
- // Validate required fields
- if (!Array.isArray(data.legs) || !data.strategyId) {
- return { strategyId: 'long_call', legs: [], params: { iv_mult: 1, range_pct: 0.15 } };
- }
- 
- return data;
- } catch (error) {
- console.warn('Deep-link decode failed, using fallback:', error);
- return { strategyId: 'long_call', legs: [], params: { iv_mult: 1, range_pct: 0.15 } };
- }
-}
-const API = (window).API_BASE || process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL || "";
-const jfetch = async (url, opts) => {
- const r = await fetch(url, opts);
- if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
- // tolerăm atât {expirations:[...]} cât și [...]
- const body = await r.json().catch(()=> ({}));
- return body;
-};
-
-// ==========================
-// Small components
-// ==========================
-function Card({title,children}){
- return (
- <div className="bg-white rounded-2xl shadow p-4">
- <div className="text-sm text-slate-500">{title}</div>
- <div className="text-sm font-semibold mt-1">{children}</div>
- </div>
- );
-}
-
-function MetricCards({ data }){
- if (!data?.pricing) return null;
- const P = data.pricing;
- const money = (n)=> n==null? '—' : (n<0? `-$${Math.abs(n).toLocaleString()}` : `$${n.toLocaleString()}`);
- const pct = (n)=> (n==null? '—' : `${(n*100).toFixed(1)}%`);
- const debit = P.net_debit>0 ? money(P.net_debit) : '—';
- const credit = P.net_credit>0 ? money(P.net_credit) : '—';
- return (
- <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
- <Card title="Net Debit">{debit}</Card>
- <Card title="Net Credit">{credit}</Card>
- <Card title="Max Loss">{money(P.max_loss)}</Card>
- <Card title="Max Profit">{money(P.max_profit)}</Card>
- <Card title="Chance of Profit">{pct(P.chance_profit)}</Card>
- <Card title="Breakeven(s)">{P.breakevens?.map(b=>b.toFixed(2)).join(', ') || '—'}</Card>
- </div>
- );
-}
-
-function Legend({spot,target}){
- return (
- <div className="flex items-center gap-4 text-sm text-slate-600">
- <div className="flex items-center gap-1"><span className="w-4 h-0.5 bg-slate-900 inline-block"/> P/L at Expiration</div>
- <div className="flex items-center gap-1"><span className="w-4 h-0.5 bg-sky-600 inline-block"/> Probability (CDF)</div>
- <div className="ml-auto">Spot: <span className="font-semibold">{spot.toFixed(2)}</span>{target? <> · Target: <span className="font-semibold">{target.toFixed(2)}</span></>:null}</div>
- </div>
- );
-}
-
-// ==========================
-// Utils
-// ==========================
-
-// Transform BuilderChart data to GraphPaneSR2 format
-function transformToGraphSR2Series(data) {
- if (!data?.chart?.series?.[0]?.xy) return [];
- 
- return data.chart.series[0].xy.map(([price, value]) => ({
- price,
- value,
- prob: null // Will be calculated by GraphPaneSR2 if needed
- }));
-}
-
-function HistoricalPanel({ payload, data }) {
- const [series, setSeries] = useState(null);
- const [loading, setLoading] = useState(false);
- const [err, setErr] = useState(null);
- const API = (window).API_BASE || process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL || "";
-
- async function load() {
- setLoading(true); 
- setErr(null);
- try {
- const r = await fetch(`${API}/api/builder/historical`, {
- method: 'POST', 
- headers: {'Content-Type': 'application/json'}, 
- body: JSON.stringify({...payload, days: 60})
- });
- if (!r.ok) throw new Error(await r.text());
- const j = await r.json();
- setSeries(j.series || []);
- } catch (e) { 
- setErr(e.message || 'load failed'); 
- } finally { 
- setLoading(false); 
- }
- }
-
- useEffect(() => { 
- load(); 
- }, [JSON.stringify(payload)]);
-
- if (loading) return <div className="text-slate-500">Loading historical…</div>;
- if (err) return <div className="text-rose-700">{err}</div>;
- if (!series?.length) return <div className="text-slate-500">No historical data</div>;
-
- // simple SVG area chart
- const W = 980, H = 220, p = {l: 48, r: 24, t: 10, b: 28};
- const minPL = Math.min(...series.map(s => s.pl));
- const maxPL = Math.max(...series.map(s => s.pl));
- const X = (i) => p.l + (i / (series.length - 1)) * (W - p.l - p.r);
- const Y = (y) => H - p.b - ((y - minPL) / (maxPL - minPL || 1)) * (H - p.t - p.b);
- const path = series.map((s, i) => `${i ? 'L' : 'M'}${X(i)},${Y(s.pl)}`).join(' ');
-
- return (
- <div className="bg-white rounded-2xl shadow p-4">
- <div className="flex items-center">
- <div className="text-sm text-slate-600">Historical P/L (mark‑to‑market, 60d)</div>
- <button 
- onClick={() => downloadCSV(`${payload.symbol}_${payload.expiry || ('dte' + payload.dte)}_historical.csv`, series)} 
- className="ml-auto px-3 py-1.5 rounded bg-slate-900 text-white text-xs"
- >
- Export CSV
- </button>
- </div>
- <svg width={W} height={H} className="mt-2">
- <line x1={p.l} y1={H - p.b} x2={W - p.r} y2={H - p.b} stroke="#cbd5e1"/>
- <line x1={p.l} y1={p.t} x2={p.l} y2={H - p.b} stroke="#cbd5e1"/>
- {0 >= minPL && 0 <= maxPL && <line x1={p.l} y1={Y(0)} x2={W - p.r} y2={Y(0)} stroke="#e2e8f0" strokeDasharray="4 4"/>}
- <path d={path} fill="none" stroke="#0f172a" strokeWidth={2}/>
- </svg>
- <div className="mt-2 text-xs text-slate-500">
- Last: {series[series.length - 1].pl.toLocaleString()} · Min: {minPL.toLocaleString()} · Max: {maxPL.toLocaleString()}
- </div>
- </div>
- );
-}
-
-// ==========================
-// Main page
-// ==========================
-// (This section has been completely replaced with the new non-blocking implementation above)
-
-// ==========================
-// B4/6 Download Utilities
-// ==========================
-function downloadJSON(filename, data) {
- const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
- const a = document.createElement('a');
- a.href = URL.createObjectURL(blob);
- a.download = filename;
- a.click();
- URL.revokeObjectURL(a.href);
-}
-
-async function downloadSVGAsPNG(svg, filename) {
- const s = new XMLSerializer().serializeToString(svg);
- const svg64 = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
- const img = new Image();
- const cssPixelRatio = window.devicePixelRatio || 1;
- const rect = svg.getBoundingClientRect();
- const W = Math.max(800, Math.round(rect.width * cssPixelRatio));
- const H = Math.max(400, Math.round(rect.height * cssPixelRatio));
- const canvas = document.createElement('canvas');
- canvas.width = W; canvas.height = H;
- const ctx = canvas.getContext('2d');
- if (!ctx) throw new Error('Canvas 2D missing');
-
- await new Promise((resolve,reject)=>{
- img.onload = ()=>{ resolve(); };
- img.onerror = reject;
- img.src = svg64;
- });
- ctx.fillStyle = '#ffffff';
- ctx.fillRect(0,0,W,H);
- // scale draw to fit
- ctx.drawImage(img, 0, 0, W, H);
-
- const a = document.createElement('a');
- a.href = canvas.toDataURL('image/png');
- a.download = filename;
- a.click();
-}
-
-// B8 - Live Spread Quality Calculation
-function marketForLeg(chain, kind, strike) {
- const rows = chain?.OptionChains?.[0]?.Strikes || [];
- for (const r of rows) {
- if (Number(r.StrikePrice) === Number(strike)) {
- const L = kind === 'CALL' ? (r.Calls?.[0] || {}) : (r.Puts?.[0] || {});
- const bid = Number(L.Bid || 0);
- const ask = Number(L.Ask || 0);
- const mid = (bid > 0 && ask > 0) ? (bid + ask) / 2 : Number(L.Last || 0);
- const oi = Number(L.OpenInterest || 0);
- const vol = Number(L.Volume || 0);
- const spr = Math.max(0, ask - bid);
- const rel = mid > 0 ? (spr / Math.max(0.05, mid)) : 1.0;
- return { bid, ask, mid, oi, vol, spr, rel };
- }
- }
- return { bid: 0, ask: 0, mid: 0, oi: 0, vol: 0, spr: 0, rel: 1 };
-}
-
-function spreadScore(rel) {
- if (rel <= 0) return 1;
- if (rel >= 0.2) return 0;
- if (rel <= 0.05) return 1 - 0.25 * (rel / 0.05);
- if (rel <= 0.10) return 0.75 - 0.25 * ((rel - 0.05) / 0.05);
- return 0.5 - 0.5 * ((rel - 0.10) / 0.10);
-}
-
-function computeQuality(chain, legs) {
- let wSum = 0, qSum = 0, slip = 0;
- let ok = true;
- 
- for (const L of legs) {
- const mm = marketForLeg(chain, L.type, Number(L.strike));
- const q = 0.65 * spreadScore(mm.rel) + 0.35 * Math.tanh((mm.oi + mm.vol) / 1500);
- const w = Math.max(1, Math.abs(mm.mid));
- wSum += w;
- qSum += q * w;
- slip += 0.5 * mm.spr * 100;
- if (!(mm.rel <= 0.12 || mm.spr <= 0.10)) ok = false;
- }
- 
- const quality = wSum ? (qSum / wSum) : 0;
- return { 
- quality: Math.round(quality * 100), 
- slippage: Math.round(slip * 100) / 100, 
- ok 
- };
-}
-
-// B7 - CSV Export Utility
-function downloadCSV(filename, rows) {
- const headers = Object.keys(rows[0] || {t:'t', spot:'spot', pl:'pl'});
- const esc = (v) => typeof v === 'string' && (v.includes(',') || v.includes('"')) ? '"' + v.replace(/"/g, '""') + '"' : v;
- const body = [headers.join(',')].concat(rows.map(r => headers.map(h => esc(r[h] ?? '')).join(','))).join('\n');
- const blob = new Blob([body], {type:'text/csv;charset=utf-8;'});
- const a = document.createElement('a'); 
- a.href = URL.createObjectURL(blob); 
- a.download = filename; 
- a.click(); 
- URL.revokeObjectURL(a.href);
+          <Card className="p-3">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium">Actions</div>
+              <div className="flex gap-2">
+                <Button>Graph</Button>
+                <Button>Table</Button>
+                <Button>More</Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </main>
+    </div>
+  );
 }
