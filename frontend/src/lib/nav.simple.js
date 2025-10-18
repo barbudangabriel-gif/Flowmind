@@ -81,6 +81,12 @@ export function buildNav(ctx) {
  icon: "Hammer",
  badge: { text: "PRO", tone: "success" }
  },
+	{
+	 label: "Simulator",
+	 to: "/simulator",
+	 icon: "BarChart2",
+	 badge: { text: "NEW", tone: "success" }
+	},
  { 
  label: "Analytics", 
  to: "/options/analytics", 

@@ -9,6 +9,7 @@ import { mfClient } from './services/mindfolioClient';
 import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import BuilderPage from './pages/BuilderPage';
+import SimulatorPage from './pages/SimulatorPage';
 import FlowPage from './pages/FlowPage';
 import MindfolioList from './pages/MindfolioList';
 import MindfolioDetail from './pages/MindfolioDetail';
@@ -78,6 +79,7 @@ function InactivityMonitor({ timeout = 5 * 60 * 1000 }) {
         }, currentTimeout);
       };
       
+<Route path="/simulator" element={<SimulatorPage />} />
       // Track user activity
       const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
       events.forEach(event => {
