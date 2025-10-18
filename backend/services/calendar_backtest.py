@@ -31,93 +31,93 @@ class CalendarBacktest:
                 - Max drawdown
                 - Sharpe ratio
                 - Profit factor
-                """
-
-                def __init__(self, data_provider=None):
-                """
-    Initialize backtest engine
-
-    Args:
-    data_provider: Historical options data provider (optional)
     """
-                self.data_provider = data_provider
 
-                # Backtest configuration
-                self.entry_days_before_earnings = 7
-                self.exit_days_after_earnings = 1
-                self.atm_strike_tolerance = 0.05  # 5% from spot
+    def __init__(self, data_provider=None):
+        """
+        Initialize backtest engine
 
-                # Historical earnings data (demo)
-                self.historical_earnings = self._load_demo_earnings_data()
+        Args:
+            data_provider: Historical options data provider (optional)
+        """
+        self.data_provider = data_provider
 
-                logger.info("CalendarBacktest engine initialized")
+        # Backtest configuration
+        self.entry_days_before_earnings = 7
+        self.exit_days_after_earnings = 1
+        self.atm_strike_tolerance = 0.05  # 5% from spot
 
-                async def backtest_symbol(
-                                self,
-                                symbol: str,
-                                lookback_quarters: int = 8,
-                                position_size: int = 1
-                ) -> Dict:
-                """
-    Backtest calendar spread strategy for a symbol
+        # Historical earnings data (demo)
+        self.historical_earnings = self._load_demo_earnings_data()
 
-    Args:
-    symbol: Stock ticker
-    lookback_quarters: Number of past earnings to backtest
-    position_size: Number of contracts per trade
+        logger.info("CalendarBacktest engine initialized")
 
-    Returns:
-    Backtest results with metrics
-    """
-                logger.info(f"Backtesting {symbol} over {lookback_quarters} quarters")
+    async def backtest_symbol(
+        self,
+        symbol: str,
+        lookback_quarters: int = 8,
+        position_size: int = 1
+    ) -> Dict:
+        """
+        Backtest calendar spread strategy for a symbol
 
-                # Get historical earnings for this symbol
-                earnings_history = self.historical_earnings.get(symbol, [])
+        Args:
+            symbol: Stock ticker
+            lookback_quarters: Number of past earnings to backtest
+            position_size: Number of contracts per trade
 
-                if not earnings_history:
-                logger.warning(f"No historical data for {symbol}")
-                return self._empty_backtest_result()
+        Returns:
+            Backtest results with metrics
+        """
+        logger.info(f"Backtesting {symbol} over {lookback_quarters} quarters")
 
-                # Limit to requested quarters
-                earnings_history = earnings_history[:lookback_quarters]
+        # Get historical earnings for this symbol
+        earnings_history = self.historical_earnings.get(symbol, [])
 
-                # Run backtest for each earnings
-                trades = []
+        if not earnings_history:
+            logger.warning(f"No historical data for {symbol}")
+            return self._empty_backtest_result()
 
-                for earnings_event in earnings_history:
-                trade_result = await self._simulate_calendar_spread(
-                                symbol=symbol,
-                                earnings_event=earnings_event,
-                                position_size=position_size
-                )
+        # Limit to requested quarters
+        earnings_history = earnings_history[:lookback_quarters]
 
-                if trade_result:
+        # Run backtest for each earnings
+        trades = []
+
+        for earnings_event in earnings_history:
+            trade_result = await self._simulate_calendar_spread(
+                symbol=symbol,
+                earnings_event=earnings_event,
+                position_size=position_size
+            )
+
+            if trade_result:
                 trades.append(trade_result)
 
-                # Calculate aggregate metrics
-                if not trades:
-                return self._empty_backtest_result()
+        # Calculate aggregate metrics
+        if not trades:
+            return self._empty_backtest_result()
 
-                results = self._calculate_metrics(trades)
-                results["symbol"] = symbol
-                results["lookback_quarters"] = lookback_quarters
-                results["trades"] = len(trades)
+        results = self._calculate_metrics(trades)
+        results["symbol"] = symbol
+        results["lookback_quarters"] = lookback_quarters
+        results["trades"] = len(trades)
 
-                logger.info(
-                                f"{symbol} backtest: {results['wins']}/{results['trades']} wins, "
-                                f"${results['total_profit']:.2f} profit"
-                )
+        logger.info(
+            f"{symbol} backtest: {results['wins']}/{results['trades']} wins, "
+            f"${results['total_profit']:.2f} profit"
+        )
 
-                return results
+        return results
 
-                async def _simulate_calendar_spread(
-                                self,
-                                symbol: str,
-                                earnings_event: Dict,
-                                position_size: int
-                ) -> Optional[Dict]:
-                """
-    Simulate a single calendar spread trade
+    async def _simulate_calendar_spread(
+        self,
+        symbol: str,
+        earnings_event: Dict,
+        position_size: int
+    ) -> Optional[Dict]:
+        """
+        Simulate a single calendar spread trade
 
     Trade flow:
     1. Enter 7 days before earnings
