@@ -3,20 +3,20 @@ from abc import ABC, abstractmethod
 
 
 class OptionsProvider(ABC):
-                """Abstract base class for options data providers"""
+    """Abstract base class for options data providers"""
 
-                @abstractmethod
-                def get_spot(self, symbol: str) -> float:
-                """Get current spot price for symbol"""
-                pass
+    @abstractmethod
+    def get_spot(self, symbol: str) -> float:
+    """Get current spot price for symbol"""
+    pass
 
-                @abstractmethod
-                def get_chain(self,
-                                                                        symbol: str,
-                                                                        expiry: Optional[str] = None,
-                                                                        dte: Optional[int] = None) -> Dict[str,
-                                                                                                                                                                                                                    Any]:
-                """Get options chain data for symbol
+    @abstractmethod
+    def get_chain(self,
+                                                            symbol: str,
+                                                            expiry: Optional[str] = None,
+                                                            dte: Optional[int] = None) -> Dict[str,
+                                                                                                                                                                                                        Any]:
+    """Get options chain data for symbol
 
     Returns normalized structure:
     {
@@ -34,4 +34,4 @@ class OptionsProvider(ABC):
     ]
     }
     """
-                pass
+    pass
