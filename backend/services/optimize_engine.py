@@ -213,19 +213,19 @@ def suggest(
                 roi_ev,
                 chance,
                 None,
-    debit,
-    0.0,
-    [be],
-    {"x": [spot * 0.8, spot * 1.2], "breakevens": [be]},
-    link,
-    )
-    )
-    items[-1]["_score"] = 0.35 * roi_ev + 0.45 * chance + 0.20 * liq
+                debit,
+                0.0,
+                [be],
+                {"x": [spot * 0.8, spot * 1.2], "breakevens": [be]},
+                link,
+            )
+        )
+        items[-1]["_score"] = 0.35 * roi_ev + 0.45 * chance + 0.20 * liq
 
-    # B8 - Add spread quality metrics for Long Call
-    legs_lc = [{"side": "BUY", "type": "CALL", "strike": k1}]
-    quality_lc = _compute_spread_quality(legs_lc, chain)
-    items[-1].update(quality_lc)
+        # B8 - Add spread quality metrics for Long Call
+        legs_lc = [{"side": "BUY", "type": "CALL", "strike": k1}]
+        quality_lc = _compute_spread_quality(legs_lc, chain)
+        items[-1].update(quality_lc)
 
     # === 2) Bull Call Spread
     buy = round(spot / 5) * 5
@@ -255,33 +255,33 @@ def suggest(
     1,
     )
     if (budget is None or debit2 <= budget) and width > 0:
-    items.append(
-    _format_card(
-    "bull-call-spread",
-    f"Buy {int(buy)}C, Sell {int(sell)}C",
-    [
-    {"side": "BUY", "type": "CALL", "qty": 1, "strike": buy},
-    {"side": "SELL", "type": "CALL", "qty": 1, "strike": sell},
-    ],
-    roi2,
-    chance2,
-    max_profit,
-    debit2,
-    0.0,
-    [be2],
-    {"x": [spot * 0.8, spot * 1.2], "breakevens": [be2]},
-    link2,
-    )
-    )
-    items[-1]["_score"] = 0.4 * roi2 + 0.4 * chance2 + 0.2 * liq2
+        items.append(
+            _format_card(
+                "bull-call-spread",
+                f"Buy {int(buy)}C, Sell {int(sell)}C",
+                [
+                    {"side": "BUY", "type": "CALL", "qty": 1, "strike": buy},
+                    {"side": "SELL", "type": "CALL", "qty": 1, "strike": sell},
+                ],
+                roi2,
+                chance2,
+                max_profit,
+                debit2,
+                0.0,
+                [be2],
+                {"x": [spot * 0.8, spot * 1.2], "breakevens": [be2]},
+                link2,
+            )
+        )
+        items[-1]["_score"] = 0.4 * roi2 + 0.4 * chance2 + 0.2 * liq2
 
-    # B8 - Add spread quality metrics for Bull Call Spread
-    legs_bcs = [
-    {"side": "BUY", "type": "CALL", "strike": buy},
-    {"side": "SELL", "type": "CALL", "strike": sell},
-    ]
-    quality_bcs = _compute_spread_quality(legs_bcs, chain)
-    items[-1].update(quality_bcs)
+        # B8 - Add spread quality metrics for Bull Call Spread
+        legs_bcs = [
+            {"side": "BUY", "type": "CALL", "strike": buy},
+            {"side": "SELL", "type": "CALL", "strike": sell},
+        ]
+        quality_bcs = _compute_spread_quality(legs_bcs, chain)
+        items[-1].update(quality_bcs)
 
     # === 3) Cash-Secured Put
     put_k = round(spot * (1 - bias_dn) / 5) * 5
@@ -303,41 +303,41 @@ def suggest(
     1,
     )
     if budget is None or collateral <= budget:
-    items.append(
-    _format_card(
-    "cash-secured-put",
-    f"Sell {int(put_k)}P",
-    [{"side": "SELL", "type": "PUT", "qty": 1, "strike": put_k}],
-    roi3,
-    chance3,
-    credit,
-    collateral,
-    collateral,
-    [be3],
-    {"x": [spot * 0.8, spot * 1.2], "breakevens": [be3]},
-    link3,
-    )
-    )
-    items[-1]["_score"] = 0.35 * roi3 + 0.4 * chance3 + 0.25 * liq3
+        items.append(
+            _format_card(
+                "cash-secured-put",
+                f"Sell {int(put_k)}P",
+                [{"side": "SELL", "type": "PUT", "qty": 1, "strike": put_k}],
+                roi3,
+                chance3,
+                credit,
+                collateral,
+                collateral,
+                [be3],
+                {"x": [spot * 0.8, spot * 1.2], "breakevens": [be3]},
+                link3,
+            )
+        )
+        items[-1]["_score"] = 0.35 * roi3 + 0.4 * chance3 + 0.25 * liq3
 
-    # B8 - Add spread quality metrics for Cash-Secured Put
-    legs_csp = [{"side": "SELL", "type": "PUT", "strike": put_k}]
-    quality_csp = _compute_spread_quality(legs_csp, chain)
-    items[-1].update(quality_csp)
+        # B8 - Add spread quality metrics for Cash-Secured Put
+        legs_csp = [{"side": "SELL", "type": "PUT", "strike": put_k}]
+        quality_csp = _compute_spread_quality(legs_csp, chain)
+        items[-1].update(quality_csp)
 
     # ordonare + curățare
     items.sort(key=lambda z: z.get("_score", 0), reverse=True)
     for x in items:
-    x.pop("_score", None)
+        x.pop("_score", None)
 
     return {
-    "meta": {
-    "symbol": symbol,
-    "spot": spot,
-    "dte": dte,
-    "expiry": expiry,
-    "iv": iv,
-    "rf": os.getenv("RF_RATE", "0.045"),
-    },
-    "strategies": items[:9],
+        "meta": {
+            "symbol": symbol,
+            "spot": spot,
+            "dte": dte,
+            "expiry": expiry,
+            "iv": iv,
+            "rf": os.getenv("RF_RATE", "0.045"),
+        },
+        "strategies": items[:9],
     }
