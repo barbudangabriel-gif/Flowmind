@@ -12,44 +12,44 @@ def _leg_market_snapshot(
     """Get market data for a specific option leg"""
     for ch in chain.get("OptionChains", []):
         for row in ch.get("Strikes", []):
-    if abs(float(row["StrikePrice"]) - strike) < 1e-6:
-    opt_data = (
-    row.get("Calls", [{}])[0]
-    if opt_type.upper().startswith("C")
-    else row.get("Puts", [{}])[0]
-    )
-    bid = float(opt_data.get("Bid", 0))
-    ask = float(opt_data.get("Ask", 0))
-    mid = (
-    (bid + ask) / 2
-    if bid > 0 and ask > 0
-    else float(opt_data.get("Last", 0))
-    )
-    oi = float(opt_data.get("OpenInterest", 0))
-    vol = float(opt_data.get("Volume", 0))
-    spr = max(0, ask - bid)
-    rel = spr / max(0.05, mid) if mid > 0 else 1.0
-    return {
-    "bid": bid,
-    "ask": ask,
-    "mid": mid,
-    "oi": oi,
-    "vol": vol,
-    "spr": spr,
-    "rel": rel,
-    }
+            if abs(float(row["StrikePrice"]) - strike) < 1e-6:
+                opt_data = (
+                    row.get("Calls", [{}])[0]
+                    if opt_type.upper().startswith("C")
+                    else row.get("Puts", [{}])[0]
+                )
+                bid = float(opt_data.get("Bid", 0))
+                ask = float(opt_data.get("Ask", 0))
+                mid = (
+                    (bid + ask) / 2
+                    if bid > 0 and ask > 0
+                    else float(opt_data.get("Last", 0))
+                )
+                oi = float(opt_data.get("OpenInterest", 0))
+                vol = float(opt_data.get("Volume", 0))
+                spr = max(0, ask - bid)
+                rel = spr / max(0.05, mid) if mid > 0 else 1.0
+                return {
+                    "bid": bid,
+                    "ask": ask,
+                    "mid": mid,
+                    "oi": oi,
+                    "vol": vol,
+                    "spr": spr,
+                    "rel": rel,
+                }
     return {"bid": 0, "ask": 0, "mid": 0, "oi": 0, "vol": 0, "spr": 0, "rel": 1.0}
 
 def _spread_score(rel: float) -> float:
     """Calculate spread quality score (0-1) based on relative spread"""
     if rel <= 0:
-    return 1.0
+        return 1.0
     if rel >= 0.2:
-    return 0.0
+        return 0.0
     if rel <= 0.05:
-    return 1.0 - 0.25 * (rel / 0.05)
+        return 1.0 - 0.25 * (rel / 0.05)
     if rel <= 0.10:
-    return 0.75 - 0.25 * ((rel - 0.05) / 0.05)
+        return 0.75 - 0.25 * ((rel - 0.05) / 0.05)
     return 0.5 - 0.5 * ((rel - 0.10) / 0.10)
 
 def _compute_spread_quality(
@@ -63,20 +63,20 @@ def _compute_spread_quality(
     market_data = []
 
     for leg in legs:
-    mm = _leg_market_snapshot(chain, leg["type"], float(leg["strike"]))
-    q = 0.65 * _spread_score(mm["rel"]) + 0.35 * math.tanh(
-    (mm["oi"] + mm["vol"]) / 1500
-    )
-    w = max(1, abs(mm["mid"]))
+        mm = _leg_market_snapshot(chain, leg["type"], float(leg["strike"]))
+        q = 0.65 * _spread_score(mm["rel"]) + 0.35 * math.tanh(
+            (mm["oi"] + mm["vol"]) / 1500
+        )
+        w = max(1, abs(mm["mid"]))
 
-    w_sum += w
-    q_sum += q * w
-    slippage += 0.5 * mm["spr"] * 100 # Half spread in dollars
-    market_data.append(mm)
+        w_sum += w
+        q_sum += q * w
+        slippage += 0.5 * mm["spr"] * 100 # Half spread in dollars
+        market_data.append(mm)
 
-    # Check NBBO criteria
-    if not (mm["rel"] <= 0.12 or mm["spr"] <= 0.10):
-    nbbo_ok = False
+        # Check NBBO criteria
+        if not (mm["rel"] <= 0.12 or mm["spr"] <= 0.10):
+            nbbo_ok = False
 
     quality = (q_sum / w_sum) if w_sum > 0 else 0
 
@@ -91,21 +91,21 @@ def _pick_iv(chain: Dict[str, Any], spot: float) -> float:
     best = None
     best_d = 1e9
     for ch in chain.get("OptionChains", []):
-    for row in ch.get("Strikes", []):
-    k = float(row["StrikePrice"])
-    d = abs(k - spot)
-    if d < best_d:
-    ivc = row["Calls"][0].get("IV") if row["Calls"] else None
-    ivp = row["Puts"][0].get("IV") if row["Puts"] else None
-    iv = float(ivc) if ivc else float(ivp) if ivp else None
-    if iv:
-    best, best_d = iv, d
+        for row in ch.get("Strikes", []):
+            k = float(row["StrikePrice"])
+            d = abs(k - spot)
+            if d < best_d:
+                ivc = row["Calls"][0].get("IV") if row["Calls"] else None
+                ivp = row["Puts"][0].get("IV") if row["Puts"] else None
+                iv = float(ivc) if ivc else float(ivp) if ivp else None
+                if iv:
+                    best, best_d = iv, d
     return float(best) if best else 0.40
 
 def _prob_above(spot: float, strike: float, iv: float, dte: int) -> float:
     T = max(dte, 1) / 365.0
     if T <= 0 or iv <= 0:
-    return 0.5
+        return 0.5
     mu = math.log(spot) - 0.5 * (iv**2) * T
     sig = iv * math.sqrt(T)
     z = (math.log(strike) - mu) / sig
@@ -118,19 +118,19 @@ def _liq_score(chain: Dict[str, Any], *strikes: float, kind: str = "CALL") -> fl
     tot = 0
     acc = 0
     for ch in chain.get("OptionChains", []):
-    for row in ch.get("Strikes", []):
-    k = round(float(row["StrikePrice"]), 2)
-    if k in want:
-    arr = row.get(kind_key) or []
-    oi = 0
-    if arr:
-    oi = int(arr[0].get("OpenInterest") or 0)
-    acc += min(oi, 5000) # plafon pentru scor
-    # total pentru normalizare
-    for arr in (row.get("Calls") or []) + (row.get("Puts") or []):
-    tot += min(int(arr.get("OpenInterest") or 0), 5000)
+        for row in ch.get("Strikes", []):
+            k = round(float(row["StrikePrice"]), 2)
+            if k in want:
+                arr = row.get(kind_key) or []
+                oi = 0
+                if arr:
+                    oi = int(arr[0].get("OpenInterest") or 0)
+                acc += min(oi, 5000) # plafon pentru scor
+            # total pentru normalizare
+            for arr in (row.get("Calls") or []) + (row.get("Puts") or []):
+                tot += min(int(arr.get("OpenInterest") or 0), 5000)
     if tot <= 0:
-    return 0.3 # fallback slab
+        return 0.3 # fallback slab
     return max(0.05, min(1.0, acc / (0.02 * tot))) # dacă strikes sunt populare -> ~1
 
 def _format_card(
@@ -205,14 +205,14 @@ def suggest(
     1,
     )
     if budget is None or debit <= budget:
-    items.append(
-    _format_card(
-    "long-call",
-    f"Buy {int(k1)}C",
-    [{"side": "BUY", "type": "CALL", "qty": 1, "strike": k1}],
-    roi_ev,
-    chance,
-    None,
+        items.append(
+            _format_card(
+                "long-call",
+                f"Buy {int(k1)}C",
+                [{"side": "BUY", "type": "CALL", "qty": 1, "strike": k1}],
+                roi_ev,
+                chance,
+                None,
     debit,
     0.0,
     [be],

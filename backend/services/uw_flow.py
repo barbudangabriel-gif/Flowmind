@@ -24,7 +24,7 @@ def _get(path: str, params: Dict[str, Any] | None = None):
     """Make request to UW API with fallback to mock data if API is unavailable"""
     try:
         r = requests.get(BASE + path, headers=_hdr(), params=params, timeout=25)
-    r.raise_for_status()
+        r.raise_for_status()
     return r.json()
     except (requests.exceptions.RequestException, requests.exceptions.HTTPError):
         # UW API is not available for this endpoint, return mock data

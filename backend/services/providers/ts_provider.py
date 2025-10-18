@@ -10,8 +10,8 @@ class TSProvider(OptionsProvider):
     def __init__(self):
         self.base = os.getenv("TS_BASE_URL", "https://api.tradestation.com")
 
-    def get_spot(self, symbol: str) -> float:
-    """Get current spot price from TradeStation"""
+        def get_spot(self, symbol: str) -> float:
+            """Get current spot price from TradeStation"""
     try:
         # Import here to avoid circular imports
     from services.ts_oauth import authorized_get

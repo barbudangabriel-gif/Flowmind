@@ -9,7 +9,7 @@ def norm_spread(bid, ask):
         return 1.0
     mid = (bid + ask) / 2
     if mid <= 0:
-    return 1.0
+        return 1.0
     return (ask - bid) / mid  # 0.05 = 5%
 
 
@@ -22,9 +22,9 @@ def liquidity_score(oi_pct, vol_oi, spread_pct):
 
 def pricing_score(theo, mid, is_credit, iv_rank_z):
     if mid <= 0 or theo <= 0:
-    edge = 0
+        edge = 0
     else:
-    edge = (mid - theo) / mid if is_credit else (theo - mid) / theo
+        edge = (mid - theo) / mid if is_credit else (theo - mid) / theo
     s_edge = clamp(0.5 + edge * 3)  # ~±17% edge → ±0.5 shift
     s_iv = clamp(
         0.5 + (-iv_rank_z) * 0.25
@@ -77,31 +77,31 @@ TARGET_DELTA = {
 
 
 def compute_quality(payload, chain_snapshot, context):
-                """
-                Compute spread quality score
-                payload: legs [], dte, strategyId, be_pct etc.
-                chain_snapshot: {strike: {bid, ask, oi, vol, iv, oi_pct}} for used strikes
-                context: {theo, mid, is_credit, iv_rank_z, gamma, vega, delta, max_loss, max_gain, assignment_risk}
+    """
+    Compute spread quality score
+    payload: legs [], dte, strategyId, be_pct etc.
+    chain_snapshot: {strike: {bid, ask, oi, vol, iv, oi_pct}} for used strikes
+    context: {theo, mid, is_credit, iv_rank_z, gamma, vega, delta, max_loss, max_gain, assignment_risk}
     """
     # Liquidity (per leg average)
     spreads, oi_pcts, vol_ois = [], [], []
     for leg in payload.get("legs", []):
-    strike_key = str(leg.get("strike", 0))
-    row = chain_snapshot.get(strike_key)
-    if not row:
-    continue
+        strike_key = str(leg.get("strike", 0))
+        row = chain_snapshot.get(strike_key)
+        if not row:
+            continue
 
-    bid = row.get("bid", 0)
-    ask = row.get("ask", 0)
-    s = norm_spread(bid, ask)
-    spreads.append(s)
+        bid = row.get("bid", 0)
+        ask = row.get("ask", 0)
+        s = norm_spread(bid, ask)
+        spreads.append(s)
 
-    oi_pct = row.get("oi_pct", 0)
-    oi_pcts.append(clamp(oi_pct))
+        oi_pct = row.get("oi_pct", 0)
+        oi_pcts.append(clamp(oi_pct))
 
-    volume = row.get("volume", 0)
-    oi = row.get("oi", 1)
-    vol_ois.append(volume / oi if oi > 0 else 0)
+        volume = row.get("volume", 0)
+        oi = row.get("oi", 1)
+        vol_ois.append(volume / oi if oi > 0 else 0)
 
     # Calculate component scores
     L = liquidity_score(
@@ -140,11 +140,11 @@ def compute_quality(payload, chain_snapshot, context):
     flags = []
     avg_spread = sum(spreads) / max(len(spreads), 1)
     if avg_spread > 0.10:
-    flags.append("Wide spread >10%")
+        flags.append("Wide spread >10%")
     if payload.get("dte", 30) < 7:
-    flags.append("DTE under 7")
+        flags.append("DTE under 7")
     if context.get("earnings_soon"):
-    flags.append("Earnings <7d")
+        flags.append("Earnings <7d")
 
     return {
         "score": max(0, min(100, score)),  # Clamp to 0-100

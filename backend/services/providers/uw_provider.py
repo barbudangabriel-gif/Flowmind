@@ -12,7 +12,7 @@ class UWProvider(OptionsProvider):
         "https://api.unusualwhales.com").rstrip("/")
     self.key = os.getenv("UW_API_TOKEN") or os.getenv("UW_API_KEY")
     if not self.key:
-    self.key = "demo-token"  # Use demo token for testing
+        self.key = "demo-token"  # Use demo token for testing
 
     def _get(self, path: str, params: Dict[str, Any] | None = None):
     headers = {

@@ -24,7 +24,7 @@ def get_token(db) -> Optional[dict]:
     try:
         # Pentru Redis (current setup)
         if hasattr(db, "get"):
-    token_data = db.get("ts_oauth_token")
+            token_data = db.get("ts_oauth_token")
     if token_data:
     import json
 

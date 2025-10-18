@@ -10,7 +10,7 @@ def get_provider():
     if provider_name == "UW":
         return UWProvider()
     elif provider_name == "TS":
-    return TSProvider()
+        return TSProvider()
     else:
         # Default fallback to TS
     return TSProvider()

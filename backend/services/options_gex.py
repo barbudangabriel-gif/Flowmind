@@ -18,8 +18,8 @@ def fetch_chain(
     cache_key = f"opt:chain:{provider.__class__.__name__}:{symbol}"
     if expiry:
         cache_key += f":{expiry}"
-    if dte:
-    cache_key += f":dte{dte}"
+        if dte:
+            cache_key += f":dte{dte}"
 
     try:
     r = get_redis()
