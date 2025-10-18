@@ -36,52 +36,52 @@ class Settings(BaseModel):
 def get_settings() -> Settings:
  """Get validated settings with proper error handling"""
  try:
- # Parse allowed origins from comma-separated string
- origins_str = os.environ.get("ALLOWED_ORIGINS", "*")
- if origins_str == "*":
- origins = ["*"]
- else:
- origins = [origin.strip() for origin in origins_str.split(",")]
+    # Parse allowed origins from comma-separated string
+    origins_str = os.environ.get("ALLOWED_ORIGINS", "*")
+    if origins_str == "*":
+        origins = ["*"]
+    else:
+        origins = [origin.strip() for origin in origins_str.split(",")]
 
- # Override environment for processing
- env_override = dict(os.environ)
- if "ALLOWED_ORIGINS" in env_override:
- env_override["ALLOWED_ORIGINS"] = origins
+    # Override environment for processing
+    env_override = dict(os.environ)
+    if "ALLOWED_ORIGINS" in env_override:
+        env_override["ALLOWED_ORIGINS"] = origins
 
- settings = Settings(**env_override)
+    settings = Settings(**env_override)
 
- # Warn about missing optional secrets in development
- if settings.app_mode == "dev":
- missing_secrets = []
- if not settings.uw_token:
- missing_secrets.append("UW_API_TOKEN")
- if not settings.ts_api_key:
- missing_secrets.append("TRADESTATION_API_KEY")
+    # Warn about missing optional secrets in development
+    if settings.app_mode == "dev":
+        missing_secrets = []
+        if not settings.uw_token:
+            missing_secrets.append("UW_API_TOKEN")
+        if not settings.ts_api_key:
+            missing_secrets.append("TRADESTATION_API_KEY")
 
- if missing_secrets:
- logger.warning(
- f"Missing optional secrets (demo mode): {', '.join(missing_secrets)}"
- )
+        if missing_secrets:
+            logger.warning(
+                f"Missing optional secrets (demo mode): {', '.join(missing_secrets)}"
+            )
 
- # Fail-fast in production if critical secrets missing
- elif settings.app_mode == "prod":
- required_secrets = []
- if not settings.uw_token:
- required_secrets.append("UW_API_TOKEN")
- if not settings.ts_api_key:
- required_secrets.append("TRADESTATION_API_KEY")
- if not settings.ts_api_secret:
- required_secrets.append("TRADESTATION_API_SECRET")
+    # Fail-fast in production if critical secrets missing
+    elif settings.app_mode == "prod":
+        required_secrets = []
+        if not settings.uw_token:
+            required_secrets.append("UW_API_TOKEN")
+        if not settings.ts_api_key:
+            required_secrets.append("TRADESTATION_API_KEY")
+        if not settings.ts_api_secret:
+            required_secrets.append("TRADESTATION_API_SECRET")
 
- if required_secrets:
- raise RuntimeError(
- f"Missing required secrets in production: {', '.join(required_secrets)}"
- )
+        if required_secrets:
+            raise RuntimeError(
+                f"Missing required secrets in production: {', '.join(required_secrets)}"
+            )
 
- return settings
+    return settings
 
  except Exception as e:
- raise RuntimeError(f"Configuration error: {e}")
+    raise RuntimeError(f"Configuration error: {e}")
 
 # Global settings instance
 settings = get_settings()
