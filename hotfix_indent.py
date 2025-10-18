@@ -1,103 +1,70 @@
 #!/usr/bin/env python3
-import io, os, re, sys
+import io, re
 
-# --- CONFIG: fișier -> linii sau intervale (inclusive) ---
+# Liniile cu probleme (1-based). Interval = (a,b) inclusiv.
 TARGETS = {
-    "backend/services/bs.py": [(17,18), (25,26)],
-    "backend/services/builder_engine.py": [(28,29), (30,31)],
+    "backend/services/bs.py": [(17,18)],
+    "backend/services/builder_engine.py": [(28,29)],
     "backend/services/cache_decorators.py": [37],
     "backend/services/calendar_backtest.py": [(36,37)],
     "backend/services/historical_engine.py": [18],
-    "backend/services/optimize_engine.py": [(13,14), (14,15)],
-    "backend/services/options_gex.py": [(19,20), (21,22)],
-    "backend/services/options_provider.py": [(9,10), (14,19)],
-    "backend/services/quality.py": [(8,9), (11,12)],
-    "backend/services/ts_oauth.py": [(24,26), (26,27)],
-    "backend/services/uw_flow.py": [(25,26), (26,27)],
+    "backend/services/optimize_engine.py": [(13,14)],
+    "backend/services/options_gex.py": [(19,20)],
+    "backend/services/options_provider.py": [(9,10)],
+    "backend/services/quality.py": [(8,9)],
+    "backend/services/ts_oauth.py": [(24,26)],
+    "backend/services/uw_flow.py": [(25,26)],
     "backend/services/warmup.py": [40],
-    "backend/services/ws_connection_manager.py": [(39,40), (53,54)],
-    "backend/services/providers/__init__.py": [(10,11), (12,13)],
-    "backend/services/providers/ts_provider.py": [(10,11), (13,14)],
-    "backend/services/providers/uw_provider.py": [(9,10), (14,15)],
+    "backend/services/ws_connection_manager.py": [(39,40)],
+    "backend/services/providers/__init__.py": [(10,11)],
+    "backend/services/providers/ts_provider.py": [(10,11)],
+    "backend/services/providers/uw_provider.py": [(9,10)],
 }
 
 TRIPLE = re.compile(r"(?<!\\)(?:'''|\"\"\")")
 
 def to_set(spec):
-    """Normalizează lista de linii/intervale în set de indici (1-based)."""
-    s = set()
+    s=set()
     for x in spec:
-        if isinstance(x, int):
-            s.add(x)
-        elif isinstance(x, tuple):
-            a, b = x
-            s.update(range(a, b+1))
-        else:
-            raise ValueError(f"linie/interval invalid: {x}")
+        if isinstance(x,int): s.add(x)
+        else: a,b=x; s.update(range(a,b+1))
     return s
 
-def leading_spaces(s: str) -> int:
-    return len(s) - len(s.lstrip(" "))
+def leading_spaces(s): return len(s)-len(s.lstrip(" "))
 
-def hotfix_file(path: str) -> bool:
+def fix_file(path):
     try:
-        with io.open(path, "r", encoding="utf-8") as f:
-            lines = f.readlines()
+        with io.open(path,"r",encoding="utf-8") as f: lines=f.readlines()
     except FileNotFoundError:
-        print(f"SKIP (absent): {path}")
-        return False
+        print(f"SKIP  {path} (absent)"); return False
 
-    targets = to_set(TARGETS[path])
-    changed = False
-    in_triple = False
-
-    # utilitar: găsește indentul și dacă linia anterioară deschide bloc
-    prev_code_indent = 0
-    prev_ends_colon = False
+    targets=to_set(TARGETS[path]); changed=False; in_triple=False
+    prev_indent=0; prev_colon=False
 
     for i in range(len(lines)):
-        line = lines[i]
-
-        # toggle triple-quoted state pe linia curentă
-        for _ in TRIPLE.finditer(line):
-            in_triple = not in_triple
-
-        stripped = line.strip()
-        if stripped and not in_triple and not stripped.startswith("#"):
-            # actualizează pentru linia curentă, DAR folosim valorile anterioare pentru țintă
-            pass
+        line=lines[i]
+        for _ in TRIPLE.finditer(line): in_triple=not in_triple
 
         if (i+1) in targets and not in_triple:
-            cur_indent = leading_spaces(line.replace("\t", "    "))
-            # regulă: dacă linia anterioară are ':' la final → +4; altfel, minim indentul anterior
-            desired = prev_code_indent + (4 if prev_ends_colon else 0)
-            if cur_indent < desired:
-                new_line = (" " * desired) + line.lstrip(" \t")
-                if new_line != line:
-                    lines[i] = new_line
-                    changed = True
+            cur=leading_spaces(line.replace("\t","    "))
+            desired=prev_indent+(4 if prev_colon else 0)
+            if cur<desired:
+                lines[i]=(" "*desired)+line.lstrip(" \t"); changed=True
 
-        # update prev_* pe baza liniei curente (după aplicarea potențială)
-        cur_line = lines[i]
-        cur_stripped = cur_line.strip()
-        if cur_stripped and not in_triple and not cur_stripped.startswith("#"):
-            prev_code_indent = leading_spaces(cur_line.replace("\t", "    "))
-            prev_ends_colon = cur_stripped.endswith(":")
+        cur_line=lines[i]; stripped=cur_line.strip()
+        if stripped and not in_triple and not stripped.startswith("#"):
+            prev_indent=leading_spaces(cur_line.replace("\t","    "))
+            prev_colon=stripped.endswith(":")
 
     if changed:
-        with io.open(path, "w", encoding="utf-8", newline="") as f:
-            f.writelines(lines)
-        print(f"FIXED  {path}")
+        with io.open(path,"w",encoding="utf-8",newline="") as f: f.writelines(lines)
+        print(f"FIXED {path}")
     else:
-        print(f"OK     {path}")
+        print(f"OK    {path}")
     return changed
 
 def main():
-    any_change = False
-    for path in TARGETS:
-        any_change |= hotfix_file(path)
-    if not any_change:
-        print("Nicio modificare aplicată (poate erau deja corecte).")
-
-if __name__ == "__main__":
-    main()
+    any_change=False
+    for p in TARGETS: any_change|=fix_file(p)
+    if not any_change: print("Nicio modificare aplicată.")
+if __name__=="__main__": main()

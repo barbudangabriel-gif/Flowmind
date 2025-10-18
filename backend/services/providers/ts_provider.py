@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class TSProvider(OptionsProvider):
     def __init__(self):
-    self.base = os.getenv("TS_BASE_URL", "https://api.tradestation.com")
+        self.base = os.getenv("TS_BASE_URL", "https://api.tradestation.com")
 
     def get_spot(self, symbol: str) -> float:
     """Get current spot price from TradeStation"""
@@ -50,10 +50,10 @@ class TSProvider(OptionsProvider):
     raise
 
     def get_chain(self,
-                  symbol: str,
-                  expiry: Optional[str] = None,
-                  dte: Optional[int] = None) -> Dict[str,
-                                                     Any]:
+                                                                        symbol: str,
+                                                                        expiry: Optional[str] = None,
+                                                                        dte: Optional[int] = None) -> Dict[str,
+                                                                                                                                                                                                                    Any]:
     """Get options chain from TradeStation - already in correct format"""
     try:
         # Import here to avoid circular imports

@@ -14,270 +14,270 @@ logger = logging.getLogger(__name__)
 
 
 class WebSocketConnectionManager:
-    """
-    Manages multiple WebSocket connections from frontend clients.
-
-    Features:
-    - Multi-channel subscription management
-    - Broadcast messages to all subscribed clients
-    - Auto-cleanup of dead connections
-    - Connection statistics and health monitoring
-
-    Example usage:
-    manager = WebSocketConnectionManager()
-
-    # Accept new client
-    await manager.connect(websocket, "flow-alerts")
-
-    # Broadcast message to all clients on channel
-    await manager.broadcast("flow-alerts", {"type": "flow", "data": {...}})
-
-    # Disconnect client
-    await manager.disconnect(websocket, "flow-alerts")
-    """
-
-    def __init__(self):
-    """Initialize connection manager."""
-    # Map: channel -> set of WebSocket connections
-    self.active_connections: Dict[str, Set[WebSocket]] = {}
-
-    # Lock for thread-safe operations
-    self.lock = asyncio.Lock()
-
-    # Statistics
-    self.total_connects = 0
-    self.total_disconnects = 0
-    self.total_messages_sent = 0
-    self.start_time = datetime.now()
-
-    async def connect(self, websocket: WebSocket, channel: str):
-    """
-                Register a new client connection for a channel.
-
-                Args:
-                websocket: FastAPI WebSocket connection
-                channel: Channel name to subscribe to
                 """
-    # Accept the WebSocket connection
-    await websocket.accept()
+                Manages multiple WebSocket connections from frontend clients.
 
-    async with self.lock:
-        # Create channel set if doesn't exist
-    if channel not in self.active_connections:
-    self.active_connections[channel] = set()
+                Features:
+                - Multi-channel subscription management
+                - Broadcast messages to all subscribed clients
+                - Auto-cleanup of dead connections
+                - Connection statistics and health monitoring
 
-    # Add websocket to channel
-    self.active_connections[channel].add(websocket)
-    self.total_connects += 1
+                Example usage:
+                manager = WebSocketConnectionManager()
 
-    connection_count = len(self.active_connections[channel])
-    logger.info(
-        f" Client connected to '{channel}' "
-        f"(total on channel: {connection_count})"
-    )
+                # Accept new client
+                await manager.connect(websocket, "flow-alerts")
 
-    async def disconnect(self, websocket: WebSocket, channel: str):
-    """
-                Remove a client connection from a channel.
+                # Broadcast message to all clients on channel
+                await manager.broadcast("flow-alerts", {"type": "flow", "data": {...}})
 
-                Args:
-                websocket: FastAPI WebSocket connection
-                channel: Channel name to unsubscribe from
+                # Disconnect client
+                await manager.disconnect(websocket, "flow-alerts")
                 """
-    async with self.lock:
-    if channel in self.active_connections:
-    self.active_connections[channel].discard(websocket)
-    self.total_disconnects += 1
 
-    # Clean up empty channel sets
-    if len(self.active_connections[channel]) == 0:
-    del self.active_connections[channel]
-    logger.info(f"🗑️ Removed empty channel: {channel}")
-    else:
-    connection_count = len(self.active_connections[channel])
-    logger.info(
-        f"👋 Client disconnected from '{channel}' "
-        f"(remaining: {connection_count})"
-    )
+                def __init__(self):
+                    """Initialize connection manager."""
+                # Map: channel -> set of WebSocket connections
+                self.active_connections: Dict[str, Set[WebSocket]] = {}
 
-    async def broadcast(self, channel: str, message: dict):
-    """
-                Broadcast a message to all clients subscribed to a channel.
+                # Lock for thread-safe operations
+                self.lock = asyncio.Lock()
 
-                Args:
-                channel: Channel name
-                message: Message dict to send (will be JSON serialized)
+                # Statistics
+                self.total_connects = 0
+                self.total_disconnects = 0
+                self.total_messages_sent = 0
+                self.start_time = datetime.now()
+
+                async def connect(self, websocket: WebSocket, channel: str):
                 """
-    if channel not in self.active_connections:
-    return  # No clients subscribed to this channel
+    Register a new client connection for a channel.
 
-    # Copy set to avoid modification during iteration
-    connections = list(self.active_connections[channel])
-
-    if not connections:
-    return
-
-    # Send to all clients in parallel
-    tasks = []
-    for connection in connections:
-    tasks.append(self._send_to_client(connection, channel, message))
-
-    # Wait for all sends to complete
-    await asyncio.gather(*tasks, return_exceptions=True)
-
-    self.total_messages_sent += len(connections)
-
-    async def _send_to_client(
-        self,
-        connection: WebSocket,
-        channel: str,
-        message: dict
-    ):
+    Args:
+    websocket: FastAPI WebSocket connection
+    channel: Channel name to subscribe to
     """
-                Send message to a single client (internal method).
+                # Accept the WebSocket connection
+                await websocket.accept()
 
-                Args:
-                connection: WebSocket connection
-                channel: Channel name (for cleanup on error)
-                message: Message to send
+                async with self.lock:
+                                # Create channel set if doesn't exist
+                if channel not in self.active_connections:
+                self.active_connections[channel] = set()
+
+                # Add websocket to channel
+                self.active_connections[channel].add(websocket)
+                self.total_connects += 1
+
+                connection_count = len(self.active_connections[channel])
+                logger.info(
+                                f" Client connected to '{channel}' "
+                                f"(total on channel: {connection_count})"
+                )
+
+                async def disconnect(self, websocket: WebSocket, channel: str):
                 """
-    try:
-    await connection.send_json(message)
-    except Exception as e:
-    logger.error(f"Failed to send to client: {type(e).__name__}: {e}")
-    # Remove dead connection
-    await self.disconnect(connection, channel)
+    Remove a client connection from a channel.
 
-    async def broadcast_to_all_channels(self, message: dict):
+    Args:
+    websocket: FastAPI WebSocket connection
+    channel: Channel name to unsubscribe from
     """
-                Broadcast a message to all clients across all channels.
-                Useful for system-wide announcements.
+                async with self.lock:
+                if channel in self.active_connections:
+                self.active_connections[channel].discard(websocket)
+                self.total_disconnects += 1
 
-                Args:
-                message: Message dict to send
+                # Clean up empty channel sets
+                if len(self.active_connections[channel]) == 0:
+                del self.active_connections[channel]
+                logger.info(f"🗑️ Removed empty channel: {channel}")
+                else:
+                connection_count = len(self.active_connections[channel])
+                logger.info(
+                                f"👋 Client disconnected from '{channel}' "
+                                f"(remaining: {connection_count})"
+                )
+
+                async def broadcast(self, channel: str, message: dict):
                 """
-    for channel in list(self.active_connections.keys()):
-    await self.broadcast(channel, message)
+    Broadcast a message to all clients subscribed to a channel.
 
-    def get_connection_count(self, channel: str = None) -> int:
+    Args:
+    channel: Channel name
+    message: Message dict to send (will be JSON serialized)
     """
-                Get number of active connections.
+                if channel not in self.active_connections:
+                return  # No clients subscribed to this channel
 
-                Args:
-                channel: Optional channel name. If None, returns total across all channels.
+                # Copy set to avoid modification during iteration
+                connections = list(self.active_connections[channel])
 
-                Returns:
-                int: Number of active connections
+                if not connections:
+                return
+
+                # Send to all clients in parallel
+                tasks = []
+                for connection in connections:
+                tasks.append(self._send_to_client(connection, channel, message))
+
+                # Wait for all sends to complete
+                await asyncio.gather(*tasks, return_exceptions=True)
+
+                self.total_messages_sent += len(connections)
+
+                async def _send_to_client(
+                                self,
+                                connection: WebSocket,
+                                channel: str,
+                                message: dict
+                ):
                 """
-    if channel:
-    return len(self.active_connections.get(channel, set()))
-    else:
-    return sum(len(conns) for conns in self.active_connections.values())
+    Send message to a single client (internal method).
 
-    def get_channels(self) -> List[str]:
+    Args:
+    connection: WebSocket connection
+    channel: Channel name (for cleanup on error)
+    message: Message to send
     """
-                Get list of active channels (channels with at least one connection).
+                try:
+                await connection.send_json(message)
+                except Exception as e:
+                logger.error(f"Failed to send to client: {type(e).__name__}: {e}")
+                # Remove dead connection
+                await self.disconnect(connection, channel)
 
-                Returns:
-                List of channel names
+                async def broadcast_to_all_channels(self, message: dict):
                 """
-    return list(self.active_connections.keys())
+    Broadcast a message to all clients across all channels.
+    Useful for system-wide announcements.
 
-    def get_stats(self) -> Dict:
+    Args:
+    message: Message dict to send
     """
-                Get connection statistics.
+                for channel in list(self.active_connections.keys()):
+                await self.broadcast(channel, message)
 
-                Returns:
-                Dict with statistics (total connects, disconnects, messages, etc.)
+                def get_connection_count(self, channel: str = None) -> int:
                 """
-    uptime = (datetime.now() - self.start_time).total_seconds()
+    Get number of active connections.
 
-    channel_stats = {}
-    for channel, connections in self.active_connections.items():
-    channel_stats[channel] = len(connections)
+    Args:
+    channel: Optional channel name. If None, returns total across all channels.
 
-    return {
-        "total_connections": self.get_connection_count(),
-        "total_connects": self.total_connects,
-        "total_disconnects": self.total_disconnects,
-        "total_messages_sent": self.total_messages_sent,
-        "active_channels": len(
-            self.active_connections),
-        "channels": channel_stats,
-        "uptime_seconds": round(
-            uptime,
-            1),
-        "messages_per_second": round(
-            self.total_messages_sent /
-            uptime,
-            2) if uptime > 0 else 0}
-
-    def has_subscribers(self, channel: str) -> bool:
+    Returns:
+    int: Number of active connections
     """
-                Check if a channel has any active subscribers.
+                if channel:
+                return len(self.active_connections.get(channel, set()))
+                else:
+                return sum(len(conns) for conns in self.active_connections.values())
 
-                Args:
-                channel: Channel name
-
-                Returns:
-                bool: True if channel has at least one subscriber
+                def get_channels(self) -> List[str]:
                 """
-    return channel in self.active_connections and len(
-        self.active_connections[channel]) > 0
+    Get list of active channels (channels with at least one connection).
 
-    async def ping_all(self) -> Dict[str, int]:
+    Returns:
+    List of channel names
     """
-                Send ping to all connections to verify they're alive.
-                Returns count of successful pings per channel.
+                return list(self.active_connections.keys())
 
-                Returns:
-                Dict mapping channel names to successful ping count
+                def get_stats(self) -> Dict:
                 """
-    results = {}
+    Get connection statistics.
 
-    for channel in list(self.active_connections.keys()):
-    connections = list(self.active_connections[channel])
-    successful_pings = 0
-
-    for connection in connections:
-    try:
-        # Send a ping message
-    await connection.send_json({
-        "type": "ping",
-        "timestamp": datetime.now().isoformat()
-    })
-    successful_pings += 1
-    except Exception as e:
-    logger.warning(f"Ping failed for client on {channel}: {e}")
-    await self.disconnect(connection, channel)
-
-    results[channel] = successful_pings
-
-    return results
-
-    async def cleanup_dead_connections(self):
+    Returns:
+    Dict with statistics (total connects, disconnects, messages, etc.)
     """
-                Remove all dead/closed connections.
-                Useful for periodic cleanup.
+                uptime = (datetime.now() - self.start_time).total_seconds()
+
+                channel_stats = {}
+                for channel, connections in self.active_connections.items():
+                channel_stats[channel] = len(connections)
+
+                return {
+                                "total_connections": self.get_connection_count(),
+                                "total_connects": self.total_connects,
+                                "total_disconnects": self.total_disconnects,
+                                "total_messages_sent": self.total_messages_sent,
+                                "active_channels": len(
+                                                self.active_connections),
+                                "channels": channel_stats,
+                                "uptime_seconds": round(
+                                                uptime,
+                                                1),
+                                "messages_per_second": round(
+                                                self.total_messages_sent /
+                                                uptime,
+                                                2) if uptime > 0 else 0}
+
+                def has_subscribers(self, channel: str) -> bool:
                 """
-    cleaned_count = 0
+    Check if a channel has any active subscribers.
 
-    for channel in list(self.active_connections.keys()):
-    connections = list(self.active_connections[channel])
+    Args:
+    channel: Channel name
 
-    for connection in connections:
-    try:
-        # Try to send a small message to test connection
-    await connection.send_json({"type": "health_check"})
-    except Exception:
-        # Connection is dead
-    await self.disconnect(connection, channel)
-    cleaned_count += 1
+    Returns:
+    bool: True if channel has at least one subscriber
+    """
+                return channel in self.active_connections and len(
+                                self.active_connections[channel]) > 0
 
-    if cleaned_count > 0:
-    logger.info(f"🧹 Cleaned up {cleaned_count} dead connections")
+                async def ping_all(self) -> Dict[str, int]:
+                """
+    Send ping to all connections to verify they're alive.
+    Returns count of successful pings per channel.
 
-    return cleaned_count
+    Returns:
+    Dict mapping channel names to successful ping count
+    """
+                results = {}
+
+                for channel in list(self.active_connections.keys()):
+                connections = list(self.active_connections[channel])
+                successful_pings = 0
+
+                for connection in connections:
+                try:
+                                # Send a ping message
+                await connection.send_json({
+                                "type": "ping",
+                                "timestamp": datetime.now().isoformat()
+                })
+                successful_pings += 1
+                except Exception as e:
+                logger.warning(f"Ping failed for client on {channel}: {e}")
+                await self.disconnect(connection, channel)
+
+                results[channel] = successful_pings
+
+                return results
+
+                async def cleanup_dead_connections(self):
+                """
+    Remove all dead/closed connections.
+    Useful for periodic cleanup.
+    """
+                cleaned_count = 0
+
+                for channel in list(self.active_connections.keys()):
+                connections = list(self.active_connections[channel])
+
+                for connection in connections:
+                try:
+                                # Try to send a small message to test connection
+                await connection.send_json({"type": "health_check"})
+                except Exception:
+                                # Connection is dead
+                await self.disconnect(connection, channel)
+                cleaned_count += 1
+
+                if cleaned_count > 0:
+                logger.info(f"🧹 Cleaned up {cleaned_count} dead connections")
+
+                return cleaned_count
 
 
 # Global singleton instance
@@ -287,15 +287,15 @@ ws_manager = WebSocketConnectionManager()
 
 
 async def periodic_cleanup_task():
-    """
-    Background task to periodically clean up dead connections.
-    Run this with asyncio.create_task() on app startup.
-    """
-    while True:
-    await asyncio.sleep(60)  # Run every 60 seconds
-    try:
-    cleaned = await ws_manager.cleanup_dead_connections()
-    if cleaned > 0:
-    logger.info(f"Periodic cleanup removed {cleaned} connections")
-    except Exception as e:
-    logger.error(f"Error in periodic cleanup: {e}")
+                """
+                Background task to periodically clean up dead connections.
+                Run this with asyncio.create_task() on app startup.
+                """
+                while True:
+                await asyncio.sleep(60)  # Run every 60 seconds
+                try:
+                cleaned = await ws_manager.cleanup_dead_connections()
+                if cleaned > 0:
+                logger.info(f"Periodic cleanup removed {cleaned} connections")
+                except Exception as e:
+                logger.error(f"Error in periodic cleanup: {e}")

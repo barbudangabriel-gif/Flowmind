@@ -17,7 +17,7 @@ def fetch_chain(
     # Try cache first
     cache_key = f"opt:chain:{provider.__class__.__name__}:{symbol}"
     if expiry:
-    cache_key += f":{expiry}"
+        cache_key += f":{expiry}"
     if dte:
     cache_key += f":dte{dte}"
 

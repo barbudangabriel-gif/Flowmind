@@ -23,7 +23,7 @@ def _hdr():
 def _get(path: str, params: Dict[str, Any] | None = None):
     """Make request to UW API with fallback to mock data if API is unavailable"""
     try:
-    r = requests.get(BASE + path, headers=_hdr(), params=params, timeout=25)
+        r = requests.get(BASE + path, headers=_hdr(), params=params, timeout=25)
     r.raise_for_status()
     return r.json()
     except (requests.exceptions.RequestException, requests.exceptions.HTTPError):
@@ -164,8 +164,8 @@ def _apply_filters(item: Dict[str, Any], f: Dict[str, Any]):
         item.get(
             "execution",
             "")).lower() not in (
-        "above_ask",
-        "below_bid",
+            "above_ask",
+            "below_bid",
     ):
     return False
 

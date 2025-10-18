@@ -8,7 +8,7 @@ def get_provider():
     provider_name = os.getenv("PROVIDER", "TS").upper()
 
     if provider_name == "UW":
-    return UWProvider()
+        return UWProvider()
     elif provider_name == "TS":
     return TSProvider()
     else:

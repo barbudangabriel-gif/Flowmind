@@ -26,7 +26,7 @@ def leg_payoff_expiry(
     # BUY = long position (positive payoff when ITM)
     sign = 1 if side == "BUY" else -1
     if kind.startswith("C"):
-    intrinsic = max(0.0, S_T - strike)
+        intrinsic = max(0.0, S_T - strike)
     else:
     intrinsic = max(0.0, strike - S_T)
     return sign * intrinsic * qty * LEG_MULT
