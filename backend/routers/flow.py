@@ -23,62 +23,62 @@ def now_iso():
 def make_builder_link(row):
     """Generate deep-link to Builder for a flow row"""
     try:
-    symbol = row.get("symbol", "")
-    strike = row.get("strike", "")
-    expiry = row.get("expiry", "")
-    kind = row.get("kind", "").lower()
+        symbol = row.get("symbol", "")
+        strike = row.get("strike", "")
+        expiry = row.get("expiry", "")
+        kind = row.get("kind", "").lower()
 
-    if all([symbol, strike, expiry, kind]):
-    return (
-    f"/builder?symbol={symbol}&strike={strike}&expiry={expiry}&type={kind}"
-    )
-    return "/builder"
+        if all([symbol, strike, expiry, kind]):
+            return (
+                f"/builder?symbol={symbol}&strike={strike}&expiry={expiry}&type={kind}"
+            )
+        return "/builder"
     except:
-    return "/builder"
+        return "/builder"
 
 # ---------- DEMO DATA ----------
 def demo_summary(limit=24):
     syms = [
-    "AAPL",
-    "TSLA",
-    "NVDA",
-    "QQQ",
-    "SPY",
-    "META",
-    "AMZN",
-    "GOOGL",
-    "IWM",
-    "MSFT",
-    "AMD",
-    "NFLX",
-    "SHOP",
-    "BA",
-    "PLTR",
-    "COIN",
-    "SMCI",
-    "AVGO",
-    "MU",
-    "CRM",
-    "DIS",
-    "UBER",
-    "JPM",
-    "CVX",
+        "AAPL",
+        "TSLA",
+        "NVDA",
+        "QQQ",
+        "SPY",
+        "META",
+        "AMZN",
+        "GOOGL",
+        "IWM",
+        "MSFT",
+        "AMD",
+        "NFLX",
+        "SHOP",
+        "BA",
+        "PLTR",
+        "COIN",
+        "SMCI",
+        "AVGO",
+        "MU",
+        "CRM",
+        "DIS",
+        "UBER",
+        "JPM",
+        "CVX",
     ]
     out = []
     for i, s in enumerate(syms[:limit]):
-    bull = 180_000 + 9_000 * i
-    bear = 95_000 + 6_000 * i
-    out.append(
-    {
-    "symbol": s,
-    "bull_premium": bull,
-    "bear_premium": bear,
-    "net_premium": bull - bear,
-    "trades": 1 + (i % 4),
-    "sweeps_pct": 0.35 + (i % 3) * 0.1,
-    "blocks_pct": 0.10 + (i % 2) * 0.05,
-    }
-    )
+        bull = 180_000 + 9_000 * i
+        bear = 95_000 + 6_000 * i
+        out.append(
+            {
+                "symbol": s,
+                "bull_premium": bull,
+                "bear_premium": bear,
+                "net_premium": bull - bear,
+                "trades": 1 + (i % 4),
+                "sweeps_pct": 0.35 + (i % 3) * 0.1,
+                "blocks_pct": 0.10 + (i % 2) * 0.05,
+            }
+        )
     return out
 
 def demo_live(symbol: str, min_premium: int):
@@ -86,31 +86,31 @@ def demo_live(symbol: str, min_premium: int):
     base = 260 if symbol == "TSLA" else 100
     rows = []
     for k in range(13):
-    kind = "CALL" if k % 2 == 0 else "PUT"
-    side = "BUY" if k % 3 != 0 else "SELL"
-    qty = 100 * (1 + k % 4)
-    price = round(0.85 + 0.15 * k, 2)
-    premium = qty * price
-    if premium < min_premium:
-    premium = min_premium + 1000 * k
-    rows.append(
-    {
-    "ts": now_iso(),
-    "symbol": symbol,
-    "side": side,
-    "kind": kind,
-    "expiry": "2025-09-19",
-    "strike": base + (k - 6) * 5,
-    "qty": qty,
-    "price": price,
-    "premium": premium,
-    "isSweep": k % 2 == 0,
-    "isBlock": k % 5 == 0,
-    "venue": "CBOE",
-    "odte": False,
-    "note": "DEMO",
-    }
-    )
+        kind = "CALL" if k % 2 == 0 else "PUT"
+        side = "BUY" if k % 3 != 0 else "SELL"
+        qty = 100 * (1 + k % 4)
+        price = round(0.85 + 0.15 * k, 2)
+        premium = qty * price
+        if premium < min_premium:
+            premium = min_premium + 1000 * k
+        rows.append(
+            {
+                "ts": now_iso(),
+                "symbol": symbol,
+                "side": side,
+                "kind": kind,
+                "expiry": "2025-09-19",
+                "strike": base + (k - 6) * 5,
+                "qty": qty,
+                "price": price,
+                "premium": premium,
+                "isSweep": k % 2 == 0,
+                "isBlock": k % 5 == 0,
+                "venue": "CBOE",
+                "odte": False,
+                "note": "DEMO",
+            }
+        )
     return rows
 
 def _filters(
@@ -130,19 +130,19 @@ def _filters(
 ):
     csv = lambda x: [s.strip() for s in x.split(",") if s.strip()] if x else None
     d = {
-    "tickers": csv(tickers),
-    "side": csv(side),
-    "kinds": csv(kinds),
-    "opt_types": csv(opt_types),
-    "otm": otm,
-    "vol_gt_oi": vol_gt_oi,
-    "above_ask_below_bid": above_ask_below_bid,
-    "price_op": price_op,
-    "price_val": price_val,
-    "chance_op": chance_op,
-    "chance_val": chance_val,
-    "min_dte": min_dte,
-    "max_dte": max_dte,
+        "tickers": csv(tickers),
+        "side": csv(side),
+        "kinds": csv(kinds),
+        "opt_types": csv(opt_types),
+        "otm": otm,
+        "vol_gt_oi": vol_gt_oi,
+        "above_ask_below_bid": above_ask_below_bid,
+        "price_op": price_op,
+        "price_val": price_val,
+        "chance_op": chance_op,
+        "chance_val": chance_val,
+        "min_dte": min_dte,
+        "max_dte": max_dte,
     }
     return d
 
@@ -152,17 +152,17 @@ async def flow_summary(limit: int = Query(24), minPremium: int = Query(UW_MIN_PR
     """Flow summary with guaranteed fallback and mode detection"""
     mode = "LIVE" if UW_LIVE else "DEMO"
     try:
-    if UW_LIVE:
-    data = summary_from_live()
-    if not data or not isinstance(data, list):
-    data = demo_summary(limit)
-    mode = "DEMO"
-    else:
-    data = demo_summary(limit)
+        if UW_LIVE:
+            data = summary_from_live()
+            if not data or not isinstance(data, list):
+                data = demo_summary(limit)
+                mode = "DEMO"
+        else:
+            data = demo_summary(limit)
     except Exception as e:
-    print(f"Flow summary error (using demo): {e}")
-    data = demo_summary(limit)
-    mode = "DEMO"
+        print(f"Flow summary error (using demo): {e}")
+        data = demo_summary(limit)
+        mode = "DEMO"
 
     items = data[:limit] if isinstance(data, list) else demo_summary(limit)
     return {"mode": mode, "items": items, "ts": now_iso()}
@@ -176,38 +176,38 @@ async def flow_live(
     """Live flow with guaranteed fallback, mode detection, and deep-linking"""
     mode = "LIVE" if UW_LIVE else "DEMO"
     try:
-    if UW_LIVE:
-    rows = live_flow(
-    _filters(
-    tickers=symbol,
-    side=None,
-    kinds=None,
-    opt_types=None,
-    otm=None,
-    vol_gt_oi=None,
-    above_ask_below_bid=None,
-    price_op=None,
-    price_val=None,
-    chance_op=None,
-    chance_val=None,
-    min_dte=None,
-    max_dte=None,
-    )
-    )
-    if not rows or not isinstance(rows, list):
-    rows = demo_live(symbol, minPremium)
-    mode = "DEMO"
-    else:
-    rows = demo_live(symbol, minPremium)
+        if UW_LIVE:
+            rows = live_flow(
+                _filters(
+                    tickers=symbol,
+                    side=None,
+                    kinds=None,
+                    opt_types=None,
+                    otm=None,
+                    vol_gt_oi=None,
+                    above_ask_below_bid=None,
+                    price_op=None,
+                    price_val=None,
+                    chance_op=None,
+                    chance_val=None,
+                    min_dte=None,
+                    max_dte=None,
+                )
+            )
+            if not rows or not isinstance(rows, list):
+                rows = demo_live(symbol, minPremium)
+                mode = "DEMO"
+        else:
+            rows = demo_live(symbol, minPremium)
     except Exception as e:
-    print(f"Live flow error for {symbol} (using demo): {e}")
-    rows = demo_live(symbol, minPremium)
-    mode = "DEMO"
+        print(f"Live flow error for {symbol} (using demo): {e}")
+        rows = demo_live(symbol, minPremium)
+        mode = "DEMO"
 
     # Add deep-link to Builder for each row
     items = rows if isinstance(rows, list) else demo_live(symbol, minPremium)
     for r in items:
-    r["linkBuilder"] = make_builder_link(r)
+        r["linkBuilder"] = make_builder_link(r)
 
     return {"mode": mode, "items": items, "next": None, "ts": now_iso()}
 
@@ -220,16 +220,16 @@ async def flow_historical(
     """Historical flow with fallback"""
     mode = "LIVE" if UW_LIVE else "DEMO"
     try:
-    if UW_LIVE:
-    data = historical_flow({})
-    if not data:
-    data = demo_live(symbol, minPremium)[:10] # Smaller historical set
-    mode = "DEMO"
-    else:
-    data = demo_live(symbol, minPremium)[:10]
+        if UW_LIVE:
+            data = historical_flow({})
+            if not data:
+                data = demo_live(symbol, minPremium)[:10] # Smaller historical set
+                mode = "DEMO"
+        else:
+            data = demo_live(symbol, minPremium)[:10]
     except Exception:
-    data = demo_live(symbol, minPremium)[:10]
-    mode = "DEMO"
+        data = demo_live(symbol, minPremium)[:10]
+        mode = "DEMO"
 
     return {"mode": mode, "items": data, "ts": now_iso()}
 
@@ -238,16 +238,16 @@ async def flow_news(tickers: Optional[str] = Query(None)):
     """News flow with fallback"""
     mode = "LIVE" if UW_LIVE else "DEMO"
     try:
-    if UW_LIVE:
-    data = news_flow(tickers.split(",") if tickers else [])
-    if not data:
-    data = []
-    mode = "DEMO"
-    else:
-    data = []
+        if UW_LIVE:
+            data = news_flow(tickers.split(",") if tickers else [])
+            if not data:
+                data = []
+                mode = "DEMO"
+        else:
+            data = []
     except Exception:
-    data = []
-    mode = "DEMO"
+        data = []
+        mode = "DEMO"
 
     return {"mode": mode, "items": data, "ts": now_iso()}
 
@@ -256,16 +256,16 @@ async def flow_congress(tickers: Optional[str] = Query(None)):
     """Congress flow with fallback"""
     mode = "LIVE" if UW_LIVE else "DEMO"
     try:
-    if UW_LIVE:
-    data = congress_flow(tickers.split(",") if tickers else [])
-    if not data:
-    data = []
-    mode = "DEMO"
-    else:
-    data = []
+        if UW_LIVE:
+            data = congress_flow(tickers.split(",") if tickers else [])
+            if not data:
+                data = []
+                mode = "DEMO"
+        else:
+            data = []
     except Exception:
-    data = []
-    mode = "DEMO"
+        data = []
+        mode = "DEMO"
 
     return {"mode": mode, "items": data, "ts": now_iso()}
 
@@ -274,16 +274,34 @@ async def flow_insiders(tickers: Optional[str] = Query(None)):
     """Insiders flow with fallback"""
     mode = "LIVE" if UW_LIVE else "DEMO"
     try:
-    if UW_LIVE:
-    data = insiders_flow(tickers.split(",") if tickers else [])
-    if not data:
-    data = []
-    mode = "DEMO"
-    else:
-    data = []
+        if UW_LIVE:
+            data = insiders_flow(tickers.split(",") if tickers else [])
+            if not data:
+                data = []
+                mode = "DEMO"
+        else:
+            data = []
     except Exception:
-    data = []
-    mode = "DEMO"
+        data = []
+        mode = "DEMO"
+
+    return {"mode": mode, "items": data, "ts": now_iso()}
+
+@router.get("/insiders")
+async def flow_insiders(tickers: Optional[str] = Query(None)):
+    """Insiders flow with fallback"""
+    mode = "LIVE" if UW_LIVE else "DEMO"
+    try:
+        if UW_LIVE:
+            data = insiders_flow(tickers.split(",") if tickers else [])
+            if not data:
+                data = []
+                mode = "DEMO"
+        else:
+            data = []
+    except Exception:
+        data = []
+        mode = "DEMO"
 
     return {"mode": mode, "items": data, "ts": now_iso()}
 
@@ -298,28 +316,28 @@ async def market_movers():
     
     Returns:
     {
-    "gainers": [...],
-    "losers": [...],
-    "most_active": [...]
+        "gainers": [...],
+        "losers": [...],
+        "most_active": [...]
     }
     """
     from unusual_whales_service import UnusualWhalesService
     
     try:
-    service = UnusualWhalesService()
-    data = await service.get_market_movers()
-    return {"status": "success", "data": data, "timestamp": now_iso()}
+        service = UnusualWhalesService()
+        data = await service.get_market_movers()
+        return {"status": "success", "data": data, "timestamp": now_iso()}
     except Exception as e:
-    return {
-    "status": "error",
-    "error": str(e),
-    "data": {
-    "gainers": [],
-    "losers": [],
-    "most_active": []
-    },
-    "timestamp": now_iso()
-    }
+        return {
+            "status": "error",
+            "error": str(e),
+            "data": {
+                "gainers": [],
+                "losers": [],
+                "most_active": []
+            },
+            "timestamp": now_iso()
+        }
 
 @router.get("/congress-trades")
 async def congress_trades(
@@ -346,35 +364,35 @@ async def congress_trades(
     from unusual_whales_service import UnusualWhalesService
     
     try:
-    service = UnusualWhalesService()
-    
-    # Parse dates if provided
-    start_dt = datetime.fromisoformat(start_date) if start_date else None
-    end_dt = datetime.fromisoformat(end_date) if end_date else None
-    
-    data = await service.get_congress_trades(
-    ticker=ticker,
-    politician=politician,
-    party=party,
-    transaction_type=transaction_type,
-    start_date=start_dt,
-    end_date=end_dt,
-    limit=limit
-    )
-    
-    return {
-    "status": "success",
-    "data": data,
-    "count": len(data),
-    "timestamp": now_iso()
-    }
+        service = UnusualWhalesService()
+        
+        # Parse dates if provided
+        start_dt = datetime.fromisoformat(start_date) if start_date else None
+        end_dt = datetime.fromisoformat(end_date) if end_date else None
+        
+        data = await service.get_congress_trades(
+            ticker=ticker,
+            politician=politician,
+            party=party,
+            transaction_type=transaction_type,
+            start_date=start_dt,
+            end_date=end_dt,
+            limit=limit
+        )
+        
+        return {
+            "status": "success",
+            "data": data,
+            "count": len(data),
+            "timestamp": now_iso()
+        }
     except Exception as e:
-    return {
-    "status": "error",
-    "error": str(e),
-    "data": [],
-    "timestamp": now_iso()
-    }
+        return {
+            "status": "error",
+            "error": str(e),
+            "data": [],
+            "timestamp": now_iso()
+        }
 
 @router.get("/dark-pool")
 async def dark_pool(
@@ -397,33 +415,33 @@ async def dark_pool(
     from unusual_whales_service import UnusualWhalesService
     
     try:
-    service = UnusualWhalesService()
-    
-    # Parse dates if provided
-    start_dt = datetime.fromisoformat(start_date) if start_date else None
-    end_dt = datetime.fromisoformat(end_date) if end_date else None
-    
-    data = await service.get_dark_pool(
-    ticker=ticker,
-    min_volume=min_volume,
-    start_date=start_dt,
-    end_date=end_dt,
-    limit=limit
-    )
-    
-    return {
-    "status": "success",
-    "data": data,
-    "count": len(data),
-    "timestamp": now_iso()
-    }
+        service = UnusualWhalesService()
+        
+        # Parse dates if provided
+        start_dt = datetime.fromisoformat(start_date) if start_date else None
+        end_dt = datetime.fromisoformat(end_date) if end_date else None
+        
+        data = await service.get_dark_pool(
+            ticker=ticker,
+            min_volume=min_volume,
+            start_date=start_dt,
+            end_date=end_dt,
+            limit=limit
+        )
+        
+        return {
+            "status": "success",
+            "data": data,
+            "count": len(data),
+            "timestamp": now_iso()
+        }
     except Exception as e:
-    return {
-    "status": "error",
-    "error": str(e),
-    "data": [],
-    "timestamp": now_iso()
-    }
+        return {
+            "status": "error",
+            "error": str(e),
+            "data": [],
+            "timestamp": now_iso()
+        }
 
 @router.get("/institutional/{ticker}")
 async def institutional_holdings(
@@ -442,18 +460,18 @@ async def institutional_holdings(
     from unusual_whales_service import UnusualWhalesService
     
     try:
-    service = UnusualWhalesService()
-    data = await service.get_institutional_holdings(ticker=ticker, quarter=quarter)
-    
-    return {
-    "status": "success",
-    "data": data,
-    "timestamp": now_iso()
-    }
+        service = UnusualWhalesService()
+        data = await service.get_institutional_holdings(ticker=ticker, quarter=quarter)
+        
+        return {
+            "status": "success",
+            "data": data,
+            "timestamp": now_iso()
+        }
     except Exception as e:
-    return {
-    "status": "error",
-    "error": str(e),
-    "data": {"ticker": ticker, "holdings": []},
-    "timestamp": now_iso()
-    }
+        return {
+            "status": "error",
+            "error": str(e),
+            "data": {"ticker": ticker, "holdings": []},
+            "timestamp": now_iso()
+        }
