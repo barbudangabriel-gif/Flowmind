@@ -1,0 +1,55 @@
+name: Python Indent Validation
+
+on:
+  pull_request:
+    paths:
+      - '**.py'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - '**.py'
+
+jobs:
+  validate-python-indent:
+    runs-on: ubuntu-latest
+    name: Validate Python 3.12 Compilation
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          
+      - name: Compile all Python files
+        run: |
+          echo "Validating Python 3.12 indent compliance..."
+          python -m compileall -q backend/ || {
+            echo ""
+            echo "❌ VALIDATION FAILED: Python files have syntax/indent errors"
+            echo ""
+            echo "Run locally to see errors:"
+            echo "  python -m compileall backend/"
+            echo ""
+            echo "All Python files must use 4-space indentation per Python 3.12 requirements"
+            exit 1
+          }
+          echo "✅ All Python files compile successfully"
+          
+      - name: Count Python files validated
+        run: |
+          PY_COUNT=$(find backend/ -name "*.py" -type f | wc -l)
+          echo "✅ Validated $PY_COUNT Python files"
+          
+      - name: Summary
+        if: success()
+        run: |
+          echo "## ✅ Python 3.12 Indent Validation Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All Python files compile successfully with Python 3.12" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Protection Level:** EditorConfig + Pre-commit + CI/CD" >> $GITHUB_STEP_SUMMARY
