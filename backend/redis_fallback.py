@@ -11,46 +11,46 @@ class AsyncTTLDict:
  """In-memory TTL store (fallback pentru Redis)"""
 
  def __init__(self):
- self._store: dict[str, Tuple[Optional[float], Any]] = {}
+    self._store: dict[str, Tuple[Optional[float], Any]] = {}
 
  def _purge(self):
- """Curăță intrările expirate"""
- now = time.time()
- expired = [k for k, (exp, _) in self._store.items() if exp and exp < now]
- for k in expired:
- del self._store[k]
+    """Curăță intrările expirate"""
+    now = time.time()
+    expired = [k for k, (exp, _) in self._store.items() if exp and exp < now]
+    for k in expired:
+        del self._store[k]
 
  async def get(self, key: str) -> Optional[str]:
- self._purge()
- rec = self._store.get(key)
- return rec[1] if rec else None
+    self._purge()
+    rec = self._store.get(key)
+    return rec[1] if rec else None
 
  async def set(
- self, key: str, value: str, ex: Optional[int] = None, ttl: Optional[int] = None
+    self, key: str, value: str, ex: Optional[int] = None, ttl: Optional[int] = None
  ) -> bool:
- # Support both ex and ttl parameters (ttl is alias for ex)
- expiry_seconds = ex or ttl
- exp = (time.time() + expiry_seconds) if expiry_seconds else None
- self._store[key] = (exp, value)
- return True
+    # Support both ex and ttl parameters (ttl is alias for ex)
+    expiry_seconds = ex or ttl
+    exp = (time.time() + expiry_seconds) if expiry_seconds else None
+    self._store[key] = (exp, value)
+    return True
 
  async def setex(self, key: str, time_seconds: int, value: str) -> bool:
- exp = time.time() + time_seconds
- self._store[key] = (exp, value)
- return True
+    exp = time.time() + time_seconds
+    self._store[key] = (exp, value)
+    return True
 
  async def ttl(self, key: str) -> int:
- self._purge()
- rec = self._store.get(key)
- if not rec:
- return -2 # no such key
- exp, _ = rec
- if exp is None:
- return -1 # no expiry
- return max(0, int(exp - time.time()))
+    self._purge()
+    rec = self._store.get(key)
+    if not rec:
+        return -2 # no such key
+    exp, _ = rec
+    if exp is None:
+        return -1 # no expiry
+    return max(0, int(exp - time.time()))
 
  async def ping(self) -> bool:
- return True
+    return True
 
 # Shared instance for consistent storage (test mode AND fallback mode)
 _shared_kv_instance = None
@@ -61,32 +61,32 @@ async def get_kv():
 
  # Force in-memory store during tests (shared instance)
  if os.environ.get("TEST_MODE") == "1":
- if _shared_kv_instance is None:
- _shared_kv_instance = AsyncTTLDict()
- return _shared_kv_instance
+    if _shared_kv_instance is None:
+        _shared_kv_instance = AsyncTTLDict()
+    return _shared_kv_instance
 
  if os.getenv("FM_FORCE_FALLBACK") == "1":
- if _shared_kv_instance is None:
- _shared_kv_instance = AsyncTTLDict()
- return _shared_kv_instance
+    if _shared_kv_instance is None:
+        _shared_kv_instance = AsyncTTLDict()
+    return _shared_kv_instance
 
  url = os.getenv("REDIS_URL")
  required = os.getenv("FM_REDIS_REQUIRED") == "1"
 
  if redis_from_url and url:
- try:
- return redis_from_url(url, decode_responses=True)
- except Exception as e:
- if required:
- raise RuntimeError(f"Redis connection required but failed: {e}")
- pass
+    try:
+        return redis_from_url(url, decode_responses=True)
+    except Exception as e:
+        if required:
+            raise RuntimeError(f"Redis connection required but failed: {e}")
+        pass
 
  if required:
- raise RuntimeError(
- "Redis connection required but REDIS_URL not set or redis not available"
- )
+    raise RuntimeError(
+        "Redis connection required but REDIS_URL not set or redis not available"
+    )
 
  # Fallback to shared singleton instance when Redis not available
  if _shared_kv_instance is None:
- _shared_kv_instance = AsyncTTLDict()
+    _shared_kv_instance = AsyncTTLDict()
  return _shared_kv_instance
