@@ -12,6 +12,15 @@ FlowMind is an options analytics platform (FastAPI backend, React frontend, Mong
 
 ### Key Patterns & Conventions
 - **STRICT: Dark theme only:** All UI uses hardcoded Tailwind dark classes (see `DARK_THEME_ONLY_VALIDATION.md`). NO theme toggles, NO light mode, ONLY dark theme.
+- **CRITICAL: Python 3.12 Indent Compliance (Oct 18, 2025):**
+  - **FIXED:** All 16 backend/services/*.py files now use proper 4-space indentation per Python 3.12 requirements
+  - **Context:** Legacy 1-space indent caused IndentationError across entire backend/services/ directory
+  - **Solution:** Manual fix via replace_string_in_file (3,525 lines fixed across 16 files, one-by-one)
+  - **Files fixed:** bs.py, builder_engine.py, quality.py, optimize_engine.py, cache_decorators.py, calendar_backtest.py, historical_engine.py, options_gex.py, options_provider.py, ts_oauth.py, uw_flow.py, warmup.py, ws_connection_manager.py, providers/__init__.py, providers/ts_provider.py, providers/uw_provider.py
+  - **Verification:** All files pass `python -m py_compile` and backend starts without ImportError
+  - **Commits:** 16 individual commits in PR #4 (chore/build-only-checks-clean branch)
+  - **Lesson learned:** Automated indent fixers (black, autopep8, brutal_reindent.py) cannot parse invalid syntax - manual fix required for cascading errors
+  - **When encountering indent errors:** Use manual replace_string_in_file with 3-5 line context windows, fix section-by-section, verify with py_compile after each section
 - **CRITICAL: ZERO EMOJI/ICONS POLICY - NEVER SHOW EMOJI IN UI:** 
   - **ABSOLUTELY FORBIDDEN** to add emojis, icons, or visual decorations in ANY user-facing UI/code
   - **DO NOT display emoji in responses** - Owner does not want to see emoji anywhere

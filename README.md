@@ -5,13 +5,24 @@
 [![Security](https://img.shields.io/badge/security-hardened-green.svg)](./SECURITY_CI_IMPROVEMENTS_2025-10-14.md)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitLab-orange.svg)](./.gitlab-ci.yml)
 [![Health](https://img.shields.io/badge/health-monitored-blue.svg)](#health-endpoints)
+[![Python 3.12](https://img.shields.io/badge/python-3.12%20ready-brightgreen.svg)](./PYTHON312_INDENT_FIX_COMPLETE.md)
+
+---
+
+## Recent Updates
+
+### October 18, 2025 - Python 3.12 Compliance
+- **CRITICAL FIX:** All 16 backend/services files now Python 3.12 compliant
+- **Fixed:** 3,525 lines of indent errors (legacy 1-space → proper 4-space)
+- **Status:** Backend fully operational, all imports successful
+- **Details:** See [PYTHON312_INDENT_FIX_COMPLETE.md](./PYTHON312_INDENT_FIX_COMPLETE.md)
 
 ---
 
 ## Quick Start
 
 ### Prerequisites
-- **Backend:** Python 3.11+, FastAPI, Redis (optional, has fallback)
+- **Backend:** Python 3.12+, FastAPI, Redis (optional, has fallback)
 - **Frontend:** Node 20+, React 19
 - **Optional:** MongoDB (portfolios), TradeStation API, Unusual Whales API
 
