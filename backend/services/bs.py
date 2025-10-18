@@ -157,7 +157,7 @@ def call_theta(S, K, T, sigma, r):
         (sigma * math.sqrt(T))
     d2_val = d1_val - sigma * math.sqrt(T)
     term1 = -(S * (1.0 / math.sqrt(2 * math.pi)) *
-                                                        math.exp(-0.5 * d1_val * d1_val) * sigma) / (2 * math.sqrt(T))
+              math.exp(-0.5 * d1_val * d1_val) * sigma) / (2 * math.sqrt(T))
     term2 = -r * K * math.exp(-r * T) * norm_cdf(d2_val)
     return term1 + term2  # per an
 
@@ -169,6 +169,6 @@ def put_theta(S, K, T, sigma, r):
         (sigma * math.sqrt(T))
     d2_val = d1_val - sigma * math.sqrt(T)
     term1 = -(S * (1.0 / math.sqrt(2 * math.pi)) *
-                                                        math.exp(-0.5 * d1_val * d1_val) * sigma) / (2 * math.sqrt(T))
+              math.exp(-0.5 * d1_val * d1_val) * sigma) / (2 * math.sqrt(T))
     term2 = +r * K * math.exp(-r * T) * norm_cdf(-d2_val)
     return term1 + term2  # per an

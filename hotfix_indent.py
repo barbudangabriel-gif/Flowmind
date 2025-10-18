@@ -3,22 +3,22 @@ import io, os, re, sys
 
 # --- CONFIG: fișier -> linii sau intervale (inclusive) ---
 TARGETS = {
-    "backend/services/bs.py": [(17,18)],
-    "backend/services/builder_engine.py": [(28,29)],
+    "backend/services/bs.py": [(17,18), (25,26)],
+    "backend/services/builder_engine.py": [(28,29), (30,31)],
     "backend/services/cache_decorators.py": [37],
     "backend/services/calendar_backtest.py": [(36,37)],
     "backend/services/historical_engine.py": [18],
-    "backend/services/optimize_engine.py": [(13,14)],
-    "backend/services/options_gex.py": [(19,20)],
-    "backend/services/options_provider.py": [(9,10)],
-    "backend/services/quality.py": [(8,9)],
-    "backend/services/ts_oauth.py": [(24,26)],
-    "backend/services/uw_flow.py": [(25,26)],
+    "backend/services/optimize_engine.py": [(13,14), (14,15)],
+    "backend/services/options_gex.py": [(19,20), (21,22)],
+    "backend/services/options_provider.py": [(9,10), (14,19)],
+    "backend/services/quality.py": [(8,9), (11,12)],
+    "backend/services/ts_oauth.py": [(24,26), (26,27)],
+    "backend/services/uw_flow.py": [(25,26), (26,27)],
     "backend/services/warmup.py": [40],
-    "backend/services/ws_connection_manager.py": [(39,40)],
-    "backend/services/providers/__init__.py": [(10,11)],
-    "backend/services/providers/ts_provider.py": [(10,11)],
-    "backend/services/providers/uw_provider.py": [(9,10)],
+    "backend/services/ws_connection_manager.py": [(39,40), (53,54)],
+    "backend/services/providers/__init__.py": [(10,11), (12,13)],
+    "backend/services/providers/ts_provider.py": [(10,11), (13,14)],
+    "backend/services/providers/uw_provider.py": [(9,10), (14,15)],
 }
 
 TRIPLE = re.compile(r"(?<!\\)(?:'''|\"\"\")")

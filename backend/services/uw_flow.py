@@ -164,8 +164,8 @@ def _apply_filters(item: Dict[str, Any], f: Dict[str, Any]):
         item.get(
             "execution",
             "")).lower() not in (
-            "above_ask",
-            "below_bid",
+        "above_ask",
+        "below_bid",
     ):
     return False
 

@@ -58,7 +58,7 @@ def save_token(db, t: dict):
         {
             "$set": {
                 "provider": "TS",
-                "access_token": t["access_token"],
+                            "access_token": t["access_token"],
                 "refresh_token": t.get("refresh_token"),
                 "expires_at": t["expires_at"],
                 "updated_at": time.time(),
@@ -104,7 +104,7 @@ def ensure_access_token(db) -> str:
 
 
 def authorized_get(db, url: str, params: dict |
-                                                                            None = None) -> requests.Response:
+                   None = None) -> requests.Response:
     """Make authorized GET request with automatic token refresh on 401"""
     token = ensure_access_token(db)
     headers = {"Authorization": f"Bearer {token}"}

@@ -50,10 +50,10 @@ class TSProvider(OptionsProvider):
     raise
 
     def get_chain(self,
-                                                                        symbol: str,
-                                                                        expiry: Optional[str] = None,
-                                                                        dte: Optional[int] = None) -> Dict[str,
-                                                                                                                                                                                                                    Any]:
+                  symbol: str,
+                  expiry: Optional[str] = None,
+                  dte: Optional[int] = None) -> Dict[str,
+                                                     Any]:
     """Get options chain from TradeStation - already in correct format"""
     try:
         # Import here to avoid circular imports

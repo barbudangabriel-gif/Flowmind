@@ -14,29 +14,29 @@ def _leg_market_snapshot(
     for row in ch.get("Strikes", []):
     if abs(float(row["StrikePrice"]) - strike) < 1e-6:
     opt_data = (
-    row.get("Calls", [{}])[0]
-    if opt_type.upper().startswith("C")
-    else row.get("Puts", [{}])[0]
+        row.get("Calls", [{}])[0]
+        if opt_type.upper().startswith("C")
+        else row.get("Puts", [{}])[0]
     )
     bid = float(opt_data.get("Bid", 0))
     ask = float(opt_data.get("Ask", 0))
     mid = (
-    (bid + ask) / 2
-    if bid > 0 and ask > 0
-    else float(opt_data.get("Last", 0))
+        (bid + ask) / 2
+        if bid > 0 and ask > 0
+        else float(opt_data.get("Last", 0))
     )
     oi = float(opt_data.get("OpenInterest", 0))
     vol = float(opt_data.get("Volume", 0))
     spr = max(0, ask - bid)
     rel = spr / max(0.05, mid) if mid > 0 else 1.0
     return {
-    "bid": bid,
-    "ask": ask,
-    "mid": mid,
-    "oi": oi,
-    "vol": vol,
-    "spr": spr,
-    "rel": rel,
+        "bid": bid,
+        "ask": ask,
+        "mid": mid,
+        "oi": oi,
+        "vol": vol,
+        "spr": spr,
+        "rel": rel,
     }
     return {"bid": 0, "ask": 0, "mid": 0, "oi": 0, "vol": 0, "spr": 0, "rel": 1.0}
 
@@ -65,7 +65,7 @@ def _compute_spread_quality(
     for leg in legs:
     mm = _leg_market_snapshot(chain, leg["type"], float(leg["strike"]))
     q = 0.65 * _spread_score(mm["rel"]) + 0.35 * math.tanh(
-    (mm["oi"] + mm["vol"]) / 1500
+        (mm["oi"] + mm["vol"]) / 1500
     )
     w = max(1, abs(mm["mid"]))
 
@@ -81,10 +81,10 @@ def _compute_spread_quality(
     quality = (q_sum / w_sum) if w_sum > 0 else 0
 
     return {
-    "quality": round(quality * 100),
-    "slippage_est": round(slippage * 100) / 100,
-    "nbbo_ok": nbbo_ok,
-    "market": market_data,
+        "quality": round(quality * 100),
+        "slippage_est": round(slippage * 100) / 100,
+        "nbbo_ok": nbbo_ok,
+        "market": market_data,
     }
 
 def _pick_iv(chain: Dict[str, Any], spot: float) -> float:
@@ -147,17 +147,17 @@ def _format_card(
     deeplink,
 ) -> Dict[str, Any]:
     return {
-    "id": id_,
-    "label": label,
-    "roi": roi,
-    "chance": chance,
-    "profit_max": profit_max,
-    "risk_capital": risk_capital,
-    "collateral": collateral,
-    "breakevens": breakevens,
-    "legs": legs,
-    "mini": mini,
-    "open_in_builder": deeplink,
+        "id": id_,
+        "label": label,
+        "roi": roi,
+        "chance": chance,
+        "profit_max": profit_max,
+        "risk_capital": risk_capital,
+        "collateral": collateral,
+        "breakevens": breakevens,
+        "legs": legs,
+        "mini": mini,
+        "open_in_builder": deeplink,
     }
 
 def suggest(
@@ -198,27 +198,27 @@ def suggest(
     roi_ev = ev / debit
     liq = _liq_score(chain, k1, kind="CALL")
     link = builder_link(
-    "long-call",
-    symbol,
-    expiry,
-    [{"side": "BUY", "type": "CALL", "qty": 1, "strike": k1}],
-    1,
+        "long-call",
+        symbol,
+        expiry,
+        [{"side": "BUY", "type": "CALL", "qty": 1, "strike": k1}],
+        1,
     )
     if budget is None or debit <= budget:
     items.append(
-    _format_card(
-    "long-call",
-    f"Buy {int(k1)}C",
-    [{"side": "BUY", "type": "CALL", "qty": 1, "strike": k1}],
-    roi_ev,
-    chance,
-    None,
-    debit,
-    0.0,
-    [be],
-    {"x": [spot * 0.8, spot * 1.2], "breakevens": [be]},
-    link,
-    )
+        _format_card(
+            "long-call",
+            f"Buy {int(k1)}C",
+            [{"side": "BUY", "type": "CALL", "qty": 1, "strike": k1}],
+            roi_ev,
+            chance,
+            None,
+            debit,
+            0.0,
+            [be],
+            {"x": [spot * 0.8, spot * 1.2], "breakevens": [be]},
+            link,
+        )
     )
     items[-1]["_score"] = 0.35 * roi_ev + 0.45 * chance + 0.20 * liq
 
@@ -240,45 +240,45 @@ def suggest(
     ev2 = chance2 * max_profit - (1 - chance2) * debit2
     roi2 = ev2 / debit2
     liq2 = min(
-    1.0,
-    0.5 * _liq_score(chain, buy, kind="CALL")
-    + 0.5 * _liq_score(chain, sell, kind="CALL"),
+        1.0,
+        0.5 * _liq_score(chain, buy, kind="CALL")
+        + 0.5 * _liq_score(chain, sell, kind="CALL"),
     )
     link2 = builder_link(
-    "bull-call-spread",
-    symbol,
-    expiry,
-    [
-    {"side": "BUY", "type": "CALL", "qty": 1, "strike": buy},
-    {"side": "SELL", "type": "CALL", "qty": 1, "strike": sell},
-    ],
-    1,
+        "bull-call-spread",
+        symbol,
+        expiry,
+        [
+            {"side": "BUY", "type": "CALL", "qty": 1, "strike": buy},
+            {"side": "SELL", "type": "CALL", "qty": 1, "strike": sell},
+        ],
+        1,
     )
     if (budget is None or debit2 <= budget) and width > 0:
     items.append(
-    _format_card(
-    "bull-call-spread",
-    f"Buy {int(buy)}C, Sell {int(sell)}C",
-    [
-    {"side": "BUY", "type": "CALL", "qty": 1, "strike": buy},
-    {"side": "SELL", "type": "CALL", "qty": 1, "strike": sell},
-    ],
-    roi2,
-    chance2,
-    max_profit,
-    debit2,
-    0.0,
-    [be2],
-    {"x": [spot * 0.8, spot * 1.2], "breakevens": [be2]},
-    link2,
-    )
+        _format_card(
+            "bull-call-spread",
+            f"Buy {int(buy)}C, Sell {int(sell)}C",
+            [
+                {"side": "BUY", "type": "CALL", "qty": 1, "strike": buy},
+                {"side": "SELL", "type": "CALL", "qty": 1, "strike": sell},
+            ],
+            roi2,
+            chance2,
+            max_profit,
+            debit2,
+            0.0,
+            [be2],
+            {"x": [spot * 0.8, spot * 1.2], "breakevens": [be2]},
+            link2,
+        )
     )
     items[-1]["_score"] = 0.4 * roi2 + 0.4 * chance2 + 0.2 * liq2
 
     # B8 - Add spread quality metrics for Bull Call Spread
     legs_bcs = [
-    {"side": "BUY", "type": "CALL", "strike": buy},
-    {"side": "SELL", "type": "CALL", "strike": sell},
+        {"side": "BUY", "type": "CALL", "strike": buy},
+        {"side": "SELL", "type": "CALL", "strike": sell},
     ]
     quality_bcs = _compute_spread_quality(legs_bcs, chain)
     items[-1].update(quality_bcs)
@@ -296,27 +296,27 @@ def suggest(
     roi3 = ev3 / (collateral if collateral > 0 else 1)
     liq3 = _liq_score(chain, put_k, kind="PUT")
     link3 = builder_link(
-    "cash-secured-put",
-    symbol,
-    expiry,
-    [{"side": "SELL", "type": "PUT", "qty": 1, "strike": put_k}],
-    1,
+        "cash-secured-put",
+        symbol,
+        expiry,
+        [{"side": "SELL", "type": "PUT", "qty": 1, "strike": put_k}],
+        1,
     )
     if budget is None or collateral <= budget:
     items.append(
-    _format_card(
-    "cash-secured-put",
-    f"Sell {int(put_k)}P",
-    [{"side": "SELL", "type": "PUT", "qty": 1, "strike": put_k}],
-    roi3,
-    chance3,
-    credit,
-    collateral,
-    collateral,
-    [be3],
-    {"x": [spot * 0.8, spot * 1.2], "breakevens": [be3]},
-    link3,
-    )
+        _format_card(
+            "cash-secured-put",
+            f"Sell {int(put_k)}P",
+            [{"side": "SELL", "type": "PUT", "qty": 1, "strike": put_k}],
+            roi3,
+            chance3,
+            credit,
+            collateral,
+            collateral,
+            [be3],
+            {"x": [spot * 0.8, spot * 1.2], "breakevens": [be3]},
+            link3,
+        )
     )
     items[-1]["_score"] = 0.35 * roi3 + 0.4 * chance3 + 0.25 * liq3
 
@@ -331,13 +331,13 @@ def suggest(
     x.pop("_score", None)
 
     return {
-    "meta": {
-    "symbol": symbol,
-    "spot": spot,
-    "dte": dte,
-    "expiry": expiry,
-    "iv": iv,
-    "rf": os.getenv("RF_RATE", "0.045"),
-    },
-    "strategies": items[:9],
+        "meta": {
+            "symbol": symbol,
+            "spot": spot,
+            "dte": dte,
+            "expiry": expiry,
+            "iv": iv,
+            "rf": os.getenv("RF_RATE", "0.045"),
+        },
+        "strategies": items[:9],
     }
