@@ -67,7 +67,7 @@ export default function HomePage() {
             <img 
               src="/assets/logos/flowmind_brain_orange_transparent_10s.gif" 
               alt="FlowMind Brain" 
-              className="w-[160px] h-auto"
+              className="w-[320px] h-auto"
             />
           </div>
         </div>
