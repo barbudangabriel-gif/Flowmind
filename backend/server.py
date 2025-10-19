@@ -10,13 +10,13 @@ from datetime import datetime
 
 # Import observability and config (optional for security audit)
 try:
- from observability import wire_observability, configure_logging
- from config import get_settings
+    from observability import wire_observability, configure_logging
+    from config import get_settings
 
- OBSERVABILITY_AVAILABLE = True
+    OBSERVABILITY_AVAILABLE = True
 except ImportError:
  # Observability modules not available - continue without them
- OBSERVABILITY_AVAILABLE = False
+    OBSERVABILITY_AVAILABLE = False
 
 # Import services (temporarily disabled for security audit)
 # from unusual_whales_service import UnusualWhalesService
@@ -39,14 +39,14 @@ from smart_rebalancing_service import SmartRebalancingService
 
 # NEW: Option Selling compute + monitor service + analysis
 from options_selling_service import (
- ComputeRequest,
- compute_selling,
- MonitorStartRequest,
- monitor_start,
- monitor_stop,
- monitor_status,
- AnalysisQuery,
- options_analysis,
+    ComputeRequest,
+    compute_selling,
+    MonitorStartRequest,
+    monitor_start,
+    monitor_stop,
+    monitor_status,
+    AnalysisQuery,
+    options_analysis,
 )
 
 # Logger setup
@@ -55,19 +55,19 @@ logger.setLevel(logging.INFO)
 
 # NEW: Robust TradeStation Token Management
 try:
- from app.routers.tradestation_auth import router as ts_auth_router
- ROBUST_TS_AVAILABLE = True
+    from app.routers.tradestation_auth import router as ts_auth_router
+    ROBUST_TS_AVAILABLE = True
 except ImportError:
- ROBUST_TS_AVAILABLE = False
- logger.warning("Robust TradeStation auth not available - using legacy system")
+    ROBUST_TS_AVAILABLE = False
+    logger.warning("Robust TradeStation auth not available - using legacy system")
 
 # NEW: OAuth Callback Router
 try:
- from app.routers.oauth import router as oauth_router
- OAUTH_ROUTER_AVAILABLE = True
+    from app.routers.oauth import router as oauth_router
+    OAUTH_ROUTER_AVAILABLE = True
 except ImportError:
- OAUTH_ROUTER_AVAILABLE = False
- logger.warning("OAuth callback router not available")
+    OAUTH_ROUTER_AVAILABLE = False
+    logger.warning("OAuth callback router not available")
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -105,15 +105,15 @@ ts_auth = None
 
 # Integration clients
 try:
- from integrations.uw_client import UWClient
- from integrations.ts_client import TSClient
+    from integrations.uw_client import UWClient
+    from integrations.ts_client import TSClient
 
- INTEGRATIONS_AVAILABLE = True
+    INTEGRATIONS_AVAILABLE = True
 except ImportError as e:
- logger.warning(f"Integration clients not available: {e}")
- INTEGRATIONS_AVAILABLE = False
- UWClient = None
- TSClient = None
+    logger.warning(f"Integration clients not available: {e}")
+    INTEGRATIONS_AVAILABLE = False
+    UWClient = None
+    TSClient = None
 
 # Global flag to track initialization
 portfolio_service_initialized = False
@@ -142,121 +142,121 @@ app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
 # Application lifecycle events
 @app.on_event("startup")
 async def startup():
- """Initialize integration clients on startup"""
- logger.info(" Starting FlowMind API Server...")
- 
- # Validate critical environment variables
- logger.info(" Validating environment configuration...")
- 
- required_vars = {
- "MONGO_URL": os.getenv("MONGO_URL"),
- }
- 
- optional_vars = {
- "TS_CLIENT_ID": os.getenv("TS_CLIENT_ID"),
- "TS_CLIENT_SECRET": os.getenv("TS_CLIENT_SECRET"),
- "UW_API_TOKEN": os.getenv("UW_API_TOKEN") or os.getenv("UNUSUAL_WHALES_API_KEY"),
- "REDIS_URL": os.getenv("REDIS_URL"),
- }
- 
- # Check required variables
- missing_required = [key for key, val in required_vars.items() if not val]
- if missing_required:
- logger.error(f" Missing required environment variables: {', '.join(missing_required)}")
- logger.error(" Check your .env file or environment configuration")
- raise RuntimeError(f"Missing required environment variables: {', '.join(missing_required)}")
- else:
- logger.info(" All required environment variables present")
- 
- # Check optional variables (warnings only)
- missing_optional = [key for key, val in optional_vars.items() if not val]
- if missing_optional:
- logger.warning(f" Missing optional variables: {', '.join(missing_optional)}")
- logger.warning(" Some features may be limited or use fallback mode")
- 
- # Log configuration summary
- logger.info(f" Redis: {'Configured' if optional_vars['REDIS_URL'] else 'Using fallback (in-memory)'}")
- logger.info(f"🔑 TradeStation: {'Configured' if optional_vars['TS_CLIENT_ID'] else 'Demo mode'}")
- logger.info(f"🐋 Unusual Whales: {'Configured' if optional_vars['UW_API_TOKEN'] else 'Demo mode'}")
- 
- if INTEGRATIONS_AVAILABLE:
- try:
- # Initialize UW client for trades data
- app.state.uw = UWClient()
- logger.info(" UW client initialized for trades data")
+    """Initialize integration clients on startup"""
+    logger.info(" Starting FlowMind API Server...")
+    
+    # Validate critical environment variables
+    logger.info(" Validating environment configuration...")
+    
+    required_vars = {
+        "MONGO_URL": os.getenv("MONGO_URL"),
+    }
+    
+    optional_vars = {
+        "TS_CLIENT_ID": os.getenv("TS_CLIENT_ID"),
+        "TS_CLIENT_SECRET": os.getenv("TS_CLIENT_SECRET"),
+        "UW_API_TOKEN": os.getenv("UW_API_TOKEN") or os.getenv("UNUSUAL_WHALES_API_KEY"),
+        "REDIS_URL": os.getenv("REDIS_URL"),
+    }
+    
+    # Check required variables
+    missing_required = [key for key, val in required_vars.items() if not val]
+    if missing_required:
+        logger.error(f" Missing required environment variables: {', '.join(missing_required)}")
+        logger.error(" Check your .env file or environment configuration")
+        raise RuntimeError(f"Missing required environment variables: {', '.join(missing_required)}")
+    else:
+        logger.info(" All required environment variables present")
+    
+    # Check optional variables (warnings only)
+    missing_optional = [key for key, val in optional_vars.items() if not val]
+    if missing_optional:
+        logger.warning(f" Missing optional variables: {', '.join(missing_optional)}")
+        logger.warning(" Some features may be limited or use fallback mode")
+    
+    # Log configuration summary
+    logger.info(f" Redis: {'Configured' if optional_vars['REDIS_URL'] else 'Using fallback (in-memory)'}")
+    logger.info(f"🔑 TradeStation: {'Configured' if optional_vars['TS_CLIENT_ID'] else 'Demo mode'}")
+    logger.info(f"🐋 Unusual Whales: {'Configured' if optional_vars['UW_API_TOKEN'] else 'Demo mode'}")
+    
+    if INTEGRATIONS_AVAILABLE:
+        try:
+            # Initialize UW client for trades data
+            app.state.uw = UWClient()
+            logger.info(" UW client initialized for trades data")
 
- # Initialize TS client for options chain data
- app.state.ts = TSClient()
- logger.info(" TS client initialized for options chain data")
+            # Initialize TS client for options chain data
+            app.state.ts = TSClient()
+            logger.info(" TS client initialized for options chain data")
 
- except Exception as e:
- logger.error(f" Failed to initialize integration clients: {e}")
- # Set None to prevent crashes if clients fail to initialize
- app.state.uw = None
- app.state.ts = None
- else:
- logger.warning(" Integration clients not available - using fallback mode")
- app.state.uw = None
- app.state.ts = None
- 
- # Initialize Prometheus metrics
- try:
- from observability.metrics import initialize_metrics
- initialize_metrics()
- logger.info(" Prometheus metrics initialized")
- except Exception as e:
- logger.warning(f" Metrics initialization failed: {e}")
- 
- # Run cache warmup if enabled
- warmup_enabled = os.getenv("WARMUP_ENABLED", "1") == "1"
- if warmup_enabled:
- try:
- from services.warmup import warmup_cache, get_warmup_config
- 
- config = get_warmup_config()
- logger.info(f" Starting cache warmup (symbols: {len(config['symbols'])})...")
- 
- # Run warmup in background (don't block startup)
- import asyncio
- asyncio.create_task(warmup_cache(
- symbols=config['symbols'],
- include_flow=config['include_flow'],
- parallel=config['parallel']
- ))
- 
- except Exception as e:
- logger.warning(f" Cache warmup failed: {e}")
- 
- # Initialize WebSocket streaming
- try:
- from routers.stream import initialize_websocket
- await initialize_websocket()
- except Exception as e:
- logger.error(f" WebSocket initialization failed: {e}")
- 
- logger.info("✨ FlowMind API Server started successfully!")
+        except Exception as e:
+            logger.error(f" Failed to initialize integration clients: {e}")
+            # Set None to prevent crashes if clients fail to initialize
+            app.state.uw = None
+            app.state.ts = None
+    else:
+        logger.warning(" Integration clients not available - using fallback mode")
+        app.state.uw = None
+        app.state.ts = None
+    
+    # Initialize Prometheus metrics
+    try:
+        from observability.metrics import initialize_metrics
+        initialize_metrics()
+        logger.info(" Prometheus metrics initialized")
+    except Exception as e:
+        logger.warning(f" Metrics initialization failed: {e}")
+    
+    # Run cache warmup if enabled
+    warmup_enabled = os.getenv("WARMUP_ENABLED", "1") == "1"
+    if warmup_enabled:
+        try:
+            from services.warmup import warmup_cache, get_warmup_config
+            
+            config = get_warmup_config()
+            logger.info(f" Starting cache warmup (symbols: {len(config['symbols'])})...")
+            
+            # Run warmup in background (don't block startup)
+            import asyncio
+            asyncio.create_task(warmup_cache(
+                symbols=config['symbols'],
+                include_flow=config['include_flow'],
+                parallel=config['parallel']
+            ))
+            
+        except Exception as e:
+            logger.warning(f" Cache warmup failed: {e}")
+    
+    # Initialize WebSocket streaming
+    try:
+        from routers.stream import initialize_websocket
+        await initialize_websocket()
+    except Exception as e:
+        logger.error(f" WebSocket initialization failed: {e}")
+    
+    logger.info("✨ FlowMind API Server started successfully!")
 
 @app.on_event("shutdown")
 async def shutdown():
- """Clean up integration clients on shutdown"""
- # Shutdown WebSocket streaming
- try:
- from routers.stream import shutdown_websocket
- await shutdown_websocket()
- except Exception as e:
- logger.error(f" WebSocket shutdown failed: {e}")
- 
- try:
- if hasattr(app.state, "uw") and app.state.uw:
- await app.state.uw.aclose()
- logger.info(" UW client closed")
+    """Clean up integration clients on shutdown"""
+    # Shutdown WebSocket streaming
+    try:
+        from routers.stream import shutdown_websocket
+        await shutdown_websocket()
+    except Exception as e:
+        logger.error(f" WebSocket shutdown failed: {e}")
+    
+    try:
+        if hasattr(app.state, "uw") and app.state.uw:
+            await app.state.uw.aclose()
+            logger.info(" UW client closed")
 
- if hasattr(app.state, "ts") and app.state.ts:
- await app.state.ts.aclose()
- logger.info(" TS client closed")
+        if hasattr(app.state, "ts") and app.state.ts:
+            await app.state.ts.aclose()
+            logger.info(" TS client closed")
 
- except Exception as e:
- logger.error(f" Error closing integration clients: {e}")
+    except Exception as e:
+        logger.error(f" Error closing integration clients: {e}")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -264,359 +264,359 @@ api_router = APIRouter(prefix="/api")
 # NEW: Option Selling compute endpoint
 @api_router.post("/options/selling/compute")
 async def options_selling_compute(req: ComputeRequest):
- try:
- result = await compute_selling(req)
- return {"status": "success", "data": result.dict()}
- except Exception as e:
- raise HTTPException(
- status_code=400, detail=f"Options selling compute failed: {str(e)}"
- )
+    try:
+        result = await compute_selling(req)
+        return {"status": "success", "data": result.dict()}
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"Options selling compute failed: {str(e)}"
+        )
 
 # NEW: Option Selling Monitor endpoints
 @api_router.post("/options/selling/monitor/start")
 async def options_selling_monitor_start(req: MonitorStartRequest):
- try:
- res = await monitor_start(req)
- return {"status": "success", "data": res}
- except Exception as e:
- raise HTTPException(status_code=400, detail=f"Monitor start failed: {str(e)}")
+    try:
+        res = await monitor_start(req)
+        return {"status": "success", "data": res}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Monitor start failed: {str(e)}")
 
 @api_router.post("/options/selling/monitor/stop")
 async def options_selling_monitor_stop():
- try:
- res = await monitor_stop()
- return {"status": "success", "data": res}
- except Exception as e:
- raise HTTPException(status_code=400, detail=f"Monitor stop failed: {str(e)}")
+    try:
+        res = await monitor_stop()
+        return {"status": "success", "data": res}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Monitor stop failed: {str(e)}")
 
 @api_router.get("/options/selling/monitor/status")
 async def options_selling_monitor_status():
- try:
- res = await monitor_status()
- return res
- except Exception as e:
- raise HTTPException(status_code=400, detail=f"Monitor status failed: {str(e)}")
+    try:
+        res = await monitor_status()
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Monitor status failed: {str(e)}")
 
 # NEW: Options Selling Analysis endpoint (simulated from monitor logs)
 @api_router.get("/options/selling/analysis")
 async def options_selling_analysis(
- range: str = Query(default="3M"),
- strategies: Optional[str] = Query(
- default=None, description="Comma separated list of signals to include"
- ),
- ticker: Optional[str] = Query(default=None),
- fill: str = Query(default="mid"),
- slippage: float = Query(default=0.05),
- commission: float = Query(default=0.65),
+    range: str = Query(default="3M"),
+    strategies: Optional[str] = Query(
+        default=None, description="Comma separated list of signals to include"
+    ),
+    ticker: Optional[str] = Query(default=None),
+    fill: str = Query(default="mid"),
+    slippage: float = Query(default=0.05),
+    commission: float = Query(default=0.65),
 ):
- try:
- q = AnalysisQuery(
- range=range,
- strategies=[s.strip() for s in strategies.split(",")]
- if strategies
- else None,
- ticker=ticker,
- fill=fill,
- slippage=slippage,
- commission=commission,
- )
- res = await options_analysis(q)
- return {"status": "success", "data": res}
- except Exception as e:
- raise HTTPException(
- status_code=400, detail=f"Options analysis failed: {str(e)}"
- )
+    try:
+        q = AnalysisQuery(
+            range=range,
+            strategies=[s.strip() for s in strategies.split(",")]
+            if strategies
+            else None,
+            ticker=ticker,
+            fill=fill,
+            slippage=slippage,
+            commission=commission,
+        )
+        res = await options_analysis(q)
+        return {"status": "success", "data": res}
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"Options analysis failed: {str(e)}"
+        )
 
 # TradeStation Authentication Endpoints (disabled for security audit)
 @api_router.get("/auth/tradestation/status")
 async def tradestation_auth_status():
- """Get TradeStation authentication status"""
- try:
- if ts_auth is None:
- return {
- "status": "disabled",
- "message": "TradeStation authentication is disabled for security audit",
- "timestamp": datetime.now().isoformat(),
- }
- status = ts_auth.get_status()
- return status
- except Exception as e:
- raise HTTPException(
- status_code=500, detail=f"Failed to get auth status: {str(e)}"
- )
+    """Get TradeStation authentication status"""
+    try:
+        if ts_auth is None:
+            return {
+                "status": "disabled",
+                "message": "TradeStation authentication is disabled for security audit",
+                "timestamp": datetime.now().isoformat(),
+            }
+        status = ts_auth.get_status()
+        return status
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get auth status: {str(e)}"
+        )
 
 @api_router.get("/auth/tradestation/login")
 async def tradestation_auth_login():
- """Get TradeStation login URL"""
- try:
- if ts_auth is None:
- raise HTTPException(
- status_code=503,
- detail="TradeStation authentication is disabled for security audit",
- )
- auth_info = ts_auth.generate_auth_url()
- return auth_info
- except Exception as e:
- raise HTTPException(
- status_code=500, detail=f"Failed to generate login URL: {str(e)}"
- )
+    """Get TradeStation login URL"""
+    try:
+        if ts_auth is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation authentication is disabled for security audit",
+            )
+        auth_info = ts_auth.generate_auth_url()
+        return auth_info
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate login URL: {str(e)}"
+        )
 
 @api_router.post("/auth/tradestation/refresh")
 async def tradestation_token_refresh():
- """Refresh TradeStation access token"""
- try:
- if ts_auth is None:
- raise HTTPException(
- status_code=503,
- detail="TradeStation authentication is disabled for security audit",
- )
- success = await ts_auth.refresh_access_token()
- if success:
- return {
- "status": "success",
- "message": "Token refreshed successfully",
- "timestamp": datetime.now().isoformat(),
- }
- else:
- return {
- "status": "error",
- "message": "Token refresh failed",
- "timestamp": datetime.now().isoformat(),
- }
- except Exception as e:
- raise HTTPException(status_code=500, detail=f"Token refresh failed: {str(e)}")
+    """Refresh TradeStation access token"""
+    try:
+        if ts_auth is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation authentication is disabled for security audit",
+            )
+        success = await ts_auth.refresh_access_token()
+        if success:
+            return {
+                "status": "success",
+                "message": "Token refreshed successfully",
+                "timestamp": datetime.now().isoformat(),
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Token refresh failed",
+                "timestamp": datetime.now().isoformat(),
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Token refresh failed: {str(e)}")
 
 @api_router.post("/auth/tradestation/callback")
 async def tradestation_auth_callback(
- code: Optional[str] = Query(None), state: Optional[str] = Query(None)
+    code: Optional[str] = Query(None), state: Optional[str] = Query(None)
 ):
- """Handle TradeStation OAuth callback"""
- try:
- if ts_auth is None:
- raise HTTPException(
- status_code=503,
- detail="TradeStation authentication is disabled for security audit",
- )
- if not code:
- raise HTTPException(
- status_code=422, detail="Authorization code is required"
- )
- if not state:
- raise HTTPException(status_code=422, detail="State parameter is required")
+    """Handle TradeStation OAuth callback"""
+    try:
+        if ts_auth is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation authentication is disabled for security audit",
+            )
+        if not code:
+            raise HTTPException(
+                status_code=422, detail="Authorization code is required"
+            )
+        if not state:
+            raise HTTPException(status_code=422, detail="State parameter is required")
 
- result = await ts_auth.exchange_code_for_tokens(code)
- return result
- except HTTPException:
- raise
- except Exception as e:
- raise HTTPException(
- status_code=500, detail=f"Callback processing failed: {str(e)}"
- )
+        result = await ts_auth.exchange_code_for_tokens(code)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Callback processing failed: {str(e)}"
+        )
 
 # TradeStation API Endpoints (disabled for security audit)
 @api_router.get("/tradestation/accounts")
 async def get_tradestation_accounts():
- """Get TradeStation accounts"""
- try:
- if ts_client is None:
- raise HTTPException(
- status_code=503,
- detail="TradeStation client is disabled for security audit",
- )
- accounts = await ts_client.get_accounts()
- return {
- "status": "success",
- "accounts": accounts,
- "timestamp": datetime.now().isoformat(),
- }
- except Exception as e:
- raise HTTPException(status_code=500, detail=f"Failed to get accounts: {str(e)}")
+    """Get TradeStation accounts"""
+    try:
+        if ts_client is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation client is disabled for security audit",
+            )
+        accounts = await ts_client.get_accounts()
+        return {
+            "status": "success",
+            "accounts": accounts,
+            "timestamp": datetime.now().isoformat(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get accounts: {str(e)}")
 
 @api_router.get("/tradestation/accounts/{account_id}/positions")
 async def get_tradestation_positions(account_id: str):
- """Get positions for a TradeStation account"""
- try:
- if ts_client is None:
- raise HTTPException(
- status_code=503,
- detail="TradeStation client is disabled for security audit",
- )
- positions = await ts_client.get_positions(account_id)
+    """Get positions for a TradeStation account"""
+    try:
+        if ts_client is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation client is disabled for security audit",
+            )
+        positions = await ts_client.get_positions(account_id)
 
- # Convert Position objects to dictionaries
- positions_data = []
- for pos in positions:
- positions_data.append(
- {
- "account_id": pos.account_id,
- "symbol": pos.symbol,
- "asset_type": pos.asset_type,
- "quantity": pos.quantity,
- "average_price": pos.average_price,
- "current_price": pos.current_price,
- "market_value": pos.market_value,
- "unrealized_pnl": pos.unrealized_pnl,
- "unrealized_pnl_percent": pos.unrealized_pnl_percent,
- "position_type": "LONG" if pos.quantity > 0 else "SHORT",
- }
- )
+        # Convert Position objects to dictionaries
+        positions_data = []
+        for pos in positions:
+            positions_data.append(
+                {
+                    "account_id": pos.account_id,
+                    "symbol": pos.symbol,
+                    "asset_type": pos.asset_type,
+                    "quantity": pos.quantity,
+                    "average_price": pos.average_price,
+                    "current_price": pos.current_price,
+                    "market_value": pos.market_value,
+                    "unrealized_pnl": pos.unrealized_pnl,
+                    "unrealized_pnl_percent": pos.unrealized_pnl_percent,
+                    "position_type": "LONG" if pos.quantity > 0 else "SHORT",
+                }
+            )
 
- return {
- "status": "success",
- "data": positions_data,
- "count": len(positions_data),
- "timestamp": datetime.now().isoformat(),
- }
- except Exception as e:
- raise HTTPException(
- status_code=500, detail=f"Failed to get positions: {str(e)}"
- )
+        return {
+            "status": "success",
+            "data": positions_data,
+            "count": len(positions_data),
+            "timestamp": datetime.now().isoformat(),
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get positions: {str(e)}"
+        )
 
 @api_router.get("/tradestation/positions/{account_id}")
 async def get_tradestation_positions_alt(account_id: str):
- """Alternative endpoint for TradeStation positions (for compatibility)"""
- return await get_tradestation_positions(account_id)
+    """Alternative endpoint for TradeStation positions (for compatibility)"""
+    return await get_tradestation_positions(account_id)
 
 @api_router.get("/tradestation/accounts/{account_id}/balances")
 async def get_tradestation_balances(account_id: str):
- """Get balances for a TradeStation account"""
- try:
- if ts_client is None:
- raise HTTPException(
- status_code=503,
- detail="TradeStation client is disabled for security audit",
- )
- balances = await ts_client.get_account_balances(account_id)
- return {
- "status": "success",
- "data": balances,
- "timestamp": datetime.now().isoformat(),
- }
- except Exception as e:
- raise HTTPException(status_code=500, detail=f"Failed to get balances: {str(e)}")
+    """Get balances for a TradeStation account"""
+    try:
+        if ts_client is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation client is disabled for security audit",
+            )
+        balances = await ts_client.get_account_balances(account_id)
+        return {
+            "status": "success",
+            "data": balances,
+            "timestamp": datetime.now().isoformat(),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get balances: {str(e)}")
 
 @api_router.get("/tradestation/balances/{account_id}")
 async def get_tradestation_balances_alt(account_id: str):
- """Alternative endpoint for TradeStation balances (for compatibility)"""
- return await get_tradestation_balances(account_id)
+    """Alternative endpoint for TradeStation balances (for compatibility)"""
+    return await get_tradestation_balances(account_id)
 
 @api_router.get("/tradestation/connection/test")
 async def test_tradestation_connection():
- """Test TradeStation API connection"""
- try:
- if ts_client is None:
- raise HTTPException(
- status_code=503,
- detail="TradeStation client is disabled for security audit",
- )
- result = await ts_client.test_connection()
- return result
- except Exception as e:
- raise HTTPException(status_code=500, detail=f"Connection test failed: {str(e)}")
+    """Test TradeStation API connection"""
+    try:
+        if ts_client is None:
+            raise HTTPException(
+                status_code=503,
+                detail="TradeStation client is disabled for security audit",
+            )
+        result = await ts_client.test_connection()
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Connection test failed: {str(e)}")
 
 # NEW: Mount robust TradeStation authentication router FIRST (higher priority)
 if ROBUST_TS_AVAILABLE:
- app.include_router(ts_auth_router, prefix="/api")
- logger.info(" Robust TradeStation authentication system mounted")
+    app.include_router(ts_auth_router, prefix="/api")
+    logger.info(" Robust TradeStation authentication system mounted")
 else:
- logger.warning(" Using legacy TradeStation authentication system")
+    logger.warning(" Using legacy TradeStation authentication system")
 
 # NEW: Mount OAuth callback router
 if OAUTH_ROUTER_AVAILABLE:
- app.include_router(oauth_router, prefix="/api")
- logger.info(" OAuth callback router mounted at /api/oauth/tradestation/callback")
+    app.include_router(oauth_router, prefix="/api")
+    logger.info(" OAuth callback router mounted at /api/oauth/tradestation/callback")
 else:
- logger.warning(" OAuth callback router not available")
+    logger.warning(" OAuth callback router not available")
 
 # NEW: TradeStation streaming endpoint
 @api_router.get("/tradestation/stream/{symbol}")
 async def tradestation_stream(
- symbol: str,
- tf: str = Query(default="D", description="Timeframe"),
- limit: int = Query(default=500, description="Number of bars"),
+    symbol: str,
+    tf: str = Query(default="D", description="Timeframe"),
+    limit: int = Query(default=500, description="Number of bars"),
 ):
- """Stream real-time OHLCV data from TradeStation"""
- try:
- # This would integrate with TradeStation streaming API
- # For now, return demo data structure
- return {
- "status": "success",
- "symbol": symbol.upper(),
- "timeframe": tf,
- "limit": limit,
- "stream_available": False,
- "message": "TradeStation streaming integration ready for implementation",
- }
- except Exception as e:
- raise HTTPException(
- status_code=500, detail=f"TradeStation streaming failed: {str(e)}"
- )
+    """Stream real-time OHLCV data from TradeStation"""
+    try:
+        # This would integrate with TradeStation streaming API
+        # For now, return demo data structure
+        return {
+            "status": "success",
+            "symbol": symbol.upper(),
+            "timeframe": tf,
+            "limit": limit,
+            "stream_available": False,
+            "message": "TradeStation streaming integration ready for implementation",
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"TradeStation streaming failed: {str(e)}"
+        )
 
 # NEW: Chart data endpoint
 @api_router.get("/market/chart/{symbol}")
 async def get_chart_data(
- symbol: str,
- timeframe: str = Query(
- default="D", description="Timeframe: 1m, 5m, 15m, 1h, 4h, D, W"
- ),
- limit: int = Query(default=300, description="Number of bars"),
+    symbol: str,
+    timeframe: str = Query(
+        default="D", description="Timeframe: 1m, 5m, 15m, 1h, 4h, D, W"
+    ),
+    limit: int = Query(default=300, description="Number of bars"),
 ):
- """Get OHLCV chart data for a symbol"""
- try:
- # Generate demo OHLCV data
- import time
- import secrets
+    """Get OHLCV chart data for a symbol"""
+    try:
+        # Generate demo OHLCV data
+        import time
+        import secrets
 
- # Timeframe mapping to seconds
- tf_seconds = {
- "1m": 60,
- "5m": 300,
- "15m": 900,
- "1h": 3600,
- "4h": 14400,
- "D": 86400,
- "W": 604800,
- }
+        # Timeframe mapping to seconds
+        tf_seconds = {
+            "1m": 60,
+            "5m": 300,
+            "15m": 900,
+            "1h": 3600,
+            "4h": 14400,
+            "D": 86400,
+            "W": 604800,
+        }
 
- seconds = tf_seconds.get(timeframe, 86400)
- now = int(time.time())
- price = 150 + secrets.randbelow(5000) / 100 # 150-200
+        seconds = tf_seconds.get(timeframe, 86400)
+        now = int(time.time())
+        price = 150 + secrets.randbelow(5000) / 100 # 150-200
 
- data = []
- for i in range(limit, 0, -1):
- timestamp = now - (i * seconds)
- change = (secrets.randbelow(800) - 400) / 100 # -4 to +4
- open_price = price
- close_price = price + change
- high_price = max(open_price, close_price) + secrets.randbelow(200) / 100 # +0-2
- low_price = min(open_price, close_price) - secrets.randbelow(200) / 100 # -0 to -2
- volume = 100000 + secrets.randbelow(1900000) # 100K-2M
+        data = []
+        for i in range(limit, 0, -1):
+            timestamp = now - (i * seconds)
+            change = (secrets.randbelow(800) - 400) / 100 # -4 to +4
+            open_price = price
+            close_price = price + change
+            high_price = max(open_price, close_price) + secrets.randbelow(200) / 100 # +0-2
+            low_price = min(open_price, close_price) - secrets.randbelow(200) / 100 # -0 to -2
+            volume = 100000 + secrets.randbelow(1900000) # 100K-2M
 
- data.append(
- {
- "time": timestamp,
- "open": round(open_price, 2),
- "high": round(high_price, 2),
- "low": round(low_price, 2),
- "close": round(close_price, 2),
- "volume": volume,
- }
- )
+            data.append(
+                {
+                    "time": timestamp,
+                    "open": round(open_price, 2),
+                    "high": round(high_price, 2),
+                    "low": round(low_price, 2),
+                    "close": round(close_price, 2),
+                    "volume": volume,
+                }
+            )
 
- price = close_price
+            price = close_price
 
- return {
- "status": "success",
- "symbol": symbol.upper(),
- "timeframe": timeframe,
- "limit": limit,
- "data": data,
- }
+        return {
+            "status": "success",
+            "symbol": symbol.upper(),
+            "timeframe": timeframe,
+            "limit": limit,
+            "data": data,
+        }
 
- except Exception as e:
- raise HTTPException(
- status_code=500, detail=f"Chart data generation failed: {str(e)}"
- )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Chart data generation failed: {str(e)}"
+        )
 
 # Watchlist module
 from watchlist.routes import router as watchlist_router
@@ -698,170 +698,170 @@ app.include_router(stream_router) # Already has /api/stream prefix
 
 # Wire observability (metrics, structured logging, request correlation)
 try:
- from observability import wire, setup_cors, setup_rate_limit
- from config import get_settings
+    from observability import wire, setup_cors, setup_rate_limit
+    from config import get_settings
 
  # Get settings
- settings = get_settings()
+    settings = get_settings()
 
  # Wire observability
- wire(app)
+    wire(app)
 
  # Setup CORS and rate limiting
- setup_cors(app, settings.allowed_origins)
- setup_rate_limit(app, settings.rate_limit)
+    setup_cors(app, settings.allowed_origins)
+    setup_rate_limit(app, settings.rate_limit)
 
- print(
- " Production observability enabled: /metrics, CORS, rate limiting, structured logging"
- )
+    print(
+    " Production observability enabled: /metrics, CORS, rate limiting, structured logging"
+    )
 except ImportError as e:
- print(f" Production observability modules not available: {e}")
+    print(f" Production observability modules not available: {e}")
 except Exception as e:
- print(f" Production observability setup failed: {e}")
+    print(f" Production observability setup failed: {e}")
  # Continue without enhanced observability
 
 # Health check endpoints
 @app.get("/health")
 @app.get("/healthz")
 def health_check():
- """Service health check"""
- return {
- "status": "healthy",
- "service": "FlowMind Analytics API",
- "version": "3.0.0",
- "tradestation_robust": ROBUST_TS_AVAILABLE,
- "timestamp": datetime.now().isoformat(),
- }
+    """Service health check"""
+    return {
+    "status": "healthy",
+    "service": "FlowMind Analytics API",
+    "version": "3.0.0",
+    "tradestation_robust": ROBUST_TS_AVAILABLE,
+    "timestamp": datetime.now().isoformat(),
+    }
 
 @app.get("/readyz")
 async def readiness_check():
- """Service readiness check"""
- try:
- # Check Redis connection
- from redis_fallback import get_kv
+    """Service readiness check"""
+    try:
+        # Check Redis connection
+        from redis_fallback import get_kv
 
- kv = await get_kv()
- await kv.get("health_check_test")
- redis_status = "connected"
- except Exception:
- redis_status = "disconnected"
+        kv = await get_kv()
+        await kv.get("health_check_test")
+        redis_status = "connected"
+    except Exception:
+        redis_status = "disconnected"
 
- return {
- "status": "ready" if redis_status == "connected" else "degraded",
- "redis": redis_status,
- "timestamp": datetime.now().isoformat(),
- }
+    return {
+        "status": "ready" if redis_status == "connected" else "degraded",
+        "redis": redis_status,
+        "timestamp": datetime.now().isoformat(),
+    }
 
 @app.get("/api/health/redis")
 async def redis_health():
- """
- Redis cache health and statistics
- 
- Returns detailed Redis status:
- - Connection status
- - Total keys count
- - Memory usage
- - Cache mode (Redis vs in-memory fallback)
- """
- try:
- from redis_fallback import get_kv
- 
- kv = await get_kv()
- 
- # Determine cache mode
- is_fallback = os.getenv("FM_FORCE_FALLBACK") == "1"
- cache_mode = "in-memory" if is_fallback else "redis"
- 
- # Get cache stats
- try:
- # Try to get keys count (works for both Redis and AsyncTTLDict)
- if hasattr(kv, 'keys'):
- all_keys = await kv.keys("*") if hasattr(kv.keys, '__call__') else []
- keys_count = len(all_keys) if isinstance(all_keys, list) else 0
- else:
- keys_count = 0
- 
- # Memory info (Redis only)
- memory_used = None
- if cache_mode == "redis" and hasattr(kv, 'info'):
- try:
- info = await kv.info('memory')
- memory_used = info.get('used_memory_human', 'N/A')
- except:
- memory_used = "N/A"
- 
- return {
- "status": "healthy",
- "mode": cache_mode,
- "connected": True,
- "keys_total": keys_count,
- "memory_used": memory_used or "N/A (in-memory mode)",
- "fallback_active": is_fallback,
- "timestamp": datetime.now().isoformat(),
- }
- except Exception as e:
- logger.warning(f"Redis stats error: {e}")
- return {
- "status": "degraded",
- "mode": cache_mode,
- "connected": True,
- "error": str(e),
- "timestamp": datetime.now().isoformat(),
- }
- except Exception as e:
- logger.error(f"Redis health check failed: {e}")
- return {
- "status": "unavailable",
- "mode": "unknown",
- "connected": False,
- "error": str(e),
- "timestamp": datetime.now().isoformat(),
- }
+    """
+    Redis cache health and statistics
+    
+    Returns detailed Redis status:
+    - Connection status
+    - Total keys count
+    - Memory usage
+    - Cache mode (Redis vs in-memory fallback)
+    """
+    try:
+        from redis_fallback import get_kv
+        
+        kv = await get_kv()
+        
+        # Determine cache mode
+        is_fallback = os.getenv("FM_FORCE_FALLBACK") == "1"
+        cache_mode = "in-memory" if is_fallback else "redis"
+        
+        # Get cache stats
+        try:
+            # Try to get keys count (works for both Redis and AsyncTTLDict)
+            if hasattr(kv, 'keys'):
+                all_keys = await kv.keys("*") if hasattr(kv.keys, '__call__') else []
+                keys_count = len(all_keys) if isinstance(all_keys, list) else 0
+            else:
+                keys_count = 0
+            
+            # Memory info (Redis only)
+            memory_used = None
+            if cache_mode == "redis" and hasattr(kv, 'info'):
+                try:
+                    info = await kv.info('memory')
+                    memory_used = info.get('used_memory_human', 'N/A')
+                except:
+                    memory_used = "N/A"
+            
+            return {
+                "status": "healthy",
+                "mode": cache_mode,
+                "connected": True,
+                "keys_total": keys_count,
+                "memory_used": memory_used or "N/A (in-memory mode)",
+                "fallback_active": is_fallback,
+                "timestamp": datetime.now().isoformat(),
+            }
+        except Exception as e:
+            logger.warning(f"Redis stats error: {e}")
+            return {
+                "status": "degraded",
+                "mode": cache_mode,
+                "connected": True,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+    except Exception as e:
+        logger.error(f"Redis health check failed: {e}")
+        return {
+            "status": "unavailable",
+            "mode": "unknown",
+            "connected": False,
+            "error": str(e),
+            "timestamp": datetime.now().isoformat(),
+        }
 
 @app.get("/metrics")
 async def metrics_endpoint():
- """
- Prometheus metrics endpoint
- 
- Returns metrics in Prometheus exposition format:
- - API request counts and latency
- - Cache hits/misses
- - External API calls
- - Business metrics (strategies priced, flow trades)
- 
- Usage:
- curl http://localhost:8000/metrics
- 
- Prometheus scrape config:
- scrape_configs:
- - job_name: 'flowmind'
- static_configs:
- - targets: ['localhost:8000']
- """
- try:
- from observability.metrics import export_metrics
- from fastapi.responses import Response
- 
- metrics_data, content_type = export_metrics()
- 
- return Response(
- content=metrics_data,
- media_type=content_type
- )
- except Exception as e:
- logger.error(f" Metrics export failed: {e}")
- raise HTTPException(
- status_code=500,
- detail="Metrics export failed"
- )
+    """
+    Prometheus metrics endpoint
+    
+    Returns metrics in Prometheus exposition format:
+    - API request counts and latency
+    - Cache hits/misses
+    - External API calls
+    - Business metrics (strategies priced, flow trades)
+    
+    Usage:
+    curl http://localhost:8000/metrics
+    
+    Prometheus scrape config:
+    scrape_configs:
+    - job_name: 'flowmind'
+      static_configs:
+      - targets: ['localhost:8000']
+    """
+    try:
+        from observability.metrics import export_metrics
+        from fastapi.responses import Response
+        
+        metrics_data, content_type = export_metrics()
+        
+        return Response(
+            content=metrics_data,
+            media_type=content_type
+        )
+    except Exception as e:
+        logger.error(f" Metrics export failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Metrics export failed"
+        )
 
- return {
- "status": "ready",
- "service": "FlowMind Analytics API",
- "redis": redis_status,
- "tradestation": "configured" if ROBUST_TS_AVAILABLE else "not_configured",
- "timestamp": datetime.now().isoformat(),
- }
+    return {
+    "status": "ready",
+    "service": "FlowMind Analytics API",
+    "redis": redis_status,
+    "tradestation": "configured" if ROBUST_TS_AVAILABLE else "not_configured",
+    "timestamp": datetime.now().isoformat(),
+    }
 
 # Rate limiting middleware
 from middleware.rate_limit import rate_limit
@@ -871,44 +871,44 @@ app.middleware("http")(rate_limit)
 # CORS (kept at end to apply globally)
 # Resolve CORS settings
 _cors_origins_env = os.getenv(
- "CORS_ORIGINS",
- # Default: local dev (both http/https) and Vite
- "http://localhost:3000,https://localhost:3000,http://localhost:5173,https://localhost:5173",
+    "CORS_ORIGINS",
+    # Default: local dev (both http/https) and Vite
+    "http://localhost:3000,https://localhost:3000,http://localhost:5173,https://localhost:5173",
 )
 try:
- # In case env provided as JSON array, try to normalize; otherwise treat as CSV
- if _cors_origins_env.strip().startswith("["):
- import json as _json
+    # In case env provided as JSON array, try to normalize; otherwise treat as CSV
+    if _cors_origins_env.strip().startswith("["):
+        import json as _json
 
- _cors_origins = [o.strip() for o in _json.loads(_cors_origins_env)]
- else:
- _cors_origins = [o.strip() for o in _cors_origins_env.split(",") if o.strip()]
+        _cors_origins = [o.strip() for o in _json.loads(_cors_origins_env)]
+    else:
+        _cors_origins = [o.strip() for o in _cors_origins_env.split(",") if o.strip()]
 except Exception:
- _cors_origins = [
- "http://localhost:3000",
- "https://localhost:3000",
- "http://localhost:5173",
- "https://localhost:5173",
- ]
+    _cors_origins = [
+        "http://localhost:3000",
+        "https://localhost:3000",
+        "http://localhost:5173",
+        "https://localhost:5173",
+    ]
 
 # Allow Codespaces/GitHub dev URLs by default via regex (can be overridden via CORS_ORIGIN_REGEX)
 _cors_origin_regex = os.getenv(
- "CORS_ORIGIN_REGEX", r"^https:\/\/.*\.app\.github\.dev$"
+    "CORS_ORIGIN_REGEX", r"^https:\/\/.*\.app\.github\.dev$"
 )
 
 logger.info(
- "CORS configured: allow_origins=%s allow_origin_regex=%s",
- _cors_origins,
- _cors_origin_regex,
+    "CORS configured: allow_origins=%s allow_origin_regex=%s",
+    _cors_origins,
+    _cors_origin_regex,
 )
 
 app.add_middleware(
- CORSMiddleware,
- allow_origins=_cors_origins,
- allow_origin_regex=_cors_origin_regex,
- allow_credentials=True,
- allow_methods=["*"],
- allow_headers=["*"],
+    CORSMiddleware,
+    allow_origins=_cors_origins,
+    allow_origin_regex=_cors_origin_regex,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # TEST: portfolios import
