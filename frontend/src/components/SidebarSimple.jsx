@@ -103,17 +103,21 @@ function Row({ item, ctx, depth = 0, expandedItems, toggleItem }) {
  );
  
  if (hasChildren) {
- // If has children, make it clickable to toggle
+ // If has children, make it clickable to toggle with smooth animation
  return (
  <>
- <div onClick={() => toggleItem(item.label)}>{content}</div>
- {isExpanded && (
+ <div onClick={() => toggleItem(item.label)} className="cursor-pointer">{content}</div>
+ <div 
+ className={`overflow-hidden transition-all duration-300 ease-in-out ${
+ isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+ }`}
+ >
  <div className="mt-1 ml-2 space-y-1">
  {item.children.map((ch, cidx) => (
  <Row key={cidx} item={ch} ctx={ctx} depth={depth + 1} expandedItems={expandedItems} toggleItem={toggleItem} />
  ))}
  </div>
- )}
+ </div>
  </>
  );
  }
@@ -180,21 +184,27 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  {!collapsed && (
  <button
  onClick={() => toggleSection(sec.title)}
- className={`w-full flex items-center gap-2 px-1 mb-2 text-[13px] uppercase tracking-wide font-semibold ${sec.isComplete ? 'text-cyan-400' : 'text-[#94a3b8]'} hover:text-[rgb(252, 251, 255)] transition-colors`}
+ className={`w-full flex items-center gap-2 px-1 mb-2 text-[13px] uppercase tracking-wide font-semibold ${sec.isComplete ? 'text-cyan-400' : 'text-[#94a3b8]'} hover:text-[rgb(252, 251, 255)] transition-all duration-200`}
  >
  <LucideIcons.ChevronRight 
- className={`w-4 h-4 text-slate-400 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+ className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${isCollapsed ? '' : 'rotate-90'}`}
  />
  <span>{sec.title}</span>
  </button>
  )}
  
- {/* Section items - full view when expanded */}
- {!isCollapsed && !collapsed && (
+ {/* Section items - full view when expanded with smooth animation */}
+ {!collapsed && (
+ <div 
+ className={`overflow-hidden transition-all duration-300 ease-in-out ${
+ isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'
+ }`}
+ >
  <div className="space-y-1">
  {(sec.items || []).map((it, idx) => (
  <Row key={`${sec.title}-${idx}`} item={it} ctx={safeCtx} expandedItems={expandedItems} toggleItem={toggleItem} />
  ))}
+ </div>
  </div>
  )}
  
@@ -252,13 +262,13 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  )}
  </div>
  
- {/* Popover menu */}
+ {/* Popover menu with smooth fade-in animation */}
  {isActive && (
  <div 
- className="absolute left-full top-0 ml-2 z-[100] min-w-[200px]"
+ className="absolute left-full top-0 ml-2 z-[100] min-w-[200px] animate-in fade-in slide-in-from-left-2 duration-200"
  style={{ backgroundColor: '#1e293b' }}
  >
- <div className="bg-[#1e293b] border border-[#334155] rounded-lg shadow-2xl py-2">
+ <div className="bg-[#1e293b] border border-[#334155] rounded-lg shadow-2xl py-2 backdrop-blur-sm">
  {/* Header */}
  <div className="px-3 py-2 text-[13px] font-medium text-slate-400 uppercase border-b border-[#334155] flex items-center gap-2">
  <IconByName name={it.icon} className="w-3.5 h-3.5" />
