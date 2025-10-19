@@ -172,7 +172,7 @@ function App() {
  {/* Toggle button - positioned on left side of sidebar at header height */}
  <button
  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
- className="absolute top-0 left-1 h-[50px] w-10 flex items-center justify-center bg-gradient-to-r from-[#0f1419] to-[#0a0e1a] hover:bg-slate-800 transition-all duration-200 z-10 group"
+ className="absolute top-[6px] left-1 h-[50px] w-10 flex items-center justify-center bg-gradient-to-r from-[#0f1419] to-[#0a0e1a] hover:bg-slate-800 transition-all duration-200 z-10 group"
  title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
  >
             <div className="flex flex-col gap-0.5">
