@@ -52,9 +52,16 @@ export default function HomePage() {
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto">
         <div className="mb-12">
-          <h1 className="text-5xl font-bold text-white mb-4">
-            Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">FlowMind Analytics</span>
-          </h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-5xl font-bold text-white mb-4">
+              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">FlowMind Analytics</span>
+            </h1>
+            <img 
+              src="/assets/logos/flowmind_brain_yellow_pulse_10s.gif" 
+              alt="FlowMind Brain" 
+              className="w-16 h-16 mb-4"
+            />
+          </div>
           <p className="text-xl text-slate-300 max-w-3xl">
             Professional-grade stocks and options trading analytics with real-time flow monitoring, 
             strategy building, and AI-powered <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 font-semibold">algos</span> and recommendations.
