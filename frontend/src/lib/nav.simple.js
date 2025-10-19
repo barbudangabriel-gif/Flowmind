@@ -2,11 +2,6 @@
 // FlowMind — Sidebar Config (Safe Minimal)
 // =============================================
 
-// Helpers pentru badge/gating
-const ivBadge = (ctx) => ctx.metrics?.ivOnline ? { text: "IV", tone: "success" } : { text: "OFF", tone: "warn" };
-const verifiedBadge = (ctx) => (ctx.metrics?.verifiedRatio ?? 0) >= 0.2 ? { text: "verified", tone: "verified" } : { text: "low", tone: "warn" };
-const tsLiveBadge = (ctx) => ctx.flags?.TS_LIVE ? { text: "LIVE", tone: "live" } : { text: "OFF", tone: "warn" };
-
 const ivDependentDisabled = (ctx) => !ctx.metrics?.ivOnline;
 const ivDisabledReason = () => "IV service offline";
 
@@ -66,7 +61,6 @@ export function buildNav(ctx) {
  items: [
  { label: "Investment Scoring", to: "/stocks/scoring", icon: "Target" },
  { label: "Scoring Scanner", to: "/stocks/scanner", icon: "Search" },
- { label: "Stock Scorer", to: "/stocks/scoring", icon: "Star" },
  { label: "Top Picks", to: "/stocks/top-picks", icon: "TrendingUp" },
  ],
  },
@@ -78,14 +72,12 @@ export function buildNav(ctx) {
  { 
  label: "Builder", 
  to: "/builder", 
- icon: "Hammer",
- badge: { text: "PRO", tone: "success" }
+ icon: "Hammer"
  },
 	{
 	 label: "Simulator",
 	 to: "/simulator",
-	 icon: "BarChart2",
-	 badge: { text: "NEW", tone: "success" }
+	 icon: "BarChart2"
 	},
  { 
  label: "Analytics", 
@@ -136,26 +128,22 @@ export function buildNav(ctx) {
  { 
  label: "Dark Pool", 
  to: "/dark-pool", 
- icon: "Droplet",
- badge: { text: "NEW", tone: "success" }
+ icon: "Droplet"
  },
  { 
  label: "Market Movers", 
  to: "/market-movers", 
- icon: "Activity",
- badge: { text: "NEW", tone: "success" }
+ icon: "Activity"
  },
  { 
  label: "Congress Trades", 
  to: "/congress-trades", 
- icon: "Building",
- badge: { text: "NEW", tone: "success" }
+ icon: "Building"
  },
  { 
  label: "Institutional", 
  to: "/institutional", 
- icon: "Building2",
- badge: { text: "NEW", tone: "success" }
+ icon: "Building2"
  },
  ],
  },
