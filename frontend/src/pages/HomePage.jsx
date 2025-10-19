@@ -147,7 +147,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-1">Advanced Strategy Builder</h3>
+                <h3 className="text-white font-normal mb-1">Advanced Strategy Builder</h3>
                 <p className="text-slate-400 text-sm">
                   54+ pre-built strategies with real-time P&L visualization, Greeks calculation, and quality scoring.
                 </p>
@@ -161,7 +161,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-1">Real-Time Options Flow</h3>
+                <h3 className="text-white font-normal mb-1">Real-Time Options Flow</h3>
                 <p className="text-slate-400 text-sm">
                   Monitor unusual options activity, sweeps, and blocks from institutional traders.
                 </p>
@@ -175,7 +175,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-1">Portfolio Management</h3>
+                <h3 className="text-white font-normal mb-1">Mindfolio Management</h3>
                 <p className="text-slate-400 text-sm">
                   Multi-portfolio support with budget allocation, FIFO position tracking, and performance analytics.
                 </p>
@@ -189,7 +189,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-1">AI-Powered Optimization</h3>
+                <h3 className="text-white font-normal mb-1">AI-Powered Optimization</h3>
                 <p className="text-slate-400 text-sm">
                   Get strategy recommendations based on market conditions, sentiment, and risk tolerance.
                 </p>
