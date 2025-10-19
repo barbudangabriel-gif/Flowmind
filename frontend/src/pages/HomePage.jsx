@@ -54,11 +54,11 @@ export default function HomePage() {
         <div className="mb-12 flex items-end gap-8">
           <div className="flex-1 space-y-8">
             <div>
-              <h1 className="text-5xl font-bold text-white mb-4">
+              <h1 className="text-5xl font-medium text-white mb-4">
                 Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">FlowMind Analytics</span>
               </h1>
               <p className="text-xl text-slate-300 max-w-3xl">
-                Professional-grade stocks and options trading analytics with real-time flow monitoring, 
+                Professional-grade stocks and options analytics with real-time flow monitoring, 
                 strategy building, and AI-powered <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 font-semibold">algos</span> and recommendations.
               </p>
             </div>
