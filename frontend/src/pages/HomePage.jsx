@@ -138,7 +138,7 @@ export default function HomePage() {
 
         {/* Feature Highlights */}
         <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-8 backdrop-blur-sm">
-          <h2 className="text-2xl font-bold text-white mb-6">Platform Features</h2>
+          <h2 className="text-2xl font-normal text-white mb-6">Platform Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex gap-4">
               <div className="shrink-0">
