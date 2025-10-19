@@ -84,7 +84,7 @@ function Row({ item, ctx, depth = 0, expandedItems, toggleItem }) {
  ? "opacity-50 pointer-events-none text-slate-500"
  : isActive
  ? "bg-emerald-900/40 text-emerald-400 border-l-2 border-emerald-400 shadow-sm"
- : "text-slate-300 hover:bg-slate-800 hover:text-[rgb(252,251,255)] cursor-pointer";
+ : "text-slate-300 hover:bg-slate-800/80 hover:text-white hover:shadow-md hover:border-l-2 hover:border-slate-700 hover:scale-[1.02] cursor-pointer";
 
  const hasChildren = item.children && item.children.length > 0;
  const isExpanded = expandedItems[item.label];
@@ -184,7 +184,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  {!collapsed && (
  <button
  onClick={() => toggleSection(sec.title)}
- className={`w-full flex items-center gap-2 px-1 mb-2 text-[13px] uppercase tracking-wide font-semibold ${sec.isComplete ? 'text-cyan-400' : 'text-[#94a3b8]'} hover:text-[rgb(252, 251, 255)] transition-all duration-200`}
+ className={`w-full flex items-center gap-2 px-1 mb-2 text-[13px] uppercase tracking-wide font-semibold ${sec.isComplete ? 'text-cyan-400' : 'text-[#94a3b8]'} hover:text-white hover:scale-[1.02] hover:translate-x-0.5 transition-all duration-200`}
  >
  <LucideIcons.ChevronRight 
  className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${isCollapsed ? '' : 'rotate-90'}`}
@@ -251,7 +251,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  ? 'bg-slate-800 text-emerald-400' 
  : isChildActive
  ? 'bg-emerald-900/40 text-emerald-400 ring-2 ring-emerald-400/50'
- : 'text-slate-300 hover:bg-slate-800'
+ : 'text-slate-300 hover:bg-slate-800/80 hover:text-white hover:scale-110 hover:shadow-lg'
  }`}
  title={it.label}
  >
@@ -284,7 +284,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  className={`flex items-center gap-2 px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
  isChildActive
  ? 'bg-emerald-900/40 text-emerald-400 border-l-2 border-emerald-400'
- : 'text-slate-300 hover:bg-slate-700/50 hover:text-[rgb(252,251,255)]'
+ : 'text-slate-300 hover:bg-slate-700/70 hover:text-white hover:border-l-2 hover:border-slate-600 hover:shadow-sm'
  }`}
  >
  <IconByName name={ch.icon} className={`w-4 h-4 ${isChildActive ? 'text-emerald-400' : ''}`} />
