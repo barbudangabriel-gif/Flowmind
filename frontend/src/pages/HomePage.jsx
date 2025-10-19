@@ -56,23 +56,10 @@ export default function HomePage() {
             <h1 className="text-5xl font-bold text-white mb-4">
               Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">FlowMind Analytics</span>
             </h1>
-            <p className="text-xl text-slate-300 max-w-3xl mb-8">
+            <p className="text-xl text-slate-300 max-w-3xl">
               Professional-grade stocks and options trading analytics with real-time flow monitoring, 
               strategy building, and AI-powered <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 font-semibold">algos</span> and recommendations.
             </p>
-            
-            {/* Stats Bar - moved under text */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {stats.map((stat, idx) => (
-                <div key={idx} className="bg-slate-900/50 border border-slate-800 rounded-lg p-6 backdrop-blur-sm">
-                  <div className="flex items-center gap-3 mb-2">
-                    <stat.icon className="w-4 h-4 text-emerald-400" />
-                    <span className="text-slate-400 text-sm">{stat.label}</span>
-                  </div>
-                  <div className="text-[26px] font-normal text-white">{stat.value}</div>
-                </div>
-              ))}
-            </div>
           </div>
           
           {/* Brain logo on the right */}
@@ -83,6 +70,19 @@ export default function HomePage() {
               className="w-[160px] h-auto"
             />
           </div>
+        </div>
+
+        {/* Stats Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+          {stats.map((stat, idx) => (
+            <div key={idx} className="bg-slate-900/50 border border-slate-800 rounded-lg p-6 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-2">
+                <stat.icon className="w-4 h-4 text-emerald-400" />
+                <span className="text-slate-400 text-sm">{stat.label}</span>
+              </div>
+              <div className="text-[26px] font-normal text-white">{stat.value}</div>
+            </div>
+          ))}
         </div>
 
         {/* Quick Actions Grid */}
