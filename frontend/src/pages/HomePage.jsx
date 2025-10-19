@@ -71,7 +71,7 @@ export default function HomePage() {
                 </div>
                 <span className="text-slate-400 text-sm">{stat.label}</span>
               </div>
-              <div className="text-3xl font-bold text-white">{stat.value}</div>
+              <div className="text-[26px] font-normal text-white">{stat.value}</div>
             </div>
           ))}
         </div>
