@@ -218,7 +218,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  {!collapsed && (
  <button
  onClick={() => toggleSection(sec.title)}
- className={`w-full flex items-center gap-2 px-1 mb-2 text-[13px] uppercase tracking-wide font-semibold ${sec.isComplete ? 'text-cyan-400' : 'text-[#94a3b8]'} hover:text-white hover:scale-[1.02] hover:translate-x-0.5 transition-all duration-200`}
+ className="w-full flex items-center gap-2 px-1 mb-2 text-[13px] uppercase tracking-wide font-semibold text-[#94a3b8] hover:text-white hover:scale-[1.02] hover:translate-x-0.5 transition-all duration-200"
  >
  <LucideIcons.ChevronRight 
  className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${isCollapsed ? '' : 'rotate-90'}`}
