@@ -17,8 +17,10 @@ router = APIRouter(prefix="/flow", tags=["flow"])
 UW_LIVE = os.getenv("UW_LIVE", "0") == "1"
 UW_MIN_PREMIUM = int(os.getenv("UW_MIN_PREMIUM", "25000"))
 
+
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
+
 
 def make_builder_link(row):
     """Generate deep-link to Builder for a flow row"""
@@ -35,6 +37,7 @@ def make_builder_link(row):
         return "/builder"
     except:
         return "/builder"
+
 
 # ---------- DEMO DATA ----------
 def demo_summary(limit=24):
@@ -81,6 +84,7 @@ def demo_summary(limit=24):
         )
     return out
 
+
 def demo_live(symbol: str, min_premium: int):
     """Demo live flow data to prevent UI blocking"""
     base = 260 if symbol == "TSLA" else 100
@@ -112,6 +116,7 @@ def demo_live(symbol: str, min_premium: int):
             }
         )
     return rows
+
 
 def _filters(
     tickers: Optional[str] = None,
@@ -146,6 +151,7 @@ def _filters(
     }
     return d
 
+
 # ---------- Routes ----------
 @router.get("/summary")
 async def flow_summary(limit: int = Query(24), minPremium: int = Query(UW_MIN_PREMIUM)):
@@ -166,6 +172,7 @@ async def flow_summary(limit: int = Query(24), minPremium: int = Query(UW_MIN_PR
 
     items = data[:limit] if isinstance(data, list) else demo_summary(limit)
     return {"mode": mode, "items": items, "ts": now_iso()}
+
 
 @router.get("/live")
 async def flow_live(
@@ -211,6 +218,7 @@ async def flow_live(
 
     return {"mode": mode, "items": items, "next": None, "ts": now_iso()}
 
+
 @router.get("/historical")
 async def flow_historical(
     symbol: str = Query("TSLA"),
@@ -223,7 +231,7 @@ async def flow_historical(
         if UW_LIVE:
             data = historical_flow({})
             if not data:
-                data = demo_live(symbol, minPremium)[:10] # Smaller historical set
+                data = demo_live(symbol, minPremium)[:10]  # Smaller historical set
                 mode = "DEMO"
         else:
             data = demo_live(symbol, minPremium)[:10]
@@ -232,6 +240,7 @@ async def flow_historical(
         mode = "DEMO"
 
     return {"mode": mode, "items": data, "ts": now_iso()}
+
 
 @router.get("/news")
 async def flow_news(tickers: Optional[str] = Query(None)):
@@ -251,6 +260,7 @@ async def flow_news(tickers: Optional[str] = Query(None)):
 
     return {"mode": mode, "items": data, "ts": now_iso()}
 
+
 @router.get("/congress")
 async def flow_congress(tickers: Optional[str] = Query(None)):
     """Congress flow with fallback"""
@@ -269,23 +279,6 @@ async def flow_congress(tickers: Optional[str] = Query(None)):
 
     return {"mode": mode, "items": data, "ts": now_iso()}
 
-@router.get("/insiders")
-async def flow_insiders(tickers: Optional[str] = Query(None)):
-    """Insiders flow with fallback"""
-    mode = "LIVE" if UW_LIVE else "DEMO"
-    try:
-        if UW_LIVE:
-            data = insiders_flow(tickers.split(",") if tickers else [])
-            if not data:
-                data = []
-                mode = "DEMO"
-        else:
-            data = []
-    except Exception:
-        data = []
-        mode = "DEMO"
-
-    return {"mode": mode, "items": data, "ts": now_iso()}
 
 @router.get("/insiders")
 async def flow_insiders(tickers: Optional[str] = Query(None)):
@@ -304,16 +297,37 @@ async def flow_insiders(tickers: Optional[str] = Query(None)):
         mode = "DEMO"
 
     return {"mode": mode, "items": data, "ts": now_iso()}
+
+
+@router.get("/insiders")
+async def flow_insiders(tickers: Optional[str] = Query(None)):
+    """Insiders flow with fallback"""
+    mode = "LIVE" if UW_LIVE else "DEMO"
+    try:
+        if UW_LIVE:
+            data = insiders_flow(tickers.split(",") if tickers else [])
+            if not data:
+                data = []
+                mode = "DEMO"
+        else:
+            data = []
+    except Exception:
+        data = []
+        mode = "DEMO"
+
+    return {"mode": mode, "items": data, "ts": now_iso()}
+
 
 # ============================================================================
 # NEW ENDPOINTS - 2025-10-13 Extension
 # ============================================================================
 
+
 @router.get("/market-movers")
 async def market_movers():
     """
     Get market movers (top gainers, losers, most active)
-    
+
     Returns:
     {
         "gainers": [...],
@@ -322,7 +336,7 @@ async def market_movers():
     }
     """
     from unusual_whales_service import UnusualWhalesService
-    
+
     try:
         service = UnusualWhalesService()
         data = await service.get_market_movers()
@@ -331,13 +345,10 @@ async def market_movers():
         return {
             "status": "error",
             "error": str(e),
-            "data": {
-                "gainers": [],
-                "losers": [],
-                "most_active": []
-            },
-            "timestamp": now_iso()
+            "data": {"gainers": [], "losers": [], "most_active": []},
+            "timestamp": now_iso(),
         }
+
 
 @router.get("/congress-trades")
 async def congress_trades(
@@ -347,11 +358,11 @@ async def congress_trades(
     transaction_type: Optional[str] = Query(None),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
-    limit: int = Query(100, ge=1, le=500)
+    limit: int = Query(100, ge=1, le=500),
 ):
     """
     Get congressional trading activity
-    
+
     Query params:
     - ticker: Filter by stock symbol
     - politician: Filter by politician name
@@ -362,14 +373,14 @@ async def congress_trades(
     - limit: Max results (1-500, default 100)
     """
     from unusual_whales_service import UnusualWhalesService
-    
+
     try:
         service = UnusualWhalesService()
-        
+
         # Parse dates if provided
         start_dt = datetime.fromisoformat(start_date) if start_date else None
         end_dt = datetime.fromisoformat(end_date) if end_date else None
-        
+
         data = await service.get_congress_trades(
             ticker=ticker,
             politician=politician,
@@ -377,22 +388,18 @@ async def congress_trades(
             transaction_type=transaction_type,
             start_date=start_dt,
             end_date=end_dt,
-            limit=limit
+            limit=limit,
         )
-        
+
         return {
             "status": "success",
             "data": data,
             "count": len(data),
-            "timestamp": now_iso()
+            "timestamp": now_iso(),
         }
     except Exception as e:
-        return {
-            "status": "error",
-            "error": str(e),
-            "data": [],
-            "timestamp": now_iso()
-        }
+        return {"status": "error", "error": str(e), "data": [], "timestamp": now_iso()}
+
 
 @router.get("/dark-pool")
 async def dark_pool(
@@ -400,11 +407,11 @@ async def dark_pool(
     min_volume: Optional[int] = Query(None),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
-    limit: int = Query(100, ge=1, le=500)
+    limit: int = Query(100, ge=1, le=500),
 ):
     """
     Get dark pool activity (off-exchange trades)
-    
+
     Query params:
     - ticker: Filter by symbol
     - min_volume: Minimum share volume threshold
@@ -413,65 +420,57 @@ async def dark_pool(
     - limit: Max results (1-500, default 100)
     """
     from unusual_whales_service import UnusualWhalesService
-    
+
     try:
         service = UnusualWhalesService()
-        
+
         # Parse dates if provided
         start_dt = datetime.fromisoformat(start_date) if start_date else None
         end_dt = datetime.fromisoformat(end_date) if end_date else None
-        
+
         data = await service.get_dark_pool(
             ticker=ticker,
             min_volume=min_volume,
             start_date=start_dt,
             end_date=end_dt,
-            limit=limit
+            limit=limit,
         )
-        
+
         return {
             "status": "success",
             "data": data,
             "count": len(data),
-            "timestamp": now_iso()
+            "timestamp": now_iso(),
         }
     except Exception as e:
-        return {
-            "status": "error",
-            "error": str(e),
-            "data": [],
-            "timestamp": now_iso()
-        }
+        return {"status": "error", "error": str(e), "data": [], "timestamp": now_iso()}
+
 
 @router.get("/institutional/{ticker}")
 async def institutional_holdings(
     ticker: str,
-    quarter: Optional[str] = Query(None, description="Quarter (e.g., 2025Q3)")
+    quarter: Optional[str] = Query(None, description="Quarter (e.g., 2025Q3)"),
 ):
     """
     Get institutional holdings (13F filings) for a ticker
-    
+
     Path params:
     - ticker: Stock symbol (required)
-    
+
     Query params:
     - quarter: Quarter filter (e.g., "2025Q3", defaults to latest)
     """
     from unusual_whales_service import UnusualWhalesService
-    
+
     try:
         service = UnusualWhalesService()
         data = await service.get_institutional_holdings(ticker=ticker, quarter=quarter)
-        
-        return {
-            "status": "success",
-            "data": data,
-            "timestamp": now_iso()
-        }
+
+        return {"status": "success", "data": data, "timestamp": now_iso()}
     except Exception as e:
         return {
             "status": "error",
             "error": str(e),
             "data": {"ticker": ticker, "holdings": []},
-            "timestamp": now_iso()
+            "timestamp": now_iso(),
         }

@@ -79,7 +79,7 @@ async def warmup_spot_prices(symbols: List[str]) -> int:
             try:
                 logger.debug(f" Warming up spot price for {symbol}...")
 
-                if hasattr(provider, 'get_quote'):
+                if hasattr(provider, "get_quote"):
                     quote = provider.get_quote(symbol.upper())
                     if quote:
                         success_count += 1
@@ -137,11 +137,7 @@ async def warmup_single_symbol(symbol: str) -> dict:
     Returns:
         Dict with success flags for each data type
     """
-    result = {
-        "symbol": symbol,
-        "chain": False,
-        "spot": False
-    }
+    result = {"symbol": symbol, "chain": False, "spot": False}
 
     # Warm up options chain
     result["chain"] = await warmup_options_chain(symbol)
@@ -155,7 +151,7 @@ async def warmup_single_symbol(symbol: str) -> dict:
 async def warmup_cache(
     symbols: Optional[List[str]] = None,
     include_flow: bool = True,
-    parallel: bool = True
+    parallel: bool = True,
 ) -> dict:
     """
     Main warmup function - pre-populates cache at startup
@@ -184,7 +180,7 @@ async def warmup_cache(
         "chains_warmed": 0,
         "flow_warmed": False,
         "duration_seconds": 0,
-        "errors": []
+        "errors": [],
     }
 
     try:
@@ -243,8 +239,7 @@ async def warmup_cache(
         logger.info("")
         logger.info("=" * 60)
         logger.info(" Cache warmup completed!")
-        logger.info(
-            f" Symbols processed: {stats['symbols_processed']}/{len(symbols)}")
+        logger.info(f" Symbols processed: {stats['symbols_processed']}/{len(symbols)}")
         logger.info(f" Chains warmed: {stats['chains_warmed']}")
         logger.info(f" Flow warmed: {stats['flow_warmed']}")
         logger.info(f" Duration: {stats['duration_seconds']}s")
@@ -284,22 +279,23 @@ def get_warmup_config():
     """
     return {
         "enabled": os.getenv("WARMUP_ENABLED", "1") == "1",
-        "symbols": os.getenv("WARMUP_SYMBOLS", ",".join(DEFAULT_WARMUP_SYMBOLS)).split(","),
+        "symbols": os.getenv("WARMUP_SYMBOLS", ",".join(DEFAULT_WARMUP_SYMBOLS)).split(
+            ","
+        ),
         "include_flow": os.getenv("WARMUP_INCLUDE_FLOW", "1") == "1",
         "parallel": os.getenv("WARMUP_PARALLEL", "1") == "1",
         "scheduled": os.getenv("WARMUP_SCHEDULED", "0") == "1",
-        "schedule_interval": int(os.getenv("WARMUP_INTERVAL_MINUTES", "30"))
+        "schedule_interval": int(os.getenv("WARMUP_INTERVAL_MINUTES", "30")),
     }
 
 
 # Example usage
 if __name__ == "__main__":
+
     async def test_warmup():
         # Test with small subset
         stats = await warmup_cache(
-            symbols=["SPY", "TSLA"],
-            include_flow=True,
-            parallel=False
+            symbols=["SPY", "TSLA"], include_flow=True, parallel=False
         )
         print(f"\nWarmup stats: {stats}")
 

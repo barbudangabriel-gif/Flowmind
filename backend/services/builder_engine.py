@@ -31,6 +31,7 @@ def leg_payoff_expiry(
         intrinsic = max(0.0, strike - S_T)
     return sign * intrinsic * qty * LEG_MULT
 
+
 # ---- pricing inițial (t=0) pentru debit/credit ----
 
 
@@ -54,6 +55,7 @@ def leg_price_now(
     sign = 1 if side == "BUY" else -1
     return sign * px * qty * LEG_MULT  # >0 = debit, <0 = credit
 
+
 # ---- PoP/lognormal pdf ----
 
 
@@ -68,6 +70,7 @@ def logn_pdf(x: float, mu: float, sig: float) -> float:
     return (1.0 / (x * sig * math.sqrt(2 * math.pi))) * math.exp(
         -0.5 * ((math.log(x) - mu) / sig) ** 2
     )
+
 
 # ---- engine principal ----
 

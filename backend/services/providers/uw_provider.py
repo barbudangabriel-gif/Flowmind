@@ -7,9 +7,9 @@ from ..options_provider import OptionsProvider
 
 class UWProvider(OptionsProvider):
     def __init__(self):
-        self.base = os.getenv(
-            "UW_BASE_URL",
-            "https://api.unusualwhales.com").rstrip("/")
+        self.base = os.getenv("UW_BASE_URL", "https://api.unusualwhales.com").rstrip(
+            "/"
+        )
         self.key = os.getenv("UW_API_TOKEN") or os.getenv("UW_API_KEY")
         if not self.key:
             self.key = "demo-token"  # Use demo token for testing
@@ -95,11 +95,9 @@ class UWProvider(OptionsProvider):
                     return 100.0
 
     # ---- Option chain (using correct endpoint) ----
-    def get_chain(self,
-                  symbol: str,
-                  expiry: Optional[str] = None,
-                  dte: Optional[int] = None) -> Dict[str,
-                                                     Any]:
+    def get_chain(
+        self, symbol: str, expiry: Optional[str] = None, dte: Optional[int] = None
+    ) -> Dict[str, Any]:
         # For B8 testing, always use mock data with realistic bid/ask spreads
         return self._mock_chain(symbol)
 

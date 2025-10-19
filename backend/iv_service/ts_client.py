@@ -4,6 +4,7 @@ from typing import Dict, Any, List
 from .config import DEFAULT_FRONT_DTE, DEFAULT_BACK_DTE, CACHE_TTL_SECONDS
 from .provider_base import round_to_tick
 
+
 # Stub provider inline
 class StubProvider:
     async def get_spot(self, symbol: str) -> float:
@@ -25,11 +26,13 @@ class StubProvider:
         spot = await self.get_spot(symbol)
         return [int(spot + i * 5) for i in range(-4, 5)]
 
+
 # Provider factory
 _provider = StubProvider()
 
 # TTL cache (simplu)
 _cache: Dict[str, Any] = {}
+
 
 def cache_get(key: str):
     v = _cache.get(key)
@@ -39,11 +42,14 @@ def cache_get(key: str):
         return None
     return v["data"]
 
+
 def cache_put(key: str, data: Any):
     _cache[key] = {"ts": time.time(), "data": data}
 
+
 def expected_move_usd(spot: float, iv: float, dte: int) -> float:
     return float(spot * iv * math.sqrt(max(dte, 0) / 365.0))
+
 
 async def summary(
     symbol: str, front_dte: int = DEFAULT_FRONT_DTE, back_dte: int = DEFAULT_BACK_DTE
@@ -67,6 +73,7 @@ async def summary(
     cache_put(key, out)
     return out
 
+
 async def terms(symbol: str):
     key = f"terms:{symbol}"
     c = cache_get(key)
@@ -75,6 +82,7 @@ async def terms(symbol: str):
     data = await _provider.list_terms(symbol)
     cache_put(key, data)
     return data
+
 
 async def strikes_calc(symbol: str, front_dte: int, back_dte: int):
     fs = await _provider.list_strikes(symbol, front_dte)
@@ -85,10 +93,12 @@ async def strikes_calc(symbol: str, front_dte: int, back_dte: int):
         "back": {"dte": back_dte, "strikes": bs},
     }
 
+
 def pick_calendar(spot: float, em_usd: float, mult: float):
     low = round_to_tick(spot - mult * em_usd, spot)
     high = round_to_tick(spot + mult * em_usd, spot)
     return int(low), int(high)
+
 
 def pick_condor(spot: float, em_usd: float):
     shorts = (

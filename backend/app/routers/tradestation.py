@@ -20,11 +20,16 @@ log.info(f"TradeStation API: {TS_MODE} mode at {TS_API_BASE}")
 
 
 @router.get("/tradestation/accounts")
-async def get_accounts(token: str = Depends(get_bearer_token), user_id: str = Depends(get_user_id)):
+async def get_accounts(
+    token: str = Depends(get_bearer_token), user_id: str = Depends(get_user_id)
+):
     """Get list of TradeStation accounts."""
     try:
         url = f"{TS_API_BASE}/brokerage/accounts"
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
 
         log.info(f"Fetching accounts for user {user_id}")
         response = requests.get(url, headers=headers, timeout=10)
@@ -35,7 +40,9 @@ async def get_accounts(token: str = Depends(get_bearer_token), user_id: str = De
             return {"status": "success", "data": data}
         else:
             log.error(f"API error: {response.status_code}")
-            raise HTTPException(status_code=response.status_code, detail=response.text[:200])
+            raise HTTPException(
+                status_code=response.status_code, detail=response.text[:200]
+            )
 
     except requests.RequestException as e:
         log.error(f"Network error: {e}")
@@ -47,12 +54,17 @@ async def get_accounts(token: str = Depends(get_bearer_token), user_id: str = De
 
 @router.get("/tradestation/accounts/{account_id}/balances")
 async def get_account_balances(
-    account_id: str, token: str = Depends(get_bearer_token), user_id: str = Depends(get_user_id)
+    account_id: str,
+    token: str = Depends(get_bearer_token),
+    user_id: str = Depends(get_user_id),
 ):
     """Get account balances."""
     try:
         url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/balances"
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
 
         log.info(f"Fetching balances for account {account_id}")
         response = requests.get(url, headers=headers, timeout=10)
@@ -63,7 +75,9 @@ async def get_account_balances(
             return {"status": "success", "data": data}
         else:
             log.error(f"API error: {response.status_code}")
-            raise HTTPException(status_code=response.status_code, detail=response.text[:200])
+            raise HTTPException(
+                status_code=response.status_code, detail=response.text[:200]
+            )
 
     except requests.RequestException as e:
         log.error(f"Network error: {e}")
@@ -75,12 +89,17 @@ async def get_account_balances(
 
 @router.get("/tradestation/accounts/{account_id}/positions")
 async def get_account_positions(
-    account_id: str, token: str = Depends(get_bearer_token), user_id: str = Depends(get_user_id)
+    account_id: str,
+    token: str = Depends(get_bearer_token),
+    user_id: str = Depends(get_user_id),
 ):
     """Get account positions."""
     try:
         url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/positions"
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
 
         log.info(f"Fetching positions for account {account_id}")
         response = requests.get(url, headers=headers, timeout=10)
@@ -91,7 +110,9 @@ async def get_account_positions(
             return {"status": "success", "data": data}
         else:
             log.error(f"API error: {response.status_code}")
-            raise HTTPException(status_code=response.status_code, detail=response.text[:200])
+            raise HTTPException(
+                status_code=response.status_code, detail=response.text[:200]
+            )
 
     except requests.RequestException as e:
         log.error(f"Network error: {e}")

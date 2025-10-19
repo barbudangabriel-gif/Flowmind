@@ -9,11 +9,12 @@ logger = logging.getLogger(__name__)
 UW_BASE = os.getenv("UW_BASE", "https://api.unusualwhales.com")
 UW_KEY = os.getenv("UW_KEY")
 
+
 class UWClient:
     def __init__(self, key: Optional[str] = UW_KEY):
         if not key:
             logger.warning("UW_KEY not configured - using demo mode")
-            self._key = "demo-fallback" # Fallback for demo/development
+            self._key = "demo-fallback"  # Fallback for demo/development
         else:
             self._key = key
         self._client = httpx.AsyncClient(base_url=UW_BASE, timeout=15)
@@ -34,15 +35,15 @@ class UWClient:
     # Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.OptionTradeController.flow_alerts
     # ============================================================================
     async def flow_alerts(
-        self, 
-        ticker: Optional[str] = None, 
+        self,
+        ticker: Optional[str] = None,
         min_premium: Optional[int] = None,
         date: Optional[datetime] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[Dict[str, Any]]:
         """
         Get options flow alerts (replaces hallucinated /v1/options/trades)
-        
+
         Args:
             ticker: Filter by symbol (e.g., "TSLA")
             min_premium: Minimum premium filter (in dollars)
@@ -70,7 +71,7 @@ class UWClient:
     async def stock_state(self, ticker: str) -> Dict[str, Any]:
         """
         Get current stock price (replaces hallucinated /api/stock/{ticker}/quote)
-        
+
         Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.TickerController.last_stock_state
         """
         try:
@@ -81,17 +82,17 @@ class UWClient:
             return {}
 
     async def stock_ohlc(
-        self, 
-        ticker: str, 
+        self,
+        ticker: str,
         interval: str = "1d",
         start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None
+        end_date: Optional[datetime] = None,
     ) -> List[Dict[str, Any]]:
         """
         Get historical OHLC data
-        
+
         Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.TickerController.ohlc
-        
+
         Args:
             ticker: Stock symbol
             interval: 1m, 5m, 15m, 1h, 1d (default: 1d)
@@ -117,11 +118,13 @@ class UWClient:
     async def spot_gex_exposures(self, ticker: str) -> Dict[str, Any]:
         """
         Get gamma exposure by strike & expiry (replaces hallucinated gamma-exposure endpoint)
-        
+
         Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.TickerController.spot_exposures_by_strike_expiry_v2
         """
         try:
-            result = await self._get(f"/api/stock/{ticker}/spot-gex-exposures-by-strike-expiry", {})
+            result = await self._get(
+                f"/api/stock/{ticker}/spot-gex-exposures-by-strike-expiry", {}
+            )
             return result
         except Exception as e:
             logger.error(f"UW GEX API error for {ticker}: {e}")
@@ -133,7 +136,7 @@ class UWClient:
     async def market_tide(self) -> Dict[str, Any]:
         """
         Get market-wide flow sentiment (replaces hallucinated /api/market/overview)
-        
+
         Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.MarketController.market_tide
         """
         try:
@@ -149,9 +152,9 @@ class UWClient:
     async def market_movers(self) -> Dict[str, Any]:
         """
         Get market movers (top gainers, losers, most active)
-        
+
         Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.MarketController.market_movers
-        
+
         Returns:
             {
                 "gainers": [{"ticker": "NVDA", "price": 520.50, "change_pct": 8.2, ...}, ...],
@@ -174,13 +177,13 @@ class UWClient:
         transaction_type: Optional[str] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[Dict[str, Any]]:
         """
         Get congressional trading activity (politician stock purchases/sales)
-        
+
         Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.CongressController.congress_trades
-        
+
         Args:
             ticker: Filter by stock symbol
             politician: Filter by politician name
@@ -189,7 +192,7 @@ class UWClient:
             start_date: Start date for date range
             end_date: End date for date range
             limit: Max results (default 100)
-        
+
         Returns:
             [
                 {
@@ -232,20 +235,20 @@ class UWClient:
         min_volume: Optional[int] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[Dict[str, Any]]:
         """
         Get dark pool activity (off-exchange trades)
-        
+
         Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.DarkPoolController.dark_pool_trades
-        
+
         Args:
             ticker: Filter by symbol
             min_volume: Minimum share volume threshold
             start_date: Start date for date range
             end_date: End date for date range
             limit: Max results (default 100)
-        
+
         Returns:
             [
                 {
@@ -277,19 +280,17 @@ class UWClient:
             return []
 
     async def institutional_holdings(
-        self,
-        ticker: str,
-        quarter: Optional[str] = None
+        self, ticker: str, quarter: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Get institutional holdings (13F filings)
-        
+
         Docs: https://api.unusualwhales.com/docs#/operations/PublicApi.InstitutionalController.institutional_holdings
-        
+
         Args:
             ticker: Stock symbol (required)
             quarter: Quarter filter (e.g., "2025Q3", defaults to latest)
-        
+
         Returns:
             {
                 "ticker": "TSLA",

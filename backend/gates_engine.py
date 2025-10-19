@@ -5,21 +5,26 @@ from enum import Enum
 from typing import Dict, List, Optional, Any
 from pydantic import BaseModel
 
+
 class Mode(str, Enum):
     SIM = "SIM"
     REAL = "REAL"
+
 
 class Side(str, Enum):
     BUY = "BUY"
     SELL = "SELL"
 
+
 class OptionType(str, Enum):
     CALL = "CALL"
     PUT = "PUT"
 
+
 class Severity(str, Enum):
     BLOCK = "BLOCK"
     WARN = "WARN"
+
 
 class Quote(BaseModel):
     bid: float = 0.0
@@ -27,12 +32,14 @@ class Quote(BaseModel):
     last: float = 0.0
     tsMs: int = 0
 
+
 class LegRequest(BaseModel):
     side: Side
     type: OptionType
     expiry: str
     strike: float
     qty: int
+
 
 class Leg(BaseModel):
     side: Side
@@ -42,6 +49,7 @@ class Leg(BaseModel):
     qty: int
     quote: Quote
 
+
 class PortfolioGreeks(BaseModel):
     delta: float = 0
     gamma: float = 0
@@ -50,23 +58,28 @@ class PortfolioGreeks(BaseModel):
     notional: float = 100000
     equity: float = 200000
 
+
 class AccountState(BaseModel):
     tradeable: bool = True
     buyingPower: float = 100000
+
 
 class MarketMetrics(BaseModel):
     ivRank: float = 35
     emAbs: float = 12
     atr14: float = 10
 
+
 class SessionInfo(BaseModel):
     isOpen: bool = True
     minutesSinceOpen: int = 30
     minutesToClose: int = 120
 
+
 class Events(BaseModel):
     hasEarnings: bool = False
     hasDividend: bool = False
+
 
 class TradeContext(BaseModel):
     mode: Mode
@@ -82,6 +95,7 @@ class TradeContext(BaseModel):
     openPositionsBySymbol: Dict[str, int] = {}
     estMaxLoss: float = 0
 
+
 class GateConfig(BaseModel):
     maxPositionsPerSymbol: int = 5
     maxPortfolioNotional: float = 1000000
@@ -94,8 +108,9 @@ class GateConfig(BaseModel):
     emThreshold: float = 5.0
     maxDelta: float = 0.50
     # New config pentru term structure
-    minAbsFrontBackIVpp: float = 0.03 # 3pp
-    termSlopeMode: str = "any" # "any" | "front_gt_back" | "back_gt_front"
+    minAbsFrontBackIVpp: float = 0.03  # 3pp
+    termSlopeMode: str = "any"  # "any" | "front_gt_back" | "back_gt_front"
+
 
 class GateResult(BaseModel):
     gateName: str
@@ -104,11 +119,14 @@ class GateResult(BaseModel):
     reason: str
     details: Optional[Dict[str, Any]] = None
 
+
 class GateDecision(BaseModel):
-    decision: str # ALLOW, ALLOW_WITH_WARNINGS, REJECT
+    decision: str  # ALLOW, ALLOW_WITH_WARNINGS, REJECT
     results: List[GateResult]
 
+
 DEFAULT_CONFIG = GateConfig()
+
 
 def gate_tradeability(ctx: TradeContext, cfg: GateConfig) -> GateResult:
     """Gate 1: Account must be tradeable"""
@@ -119,6 +137,7 @@ def gate_tradeability(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         severity=Severity.BLOCK,
         reason="Account tradeable" if passed else "Account not tradeable",
     )
+
 
 def gate_data_freshness(ctx: TradeContext, cfg: GateConfig) -> GateResult:
     """Gate 2: Quote data must be fresh"""
@@ -139,10 +158,11 @@ def gate_data_freshness(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         gateName="data.freshness",
         passed=passed,
         severity=Severity.BLOCK,
-        reason="All quotes fresh"
-        if passed
-        else f"Stale quotes: {', '.join(stale_quotes)}",
+        reason=(
+            "All quotes fresh" if passed else f"Stale quotes: {', '.join(stale_quotes)}"
+        ),
     )
+
 
 def gate_buying_power(ctx: TradeContext, cfg: GateConfig) -> GateResult:
     """Gate 3: Sufficient buying power"""
@@ -155,10 +175,13 @@ def gate_buying_power(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         gateName="risk.buyingpower",
         passed=passed,
         severity=Severity.BLOCK,
-        reason=f"BP ratio: {ratio:.2f}"
-        if passed
-        else f"Insufficient BP: {ratio:.2f} < {cfg.minBuyingPowerRatio}",
+        reason=(
+            f"BP ratio: {ratio:.2f}"
+            if passed
+            else f"Insufficient BP: {ratio:.2f} < {cfg.minBuyingPowerRatio}"
+        ),
     )
+
 
 def gate_liquidity(ctx: TradeContext, cfg: GateConfig) -> GateResult:
     """Gate 4: Option liquidity check"""
@@ -173,10 +196,13 @@ def gate_liquidity(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         gateName="liquidity",
         passed=passed,
         severity=Severity.WARN,
-        reason="All legs liquid"
-        if passed
-        else f"Low liquidity: {', '.join(illiquid_legs)}",
+        reason=(
+            "All legs liquid"
+            if passed
+            else f"Low liquidity: {', '.join(illiquid_legs)}"
+        ),
     )
+
 
 def gate_pricing_sanity(ctx: TradeContext, cfg: GateConfig) -> GateResult:
     """Gate 5: Bid/ask spread sanity"""
@@ -194,6 +220,7 @@ def gate_pricing_sanity(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         severity=Severity.WARN,
         reason="Spreads OK" if passed else f"Wide spreads: {', '.join(wide_spreads)}",
     )
+
 
 # Additional gates (simplified for v0.1)
 # Additional gates pentru long-vega strategies
@@ -224,10 +251,13 @@ def gate_term_structure(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         gateName="term.structure",
         passed=passed,
         severity=Severity.BLOCK,
-        reason=f"|Front-Back|={abs(diff)*100:.1f}pp OK"
-        if passed
-        else f"Slope nefavorabil: {diff*100:.1f}pp",
+        reason=(
+            f"|Front-Back|={abs(diff)*100:.1f}pp OK"
+            if passed
+            else f"Slope nefavorabil: {diff*100:.1f}pp"
+        ),
     )
+
 
 def gate_iv_regime(ctx: TradeContext, cfg: GateConfig) -> GateResult:
     iv_rank = ctx.market.ivRank
@@ -236,10 +266,13 @@ def gate_iv_regime(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         gateName="iv.regime",
         passed=passed,
         severity=Severity.WARN,
-        reason=f"IV rank: {iv_rank}"
-        if passed
-        else f"IV rank {iv_rank} outside [{cfg.ivRankMin}-{cfg.ivRankMax}]",
+        reason=(
+            f"IV rank: {iv_rank}"
+            if passed
+            else f"IV rank {iv_rank} outside [{cfg.ivRankMin}-{cfg.ivRankMax}]"
+        ),
     )
+
 
 def gate_portfolio_risk(ctx: TradeContext, cfg: GateConfig) -> GateResult:
     delta = abs(ctx.portfolio.delta)
@@ -251,6 +284,7 @@ def gate_portfolio_risk(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         reason=f"Delta: {delta:.2f}" if passed else f"High delta: {delta:.2f}",
     )
 
+
 def gate_max_positions(ctx: TradeContext, cfg: GateConfig) -> GateResult:
     current = ctx.openPositionsBySymbol.get(ctx.underlying, 0)
     passed = current < cfg.maxPositionsPerSymbol
@@ -260,6 +294,7 @@ def gate_max_positions(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         severity=Severity.BLOCK,
         reason=f"Positions: {current}" if passed else f"Too many positions: {current}",
     )
+
 
 # Stub gates pentru v0.1
 STUB_GATES = [
@@ -308,6 +343,7 @@ ALL_GATES = [
 
 SUBSET_PLACE = [gate_data_freshness, gate_pricing_sanity, gate_buying_power]
 
+
 def evaluate_gates(ctx: TradeContext, cfg: GateConfig = DEFAULT_CONFIG) -> GateDecision:
     results = [gate(ctx, cfg) for gate in ALL_GATES]
     blocking_fails = [
@@ -323,6 +359,7 @@ def evaluate_gates(ctx: TradeContext, cfg: GateConfig = DEFAULT_CONFIG) -> GateD
         decision = "ALLOW"
 
     return GateDecision(decision=decision, results=results)
+
 
 def audit_hash(payload: Dict[str, Any]) -> str:
     """Generate stable audit hash"""

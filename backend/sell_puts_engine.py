@@ -7,6 +7,7 @@ from datetime import datetime
 Status = Literal["Active", "Closed", "Assigned"]
 Signal = Literal["SELL PUT", "ROLL", "COVERED CALL", ""]
 
+
 @dataclass
 class Config:
     # Praguri "sweet spot"
@@ -28,6 +29,7 @@ class Config:
     # Modul de alocare: True = delta-adjusted, False = cash-secured
     dynamic_risk: bool = True
 
+
 @dataclass
 class Position:
     ticker: str
@@ -35,14 +37,14 @@ class Position:
     strike: float
     delta: float
     dte: int
-    premium: float # per contract (USD)
+    premium: float  # per contract (USD)
     iv_rank: float
     vix: float
     selected: bool = True
     assigned: bool = False
     status: Status = "Active"
     contracts: int = 0
-    premium_paid_to_close: float = 0.0 # când roluiești/închizi
+    premium_paid_to_close: float = 0.0  # când roluiești/închizi
     notes: str = ""
 
     # ------- Derived metrics --------
@@ -67,21 +69,24 @@ class Position:
 
     def eligible(self, cfg: Config) -> bool:
         return (
-            (cfg.delta_min <= self.delta <= cfg.delta_max) and
-            (cfg.dte_min <= self.dte <= cfg.dte_max) and
-            (self.iv_rank >= cfg.iv_rank_min) and
-            (cfg.vix_min <= self.vix <= cfg.vix_max)
+            (cfg.delta_min <= self.delta <= cfg.delta_max)
+            and (cfg.dte_min <= self.dte <= cfg.dte_max)
+            and (self.iv_rank >= cfg.iv_rank_min)
+            and (cfg.vix_min <= self.vix <= cfg.vix_max)
         )
 
     def signal(self, cfg: Config) -> Signal:
         """PRIORITATE: COVERED CALL > ROLL > SELL PUT > ''"""
         if self.assigned:
             return "COVERED CALL"
-        if (self.delta > cfg.roll_delta_threshold) or (self.dte < cfg.roll_dte_threshold):
+        if (self.delta > cfg.roll_delta_threshold) or (
+            self.dte < cfg.roll_dte_threshold
+        ):
             return "ROLL"
         if self.selected and self.eligible(cfg):
             return "SELL PUT"
         return ""
+
 
 # ---------- Sumar portofoliu ----------
 def summarize(positions: List[Position], cfg: Config) -> Dict[str, float]:
@@ -93,7 +98,9 @@ def summarize(positions: List[Position], cfg: Config) -> Dict[str, float]:
     capital_released = sum(p.contracts * p.capital_per_contract() for p in closed)
     capital_in_equity = sum(p.contracts * p.capital_per_contract() for p in assigned)
 
-    risk_economic = sum(p.risk_per_contract_delta_adjusted() * p.contracts for p in active)
+    risk_economic = sum(
+        p.risk_per_contract_delta_adjusted() * p.contracts for p in active
+    )
 
     signals_count = {
         "SELL PUT": sum(1 for p in positions if p.signal(cfg) == "SELL PUT"),
@@ -113,14 +120,13 @@ def summarize(positions: List[Position], cfg: Config) -> Dict[str, float]:
         "count_active": len(active),
         "count_closed": len(closed),
         "count_assigned": len(assigned),
-        **{f"signals_{k}": v for k, v in signals_count.items()}
+        **{f"signals_{k}": v for k, v in signals_count.items()},
     }
+
 
 # ---------- Alocare ----------
 def allocate_contracts_equal(
-    candidates: List[Position],
-    cfg: Config,
-    per_symbol_cap: Optional[float] = None
+    candidates: List[Position], cfg: Config, per_symbol_cap: Optional[float] = None
 ) -> List[Position]:
     """
     Alocă contracte per simbol folosind fie delta-adjusted (dynamic_risk=True),
@@ -135,17 +141,26 @@ def allocate_contracts_equal(
 
     result: List[Position] = []
     for p in candidates:
-        pc = Position(**asdict(p)) # clone
+        pc = Position(**asdict(p))  # clone
         cap_per_contract = pc.capital_per_contract()
 
         if cfg.dynamic_risk:
             risk_per_contract = pc.risk_per_contract_delta_adjusted()
-            pc.contracts = 0 if risk_per_contract <= 0 else max(0, math.floor(per_cap / risk_per_contract))
+            pc.contracts = (
+                0
+                if risk_per_contract <= 0
+                else max(0, math.floor(per_cap / risk_per_contract))
+            )
         else:
-            pc.contracts = 0 if cap_per_contract <= 0 else max(0, math.floor(per_cap / cap_per_contract))
+            pc.contracts = (
+                0
+                if cap_per_contract <= 0
+                else max(0, math.floor(per_cap / cap_per_contract))
+            )
 
         result.append(pc)
     return result
+
 
 def greedy_fill_by_risk(candidates: List[Position], cfg: Config) -> List[Position]:
     """
@@ -159,7 +174,11 @@ def greedy_fill_by_risk(candidates: List[Position], cfg: Config) -> List[Positio
     budget = cfg.capital_base
 
     def unit(p: Position) -> float:
-        return p.risk_per_contract_delta_adjusted() if cfg.dynamic_risk else p.capital_per_contract()
+        return (
+            p.risk_per_contract_delta_adjusted()
+            if cfg.dynamic_risk
+            else p.capital_per_contract()
+        )
 
     def efficiency(p: Position) -> float:
         denom = unit(p)
@@ -182,42 +201,48 @@ def greedy_fill_by_risk(candidates: List[Position], cfg: Config) -> List[Positio
 
     return pool
 
+
 # ---------- Tabele / JSON ----------
 def to_table(positions: List[Position], cfg: Config) -> List[Dict]:
     """Tablou JSON-friendly, cu semnale și metrici principale."""
     rows = []
     for p in positions:
-        rows.append({
-            "ticker": p.ticker,
-            "price": p.price,
-            "strike": p.strike,
-            "delta": p.delta,
-            "dte": p.dte,
-            "premium": p.premium,
-            "iv_rank": p.iv_rank,
-            "vix": p.vix,
-            "selected": p.selected,
-            "assigned": p.assigned,
-            "status": p.status,
-            "contracts": p.contracts,
-            "eligible": p.eligible(cfg),
-            "signal": p.signal(cfg),
-            "capital_per_contract": p.capital_per_contract(),
-            "capital_blocked": p.capital_blocked(),
-            "risk_per_contract": p.risk_per_contract_delta_adjusted(),
-            "monthly_yield_pct": p.monthly_yield_pct(),
-            "notes": p.notes,
-        })
+        rows.append(
+            {
+                "ticker": p.ticker,
+                "price": p.price,
+                "strike": p.strike,
+                "delta": p.delta,
+                "dte": p.dte,
+                "premium": p.premium,
+                "iv_rank": p.iv_rank,
+                "vix": p.vix,
+                "selected": p.selected,
+                "assigned": p.assigned,
+                "status": p.status,
+                "contracts": p.contracts,
+                "eligible": p.eligible(cfg),
+                "signal": p.signal(cfg),
+                "capital_per_contract": p.capital_per_contract(),
+                "capital_blocked": p.capital_blocked(),
+                "risk_per_contract": p.risk_per_contract_delta_adjusted(),
+                "monthly_yield_pct": p.monthly_yield_pct(),
+                "notes": p.notes,
+            }
+        )
     return rows
+
 
 # ---------- PnL & lifecycle ----------
 def pnl_sell_put(premium_received_per_contract: float, contracts: int) -> float:
     """PnL realizat la vânzarea inițială (cash in)."""
     return premium_received_per_contract * 100.0 * contracts
 
+
 def pnl_close_put(premium_paid_to_close_per_contract: float, contracts: int) -> float:
     """PnL realizat la închiderea prin buy-to-close (cash out, negativ)."""
-    return - premium_paid_to_close_per_contract * 100.0 * contracts
+    return -premium_paid_to_close_per_contract * 100.0 * contracts
+
 
 def close_position(p: Position, premium_paid_to_close_per_contract: float) -> float:
     """
@@ -229,11 +254,10 @@ def close_position(p: Position, premium_paid_to_close_per_contract: float) -> fl
     p.status = "Closed"
     return realized
 
-def roll_position(old: Position,
-                  new_strike: float,
-                  new_dte: int,
-                  new_delta: float,
-                  new_premium: float) -> Tuple[Position, float]:
+
+def roll_position(
+    old: Position, new_strike: float, new_dte: int, new_delta: float, new_premium: float
+) -> Tuple[Position, float]:
     """
     ROLL: închide vechea poziție (buy-to-close) și deschide una nouă (same ticker).
     Returnează (new_position, realized_pnl_from_close).
@@ -242,7 +266,7 @@ def roll_position(old: Position,
     realized_close = close_position(old, premium_paid_to_close_per_contract=old.premium)
     new_pos = Position(
         ticker=old.ticker,
-        price=old.price, # actualizează cu live dacă ai
+        price=old.price,  # actualizează cu live dacă ai
         strike=new_strike,
         delta=new_delta,
         dte=new_dte,
@@ -253,14 +277,16 @@ def roll_position(old: Position,
         assigned=False,
         status="Active",
         contracts=old.contracts,
-        notes=f"roll from {old.strike} -> {new_strike}"
+        notes=f"roll from {old.strike} -> {new_strike}",
     )
     return new_pos, realized_close
+
 
 def assign_position(p: Position) -> None:
     """Marchează poziția ca Assigned (ai primit acțiunile)."""
     p.assigned = True
     p.status = "Assigned"
+
 
 # ---------- Export semnale ----------
 def collect_signals(positions: List[Position], cfg: Config) -> List[Dict]:
@@ -270,22 +296,28 @@ def collect_signals(positions: List[Position], cfg: Config) -> List[Dict]:
         s = p.signal(cfg)
         if not s:
             continue
-        out.append({
-            "ticker": p.ticker,
-            "signal": s,
-            "contracts": p.contracts,
-            "strike": p.strike,
-            "dte": p.dte,
-            "delta": p.delta,
-            "premium": p.premium,
-            "notes": p.notes
-        })
+        out.append(
+            {
+                "ticker": p.ticker,
+                "signal": s,
+                "contracts": p.contracts,
+                "strike": p.strike,
+                "dte": p.dte,
+                "delta": p.delta,
+                "premium": p.premium,
+                "notes": p.notes,
+            }
+        )
     return out
 
-def export_signals_json(positions: List[Position], cfg: Config, path: str = "signals.json") -> None:
+
+def export_signals_json(
+    positions: List[Position], cfg: Config, path: str = "signals.json"
+) -> None:
     signals = collect_signals(positions, cfg)
     with open(path, "w", encoding="utf-8") as f:
-        json.dump({
-            "generated_at": datetime.utcnow().isoformat() + "Z",
-            "signals": signals
-        }, f, indent=2)
+        json.dump(
+            {"generated_at": datetime.utcnow().isoformat() + "Z", "signals": signals},
+            f,
+            indent=2,
+        )

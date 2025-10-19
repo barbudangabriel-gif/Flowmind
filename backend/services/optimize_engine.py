@@ -5,6 +5,7 @@ from services.providers import get_provider
 from services.bs import norm_cdf, call_price, put_price
 from utils.deeplink import builder_link
 
+
 # B8 - Market Analysis Functions for Spread Quality
 def _leg_market_snapshot(
     chain: Dict[str, Any], opt_type: str, strike: float
@@ -40,6 +41,7 @@ def _leg_market_snapshot(
                 }
     return {"bid": 0, "ask": 0, "mid": 0, "oi": 0, "vol": 0, "spr": 0, "rel": 1.0}
 
+
 def _spread_score(rel: float) -> float:
     """Calculate spread quality score (0-1) based on relative spread"""
     if rel <= 0:
@@ -51,6 +53,7 @@ def _spread_score(rel: float) -> float:
     if rel <= 0.10:
         return 0.75 - 0.25 * ((rel - 0.05) / 0.05)
     return 0.5 - 0.5 * ((rel - 0.10) / 0.10)
+
 
 def _compute_spread_quality(
     legs: List[Dict[str, Any]], chain: Dict[str, Any]
@@ -71,7 +74,7 @@ def _compute_spread_quality(
 
         w_sum += w
         q_sum += q * w
-        slippage += 0.5 * mm["spr"] * 100 # Half spread in dollars
+        slippage += 0.5 * mm["spr"] * 100  # Half spread in dollars
         market_data.append(mm)
 
         # Check NBBO criteria
@@ -81,11 +84,12 @@ def _compute_spread_quality(
     quality = (q_sum / w_sum) if w_sum > 0 else 0
 
     return {
-    "quality": round(quality * 100),
-    "slippage_est": round(slippage * 100) / 100,
-    "nbbo_ok": nbbo_ok,
-    "market": market_data,
+        "quality": round(quality * 100),
+        "slippage_est": round(slippage * 100) / 100,
+        "nbbo_ok": nbbo_ok,
+        "market": market_data,
     }
+
 
 def _pick_iv(chain: Dict[str, Any], spot: float) -> float:
     best = None
@@ -102,6 +106,7 @@ def _pick_iv(chain: Dict[str, Any], spot: float) -> float:
                     best, best_d = iv, d
     return float(best) if best else 0.40
 
+
 def _prob_above(spot: float, strike: float, iv: float, dte: int) -> float:
     T = max(dte, 1) / 365.0
     if T <= 0 or iv <= 0:
@@ -110,6 +115,7 @@ def _prob_above(spot: float, strike: float, iv: float, dte: int) -> float:
     sig = iv * math.sqrt(T)
     z = (math.log(strike) - mu) / sig
     return 1.0 - norm_cdf(z)
+
 
 def _liq_score(chain: Dict[str, Any], *strikes: float, kind: str = "CALL") -> float:
     """scor simplu 0..1 din OI total pe strikes implicate"""
@@ -125,13 +131,14 @@ def _liq_score(chain: Dict[str, Any], *strikes: float, kind: str = "CALL") -> fl
                 oi = 0
                 if arr:
                     oi = int(arr[0].get("OpenInterest") or 0)
-                acc += min(oi, 5000) # plafon pentru scor
+                acc += min(oi, 5000)  # plafon pentru scor
             # total pentru normalizare
             for arr in (row.get("Calls") or []) + (row.get("Puts") or []):
                 tot += min(int(arr.get("OpenInterest") or 0), 5000)
     if tot <= 0:
-        return 0.3 # fallback slab
-    return max(0.05, min(1.0, acc / (0.02 * tot))) # dacă strikes sunt populare -> ~1
+        return 0.3  # fallback slab
+    return max(0.05, min(1.0, acc / (0.02 * tot)))  # dacă strikes sunt populare -> ~1
+
 
 def _format_card(
     id_: str,
@@ -147,18 +154,19 @@ def _format_card(
     deeplink,
 ) -> Dict[str, Any]:
     return {
-    "id": id_,
-    "label": label,
-    "roi": roi,
-    "chance": chance,
-    "profit_max": profit_max,
-    "risk_capital": risk_capital,
-    "collateral": collateral,
-    "breakevens": breakevens,
-    "legs": legs,
-    "mini": mini,
-    "open_in_builder": deeplink,
+        "id": id_,
+        "label": label,
+        "roi": roi,
+        "chance": chance,
+        "profit_max": profit_max,
+        "risk_capital": risk_capital,
+        "collateral": collateral,
+        "breakevens": breakevens,
+        "legs": legs,
+        "mini": mini,
+        "open_in_builder": deeplink,
     }
+
 
 def suggest(
     symbol: str,
@@ -170,7 +178,7 @@ def suggest(
 ) -> Dict[str, Any]:
     provider = get_provider()
     spot = float(provider.get_spot(symbol))
-    chain = provider.get_chain(symbol) # adaptorul ia o expirare apropiată
+    chain = provider.get_chain(symbol)  # adaptorul ia o expirare apropiată
     expiry = chain["OptionChains"][0]["Expiration"]
     iv = _pick_iv(chain, spot)
     T = max(dte, 1) / 365.0
@@ -180,9 +188,9 @@ def suggest(
     rb = max(-2, min(2, int(risk_bias)))
 
     # Heuristici strikes
-    bias_up = 0.03 + 0.02 * rb # long call
-    bias_dn = 0.08 - 0.02 * rb # CSP
-    width_pct = 0.10 - 0.02 * rb # spread width
+    bias_up = 0.03 + 0.02 * rb  # long call
+    bias_dn = 0.08 - 0.02 * rb  # CSP
+    width_pct = 0.10 - 0.02 * rb  # spread width
 
     # === 1) Long Call
     k1 = round(spot * (1 + bias_up) / 5) * 5
@@ -198,11 +206,11 @@ def suggest(
     roi_ev = ev / debit
     liq = _liq_score(chain, k1, kind="CALL")
     link = builder_link(
-    "long-call",
-    symbol,
-    expiry,
-    [{"side": "BUY", "type": "CALL", "qty": 1, "strike": k1}],
-    1,
+        "long-call",
+        symbol,
+        expiry,
+        [{"side": "BUY", "type": "CALL", "qty": 1, "strike": k1}],
+        1,
     )
     if budget is None or debit <= budget:
         items.append(
@@ -240,19 +248,19 @@ def suggest(
     ev2 = chance2 * max_profit - (1 - chance2) * debit2
     roi2 = ev2 / debit2
     liq2 = min(
-    1.0,
-    0.5 * _liq_score(chain, buy, kind="CALL")
-    + 0.5 * _liq_score(chain, sell, kind="CALL"),
+        1.0,
+        0.5 * _liq_score(chain, buy, kind="CALL")
+        + 0.5 * _liq_score(chain, sell, kind="CALL"),
     )
     link2 = builder_link(
-    "bull-call-spread",
-    symbol,
-    expiry,
-    [
-    {"side": "BUY", "type": "CALL", "qty": 1, "strike": buy},
-    {"side": "SELL", "type": "CALL", "qty": 1, "strike": sell},
-    ],
-    1,
+        "bull-call-spread",
+        symbol,
+        expiry,
+        [
+            {"side": "BUY", "type": "CALL", "qty": 1, "strike": buy},
+            {"side": "SELL", "type": "CALL", "qty": 1, "strike": sell},
+        ],
+        1,
     )
     if (budget is None or debit2 <= budget) and width > 0:
         items.append(
@@ -291,16 +299,16 @@ def suggest(
     be3 = put_k - credit / 100.0
     # probabilitatea ca S_T >= K (assignment evitat) ~ profit = credit
     chance3 = _prob_above(spot, put_k, iv, dte)
-    ev3 = chance3 * credit - (1 - chance3) * (collateral) # foarte conservator
+    ev3 = chance3 * credit - (1 - chance3) * (collateral)  # foarte conservator
     # ROI pe risc: credit/collateral; ROI_EV: EV/collateral
     roi3 = ev3 / (collateral if collateral > 0 else 1)
     liq3 = _liq_score(chain, put_k, kind="PUT")
     link3 = builder_link(
-    "cash-secured-put",
-    symbol,
-    expiry,
-    [{"side": "SELL", "type": "PUT", "qty": 1, "strike": put_k}],
-    1,
+        "cash-secured-put",
+        symbol,
+        expiry,
+        [{"side": "SELL", "type": "PUT", "qty": 1, "strike": put_k}],
+        1,
     )
     if budget is None or collateral <= budget:
         items.append(

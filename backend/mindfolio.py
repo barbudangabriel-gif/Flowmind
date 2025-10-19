@@ -13,113 +13,132 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/mindfolio", tags=["mindfolio"])
 
+
 # ——— Models ———
 class ModuleAllocation(BaseModel):
- module: str # "IV_SERVICE", "SELL_PUTS", etc.
- budget: float # allocated budget for this module
- max_risk_per_trade: float # max risk per individual trade
- daily_loss_limit: float # daily loss limit for module
- autotrade: bool = False # whether module can auto-trade
+    module: str  # "IV_SERVICE", "SELL_PUTS", etc.
+    budget: float  # allocated budget for this module
+    max_risk_per_trade: float  # max risk per individual trade
+    daily_loss_limit: float  # daily loss limit for module
+    autotrade: bool = False  # whether module can auto-trade
+
 
 class Transaction(BaseModel):
- id: str
- portfolio_id: str
- account_id: Optional[str] = None
- datetime: str # ISO format
- symbol: str
- side: str # BUY, SELL
- qty: float
- price: float
- fee: float = 0.0
- currency: str = "USD"
- notes: Optional[str] = None
- created_at: str
+    id: str
+    portfolio_id: str
+    account_id: Optional[str] = None
+    datetime: str  # ISO format
+    symbol: str
+    side: str  # BUY, SELL
+    qty: float
+    price: float
+    fee: float = 0.0
+    currency: str = "USD"
+    notes: Optional[str] = None
+    created_at: str
 
- @validator("side")
- def validate_side(cls, v):
-     if v.upper() not in ["BUY", "SELL"]:
-         raise ValueError("side must be BUY or SELL")
-     return v.upper()
+    @validator("side")
+    def validate_side(cls, v):
+        if v.upper() not in ["BUY", "SELL"]:
+            raise ValueError("side must be BUY or SELL")
+        return v.upper()
+
 
 class TransactionCreate(BaseModel):
- portfolio_id: str
- account_id: Optional[str] = None
- datetime: str
- symbol: str
- side: str
- qty: float
- price: float
- fee: float = 0.0
- currency: str = "USD"
- notes: Optional[str] = None
+    portfolio_id: str
+    account_id: Optional[str] = None
+    datetime: str
+    symbol: str
+    side: str
+    qty: float
+    price: float
+    fee: float = 0.0
+    currency: str = "USD"
+    notes: Optional[str] = None
 
- @validator("side")
- def validate_side(cls, v):
-     return v.upper()
+    @validator("side")
+    def validate_side(cls, v):
+        return v.upper()
+
 
 class Position(BaseModel):
- symbol: str
- qty: float
- cost_basis: float # total cost including fees
- avg_cost: float # cost_basis / qty (if qty != 0)
- unrealized_pnl: Optional[float] = None # requires market price
- market_value: Optional[float] = None # requires market price
+    symbol: str
+    qty: float
+    cost_basis: float  # total cost including fees
+    avg_cost: float  # cost_basis / qty (if qty != 0)
+    unrealized_pnl: Optional[float] = None  # requires market price
+    market_value: Optional[float] = None  # requires market price
+
 
 class RealizedPnL(BaseModel):
- symbol: str
- realized: float
- trades: int
+    symbol: str
+    realized: float
+    trades: int
+
 
 class ImportCSV(BaseModel):
- csv_data: str
+    csv_data: str
+
 
 class Portfolio(BaseModel):
- id: str
- name: str
- cash_balance: float
- status: str = "ACTIVE" # ACTIVE, PAUSED, CLOSED
- modules: List[ModuleAllocation] = []
- created_at: str
- updated_at: str
+    id: str
+    name: str
+    cash_balance: float
+    status: str = "ACTIVE"  # ACTIVE, PAUSED, CLOSED
+    modules: List[ModuleAllocation] = []
+    created_at: str
+    updated_at: str
+
 
 class PortfolioCreate(BaseModel):
- name: str
- starting_balance: float = 10000.0
- modules: List[ModuleAllocation] = []
+    name: str
+    starting_balance: float = 10000.0
+    modules: List[ModuleAllocation] = []
+
 
 class PortfolioPatch(BaseModel):
- name: Optional[str] = None
- status: Optional[str] = None
+    name: Optional[str] = None
+    status: Optional[str] = None
+
 
 class FundsOp(BaseModel):
- delta: float # +/- amount to add/subtract
+    delta: float  # +/- amount to add/subtract
+
 
 class AllocOp(BaseModel):
- module: str
- alloc: ModuleAllocation
+    module: str
+    alloc: ModuleAllocation
+
 
 # ——— Redis Keys ———
 def key_portfolio(pid: str) -> str:
     return f"mf:{pid}"
 
+
 def key_portfolio_list() -> str:
     return "mf:list"
+
 
 def key_stats(pid: str) -> str:
     return f"mf:{pid}:stats"
 
+
 def key_transaction(tid: str) -> str:
     return f"tx:{tid}"
+
 
 def key_portfolio_transactions(pid: str) -> str:
     return f"mf:{pid}:transactions"
 
+
 def key_portfolio_positions(pid: str) -> str:
     return f"mf:{pid}:positions"
+
 
 # ——— FIFO Logic Functions ———
 def round2(n: float) -> float:
     return round(n * 100) / 100
+
 
 async def get_portfolio_transactions(portfolio_id: str) -> List[Transaction]:
     """Get all transactions for a portfolio, sorted by datetime"""
@@ -137,6 +156,7 @@ async def get_portfolio_transactions(portfolio_id: str) -> List[Transaction]:
     # Sort by datetime
     transactions.sort(key=lambda x: x.datetime)
     return transactions
+
 
 async def calculate_positions_fifo(portfolio_id: str) -> List[Position]:
     """Calculate current positions using FIFO method"""
@@ -172,7 +192,7 @@ async def calculate_positions_fifo(portfolio_id: str) -> List[Position]:
     # Calculate current positions
     positions = []
     for symbol, symbol_lots in lots.items():
-        if symbol_lots: # If there are remaining lots
+        if symbol_lots:  # If there are remaining lots
             total_qty = sum(lot["qty"] for lot in symbol_lots)
             total_cost = sum(lot["qty"] * lot["price"] for lot in symbol_lots)
 
@@ -188,6 +208,7 @@ async def calculate_positions_fifo(portfolio_id: str) -> List[Position]:
                 )
 
     return sorted(positions, key=lambda x: x.symbol)
+
 
 async def calculate_realized_pnl(portfolio_id: str) -> List[RealizedPnL]:
     """Calculate realized P&L for each symbol using FIFO"""
@@ -234,7 +255,7 @@ async def calculate_realized_pnl(portfolio_id: str) -> List[RealizedPnL]:
     # Convert to list
     result = []
     for symbol, pnl_data in realized_pnl.items():
-        if pnl_data["trades"] > 0: # Only include symbols with actual trades
+        if pnl_data["trades"] > 0:  # Only include symbols with actual trades
             result.append(
                 RealizedPnL(
                     symbol=symbol,
@@ -245,6 +266,7 @@ async def calculate_realized_pnl(portfolio_id: str) -> List[RealizedPnL]:
 
     return sorted(result, key=lambda x: x.symbol)
 
+
 # ——— CRUD Operations ———
 async def pf_get(pid: str) -> Portfolio:
     """Get portfolio by ID"""
@@ -254,6 +276,7 @@ async def pf_get(pid: str) -> Portfolio:
         raise HTTPException(404, f"Portfolio {pid} not found")
     data = json.loads(raw)
     return Portfolio(**data)
+
 
 async def pf_put(p: Portfolio) -> None:
     """Save portfolio"""
@@ -267,6 +290,7 @@ async def pf_put(p: Portfolio) -> None:
     if p.id not in pf_list:
         pf_list.append(p.id)
         await cli.set(key_portfolio_list(), json.dumps(pf_list))
+
 
 async def pf_list() -> List[Portfolio]:
     """List all portfolios"""
@@ -285,7 +309,9 @@ async def pf_list() -> List[Portfolio]:
 
     return portfolios
 
+
 # ——— API Endpoints ———
+
 
 # ——— TS Positions Grid Endpoint (must be before /{pid} patterns) ———
 @router.get("/positions-ts")
@@ -319,9 +345,9 @@ async def get_tradestation_positions_grid():
                                 "market_value": pos.market_value,
                                 "unrealized_pnl": pos.unrealized_pnl,
                                 "unrealized_pnl_percent": pos.unrealized_pnl_percent,
-                                "position_type": "LONG"
-                                if pos.quantity > 0
-                                else "SHORT",
+                                "position_type": (
+                                    "LONG" if pos.quantity > 0 else "SHORT"
+                                ),
                             }
                         )
                 except Exception as e:
@@ -382,36 +408,42 @@ async def get_tradestation_positions_grid():
     except Exception as e:
         raise HTTPException(500, f"Failed to get TradeStation positions grid: {str(e)}")
 
+
 @router.get("", response_model=List[Portfolio])
 async def list_portfolios():
     """List all portfolios"""
     return await pf_list()
 
+
 @router.post("", response_model=Portfolio)
 async def create_portfolio(body: PortfolioCreate):
     """Create new portfolio with module budget validation"""
     portfolio = Portfolio(
-        id=f"mf_{str(uuid.uuid4()).replace('-', '')[:12]}", # Changed prefix to 'mf' for mindfolio
+        id=f"mf_{str(uuid.uuid4()).replace('-', '')[:12]}",  # Changed prefix to 'mf' for mindfolio
         name=body.name,
         cash_balance=body.starting_balance,
         modules=body.modules,
         created_at=datetime.utcnow().isoformat(),
         updated_at=datetime.utcnow().isoformat(),
     )
-    
+
     # Validate module budgets
     is_valid, error_msg = validate_module_budget_allocation(portfolio)
     if not is_valid:
         raise HTTPException(400, f"Invalid module budget allocation: {error_msg}")
-    
+
     await pf_put(portfolio)
-    logger.info(f"Created mindfolio {portfolio.id} with {len(portfolio.modules)} modules, total budget: ${sum(m.budget for m in portfolio.modules):,.2f}")
+    logger.info(
+        f"Created mindfolio {portfolio.id} with {len(portfolio.modules)} modules, total budget: ${sum(m.budget for m in portfolio.modules):,.2f}"
+    )
     return portfolio
+
 
 @router.get("/{pid}", response_model=Portfolio)
 async def get_portfolio(pid: str):
     """Get portfolio by ID"""
     return await pf_get(pid)
+
 
 @router.patch("/{pid}", response_model=Portfolio)
 async def patch_portfolio(pid: str, body: PortfolioPatch):
@@ -424,6 +456,7 @@ async def patch_portfolio(pid: str, body: PortfolioPatch):
     await pf_put(p)
     return p
 
+
 @router.post("/{pid}/funds", response_model=Portfolio)
 async def funds(pid: str, body: FundsOp):
     """Add/subtract funds from portfolio"""
@@ -431,6 +464,7 @@ async def funds(pid: str, body: FundsOp):
     p.cash_balance = round(p.cash_balance + float(body.delta), 2)
     await pf_put(p)
     return p
+
 
 @router.post("/{pid}/allocate", response_model=Portfolio)
 async def allocate(pid: str, body: AllocOp):
@@ -442,6 +476,7 @@ async def allocate(pid: str, body: AllocOp):
     p.modules = mods
     await pf_put(p)
     return p
+
 
 @router.get("/{pid}/stats")
 async def stats(pid: str):
@@ -463,12 +498,12 @@ async def stats(pid: str):
             "nav": portfolio.cash_balance,
             "pnl_realized": round2(total_realized),
             "pnl_realized": round2(total_realized),
-            "pnl_unrealized": 0, # Will be calculated with live market data integration
+            "pnl_unrealized": 0,  # Will be calculated with live market data integration
             "positions_count": len(positions),
             "total_trades": total_trades,
-            "win_rate": None, # Calculated when sufficient trade history available
-            "expectancy": None, # Calculated when sufficient trade history available
-            "max_dd": None, # Calculated when sufficient trade history available
+            "win_rate": None,  # Calculated when sufficient trade history available
+            "expectancy": None,  # Calculated when sufficient trade history available
+            "max_dd": None,  # Calculated when sufficient trade history available
             "realized_pnl_by_symbol": [pnl.dict() for pnl in realized_pnl_data],
         }
     except Exception as e:
@@ -482,6 +517,7 @@ async def stats(pid: str):
             "error": str(e),
         }
 
+
 # ——— Transaction Endpoints ———
 @router.get("/{pid}/transactions", response_model=List[Transaction])
 async def get_transactions(pid: str, symbol: Optional[str] = None):
@@ -493,6 +529,7 @@ async def get_transactions(pid: str, symbol: Optional[str] = None):
         transactions = [tx for tx in transactions if tx.symbol == symbol]
 
     return transactions
+
 
 @router.post("/{pid}/transactions", response_model=Transaction)
 async def create_transaction(pid: str, body: TransactionCreate):
@@ -517,15 +554,18 @@ async def create_transaction(pid: str, body: TransactionCreate):
 
     return await tx_create(transaction)
 
+
 @router.get("/{pid}/positions", response_model=List[Position])
 async def get_positions(pid: str):
     """Get current positions calculated using FIFO"""
     return await calculate_positions_fifo(pid)
 
+
 @router.get("/{pid}/realized-pnl", response_model=List[RealizedPnL])
 async def get_realized_pnl(pid: str):
     """Get realized P&L by symbol using FIFO"""
     return await calculate_realized_pnl(pid)
+
 
 @router.post("/{pid}/import-csv")
 async def import_transactions_csv(pid: str, body: ImportCSV):
@@ -548,6 +588,7 @@ async def import_transactions_csv(pid: str, body: ImportCSV):
         "message": f"Successfully imported {imported_count} transactions",
     }
 
+
 # ——— Transaction CRUD Functions ———
 async def tx_create(tx: Transaction) -> Transaction:
     """Save transaction"""
@@ -563,6 +604,7 @@ async def tx_create(tx: Transaction) -> Transaction:
 
     return tx
 
+
 async def tx_get(tid: str) -> Transaction:
     """Get transaction by ID"""
     cli = await get_kv()
@@ -571,6 +613,7 @@ async def tx_get(tid: str) -> Transaction:
         raise HTTPException(404, f"Transaction {tid} not found")
     data = json.loads(raw)
     return Transaction(**data)
+
 
 async def parse_csv_transactions(csv_data: str, portfolio_id: str) -> List[Transaction]:
     """Parse CSV data into transactions"""
@@ -621,6 +664,7 @@ async def parse_csv_transactions(csv_data: str, portfolio_id: str) -> List[Trans
 
     return transactions
 
+
 # ——— TradeStation OAuth2 Integration Endpoints ———
 @router.get("/ts/auth-url")
 async def get_tradestation_auth_url():
@@ -638,6 +682,7 @@ async def get_tradestation_auth_url():
     except Exception as e:
         raise HTTPException(500, f"Failed to generate auth URL: {str(e)}")
 
+
 @router.get("/ts/oauth-callback")
 async def tradestation_oauth_callback(code: str, state: str):
     """Handle OAuth2 callback from TradeStation"""
@@ -653,6 +698,7 @@ async def tradestation_oauth_callback(code: str, state: str):
         }
     except Exception as e:
         raise HTTPException(500, f"OAuth2 callback failed: {str(e)}")
+
 
 @router.post("/ts/subscribe")
 async def subscribe_to_quotes(symbols: List[str]):
@@ -671,6 +717,7 @@ async def subscribe_to_quotes(symbols: List[str]):
     except Exception as e:
         raise HTTPException(500, f"Quote subscription failed: {str(e)}")
 
+
 @router.post("/ts/unsubscribe")
 async def unsubscribe_from_quotes(symbols: List[str]):
     """Unsubscribe from live quote updates"""
@@ -682,6 +729,7 @@ async def unsubscribe_from_quotes(symbols: List[str]):
         }
     except Exception as e:
         raise HTTPException(500, f"Quote unsubscription failed: {str(e)}")
+
 
 # ——— Buckets System Endpoints ———
 @router.get("/{pid}/buckets")
@@ -726,6 +774,7 @@ async def get_portfolio_buckets(pid: str):
     except Exception as e:
         raise HTTPException(500, f"Failed to get portfolio buckets: {str(e)}")
 
+
 @router.post("/{pid}/buckets")
 async def create_portfolio_bucket(
     pid: str, name: str, start_value: float = 0, notes: Optional[str] = None
@@ -759,10 +808,11 @@ async def create_portfolio_bucket(
     except Exception as e:
         raise HTTPException(500, f"Failed to create bucket: {str(e)}")
 
-# ——— Analytics & Equity Charts Endpoint ———
+    # ——— Analytics & Equity Charts Endpoint ———
 
     except Exception as e:
         raise HTTPException(500, f"Failed to create bucket: {str(e)}")
+
 
 # ——— Analytics & Equity Charts Endpoint ———
 @router.get("/{pid}/analytics/equity")
@@ -805,9 +855,9 @@ async def get_portfolio_equity_chart(pid: str, timeframe: str = "1M"):
         total_trades = sum(pnl.trades for pnl in realized_pnl)
 
         analytics = {
-            "equity_curve": equity_data[-50:]
-            if len(equity_data) > 50
-            else equity_data,  # Last 50 points
+            "equity_curve": (
+                equity_data[-50:] if len(equity_data) > 50 else equity_data
+            ),  # Last 50 points
             "summary": {
                 "current_equity": round(current_equity, 2),
                 "total_realized_pnl": round(total_realized, 2),
@@ -826,6 +876,7 @@ async def get_portfolio_equity_chart(pid: str, timeframe: str = "1M"):
 
     except Exception as e:
         raise HTTPException(500, f"Failed to generate equity analytics: {str(e)}")
+
 
 @router.get("/{pid}/analytics/equity.csv")
 async def export_portfolio_equity_csv(pid: str, timeframe: str = "1M"):
@@ -869,6 +920,7 @@ async def export_portfolio_equity_csv(pid: str, timeframe: str = "1M"):
     except Exception as e:
         raise HTTPException(500, f"Failed to export equity CSV: {str(e)}")
 
+
 # ——— Budget check helper (pentru /trade/preview & /place) ———
 async def portfolio_budget_ok(
     pid: str, module: str, risk_cost: float
@@ -901,6 +953,7 @@ async def portfolio_budget_ok(
     except Exception as e:
         return False, f"Budget check failed: {str(e)}"
 
+
 # ——— EOD (End-of-Day) Snapshots ———
 class EODSnapshot(BaseModel):
     id: str
@@ -913,6 +966,7 @@ class EODSnapshot(BaseModel):
     positions_count: int
     timestamp: str  # ISO datetime of snapshot creation
     timezone: str = "Europe/Bucharest"
+
 
 async def _calculate_unrealized_pnl(positions: List[Position]) -> float:
     """Calculate current unrealized P&L from positions"""
@@ -937,6 +991,7 @@ async def _calculate_unrealized_pnl(positions: List[Position]) -> float:
         unrealized += market_value - pos.cost_basis
 
     return unrealized
+
 
 @router.post("/{pid}/analytics/eod/snapshot")
 async def create_eod_snapshot(pid: str):
@@ -1026,6 +1081,7 @@ async def create_eod_snapshot(pid: str):
         logger.error(f"Failed to create EOD snapshot for {pid}: {str(e)}")
         raise HTTPException(500, f"Failed to create EOD snapshot: {str(e)}")
 
+
 @router.get("/{pid}/analytics/eod")
 async def get_eod_series(pid: str):
     """Get EOD snapshot series for the portfolio"""
@@ -1085,7 +1141,9 @@ async def get_eod_series(pid: str):
         logger.error(f"Failed to get EOD series for {pid}: {str(e)}")
         raise HTTPException(500, f"Failed to get EOD series: {str(e)}")
 
+
 # ——— MODULE BUDGET TRACKING ———
+
 
 async def get_module_budget_usage(pid: str, module_name: str) -> dict:
     """
@@ -1099,7 +1157,9 @@ async def get_module_budget_usage(pid: str, module_name: str) -> dict:
         # Find module
         module = next((m for m in pf.modules if m.module == module_name), None)
         if not module:
-            raise HTTPException(404, f"Module {module_name} not found in mindfolio {pid}")
+            raise HTTPException(
+                404, f"Module {module_name} not found in mindfolio {pid}"
+            )
 
         # Get all transactions for this mindfolio
         all_txs = await list_transactions(pid)
@@ -1127,11 +1187,13 @@ async def get_module_budget_usage(pid: str, module_name: str) -> dict:
             "budget": module.budget,
             "used": buying_power_used,
             "available": module.budget - buying_power_used,
-            "utilization_pct": (buying_power_used / module.budget * 100) if module.budget > 0 else 0,
+            "utilization_pct": (
+                (buying_power_used / module.budget * 100) if module.budget > 0 else 0
+            ),
             "positions_count": positions_count,
             "max_risk_per_trade": module.max_risk_per_trade,
             "daily_loss_limit": module.daily_loss_limit,
-            "autotrade": module.autotrade
+            "autotrade": module.autotrade,
         }
 
     except HTTPException:
@@ -1139,6 +1201,7 @@ async def get_module_budget_usage(pid: str, module_name: str) -> dict:
     except Exception as e:
         logger.error(f"Failed to get module budget usage: {str(e)}")
         raise HTTPException(500, f"Failed to get module budget usage: {str(e)}")
+
 
 async def get_all_modules_budget_usage(pid: str) -> dict:
     """
@@ -1168,10 +1231,14 @@ async def get_all_modules_budget_usage(pid: str) -> dict:
             "total_budget_allocated": total_budget,
             "total_budget_used": total_used,
             "reserve_cash": reserve,
-            "allocation_pct": (total_budget / pf.cash_balance * 100) if pf.cash_balance > 0 else 0,
-            "utilization_pct": (total_used / total_budget * 100) if total_budget > 0 else 0,
+            "allocation_pct": (
+                (total_budget / pf.cash_balance * 100) if pf.cash_balance > 0 else 0
+            ),
+            "utilization_pct": (
+                (total_used / total_budget * 100) if total_budget > 0 else 0
+            ),
             "modules": modules_usage,
-            "module_count": len(pf.modules)
+            "module_count": len(pf.modules),
         }
 
     except HTTPException:
@@ -1179,6 +1246,7 @@ async def get_all_modules_budget_usage(pid: str) -> dict:
     except Exception as e:
         logger.error(f"Failed to get all modules budget usage: {str(e)}")
         raise HTTPException(500, f"Failed to get all modules budget usage: {str(e)}")
+
 
 def validate_module_budget_allocation(pf: Portfolio) -> tuple[bool, str]:
     """
@@ -1188,7 +1256,10 @@ def validate_module_budget_allocation(pf: Portfolio) -> tuple[bool, str]:
     total_allocated = sum(m.budget for m in pf.modules)
 
     if total_allocated > pf.cash_balance:
-        return False, f"Total module budgets (${total_allocated:,.2f}) exceed portfolio cash (${pf.cash_balance:,.2f})"
+        return (
+            False,
+            f"Total module budgets (${total_allocated:,.2f}) exceed portfolio cash (${pf.cash_balance:,.2f})",
+        )
 
     # Check for duplicate modules
     module_names = [m.module for m in pf.modules]
@@ -1201,17 +1272,29 @@ def validate_module_budget_allocation(pf: Portfolio) -> tuple[bool, str]:
             return False, f"Module {m.module} has negative budget: ${m.budget}"
 
         if m.max_risk_per_trade < 0:
-            return False, f"Module {m.module} has negative max_risk_per_trade: ${m.max_risk_per_trade}"
+            return (
+                False,
+                f"Module {m.module} has negative max_risk_per_trade: ${m.max_risk_per_trade}",
+            )
 
         if m.daily_loss_limit < 0:
-            return False, f"Module {m.module} has negative daily_loss_limit: ${m.daily_loss_limit}"
+            return (
+                False,
+                f"Module {m.module} has negative daily_loss_limit: ${m.daily_loss_limit}",
+            )
 
         if m.max_risk_per_trade > m.budget:
-            return False, f"Module {m.module} max_risk_per_trade (${m.max_risk_per_trade}) exceeds budget (${m.budget})"
+            return (
+                False,
+                f"Module {m.module} max_risk_per_trade (${m.max_risk_per_trade}) exceeds budget (${m.budget})",
+            )
 
     return True, ""
 
-async def check_module_can_trade(pid: str, module_name: str, trade_risk: float) -> tuple[bool, str]:
+
+async def check_module_can_trade(
+    pid: str, module_name: str, trade_risk: float
+) -> tuple[bool, str]:
     """
     Check if a module has available budget and is within risk limits to execute a trade.
     Returns: (can_trade, reason)
@@ -1231,13 +1314,19 @@ async def check_module_can_trade(pid: str, module_name: str, trade_risk: float) 
 
         # Check trade risk vs module limit
         if trade_risk > module.max_risk_per_trade:
-            return False, f"Trade risk ${trade_risk:,.2f} exceeds module max ${module.max_risk_per_trade:,.2f}"
+            return (
+                False,
+                f"Trade risk ${trade_risk:,.2f} exceeds module max ${module.max_risk_per_trade:,.2f}",
+            )
 
         # Check module budget usage
         usage = await get_module_budget_usage(pid, module_name)
 
         if usage["available"] < trade_risk:
-            return False, f"Insufficient budget: ${usage['available']:,.2f} available, ${trade_risk:,.2f} required"
+            return (
+                False,
+                f"Insufficient budget: ${usage['available']:,.2f} available, ${trade_risk:,.2f} required",
+            )
 
         # TODO: Check daily loss limit (requires tracking daily P&L per module)
 
@@ -1247,17 +1336,21 @@ async def check_module_can_trade(pid: str, module_name: str, trade_risk: float) 
         logger.error(f"Failed to check module can trade: {str(e)}")
         return False, f"Error checking module: {str(e)}"
 
+
 # ——— API ENDPOINTS FOR MODULE BUDGET ———
+
 
 @router.get("/{pid}/modules/budget")
 async def get_modules_budget_endpoint(pid: str):
     """Get budget allocation and usage for all modules in a mindfolio"""
     return await get_all_modules_budget_usage(pid)
 
+
 @router.get("/{pid}/modules/{module_name}/budget")
 async def get_module_budget_endpoint(pid: str, module_name: str):
     """Get budget allocation and usage for a specific module"""
     return await get_module_budget_usage(pid, module_name)
+
 
 @router.post("/{pid}/modules/{module_name}/check-trade")
 async def check_module_trade_endpoint(pid: str, module_name: str, trade_risk: float):

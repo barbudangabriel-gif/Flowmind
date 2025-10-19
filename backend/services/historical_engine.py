@@ -75,11 +75,7 @@ def historical_series(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def _calculate_strategy_pl(
-    legs: List[Dict],
-    spot: float,
-    qty_all: int,
-    rf_rate: float,
-    dte_estimate: int
+    legs: List[Dict], spot: float, qty_all: int, rf_rate: float, dte_estimate: int
 ) -> float:
     """Calculate strategy P/L using Black-Scholes mark-to-market"""
     total_pl = 0.0
@@ -114,9 +110,7 @@ def _calculate_strategy_pl(
     return total_pl
 
 
-def _generate_synthetic_history(
-    symbol: str, days: int
-) -> List[Dict[str, Any]]:
+def _generate_synthetic_history(symbol: str, days: int) -> List[Dict[str, Any]]:
     """Generate synthetic historical data when provider doesn't support history"""
 
     # Get current spot price for base
@@ -149,8 +143,9 @@ def _generate_synthetic_history(
         u2 = secrets.randbelow(10000) / 10000.0
         # Avoid log(0) by ensuring u1 > 0
         u1 = max(u1, 0.0001)
-        z = ((-2 * (u1 ** 0.5)) ** 0.5) * \
-            ((2 * 3.14159265359 * u2) ** 0.5)  # Simplified normal distribution
+        z = ((-2 * (u1**0.5)) ** 0.5) * (
+            (2 * 3.14159265359 * u2) ** 0.5
+        )  # Simplified normal distribution
         daily_return = z * volatility
         spot = spot * (1 + daily_return)
 

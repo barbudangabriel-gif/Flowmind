@@ -7,6 +7,7 @@ import statistics as stats
 from typing import List
 from dataclasses import dataclass
 
+
 @dataclass
 class Signal:
     strategy: str
@@ -18,6 +19,7 @@ class Signal:
     term_back: int = None
     exit_tp_pct: float = 0.5
     exit_sl_mult: float = 1.5
+
 
 @dataclass
 class BacktestSummary:
@@ -32,10 +34,12 @@ class BacktestSummary:
     hold_med_days: float
     notes: List[str]
 
+
 @dataclass
 class HistoryBar:
-    c: float # close
-    iv30: float # 30-day IV
+    c: float  # close
+    iv30: float  # 30-day IV
+
 
 def canonical_key(sig: Signal, horizon_years: int = 2) -> str:
     """v3 - include front/back pentru calendar strategies"""
@@ -43,7 +47,7 @@ def canonical_key(sig: Signal, horizon_years: int = 2) -> str:
     import json
 
     blob = {
-        "v": 3, # Updated version
+        "v": 3,  # Updated version
         "strategy": sig.strategy,
         "U": sig.underlying,
         "dte": round(sig.dte),
@@ -57,9 +61,11 @@ def canonical_key(sig: Signal, horizon_years: int = 2) -> str:
     s = json.dumps(blob, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(s.encode()).hexdigest()[:16]
 
+
 async def get_history(symbol: str, days: int = 504) -> List[HistoryBar]:
     """Stub history data"""
     return [HistoryBar(c=250.0 + i * 0.1, iv30=0.25) for i in range(days)]
+
 
 async def proxy_backtest_double_diagonal(
     sig: Signal, horizon_years: int = 2
@@ -106,7 +112,7 @@ async def proxy_backtest_double_diagonal(
     for i in range(len(hist) - front - 1):
         S = hist[i].c
         em = S * hist[i].iv30 * (front / 365.0) ** 0.5
-        debit = max(0.5, 0.20 * em) # Higher debit than calendar
+        debit = max(0.5, 0.20 * em)  # Higher debit than calendar
         tp = (sig.exit_tp_pct or 0.35) * debit
         sl = (sig.exit_sl_mult or 1.0) * debit
 
@@ -117,12 +123,12 @@ async def proxy_backtest_double_diagonal(
         hit = False
         for j in range(1, front + 1):
             bar = hist[i + j]
-            if (bar.c > lb) and (bar.c < ub): # Stay în channel
+            if (bar.c > lb) and (bar.c < ub):  # Stay în channel
                 results.append(+tp)
                 holds.append(j)
                 hit = True
                 break
-            if bar.c >= S + em or bar.c <= S - em: # Breach
+            if bar.c >= S + em or bar.c <= S - em:  # Breach
                 results.append(-sl)
                 holds.append(j)
                 hit = True

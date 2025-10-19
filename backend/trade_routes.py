@@ -9,11 +9,13 @@ router = APIRouter(prefix="/trade", tags=["trade"])
 # Idempotency store (in-memory)
 _IDEM: Dict[str, Any] = {}
 
+
 class PreviewRequest(BaseModel):
     mode: Optional[Mode] = Mode.SIM
     strategy: str
     underlying: str
     legs: List[LegRequest]
+
 
 class PlaceRequest(BaseModel):
     mode: Optional[Mode] = Mode.SIM
@@ -21,6 +23,7 @@ class PlaceRequest(BaseModel):
     underlying: str
     legs: List[LegRequest]
     previewAuditHash: Optional[str] = None
+
 
 # Market data service (stub)
 class MarketDataService:
@@ -39,6 +42,7 @@ class MarketDataService:
     async def get_events(self, symbol: str) -> Events:
         return Events(hasEarnings=False, hasDividend=False)
 
+
 # Trading service (stub)
 class TradingService:
     async def place(
@@ -47,8 +51,10 @@ class TradingService:
         order_id = f"ORD_{int(time.time())}"
         return {"orderId": order_id, "status": "SUBMITTED"}
 
+
 market = MarketDataService()
 trader = TradingService()
+
 
 @router.post("/preview")
 async def trade_preview(body: PreviewRequest):
@@ -123,6 +129,7 @@ async def trade_preview(body: PreviewRequest):
             "frozenTs": audit_payload["frozenTs"],
         },
     )
+
 
 @router.post("/place")
 async def trade_place(

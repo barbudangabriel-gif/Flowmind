@@ -32,10 +32,7 @@ async def get_macro_news():
     """
     try:
         macro_events = await news_agent.get_macro_news()
-        return {
-            "status": "success",
-            "data": macro_events
-        }
+        return {"status": "success", "data": macro_events}
     except Exception as e:
         logger.error(f"Failed to fetch macro news: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -44,12 +41,11 @@ async def get_macro_news():
 @router.get("/ticker/{symbol}")
 async def get_ticker_intelligence(
     symbol: str,
-    include_fis: bool = Query(
-        True,
-        description="Include Investment Scoring (FIS)"),
-        include_options: bool = Query(
-            True,
-        description="Include options strategy suggestions")):
+    include_fis: bool = Query(True, description="Include Investment Scoring (FIS)"),
+    include_options: bool = Query(
+        True, description="Include options strategy suggestions"
+    ),
+):
     """
     Get comprehensive intelligence for a specific ticker
 
@@ -70,13 +66,10 @@ async def get_ticker_intelligence(
         ticker_intel = await news_agent.get_ticker_news_with_sentiment(
             symbol=symbol.upper(),
             include_fis=include_fis,
-            include_options=include_options
+            include_options=include_options,
         )
 
-        return {
-            "status": "success",
-            "data": ticker_intel
-        }
+        return {"status": "success", "data": ticker_intel}
     except Exception as e:
         logger.error(f"Failed to fetch ticker intelligence for {symbol}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -109,27 +102,26 @@ async def get_portfolio_news_digest(mindfolio_id: str):
             {"symbol": "AAPL", "quantity": 50, "cost_basis": 180},
             {"symbol": "NVDA", "quantity": 75, "cost_basis": 450},
             {"symbol": "SPY", "quantity": 200, "cost_basis": 440},
-            {"symbol": "MSFT", "quantity": 60, "cost_basis": 380}
+            {"symbol": "MSFT", "quantity": 60, "cost_basis": 380},
         ]
 
         portfolio_digest = await news_agent.get_portfolio_news_digest(
-            mindfolio_id=mindfolio_id,
-            positions=demo_positions
+            mindfolio_id=mindfolio_id, positions=demo_positions
         )
 
-        return {
-            "status": "success",
-            "data": portfolio_digest
-        }
+        return {"status": "success", "data": portfolio_digest}
     except Exception as e:
-        logger.error(
-            f"Failed to generate portfolio digest for {mindfolio_id}: {e}")
+        logger.error(f"Failed to generate portfolio digest for {mindfolio_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/alerts/{mindfolio_id}")
-async def get_risk_alerts(mindfolio_id: str, severity: Optional[str] = Query(
-        None, description="Filter by severity: low, medium, high")):
+async def get_risk_alerts(
+    mindfolio_id: str,
+    severity: Optional[str] = Query(
+        None, description="Filter by severity: low, medium, high"
+    ),
+):
     """
     Get active risk alerts based on news sentiment
 
@@ -145,12 +137,11 @@ async def get_risk_alerts(mindfolio_id: str, severity: Optional[str] = Query(
         demo_positions = [
             {"symbol": "TSLA", "quantity": 100},
             {"symbol": "AAPL", "quantity": 50},
-            {"symbol": "NVDA", "quantity": 75}
+            {"symbol": "NVDA", "quantity": 75},
         ]
 
         digest = await news_agent.get_portfolio_news_digest(
-            mindfolio_id=mindfolio_id,
-            positions=demo_positions
+            mindfolio_id=mindfolio_id, positions=demo_positions
         )
 
         # Extract and filter alerts
@@ -165,9 +156,13 @@ async def get_risk_alerts(mindfolio_id: str, severity: Optional[str] = Query(
                 "mindfolio_id": mindfolio_id,
                 "alerts": alerts,
                 "total_alerts": len(alerts),
-                "high_severity_count": len([a for a in alerts if a.get("severity") == "high"]),
-                "medium_severity_count": len([a for a in alerts if a.get("severity") == "medium"])
-            }
+                "high_severity_count": len(
+                    [a for a in alerts if a.get("severity") == "high"]
+                ),
+                "medium_severity_count": len(
+                    [a for a in alerts if a.get("severity") == "medium"]
+                ),
+            },
         }
     except Exception as e:
         logger.error(f"Failed to fetch alerts for {mindfolio_id}: {e}")
@@ -188,12 +183,11 @@ async def get_trading_opportunities(mindfolio_id: str):
     try:
         demo_positions = [
             {"symbol": "TSLA", "quantity": 100},
-            {"symbol": "NVDA", "quantity": 75}
+            {"symbol": "NVDA", "quantity": 75},
         ]
 
         digest = await news_agent.get_portfolio_news_digest(
-            mindfolio_id=mindfolio_id,
-            positions=demo_positions
+            mindfolio_id=mindfolio_id, positions=demo_positions
         )
 
         opportunities = digest.get("opportunities", [])
@@ -203,8 +197,8 @@ async def get_trading_opportunities(mindfolio_id: str):
             "data": {
                 "mindfolio_id": mindfolio_id,
                 "opportunities": opportunities,
-                "total_opportunities": len(opportunities)
-            }
+                "total_opportunities": len(opportunities),
+            },
         }
     except Exception as e:
         logger.error(f"Failed to fetch opportunities for {mindfolio_id}: {e}")
@@ -237,22 +231,22 @@ async def get_economic_calendar(
                 "event": "NVDA Earnings After Market",
                 "type": "earnings",
                 "importance": "high",
-                "affected_symbols": ["NVDA"]
+                "affected_symbols": ["NVDA"],
             },
             {
                 "date": (today + timedelta(days=3)).strftime("%Y-%m-%d"),
                 "event": "Fed Minutes Release",
                 "type": "fed_policy",
                 "importance": "high",
-                "affected_symbols": ["SPY", "QQQ"]
+                "affected_symbols": ["SPY", "QQQ"],
             },
             {
-                    "date": (today + timedelta(days=5)).strftime("%Y-%m-%d"),
+                "date": (today + timedelta(days=5)).strftime("%Y-%m-%d"),
                 "event": "CPI Data Release",
                 "type": "economic_data",
                 "importance": "high",
-                "affected_symbols": ["SPY", "TLT", "GLD"]
-            }
+                "affected_symbols": ["SPY", "TLT", "GLD"],
+            },
         ]
 
         return {
@@ -260,8 +254,8 @@ async def get_economic_calendar(
             "data": {
                 "events": calendar_events,
                 "days_ahead": days_ahead,
-                "total_events": len(calendar_events)
-            }
+                "total_events": len(calendar_events),
+            },
         }
     except Exception as e:
         logger.error(f"Failed to fetch economic calendar: {e}")

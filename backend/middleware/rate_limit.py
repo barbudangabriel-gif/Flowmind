@@ -4,16 +4,19 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from utils.redis_client import get_redis
 
+
 def _redis():
     # lazy, cu fallback in-memory
     return get_redis()
 
-WINDOW = int(os.getenv("RL_WINDOW_SECONDS", "5")) # secunde
+
+WINDOW = int(os.getenv("RL_WINDOW_SECONDS", "5"))  # secunde
 LIMIT_DEFAULT = int(os.getenv("RL_LIMIT_DEFAULT", "120"))
 LIMIT_PRICES = int(os.getenv("RL_LIMIT_PRICES", "60"))
 LIMIT_TS = int(os.getenv("RL_LIMIT_TS", "30"))
 
 SAFE_PREFIXES = {"/health", "/readyz", "/healthz"}
+
 
 def _limit_for(path: str) -> int:
     if (
@@ -25,6 +28,7 @@ def _limit_for(path: str) -> int:
     if path.startswith("/api/prices"):
         return LIMIT_PRICES
     return LIMIT_DEFAULT
+
 
 async def rate_limit(request: Request, call_next):
     path = request.url.path

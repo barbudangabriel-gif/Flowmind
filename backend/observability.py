@@ -14,6 +14,7 @@ LAT = Histogram(
     "http_request_duration_seconds", "HTTP request duration", ["path", "method"]
 )
 
+
 def setup_logging():
     handler = logging.StreamHandler(sys.stdout)
     # Basic JSON-like format without additional dependency
@@ -26,6 +27,7 @@ def setup_logging():
     root.setLevel(logging.INFO)
     root.addHandler(handler)
 
+
 def setup_cors(app: FastAPI, origins: list[str]):
     app.add_middleware(
         CORSMiddleware,
@@ -34,6 +36,7 @@ def setup_cors(app: FastAPI, origins: list[str]):
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
+
 
 def setup_rate_limit(app: FastAPI, rate: str) -> Limiter:
     limiter = Limiter(key_func=get_remote_address)
@@ -44,6 +47,7 @@ def setup_rate_limit(app: FastAPI, rate: str) -> Limiter:
         return await call_next(request)
 
     return limiter
+
 
 def wire(app: FastAPI):
     setup_logging()

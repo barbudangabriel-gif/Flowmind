@@ -1,5 +1,6 @@
 # backend/services/quality.py
 
+
 def clamp(x, a=0, b=1):
     return max(a, min(b, x))
 
@@ -32,16 +33,9 @@ def pricing_score(theo, mid, is_credit, iv_rank_z):
     return clamp(0.6 * s_edge + 0.4 * s_iv)
 
 
-def structure_score(
-        target_delta,
-        net_delta,
-        dte,
-        dte_lo=20,
-        dte_hi=60,
-        be_pct=None):
+def structure_score(target_delta, net_delta, dte, dte_lo=20, dte_hi=60, be_pct=None):
     d_delta = clamp(1 - abs((net_delta - target_delta)) / 0.25)
-    d_dte = clamp(
-        1 - abs(((dte - (dte_lo + dte_hi) / 2) / ((dte_hi - dte_lo) / 2))))
+    d_dte = clamp(1 - abs(((dte - (dte_lo + dte_hi) / 2) / ((dte_hi - dte_lo) / 2))))
     # breakeven dist % vs expected move
     d_be = clamp(1 - abs(be_pct or 0) / 0.25)
     return clamp(0.5 * d_delta + 0.3 * d_dte + 0.2 * d_be)

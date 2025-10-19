@@ -10,9 +10,10 @@ log = logging.getLogger("bt-cache")
 
 # Config
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-BT_TTL = int(os.getenv("FM_BT_TTL", "86400")) # 24h
+BT_TTL = int(os.getenv("FM_BT_TTL", "86400"))  # 24h
 
 rds = get_kv()
+
 
 def _sig_from_item(item: Dict[str, Any]) -> Signal:
     return Signal(
@@ -27,8 +28,10 @@ def _sig_from_item(item: Dict[str, Any]) -> Signal:
         exit_sl_mult=item.get("exit_sl_mult", 1.5),
     )
 
+
 def bt_key(sig: Signal, horizon_years: int = 2) -> str:
     return canonical_key(sig, horizon_years)
+
 
 async def get_bt_summary(sig: Signal) -> Dict[str, Any]:
     key_core = bt_key(sig)
@@ -148,6 +151,7 @@ async def get_bt_summary(sig: Signal) -> Dict[str, Any]:
     payload["cache"] = "MISS"
     return payload
 
+
 async def attach_backtest(item: Dict[str, Any]) -> Dict[str, Any]:
     if item.get("strategy") not in ("IRON_CONDOR", "CALENDAR", "DIAGONAL"):
         return item
@@ -156,8 +160,10 @@ async def attach_backtest(item: Dict[str, Any]) -> Dict[str, Any]:
     item["backtest"] = bt
     return item
 
+
 # Routes
 router = APIRouter()
+
 
 @router.get("/_redis/diag")
 async def redis_diag():
@@ -194,6 +200,7 @@ async def redis_diag():
             "url": url,
             "db": db,
         }
+
 
 @router.get("/screen/iv-setups")
 async def screen_iv_setups(symbol: Optional[str] = None, limit: int = 50):

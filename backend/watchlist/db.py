@@ -17,10 +17,12 @@ watchlists_collection = db.watchlists
 # Symbol validation regex
 SYMBOL_REGEX = re.compile(r"^[A-Z0-9.\-]{1,15}$", re.IGNORECASE)
 
+
 async def init_db():
     """Initialize database indices"""
     await watchlists_collection.create_index("name", unique=True)
     logger.info("Watchlist DB initialized")
+
 
 def validate_symbol(symbol: str) -> str:
     """Validate și normalize symbol"""
@@ -28,6 +30,7 @@ def validate_symbol(symbol: str) -> str:
     if not SYMBOL_REGEX.match(symbol):
         raise ValueError(f"Invalid symbol: {symbol}")
     return symbol
+
 
 def normalize_symbols(symbols: list) -> list:
     """Normalize și deduplicate symbols"""
@@ -40,6 +43,7 @@ def normalize_symbols(symbols: list) -> list:
         except ValueError:
             continue
     return normalized
+
 
 async def create_watchlist(name: str, symbols: list, description: str = None) -> dict:
     """Create new watchlist"""
@@ -55,6 +59,7 @@ async def create_watchlist(name: str, symbols: list, description: str = None) ->
     doc["_id"] = str(result.inserted_id)
     return doc
 
+
 async def get_watchlist(name: str) -> dict:
     """Get watchlist by name"""
     doc = await watchlists_collection.find_one({"name": name})
@@ -62,13 +67,14 @@ async def get_watchlist(name: str) -> dict:
         doc["_id"] = str(doc["_id"])
     return doc
 
+
 async def update_watchlist(name: str, symbols: list, mode: str = "merge") -> dict:
     """Update watchlist symbols"""
     normalized_symbols = normalize_symbols(symbols)
 
     if mode == "replace":
         update_symbols = normalized_symbols
-    else: # merge
+    else:  # merge
         existing = await get_watchlist(name)
         if existing:
             existing_symbols = existing.get("symbols", [])
@@ -82,10 +88,12 @@ async def update_watchlist(name: str, symbols: list, mode: str = "merge") -> dic
 
     return await get_watchlist(name)
 
+
 async def delete_watchlist(name: str) -> bool:
     """Delete watchlist"""
     result = await watchlists_collection.delete_one({"name": name})
     return result.deleted_count > 0
+
 
 async def list_watchlists(limit: int = 50) -> list:
     """List watchlists"""

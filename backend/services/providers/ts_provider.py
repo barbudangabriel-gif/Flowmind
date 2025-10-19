@@ -49,11 +49,9 @@ class TSProvider(OptionsProvider):
             logger.error(f"Failed to get spot price for {symbol} from TS: {e}")
             raise
 
-    def get_chain(self,
-                  symbol: str,
-                  expiry: Optional[str] = None,
-                  dte: Optional[int] = None) -> Dict[str,
-                                                     Any]:
+    def get_chain(
+        self, symbol: str, expiry: Optional[str] = None, dte: Optional[int] = None
+    ) -> Dict[str, Any]:
         """Get options chain from TradeStation - already in correct format"""
         try:
             # Import here to avoid circular imports

@@ -53,10 +53,7 @@ class CalendarBacktest:
         logger.info("CalendarBacktest engine initialized")
 
     async def backtest_symbol(
-        self,
-        symbol: str,
-        lookback_quarters: int = 8,
-        position_size: int = 1
+        self, symbol: str, lookback_quarters: int = 8, position_size: int = 1
     ) -> Dict:
         """
         Backtest calendar spread strategy for a symbol
@@ -88,7 +85,7 @@ class CalendarBacktest:
             trade_result = await self._simulate_calendar_spread(
                 symbol=symbol,
                 earnings_event=earnings_event,
-                position_size=position_size
+                position_size=position_size,
             )
 
             if trade_result:
@@ -111,10 +108,7 @@ class CalendarBacktest:
         return results
 
     async def _simulate_calendar_spread(
-        self,
-        symbol: str,
-        earnings_event: Dict,
-        position_size: int
+        self, symbol: str, earnings_event: Dict, position_size: int
     ) -> Optional[Dict]:
         """
         Simulate a single calendar spread trade
@@ -126,8 +120,7 @@ class CalendarBacktest:
         4. Calculate P&L based on IV crush
         """
         earnings_date = datetime.fromisoformat(earnings_event["date"])
-        entry_date = earnings_date - \
-            timedelta(days=self.entry_days_before_earnings)
+        entry_date = earnings_date - timedelta(days=self.entry_days_before_earnings)
         exit_date = earnings_date + timedelta(days=self.exit_days_after_earnings)
 
         # Get options data at entry
@@ -139,10 +132,7 @@ class CalendarBacktest:
         front_dte_entry = (front_exp - entry_date).days
         front_iv_entry = earnings_event["iv_pre_earnings"]
         front_call_entry = self._estimate_option_price(
-            spot=spot_price,
-            strike=atm_strike,
-            dte=front_dte_entry,
-            iv=front_iv_entry
+            spot=spot_price, strike=atm_strike, dte=front_dte_entry, iv=front_iv_entry
         )
 
         # Back month (expires after ER)
@@ -150,10 +140,7 @@ class CalendarBacktest:
         back_dte_entry = (back_exp - entry_date).days
         back_iv_entry = earnings_event["iv_normal"]
         back_call_entry = self._estimate_option_price(
-            spot=spot_price,
-            strike=atm_strike,
-            dte=back_dte_entry,
-            iv=back_iv_entry
+            spot=spot_price, strike=atm_strike, dte=back_dte_entry, iv=back_iv_entry
         )
 
         # Entry cost (debit spread)
@@ -172,18 +159,19 @@ class CalendarBacktest:
                 spot=earnings_event["spot_price_post"],
                 strike=atm_strike,
                 dte=front_dte_exit,
-                iv=front_iv_exit
+                iv=front_iv_exit,
             )
 
         # Back month: Also crushed but still has time value
         back_dte_exit = (back_exp - exit_date).days
-        back_iv_exit = back_iv_entry * \
-            (1 - earnings_event["iv_crush"] * 0.5)  # Less crush
+        back_iv_exit = back_iv_entry * (
+            1 - earnings_event["iv_crush"] * 0.5
+        )  # Less crush
         back_call_exit = self._estimate_option_price(
             spot=earnings_event["spot_price_post"],
             strike=atm_strike,
             dte=back_dte_exit,
-            iv=back_iv_exit
+            iv=back_iv_exit,
         )
 
         # Exit value
@@ -206,7 +194,7 @@ class CalendarBacktest:
             "pnl_pct": (pnl / entry_cost * 100) if entry_cost > 0 else 0,
             "iv_crush": earnings_event["iv_crush"],
             "spot_move_pct": earnings_event.get("spot_move_pct", 0),
-            "win": pnl > 0
+            "win": pnl > 0,
         }
 
     def _calculate_metrics(self, trades: List[Dict]) -> Dict:
@@ -257,17 +245,14 @@ class CalendarBacktest:
             "total_profit": total_pnl,
             "avg_profit": avg_profit,
             "avg_loss": avg_loss,
-            "best_trade": max(
-                trades,
-                key=lambda t: t["pnl"])["pnl"] if trades else 0,
-            "worst_trade": min(
-                trades,
-                key=lambda t: t["pnl"])["pnl"] if trades else 0,
+            "best_trade": max(trades, key=lambda t: t["pnl"])["pnl"] if trades else 0,
+            "worst_trade": min(trades, key=lambda t: t["pnl"])["pnl"] if trades else 0,
             "max_drawdown": max_drawdown,
             "sharpe_ratio": sharpe_ratio,
             "profit_factor": profit_factor,
-            "avg_iv_crush": statistics.mean(
-                t["iv_crush"] for t in trades) if trades else 0
+            "avg_iv_crush": (
+                statistics.mean(t["iv_crush"] for t in trades) if trades else 0
+            ),
         }
 
     def _load_demo_earnings_data(self) -> Dict:
@@ -285,7 +270,7 @@ class CalendarBacktest:
                     "spot_move_pct": 2.86,
                     "iv_pre_earnings": 0.85,
                     "iv_normal": 0.42,
-                    "iv_crush": 0.52
+                    "iv_crush": 0.52,
                 },
                 {
                     "date": "2025-04-15",
@@ -294,7 +279,7 @@ class CalendarBacktest:
                     "spot_move_pct": -3.36,
                     "iv_pre_earnings": 0.78,
                     "iv_normal": 0.40,
-                    "iv_crush": 0.48
+                    "iv_crush": 0.48,
                 },
                 {
                     "date": "2025-01-15",
@@ -303,7 +288,7 @@ class CalendarBacktest:
                     "spot_move_pct": 5.10,
                     "iv_pre_earnings": 0.88,
                     "iv_normal": 0.43,
-                    "iv_crush": 0.55
+                    "iv_crush": 0.55,
                 },
                 {
                     "date": "2024-10-15",
@@ -312,7 +297,7 @@ class CalendarBacktest:
                     "spot_move_pct": -2.42,
                     "iv_pre_earnings": 0.80,
                     "iv_normal": 0.41,
-                    "iv_crush": 0.45
+                    "iv_crush": 0.45,
                 },
                 {
                     "date": "2024-07-15",
@@ -321,7 +306,7 @@ class CalendarBacktest:
                     "spot_move_pct": 2.50,
                     "iv_pre_earnings": 0.82,
                     "iv_normal": 0.42,
-                    "iv_crush": 0.50
+                    "iv_crush": 0.50,
                 },
                 {
                     "date": "2024-04-15",
@@ -330,7 +315,7 @@ class CalendarBacktest:
                     "spot_move_pct": -1.72,
                     "iv_pre_earnings": 0.76,
                     "iv_normal": 0.40,
-                    "iv_crush": 0.47
+                    "iv_crush": 0.47,
                 },
                 {
                     "date": "2024-01-15",
@@ -339,7 +324,7 @@ class CalendarBacktest:
                     "spot_move_pct": 4.00,
                     "iv_pre_earnings": 0.86,
                     "iv_normal": 0.44,
-                    "iv_crush": 0.53
+                    "iv_crush": 0.53,
                 },
                 {
                     "date": "2023-10-15",
@@ -348,8 +333,8 @@ class CalendarBacktest:
                     "spot_move_pct": -2.86,
                     "iv_pre_earnings": 0.79,
                     "iv_normal": 0.41,
-                    "iv_crush": 0.49
-                }
+                    "iv_crush": 0.49,
+                },
             ],
             "NVDA": [
                 {
@@ -359,7 +344,7 @@ class CalendarBacktest:
                     "spot_move_pct": 4.49,
                     "iv_pre_earnings": 0.90,
                     "iv_normal": 0.46,
-                    "iv_crush": 0.58
+                    "iv_crush": 0.58,
                 },
                 {
                     "date": "2025-05-15",
@@ -368,7 +353,7 @@ class CalendarBacktest:
                     "spot_move_pct": 3.20,
                     "iv_pre_earnings": 0.88,
                     "iv_normal": 0.45,
-                    "iv_crush": 0.55
+                    "iv_crush": 0.55,
                 },
                 {
                     "date": "2025-02-15",
@@ -377,7 +362,7 @@ class CalendarBacktest:
                     "spot_move_pct": -1.65,
                     "iv_pre_earnings": 0.85,
                     "iv_normal": 0.44,
-                    "iv_crush": 0.52
+                    "iv_crush": 0.52,
                 },
                 {
                     "date": "2024-11-15",
@@ -386,7 +371,7 @@ class CalendarBacktest:
                     "spot_move_pct": 4.40,
                     "iv_pre_earnings": 0.92,
                     "iv_normal": 0.47,
-                    "iv_crush": 0.60
+                    "iv_crush": 0.60,
                 },
                 {
                     "date": "2024-08-15",
@@ -395,7 +380,7 @@ class CalendarBacktest:
                     "spot_move_pct": -1.58,
                     "iv_pre_earnings": 0.87,
                     "iv_normal": 0.45,
-                    "iv_crush": 0.48
+                    "iv_crush": 0.48,
                 },
                 {
                     "date": "2024-05-15",
@@ -404,7 +389,7 @@ class CalendarBacktest:
                     "spot_move_pct": 4.19,
                     "iv_pre_earnings": 0.89,
                     "iv_normal": 0.46,
-                    "iv_crush": 0.54
+                    "iv_crush": 0.54,
                 },
                 {
                     "date": "2024-02-15",
@@ -413,7 +398,7 @@ class CalendarBacktest:
                     "spot_move_pct": 4.29,
                     "iv_pre_earnings": 0.91,
                     "iv_normal": 0.48,
-                    "iv_crush": 0.57
+                    "iv_crush": 0.57,
                 },
                 {
                     "date": "2023-11-15",
@@ -422,18 +407,14 @@ class CalendarBacktest:
                     "spot_move_pct": -1.78,
                     "iv_pre_earnings": 0.86,
                     "iv_normal": 0.45,
-                    "iv_crush": 0.53
-                }
+                    "iv_crush": 0.53,
+                },
             ],
             # Add more symbols as needed...
         }
 
     def _estimate_option_price(
-        self,
-        spot: float,
-        strike: float,
-        dte: int,
-        iv: float
+        self, spot: float, strike: float, dte: int, iv: float
     ) -> float:
         """
         Estimate option price using simplified Black-Scholes
@@ -445,7 +426,7 @@ class CalendarBacktest:
         intrinsic = max(0, spot - strike)
 
         # Time value ~ sqrt(DTE) * IV * spot * 0.4
-        time_value = (dte ** 0.5) * iv * spot * 0.04
+        time_value = (dte**0.5) * iv * spot * 0.04
 
         return intrinsic + time_value
 
@@ -473,5 +454,5 @@ class CalendarBacktest:
             "max_drawdown": 0.0,
             "sharpe_ratio": 0.0,
             "profit_factor": 0.0,
-            "avg_iv_crush": 0.0
+            "avg_iv_crush": 0.0,
         }

@@ -12,7 +12,9 @@ TS_CLIENT_SECRET = os.getenv("TRADESTATION_API_SECRET", "")
 TS_REDIRECT_URI = os.getenv("TRADESTATION_REDIRECT_URI", "http://localhost:8080")
 
 # Token refresh settings
-TOKEN_SKEW_SECONDS = int(os.getenv("TOKEN_SKEW_SECONDS", "60"))  # Refresh 60s before expiration
+TOKEN_SKEW_SECONDS = int(
+    os.getenv("TOKEN_SKEW_SECONDS", "60")
+)  # Refresh 60s before expiration
 HTTP_TIMEOUT = float(os.getenv("HTTP_TIMEOUT", "8.0"))  # 8 second timeout
 
 # Environment

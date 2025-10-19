@@ -30,10 +30,11 @@ async def get_user_token_info(user_id: str = Depends(get_user_id)) -> Dict[str, 
     token = get_cached_token(user_id)
     if not token:
         return {"authenticated": False, "expires_in": 0}
-    
+
     import time
+
     expires_in = max(0, token.get("expires_at", 0) - int(time.time()))
-    
+
     return {
         "authenticated": True,
         "expires_in": expires_in,

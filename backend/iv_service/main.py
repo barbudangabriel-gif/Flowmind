@@ -4,29 +4,35 @@ from .ts_client import summary, terms, strikes_calc, pick_calendar, pick_condor
 
 app = FastAPI(title="FlowMind IV Service", version="0.1.0")
 
+
 @app.get("/health")
 def health():
     return {"ok": True}
+
 
 @app.get("/_routes")
 def _routes():
     return sorted([r.path for r in app.router.routes if isinstance(r, APIRoute)])
 
+
 @app.get("/api/iv/summary")
 async def get_summary(symbol: str = "NVDA", front_dte: int = 3, back_dte: int = 35):
     return await summary(symbol, front_dte, back_dte)
+
 
 @app.get("/api/iv/term")
 async def get_term(symbol: str = "NVDA"):
     return await terms(symbol)
 
+
 @app.get("/api/iv/strikes")
 async def get_strikes(symbol: str = "NVDA", front_dte: int = 3, back_dte: int = 35):
     return await strikes_calc(symbol, front_dte, back_dte)
 
+
 @app.post("/api/iv/batch")
 async def post_batch(body: dict):
-    symbols = body.get("symbols", ["NVDA", "AAPL", "MSFT"])[:5] # limit 5 pentru demo
+    symbols = body.get("symbols", ["NVDA", "AAPL", "MSFT"])[:5]  # limit 5 pentru demo
     rule = body.get("rule", "calendar")
     mult = float(body.get("mult", 0.5))
 
@@ -51,7 +57,7 @@ async def post_batch(body: dict):
             if rule == "calendar":
                 dc_low, dc_high = pick_calendar(spot, em_usd, mult)
                 row.update({"dc_low": dc_low, "dc_high": dc_high})
-            else: # condor
+            else:  # condor
                 shorts, wings = pick_condor(spot, em_usd)
                 row.update({"ic_shorts": shorts, "ic_wings": wings})
 

@@ -15,6 +15,7 @@ emergent_router = APIRouter(prefix="/_emergent", tags=["emergent"])
 # Add Redis diagnostics endpoint
 redis_diag_router = APIRouter(prefix="/_redis", tags=["redis"])
 
+
 @redis_diag_router.get("/health")
 async def redis_health():
     """
@@ -24,14 +25,14 @@ async def redis_health():
     try:
         kv = await get_kv()
         impl_name = type(kv).__name__
-        
+
         # Test connection with ping
         try:
             ping_result = await kv.ping()
             is_connected = bool(ping_result)
         except Exception as ping_error:
             is_connected = False
-        
+
         # Determine status
         if impl_name == "AsyncTTLDict":
             status = "fallback"
@@ -45,7 +46,7 @@ async def redis_health():
             status = "error"
             mode = "unknown"
             message = "Redis connection failed"
-        
+
         return {
             "status": status,
             "mode": mode,
@@ -66,16 +67,19 @@ async def redis_health():
             "error": str(e),
         }
 
+
 @redis_diag_router.get("/diag")
 async def redis_diag_endpoint():
     """Redis diagnostics endpoint"""
     return await _redis_diag()
+
 
 # Also add redis diag to emergent router for easier access
 @emergent_router.get("/redis/diag")
 async def emergent_redis_diag():
     """Redis diagnostics endpoint via emergent router"""
     return await _redis_diag()
+
 
 async def _redis_diag():
     """Redis diagnostics"""
@@ -102,6 +106,7 @@ async def _redis_diag():
             "db": db,
             "error": str(e),
         }
+
 
 async def _scan_sell_put_keys():
     """Scan cache keys for sell puts strategies"""
@@ -134,6 +139,7 @@ async def _scan_sell_put_keys():
 
     return total, proxy, verified
 
+
 async def _metrics_bt():
     """Backtest cache metrics"""
     # Import metrics tracking from bt_ops if available
@@ -157,13 +163,15 @@ async def _metrics_bt():
     except Exception:
         return {"available": False}
 
+
 async def _warmup_info():
     """Warmup process info"""
     return {
-        "last_run": None, # Would track actual warmup runs
+        "last_run": None,  # Would track actual warmup runs
         "next_scheduled": "16:00 Bucharest weekdays",
         "enabled": True,
     }
+
 
 async def _sample_screener(limit: int = 5):
     """Sample from IV screener"""
@@ -186,6 +194,7 @@ async def _sample_screener(limit: int = 5):
         return {"available": True, "count": len(sample_data), "items": sample_data}
     except Exception:
         return {"available": False}
+
 
 @emergent_router.get("/status")
 async def emergent_status(

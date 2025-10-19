@@ -1,13 +1,14 @@
 import secrets
 from .provider_base import IVProvider, tick_step, round_to_tick
 
+
 class StubProvider(IVProvider):
     async def get_spot(self, symbol: str) -> float:
         base = 180.0 if symbol.upper() == "NVDA" else 100.0
         return round(base + (secrets.randbelow(400) - 200) / 100, 2)
 
     async def get_atm_iv(self, symbol: str, dte: int) -> float:
-        iv = 0.25 + (secrets.randbelow(200) - 100) / 10000 # ±0.01
+        iv = 0.25 + (secrets.randbelow(200) - 100) / 10000  # ±0.01
         return max(0.05, min(iv, 1.0))
 
     async def list_terms(self, symbol: str):

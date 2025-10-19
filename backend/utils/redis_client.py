@@ -3,6 +3,7 @@ import time
 import threading
 from typing import Optional
 
+
 class InMemoryRedis:
     def __init__(self):
         self._d = {}
@@ -52,8 +53,10 @@ class InMemoryRedis:
         with self._lock:
             self._d.clear()
 
+
 _client = None
 _test_instance = None
+
 
 def get_redis():
     """Returnează un client Redis real, sau InMemory dacă suntem în TEST/absent."""

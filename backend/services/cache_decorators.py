@@ -15,12 +15,7 @@ from redis_fallback import get_kv
 logger = logging.getLogger(__name__)
 
 
-def _generate_cache_key(
-    prefix: str,
-    func_name: str,
-    args: tuple,
-    kwargs: dict
-) -> str:
+def _generate_cache_key(prefix: str, func_name: str, args: tuple, kwargs: dict) -> str:
     """
     Generate unique cache key from function signature
 
@@ -36,8 +31,8 @@ def _generate_cache_key(
     """
     # Create stable hash from args + kwargs
     cache_data = {
-        'args': [str(arg) for arg in args],
-        'kwargs': {k: str(v) for k, v in sorted(kwargs.items())}
+        "args": [str(arg) for arg in args],
+        "kwargs": {k: str(v) for k, v in sorted(kwargs.items())},
     }
 
     data_str = json.dumps(cache_data, sort_keys=True)
@@ -47,9 +42,7 @@ def _generate_cache_key(
 
 
 def cached_response(
-    ttl: int = 60,
-    key_prefix: str = "api",
-    key_builder: Optional[Callable] = None
+    ttl: int = 60, key_prefix: str = "api", key_builder: Optional[Callable] = None
 ):
     """
     Decorator for caching API responses in Redis (with fallback)
@@ -87,6 +80,7 @@ def cached_response(
         async def get_custom(symbol: str):
             return data
     """
+
     def decorator(func: Callable) -> Callable:
         # Determine if function is async
         is_async = inspect.iscoroutinefunction(func)
@@ -100,10 +94,7 @@ def cached_response(
                     cache_key = key_builder(func.__name__, args, kwargs)
                 else:
                     cache_key = _generate_cache_key(
-                        key_prefix,
-                        func.__name__,
-                        args,
-                        kwargs
+                        key_prefix, func.__name__, args, kwargs
                     )
 
                 try:
@@ -118,7 +109,9 @@ def cached_response(
                         try:
                             return json.loads(cached_value)
                         except json.JSONDecodeError:
-                            logger.warning(f" Invalid JSON in cache for {cache_key}, refreshing")
+                            logger.warning(
+                                f" Invalid JSON in cache for {cache_key}, refreshing"
+                            )
                     else:
                         logger.debug(f" Cache MISS: {cache_key}")
 
@@ -165,7 +158,7 @@ def invalidate_cache(
     key_prefix: str,
     func_name: Optional[str] = None,
     args: Optional[tuple] = None,
-    kwargs: Optional[dict] = None
+    kwargs: Optional[dict] = None,
 ):
     """
     Manually invalidate cache entries
@@ -194,24 +187,22 @@ def invalidate_cache(
     Returns:
         Number of keys invalidated
     """
+
     async def _invalidate():
         try:
             kv = await get_kv()
 
             if args is not None and kwargs is not None and func_name:
                 # Invalidate specific cache entry
-                cache_key = _generate_cache_key(
-                    key_prefix,
-                    func_name,
-                    args,
-                    kwargs
-                )
+                cache_key = _generate_cache_key(key_prefix, func_name, args, kwargs)
                 deleted = await kv.delete(cache_key)
                 logger.info(f"🗑️ Invalidated cache: {cache_key}")
                 return deleted
             else:
                 # Invalidate pattern (requires Redis SCAN)
-                pattern = f"{key_prefix}:{func_name}:*" if func_name else f"{key_prefix}:*"
+                pattern = (
+                    f"{key_prefix}:{func_name}:*" if func_name else f"{key_prefix}:*"
+                )
 
                 # This is simplified - full implementation would use SCAN
                 logger.warning(
@@ -225,6 +216,7 @@ def invalidate_cache(
             return 0
 
     return _invalidate()
+
 
 # Convenience decorators for common endpoints
 

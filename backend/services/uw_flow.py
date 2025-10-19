@@ -119,9 +119,11 @@ def _generate_mock_data(path: str) -> Dict[str, Any]:
                     datetime.now() + timedelta(days=30 + secrets.randbelow(335))
                 ).strftime("%Y-%m-%d"),
                 "dte": 30 + secrets.randbelow(335),
-                "trader": f"Representative {chr(65 + secrets.randbelow(26))}"
-                if "congress" in path
-                else f"Insider {chr(65 + secrets.randbelow(26))}",
+                "trader": (
+                    f"Representative {chr(65 + secrets.randbelow(26))}"
+                    if "congress" in path
+                    else f"Insider {chr(65 + secrets.randbelow(26))}"
+                ),
             }
             trading_items.append(item)
 
@@ -132,8 +134,7 @@ def _generate_mock_data(path: str) -> Dict[str, Any]:
 
 def _apply_filters(item: Dict[str, Any], f: Dict[str, Any]):
     def inc(key, coll):
-        return not coll or (str(item.get(key, "")).upper()
-                            in {x.upper() for x in coll})
+        return not coll or (str(item.get(key, "")).upper() in {x.upper() for x in coll})
 
     if f.get("tickers") and str(item.get("symbol", "")).upper() not in {
         x.upper() for x in f["tickers"]
@@ -149,8 +150,7 @@ def _apply_filters(item: Dict[str, Any], f: Dict[str, Any]):
         x.upper() for x in f["opt_types"]
     }:
         return False
-    if f.get("otm") and item.get("moneyness") and float(
-            item["moneyness"]) <= 1.0:
+    if f.get("otm") and item.get("moneyness") and float(item["moneyness"]) <= 1.0:
         return False
     if (
         f.get("vol_gt_oi")
@@ -159,12 +159,9 @@ def _apply_filters(item: Dict[str, Any], f: Dict[str, Any]):
         and float(item["volume"]) <= float(item["oi"])
     ):
         return False
-    if f.get("above_ask_below_bid") and str(
-        item.get(
-            "execution",
-            "")).lower() not in (
-            "above_ask",
-            "below_bid",
+    if f.get("above_ask_below_bid") and str(item.get("execution", "")).lower() not in (
+        "above_ask",
+        "below_bid",
     ):
         return False
 
@@ -210,8 +207,7 @@ def live_flow(filters: Dict[str, Any] | None = None):
     except Exception:
         raw = _get(LIVE_PATH, {})
 
-    arr = raw.get("data") or raw.get("flow") or (
-        raw if isinstance(raw, list) else [])
+    arr = raw.get("data") or raw.get("flow") or (raw if isinstance(raw, list) else [])
     out = [x for x in arr if _apply_filters(x, filters)]
     return {"items": out}
 
@@ -219,8 +215,7 @@ def live_flow(filters: Dict[str, Any] | None = None):
 def historical_flow(params: Dict[str, Any] | None = None):
     params = params or {}
     raw = _get(HIST_PATH, params)
-    arr = raw.get("data") or raw.get("flow") or (
-        raw if isinstance(raw, list) else [])
+    arr = raw.get("data") or raw.get("flow") or (raw if isinstance(raw, list) else [])
     out = [x for x in arr if _apply_filters(x, params)]
     return {"items": out}
 

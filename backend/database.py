@@ -14,6 +14,7 @@ DB_PATH = os.getenv("SQLITE_DB_PATH", "/app/data/flowmind.db")
 # Ensure data directory exists
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
+
 class DatabaseManager:
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
@@ -23,7 +24,7 @@ class DatabaseManager:
     def get_connection(self):
         """Get database connection with proper cleanup"""
         conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row # Enable dict-like access
+        conn.row_factory = sqlite3.Row  # Enable dict-like access
         try:
             yield conn
         finally:
@@ -37,7 +38,8 @@ class DatabaseManager:
             conn.execute("PRAGMA journal_mode = WAL")
 
             # Execute complete DDL
-            conn.executescript("""
+            conn.executescript(
+                """
                 -- PORTFOLIOS
                 CREATE TABLE IF NOT EXISTS portfolios (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -115,7 +117,8 @@ class DatabaseManager:
                     FOREIGN KEY (bucket_id) REFERENCES buckets(id)
                 );
                 CREATE INDEX IF NOT EXISTS idx_bucket_rules_bucket ON bucket_rules(bucket_id);
-            """)
+            """
+            )
             conn.commit()
 
     # Portfolio operations
@@ -348,4 +351,3 @@ class DatabaseManager:
 
 # Global instance
 db = DatabaseManager()
-

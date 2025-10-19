@@ -6,13 +6,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-TS_TOKEN_URL = os.getenv(
-    "TS_TOKEN_URL",
-    "https://signin.tradestation.com/oauth/token")
+TS_TOKEN_URL = os.getenv("TS_TOKEN_URL", "https://signin.tradestation.com/oauth/token")
 TS_CLIENT_ID = os.getenv("TS_CLIENT_ID", os.getenv("TRADESTATION_API_KEY"))
-TS_CLIENT_SECRET = os.getenv(
-    "TS_CLIENT_SECRET",
-    os.getenv("TRADESTATION_API_SECRET"))
+TS_CLIENT_SECRET = os.getenv("TS_CLIENT_SECRET", os.getenv("TRADESTATION_API_SECRET"))
 
 MARGIN = int(
     os.getenv("TS_TOKEN_MARGIN_SEC", "120")
@@ -27,6 +23,7 @@ def get_token(db) -> Optional[dict]:
             token_data = db.get("ts_oauth_token")
             if token_data:
                 import json
+
                 return json.loads(token_data)
         # Pentru MongoDB sau altele
         elif hasattr(db, "find_one"):
@@ -48,6 +45,7 @@ def save_token(db, t: dict):
         # Pentru Redis (current setup)
         if hasattr(db, "set"):
             import json
+
             db.set("ts_oauth_token", json.dumps(t), ex=86400 * 7)  # 7 days
         # Pentru MongoDB sau altele
         elif hasattr(db, "update_one"):
@@ -121,13 +119,7 @@ def authorized_post(
     """Make authorized POST request with automatic token refresh on 401"""
     token = ensure_access_token(db)
     headers = {"Authorization": f"Bearer {token}"}
-    r = requests.post(
-        url,
-        headers=headers,
-        json=json_data,
-        params=params,
-        timeout=15
-    )
+    r = requests.post(url, headers=headers, json=json_data, params=params, timeout=15)
     if r.status_code == 401:
         # retry o singură dată după refresh
         logger.info("Got 401, refreshing token and retrying...")

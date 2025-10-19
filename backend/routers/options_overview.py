@@ -67,16 +67,17 @@ async def _get_db(request: Request) -> AsyncIOMotorDatabase:
     # In a real implementation, this would be request.app.state.db
     from motor.motor_asyncio import AsyncIOMotorClient
 
-    mongo_url = os.environ.get("MONGO_URL",
-                               "mongodb://localhost:27017/flowmind")
+    mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017/flowmind")
     client = AsyncIOMotorClient(mongo_url)
     db_name = os.environ.get("DB_NAME", "test_database")
     return client[db_name]
 
 
 @router.get("/overview")
-async def options_overview(request: Request, symbol: str = Query(
-        "ALL", description="Symbol filter (ALL or specific symbol)"), ):
+async def options_overview(
+    request: Request,
+    symbol: str = Query("ALL", description="Symbol filter (ALL or specific symbol)"),
+):
     """
     Get market overview from TradeStation chain data:
     - dailyVolumeUsd: sum(volume * mid_price)

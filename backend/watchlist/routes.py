@@ -13,6 +13,7 @@ from .schemas import WatchlistIn, WatchlistOut, WatchlistImport, ImportResponse
 
 router = APIRouter()
 
+
 def parse_symbols_text(text: str, delimiter: str = "auto") -> List[str]:
     """Parse symbols din text cu auto-detection"""
     if delimiter == "auto":
@@ -30,12 +31,14 @@ def parse_symbols_text(text: str, delimiter: str = "auto") -> List[str]:
     # Clean și filter empty
     return [s.strip() for s in symbols if s.strip()]
 
+
 @router.on_event("startup")
 async def startup():
     try:
         await init_db()
     except Exception as e:
         print(f" Watchlist DB initialization failed (MongoDB not available): {e}")
+
 
 @router.post("/", response_model=WatchlistOut)
 async def create(watchlist: WatchlistIn):
@@ -58,6 +61,7 @@ async def create(watchlist: WatchlistIn):
             )
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.get("/{name}", response_model=WatchlistOut)
 async def get_by_name(name: str):
     doc = await get_watchlist(name)
@@ -72,6 +76,7 @@ async def get_by_name(name: str):
         created_at=doc["created_at"],
         updated_at=doc["updated_at"],
     )
+
 
 @router.put("/{name}", response_model=WatchlistOut)
 async def update_by_name(name: str, watchlist: WatchlistIn, mode: str = Query("merge")):
@@ -88,6 +93,7 @@ async def update_by_name(name: str, watchlist: WatchlistIn, mode: str = Query("m
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.get("/", response_model=List[WatchlistOut])
 async def list_all(limit: int = Query(50, le=100)):
     docs = await list_watchlists(limit)
@@ -103,12 +109,14 @@ async def list_all(limit: int = Query(50, le=100)):
         for doc in docs
     ]
 
+
 @router.delete("/{name}")
 async def delete_by_name(name: str):
     success = await delete_watchlist(name)
     if not success:
         raise HTTPException(status_code=404, detail=f"Watchlist '{name}' not found")
     return {"message": f"Watchlist '{name}' deleted"}
+
 
 @router.post("/import", response_model=ImportResponse)
 async def import_watchlist(req: WatchlistImport):

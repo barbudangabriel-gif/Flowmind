@@ -5,21 +5,26 @@ from .service import summary, terms, strikes, pick_calendar, pick_condor
 
 router = APIRouter(prefix="/api/iv", tags=["iv"])
 
+
 @router.get("/health")
 async def health():
     return {"ok": True}
+
 
 @router.get("/summary")
 async def get_summary(symbol: str, front_dte: int = 3, back_dte: int = 35):
     return await summary(symbol, front_dte, back_dte)
 
+
 @router.get("/term")
 async def get_term(symbol: str):
     return await terms(symbol)
 
+
 @router.get("/strikes")
 async def get_strikes(symbol: str, front_dte: int, back_dte: int):
     return await strikes(symbol, front_dte, back_dte)
+
 
 @router.api_route("/batch", methods=["GET", "POST"])
 async def batch_endpoint(
@@ -99,6 +104,7 @@ async def batch_endpoint(
         "errors": errors,
     }
 
+
 async def batch_calc(symbols: List[str], rule: str, mult: float):
     rows = []
     ok = fail = 0
@@ -120,7 +126,7 @@ async def batch_calc(symbols: List[str], rule: str, mult: float):
             if rule == "calendar":
                 dc_low, dc_high = pick_calendar(spot, em_usd, mult)
                 row.update({"dc_low": dc_low, "dc_high": dc_high})
-            else: # condor
+            else:  # condor
                 shorts, wings = pick_condor(spot, em_usd)
                 row.update({"ic_shorts": shorts, "ic_wings": wings})
 

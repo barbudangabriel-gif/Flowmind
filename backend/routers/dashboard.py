@@ -2,12 +2,14 @@
 Dashboard API - Aggregate data endpoint
 Provides unified dashboard data from all FlowMind modules
 """
+
 from fastapi import APIRouter
 from typing import Dict, Any
 import logging
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 logger = logging.getLogger(__name__)
+
 
 @router.get("/summary")
 async def get_dashboard_summary() -> Dict[str, Any]:
@@ -22,7 +24,7 @@ async def get_dashboard_summary() -> Dict[str, Any]:
         # - Sell Puts service
         # - Flow service
         # - Investment scoring
-        
+
         return {
             "mindfolio_summary": {
                 "total_nav": 125000.50,

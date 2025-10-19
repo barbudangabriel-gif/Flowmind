@@ -8,11 +8,13 @@ import sys
 
 sys.path.insert(0, "/app/backend")
 
+
 @pytest.fixture
 def client():
     from server import app
 
     return TestClient(app)
+
 
 def test_screener_emits_only_ok(client):
     """Test că screener emits doar signals care pass gates"""
@@ -25,6 +27,7 @@ def test_screener_emits_only_ok(client):
         # Check decision instead of signalOk (API contract changed)
         assert item.get("decision") in ("ALLOW", "ALLOW_WITH_WARNINGS", None)
         assert "backtest" in item
+
 
 def test_cache_hit(client):
     """Test Redis cache HIT behavior"""
@@ -43,7 +46,8 @@ def test_cache_hit(client):
         cache1 = data1["items"][0].get("backtest", {}).get("cache", "unknown")
         cache2 = data2["items"][0].get("backtest", {}).get("cache", "unknown")
         # Note: May be MISS/MISS în fallback mode, HIT în Redis mode
-        assert cache2 in ("HIT", "MISS") # Either is acceptable
+        assert cache2 in ("HIT", "MISS")  # Either is acceptable
+
 
 def test_ops_endpoints(client):
     """Test backtest ops endpoints"""
@@ -61,6 +65,7 @@ def test_ops_endpoints(client):
     if response.get("ok"):
         assert "keys" in response
 
+
 def test_backtest_quality_gate(client):
     """Test că backtest data has minimum quality"""
     r = client.get("/screen/iv-setups?limit=5")
@@ -72,6 +77,6 @@ def test_backtest_quality_gate(client):
             # Quality checks
             assert isinstance(bt.get("n"), int)
             assert bt["n"] >= 0
-            if bt["n"] > 30: # Only check metrics pentru sufficient sample
+            if bt["n"] > 30:  # Only check metrics pentru sufficient sample
                 assert 0 <= bt.get("win_rate", 0) <= 1
                 assert -10 <= bt.get("expectancy", 0) <= 10

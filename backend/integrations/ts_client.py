@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 TS_BASE = os.getenv("TS_BASE", "https://api.tradestation.com")
 TS_TOKEN = os.getenv("TS_TOKEN")
 
+
 class TSClient:
     def __init__(self):
         if not TS_TOKEN:
@@ -44,4 +45,4 @@ class TSClient:
         except Exception as e:
             logger.error(f"TS quote API error for {symbol}: {e}")
             # Return empty structure with fallback data
-            return {"data": [{"last": 250.0}]} # Fallback price
+            return {"data": [{"last": 250.0}]}  # Fallback price

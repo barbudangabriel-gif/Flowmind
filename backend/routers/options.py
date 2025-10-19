@@ -6,6 +6,7 @@ from services.options_gex import compute_gex, fetch_chain
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/options", tags=["options"])
 
+
 @router.get("/gex")
 def get_gex(
     symbol: str = Query(..., description="Stock symbol (e.g., TSLA)"),
@@ -21,6 +22,7 @@ def get_gex(
         raise HTTPException(
             status_code=500, detail=f"Failed to calculate GEX: {str(e)}"
         )
+
 
 @router.get("/expirations")
 def get_options_expirations(
@@ -44,6 +46,7 @@ def get_options_expirations(
         raise HTTPException(
             status_code=500, detail=f"Failed to fetch options expirations: {str(e)}"
         )
+
 
 @router.get("/chain")
 def get_options_chain(
@@ -78,18 +81,23 @@ def get_options_chain(
         strikes = [atm + i * step for i in range(-6, 7)]
         total_oi = 0
         rows = []
-        base_iv = 0.42 # la ATM
+        base_iv = 0.42  # la ATM
 
         for k in strikes:
             moneyness = abs(k - spot) / (spot if spot else 1.0)
-            iv = max(0.18, base_iv * (1 + 0.25 * moneyness)) # IV mai mare OTM
-            mid = max(0.05, (max(spot - k, 0) + 2.0) * 0.2) # mid simplificat
+            iv = max(0.18, base_iv * (1 + 0.25 * moneyness))  # IV mai mare OTM
+            mid = max(0.05, (max(spot - k, 0) + 2.0) * 0.2)  # mid simplificat
             spread = max(0.03, mid * (0.06 + 0.12 * moneyness))
             bid = round(max(0.01, mid - spread / 2), 2)
             ask = round(mid + spread / 2, 2)
             mid = round((bid + ask) / 2, 2)
-            oi = int(800 + (1 - min(moneyness, 1)) * 4500) # OI mai mare aproape de ATM
-            vol = int(50 + 600 * max(0, 1 - moneyness) * (0.6 + 0.4 * secrets.randbelow(100) / 100))
+            oi = int(800 + (1 - min(moneyness, 1)) * 4500)  # OI mai mare aproape de ATM
+            vol = int(
+                50
+                + 600
+                * max(0, 1 - moneyness)
+                * (0.6 + 0.4 * secrets.randbelow(100) / 100)
+            )
             total_oi += oi
             rows.append(
                 {
@@ -131,9 +139,11 @@ def get_options_chain(
                             "strike": strike["StrikePrice"],
                             "bid": call.get("Bid") or put.get("Bid"),
                             "ask": call.get("Ask") or put.get("Ask"),
-                            "mid": ((call.get("Bid", 0) + call.get("Ask", 0)) / 2)
-                            if call.get("Bid") and call.get("Ask")
-                            else None,
+                            "mid": (
+                                ((call.get("Bid", 0) + call.get("Ask", 0)) / 2)
+                                if call.get("Bid") and call.get("Ask")
+                                else None
+                            ),
                             "iv": call.get("IV") or put.get("IV"),
                             "oi": (
                                 call.get("OpenInterest", 0) + put.get("OpenInterest", 0)
@@ -153,6 +163,7 @@ def get_options_chain(
     # 2) fallback elegant pentru dev/test
     return demo_chain(symbol, expiry or "2025-02-21")
 
+
 @router.get("/spot/{symbol}")
 def get_spot_price(symbol: str):
     """Get current spot price for symbol"""
@@ -171,6 +182,7 @@ def get_spot_price(symbol: str):
         raise HTTPException(
             status_code=500, detail=f"Failed to fetch spot price: {str(e)}"
         )
+
 
 @router.get("/provider/status")
 def get_provider_status():

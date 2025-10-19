@@ -3,9 +3,10 @@ import time
 from typing import Any, Optional, Tuple
 
 try:
- from redis.asyncio import from_url as redis_from_url
+    from redis.asyncio import from_url as redis_from_url
 except ImportError:
- redis_from_url = None
+    redis_from_url = None
+
 
 class AsyncTTLDict:
     """In-memory TTL store (fallback pentru Redis)"""
@@ -43,17 +44,19 @@ class AsyncTTLDict:
         self._purge()
         rec = self._store.get(key)
         if not rec:
-            return -2 # no such key
+            return -2  # no such key
         exp, _ = rec
         if exp is None:
-            return -1 # no expiry
+            return -1  # no expiry
         return max(0, int(exp - time.time()))
 
     async def ping(self) -> bool:
         return True
 
+
 # Shared instance for consistent storage (test mode AND fallback mode)
 _shared_kv_instance = None
+
 
 async def get_kv():
     """Returnează Redis client sau fallback in-memory"""

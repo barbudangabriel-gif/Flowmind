@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 from abc import ABC, abstractmethod
 
+
 class IVProvider(ABC):
     @abstractmethod
     async def get_spot(self, symbol: str) -> float: ...
@@ -11,6 +12,7 @@ class IVProvider(ABC):
     @abstractmethod
     async def list_strikes(self, symbol: str, dte: int) -> List[int]: ...
 
+
 # util: step infer
 def tick_step(spot: float) -> float:
     if spot < 25:
@@ -20,6 +22,7 @@ def tick_step(spot: float) -> float:
     if spot < 1000:
         return 5.0
     return 10.0
+
 
 def round_to_tick(x: float, spot: float) -> int:
     step = tick_step(spot)

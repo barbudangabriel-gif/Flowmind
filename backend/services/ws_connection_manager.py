@@ -127,12 +127,7 @@ class WebSocketConnectionManager:
 
         self.total_messages_sent += len(connections)
 
-    async def _send_to_client(
-        self,
-        connection: WebSocket,
-        channel: str,
-        message: dict
-    ):
+    async def _send_to_client(self, connection: WebSocket, channel: str, message: dict):
         """
         Send message to a single client (internal method).
 
@@ -201,16 +196,13 @@ class WebSocketConnectionManager:
             "total_connects": self.total_connects,
             "total_disconnects": self.total_disconnects,
             "total_messages_sent": self.total_messages_sent,
-            "active_channels": len(
-                self.active_connections),
+            "active_channels": len(self.active_connections),
             "channels": channel_stats,
-            "uptime_seconds": round(
-                uptime,
-                1),
-            "messages_per_second": round(
-                self.total_messages_sent /
-                uptime,
-                2) if uptime > 0 else 0}
+            "uptime_seconds": round(uptime, 1),
+            "messages_per_second": (
+                round(self.total_messages_sent / uptime, 2) if uptime > 0 else 0
+            ),
+        }
 
     def has_subscribers(self, channel: str) -> bool:
         """
@@ -222,8 +214,10 @@ class WebSocketConnectionManager:
         Returns:
             bool: True if channel has at least one subscriber
         """
-        return channel in self.active_connections and len(
-            self.active_connections[channel]) > 0
+        return (
+            channel in self.active_connections
+            and len(self.active_connections[channel]) > 0
+        )
 
     async def ping_all(self) -> Dict[str, int]:
         """
@@ -242,10 +236,9 @@ class WebSocketConnectionManager:
             for connection in connections:
                 try:
                     # Send a ping message
-                    await connection.send_json({
-                        "type": "ping",
-                        "timestamp": datetime.now().isoformat()
-                    })
+                    await connection.send_json(
+                        {"type": "ping", "timestamp": datetime.now().isoformat()}
+                    )
                     successful_pings += 1
                 except Exception as e:
                     logger.warning(f"Ping failed for client on {channel}: {e}")

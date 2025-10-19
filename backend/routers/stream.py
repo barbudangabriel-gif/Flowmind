@@ -30,54 +30,54 @@ _initialized = False
 # Initialization Function (call from main app lifespan)
 # ============================================================================
 
+
 async def initialize_websocket():
     """
     Initialize UW WebSocket client.
     Call this from your main app's lifespan context manager.
     """
     global uw_client, uw_listen_task, _initialized
-    
+
     if _initialized:
         return
-    
+
     logger.info(" Initializing WebSocket streaming service...")
-    
+
     # Get API token from environment
     uw_api_token = (
-        os.getenv("UW_API_TOKEN") or 
-        os.getenv("UW_KEY") or 
-        os.getenv("UNUSUAL_WHALES_API_KEY")
+        os.getenv("UW_API_TOKEN")
+        or os.getenv("UW_KEY")
+        or os.getenv("UNUSUAL_WHALES_API_KEY")
     )
-    
+
     if not uw_api_token:
-        logger.warning(
-            " UW_API_TOKEN not set - WebSocket streaming DISABLED"
-        )
+        logger.warning(" UW_API_TOKEN not set - WebSocket streaming DISABLED")
         logger.warning(
             " Set UW_API_TOKEN environment variable to enable real-time streaming"
         )
         _initialized = True
         return
- 
+
     # Create WebSocket client
     uw_client = UWWebSocketClient(uw_api_token)
-    
+
     # Connect to UW
     success = await uw_client.connect()
-    
+
     if success:
         logger.info(" Connected to Unusual Whales WebSocket")
-        
+
         # Start listening in background
         uw_listen_task = asyncio.create_task(uw_client.listen())
         logger.info(" WebSocket listen task started")
-        
+
     else:
         logger.error(" Failed to connect to Unusual Whales WebSocket")
         logger.error(" Streaming features will not be available")
         uw_client = None
-    
+
     _initialized = True
+
 
 async def shutdown_websocket():
     """
@@ -85,9 +85,9 @@ async def shutdown_websocket():
     Call this from your main app's lifespan context manager.
     """
     global uw_client, uw_listen_task
-    
+
     logger.info("🛑 Shutting down WebSocket streaming service...")
-    
+
     # Cancel listen task
     if uw_listen_task:
         uw_listen_task.cancel()
@@ -95,12 +95,13 @@ async def shutdown_websocket():
             await uw_listen_task
         except asyncio.CancelledError:
             pass
-    
+
     # Disconnect from UW
     if uw_client:
         await uw_client.disconnect()
-    
+
     logger.info(" WebSocket streaming service stopped")
+
 
 # Remove old event handlers - they don't work reliably
 # Use lifespan context manager in main app instead
@@ -109,13 +110,14 @@ async def shutdown_websocket():
 # WebSocket Endpoints - Real-time Streaming
 # ============================================================================
 
+
 @router.websocket("/ws/flow")
 async def stream_flow_alerts(websocket: WebSocket):
     """
     Stream real-time options flow alerts from Unusual Whales.
-    
+
     **Connection:** wss://your-backend.com/api/stream/ws/flow
-    
+
     **Message Format:**
     ```json
     {
@@ -133,25 +135,25 @@ async def stream_flow_alerts(websocket: WebSocket):
     ```
     """
     channel = "flow-alerts"
-    
+
     if not uw_client:
         await websocket.close(code=1011, reason="WebSocket streaming not available")
         return
-    
+
     # Connect frontend client
     await ws_manager.connect(websocket, channel)
     logger.info(f"🔌 Frontend client connected to {channel}")
-    
+
     # Define handler that broadcasts to all clients
     async def flow_handler(ch: str, payload: dict):
         """Broadcast flow alerts to all subscribed frontend clients"""
         message = {
             "channel": ch,
             "timestamp": datetime.now().isoformat(),
-            "data": payload
+            "data": payload,
         }
         await ws_manager.broadcast(channel, message)
-    
+
     # Subscribe to UW channel if not already subscribed
     if not ws_manager.has_subscribers(channel):
         logger.info(f"📡 First subscriber - subscribing to UW {channel}")
@@ -159,7 +161,7 @@ async def stream_flow_alerts(websocket: WebSocket):
     else:
         # Already subscribed, just register callback
         uw_client.message_handlers[channel] = flow_handler
-    
+
     try:
         # Keep connection alive - just wait for client messages (e.g., pings)
         while True:
@@ -170,31 +172,32 @@ async def stream_flow_alerts(websocket: WebSocket):
                 logger.debug(f"Received from client: {data}")
             except WebSocketDisconnect:
                 break
-    
+
     except Exception as e:
         logger.error(f"Error in flow stream: {e}")
-    
+
     finally:
         # Cleanup
         await ws_manager.disconnect(websocket, channel)
-        
+
         # Unsubscribe from UW if no more clients
         if not ws_manager.has_subscribers(channel):
             logger.info(f"📡 Last subscriber - unsubscribing from UW {channel}")
             await uw_client.unsubscribe(channel)
 
+
 @router.websocket("/ws/gex/{ticker}")
 async def stream_gamma_exposure(websocket: WebSocket, ticker: str):
     """
     Stream real-time gamma exposure (GEX) updates for a specific ticker.
-    
+
     ** VERIFIED CHANNEL** - Confirmed working with UW API
-    
+
     **Connection:** wss://your-backend.com/api/stream/ws/gex/SPY
-    
+
     **Parameters:**
     - `ticker`: Stock symbol (e.g., SPY, TSLA, AAPL, NVDA)
-    
+
     **Message Format:**
     ```json
     {
@@ -216,25 +219,25 @@ async def stream_gamma_exposure(websocket: WebSocket, ticker: str):
     """
     ticker = ticker.upper()
     channel = f"gex:{ticker}"
-    
+
     if not uw_client:
         await websocket.close(code=1011, reason="WebSocket streaming not available")
         return
-    
+
     # Connect frontend client
     await ws_manager.connect(websocket, channel)
     logger.info(f"🔌 Frontend client connected to {channel}")
-    
+
     # Define handler that broadcasts to all clients
     async def gex_handler(ch: str, payload: dict):
         """Broadcast GEX updates to all subscribed frontend clients"""
         message = {
             "channel": ch,
             "timestamp": datetime.now().isoformat(),
-            "data": payload
+            "data": payload,
         }
         await ws_manager.broadcast(channel, message)
-    
+
     # Subscribe to UW channel if not already subscribed
     if not ws_manager.has_subscribers(channel):
         logger.info(f"📡 First subscriber - subscribing to UW {channel}")
@@ -242,7 +245,7 @@ async def stream_gamma_exposure(websocket: WebSocket, ticker: str):
     else:
         # Already subscribed, just register callback
         uw_client.message_handlers[channel] = gex_handler
-    
+
     try:
         # Keep connection alive
         while True:
@@ -251,31 +254,32 @@ async def stream_gamma_exposure(websocket: WebSocket, ticker: str):
                 logger.debug(f"Received from client on {channel}: {data}")
             except WebSocketDisconnect:
                 break
-    
+
     except Exception as e:
         logger.error(f"Error in GEX stream for {ticker}: {e}")
-    
+
     finally:
         # Cleanup
         await ws_manager.disconnect(websocket, channel)
-        
+
         # Unsubscribe from UW if no more clients
         if not ws_manager.has_subscribers(channel):
             logger.info(f"📡 Last subscriber - unsubscribing from UW {channel}")
             await uw_client.unsubscribe(channel)
 
+
 @router.websocket("/ws/option-trades/{ticker}")
 async def stream_option_trades(websocket: WebSocket, ticker: str):
     """
     Stream real-time option trades for a specific ticker.
-    
+
     ** VERIFIED CHANNEL** - Confirmed from UW official examples
-    
+
     **Connection:** wss://your-backend.com/api/stream/ws/option-trades/TSLA
-    
+
     **Parameters:**
     - `ticker`: Stock symbol (e.g., TSLA, AAPL, NVDA, SPY)
-    
+
     **Message Format:**
     ```json
     {
@@ -294,7 +298,7 @@ async def stream_option_trades(websocket: WebSocket, ticker: str):
         }
     }
     ```
-    
+
     **Use Cases:**
     - Monitor all option trades for a specific ticker
     - Track large trades (whales) in real-time
@@ -303,25 +307,25 @@ async def stream_option_trades(websocket: WebSocket, ticker: str):
     """
     ticker = ticker.upper()
     channel = f"option_trades:{ticker}"
-    
+
     if not uw_client:
         await websocket.close(code=1011, reason="WebSocket streaming not available")
         return
-    
+
     # Connect frontend client
     await ws_manager.connect(websocket, channel)
     logger.info(f"🔌 Frontend client connected to {channel}")
-    
+
     # Define handler that broadcasts to all clients
     async def trades_handler(ch: str, payload: dict):
         """Broadcast option trades to all subscribed frontend clients"""
         message = {
             "channel": ch,
             "timestamp": datetime.now().isoformat(),
-            "data": payload
+            "data": payload,
         }
         await ws_manager.broadcast(channel, message)
-    
+
     # Subscribe to UW channel if not already subscribed
     if not ws_manager.has_subscribers(channel):
         logger.info(f"📡 First subscriber - subscribing to UW {channel}")
@@ -329,7 +333,7 @@ async def stream_option_trades(websocket: WebSocket, ticker: str):
     else:
         # Already subscribed, just register callback
         uw_client.message_handlers[channel] = trades_handler
-    
+
     try:
         # Keep connection alive
         while True:
@@ -338,47 +342,48 @@ async def stream_option_trades(websocket: WebSocket, ticker: str):
                 logger.debug(f"Received from client on {channel}: {data}")
             except WebSocketDisconnect:
                 break
-    
+
     except Exception as e:
         logger.error(f"Error in option trades stream for {ticker}: {e}")
-    
+
     finally:
         # Cleanup
         await ws_manager.disconnect(websocket, channel)
-        
+
         # Unsubscribe from UW if no more clients
         if not ws_manager.has_subscribers(channel):
             logger.info(f"📡 Last subscriber - unsubscribing from UW {channel}")
             await uw_client.unsubscribe(channel)
 
+
 @router.websocket("/ws/market-movers")
 async def stream_market_movers(websocket: WebSocket):
     """
     Stream real-time market movers data.
-    
+
     ** EXPERIMENTAL CHANNEL** - Not officially verified by UW API
     This channel may not receive updates or could have a different name.
-    
+
     **Note:** Channel name might vary - check UW docs for exact channel name.
     This is a placeholder implementation.
     """
-    channel = "market_movers" # TODO: Verify actual UW channel name
-    
+    channel = "market_movers"  # TODO: Verify actual UW channel name
+
     if not uw_client:
         await websocket.close(code=1011, reason="WebSocket streaming not available")
         return
-    
+
     await ws_manager.connect(websocket, channel)
     logger.info(f"🔌 Frontend client connected to {channel}")
-    
+
     async def movers_handler(ch: str, payload: dict):
         message = {
             "channel": ch,
             "timestamp": datetime.now().isoformat(),
-            "data": payload
+            "data": payload,
         }
         await ws_manager.broadcast(channel, message)
-    
+
     if not ws_manager.has_subscribers(channel):
         try:
             await uw_client.subscribe(channel, movers_handler)
@@ -389,7 +394,7 @@ async def stream_market_movers(websocket: WebSocket):
             return
     else:
         uw_client.message_handlers[channel] = movers_handler
-    
+
     try:
         while True:
             await websocket.receive_text()
@@ -400,32 +405,33 @@ async def stream_market_movers(websocket: WebSocket):
         if not ws_manager.has_subscribers(channel):
             await uw_client.unsubscribe(channel)
 
+
 @router.websocket("/ws/dark-pool")
 async def stream_dark_pool(websocket: WebSocket):
     """
     Stream real-time dark pool activity.
-    
+
     ** EXPERIMENTAL CHANNEL** - Not officially verified by UW API
     This channel may not receive updates or could have a different name.
-    
+
     **Note:** Channel name might vary - check UW docs for exact channel name.
     """
-    channel = "dark_pool" # TODO: Verify actual UW channel name
-    
+    channel = "dark_pool"  # TODO: Verify actual UW channel name
+
     if not uw_client:
         await websocket.close(code=1011, reason="WebSocket streaming not available")
         return
-    
+
     await ws_manager.connect(websocket, channel)
-    
+
     async def darkpool_handler(ch: str, payload: dict):
         message = {
             "channel": ch,
             "timestamp": datetime.now().isoformat(),
-            "data": payload
+            "data": payload,
         }
         await ws_manager.broadcast(channel, message)
-    
+
     if not ws_manager.has_subscribers(channel):
         try:
             await uw_client.subscribe(channel, darkpool_handler)
@@ -435,7 +441,7 @@ async def stream_dark_pool(websocket: WebSocket):
             return
     else:
         uw_client.message_handlers[channel] = darkpool_handler
-    
+
     try:
         while True:
             await websocket.receive_text()
@@ -446,32 +452,33 @@ async def stream_dark_pool(websocket: WebSocket):
         if not ws_manager.has_subscribers(channel):
             await uw_client.unsubscribe(channel)
 
+
 @router.websocket("/ws/congress")
 async def stream_congress_trades(websocket: WebSocket):
     """
     Stream real-time congress trade filings.
-    
+
     ** EXPERIMENTAL CHANNEL** - Not officially verified by UW API
     This channel may not receive updates or could have a different name.
-    
+
     **Note:** Channel name might vary - check UW docs for exact channel name.
     """
-    channel = "congress_trades" # TODO: Verify actual UW channel name
-    
+    channel = "congress_trades"  # TODO: Verify actual UW channel name
+
     if not uw_client:
         await websocket.close(code=1011, reason="WebSocket streaming not available")
         return
-    
+
     await ws_manager.connect(websocket, channel)
-    
+
     async def congress_handler(ch: str, payload: dict):
         message = {
             "channel": ch,
             "timestamp": datetime.now().isoformat(),
-            "data": payload
+            "data": payload,
         }
         await ws_manager.broadcast(channel, message)
-    
+
     if not ws_manager.has_subscribers(channel):
         try:
             await uw_client.subscribe(channel, congress_handler)
@@ -481,7 +488,7 @@ async def stream_congress_trades(websocket: WebSocket):
             return
     else:
         uw_client.message_handlers[channel] = congress_handler
-    
+
     try:
         while True:
             await websocket.receive_text()
@@ -492,15 +499,17 @@ async def stream_congress_trades(websocket: WebSocket):
         if not ws_manager.has_subscribers(channel):
             await uw_client.unsubscribe(channel)
 
+
 # ============================================================================
 # HTTP Endpoints - Status & Health
 # ============================================================================
+
 
 @router.get("/status")
 async def websocket_status():
     """
     Get WebSocket connection status and statistics.
-    
+
     **Response:**
     ```json
     {
@@ -515,25 +524,26 @@ async def websocket_status():
         return {
             "status": "disabled",
             "message": "WebSocket streaming not initialized (UW_API_TOKEN not set)",
-            "enabled": False
+            "enabled": False,
         }
-    
+
     uw_stats = uw_client.get_stats()
     manager_stats = ws_manager.get_stats()
-    
+
     return {
         "status": "connected" if uw_stats["connected"] else "disconnected",
         "enabled": True,
         "uw_connection": uw_stats,
         "client_connections": manager_stats,
-        "total_clients": ws_manager.get_connection_count()
+        "total_clients": ws_manager.get_connection_count(),
     }
+
 
 @router.get("/channels")
 async def list_channels():
     """
     List available streaming channels.
-    
+
     **Response:**
     ```json
     {
@@ -556,7 +566,7 @@ async def list_channels():
             "endpoint": "/api/stream/ws/flow",
             "description": "Real-time options flow activity and unusual trades",
             "active_subscribers": ws_manager.get_connection_count("flow-alerts"),
-            "verified": True # We know this channel exists
+            "verified": True,  # We know this channel exists
         },
         {
             "id": "market-movers",
@@ -564,7 +574,7 @@ async def list_channels():
             "endpoint": "/api/stream/ws/market-movers",
             "description": "Real-time market movers and top gainers/losers",
             "active_subscribers": ws_manager.get_connection_count("market_movers"),
-            "verified": False # Need to verify channel name with UW
+            "verified": False,  # Need to verify channel name with UW
         },
         {
             "id": "dark-pool",
@@ -572,7 +582,7 @@ async def list_channels():
             "endpoint": "/api/stream/ws/dark-pool",
             "description": "Real-time dark pool activity and volume",
             "active_subscribers": ws_manager.get_connection_count("dark_pool"),
-            "verified": False
+            "verified": False,
         },
         {
             "id": "congress",
@@ -580,91 +590,82 @@ async def list_channels():
             "endpoint": "/api/stream/ws/congress",
             "description": "Real-time congressional trade filings",
             "active_subscribers": ws_manager.get_connection_count("congress_trades"),
-            "verified": False
-        }
+            "verified": False,
+        },
     ]
-    
+
     return {
         "channels": channels,
         "total_channels": len(channels),
-        "enabled": uw_client is not None
+        "enabled": uw_client is not None,
     }
+
 
 @router.get("/health")
 async def health_check():
     """
     Health check endpoint for WebSocket service.
-    
+
     Returns:
         200 if service is healthy
         503 if service is unavailable
     """
     if not uw_client:
         raise HTTPException(
-            status_code=503,
-            detail="WebSocket streaming service not available"
+            status_code=503, detail="WebSocket streaming service not available"
         )
-    
+
     stats = uw_client.get_stats()
-    
+
     if not stats["connected"]:
         raise HTTPException(
-            status_code=503,
-            detail="Not connected to Unusual Whales WebSocket"
+            status_code=503, detail="Not connected to Unusual Whales WebSocket"
         )
-    
+
     return {
         "status": "healthy",
         "connected": True,
-        "uptime_seconds": stats.get("last_message_seconds_ago", 0)
+        "uptime_seconds": stats.get("last_message_seconds_ago", 0),
     }
+
 
 @router.post("/reconnect")
 async def force_reconnect():
     """
     Force reconnection to UW WebSocket.
     Useful for debugging or recovering from errors.
-    
+
     **Admin endpoint** - should be protected in production.
     """
     if not uw_client:
-        raise HTTPException(
-            status_code=503,
-            detail="WebSocket client not initialized"
-        )
-    
+        raise HTTPException(status_code=503, detail="WebSocket client not initialized")
+
     logger.info("🔄 Forcing WebSocket reconnection...")
-    
+
     try:
         # Disconnect
         await uw_client.disconnect()
-        
+
         # Wait a bit
         await asyncio.sleep(2)
-        
+
         # Reconnect
         success = await uw_client.connect()
-        
+
         if success:
             # Restart listen task
             global uw_listen_task
             if uw_listen_task:
                 uw_listen_task.cancel()
             uw_listen_task = asyncio.create_task(uw_client.listen())
-            
+
             return {
                 "status": "success",
-                "message": "Reconnected to Unusual Whales WebSocket"
+                "message": "Reconnected to Unusual Whales WebSocket",
             }
         else:
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to reconnect"
-            )
-    
+            raise HTTPException(status_code=500, detail="Failed to reconnect")
+
     except Exception as e:
         logger.error(f"Reconnection failed: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Reconnection error: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Reconnection error: {str(e)}")

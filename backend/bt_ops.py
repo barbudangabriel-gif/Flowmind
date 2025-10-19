@@ -18,6 +18,7 @@ _metrics = {
 
 router = APIRouter(prefix="/_bt", tags=["backtest-ops"])
 
+
 @router.get("/status")
 async def bt_status(key: Optional[str] = None):
     """Check backtest cache status"""
@@ -58,6 +59,7 @@ async def bt_status(key: Optional[str] = None):
     except Exception as e:
         raise HTTPException(500, f"Status check failed: {e}")
 
+
 @router.post("/purge")
 async def bt_purge(body: dict):
     """Purge cache key for debugging"""
@@ -80,6 +82,7 @@ async def bt_purge(body: dict):
         log.error("bt.purge failed key=%s err=%s", key, e)
         raise HTTPException(500, f"Purge failed: {e}")
 
+
 @router.get("/keys")
 async def bt_keys(pattern: str = "bt:sum:*", limit: int = 100):
     """List cache keys (debug)"""
@@ -98,15 +101,18 @@ async def bt_keys(pattern: str = "bt:sum:*", limit: int = 100):
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+
 def track_cache_hit():
     """Track cache hit"""
     _metrics["total_requests"] += 1
     _metrics["cache_hits"] += 1
 
+
 def track_cache_miss():
     """Track cache miss"""
     _metrics["total_requests"] += 1
     _metrics["cache_misses"] += 1
+
 
 def log_bt_operation(
     key: str, cache_status: str, n: int, win_rate: float, took_ms: int

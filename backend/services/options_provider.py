@@ -12,10 +12,7 @@ class OptionsProvider(ABC):
 
     @abstractmethod
     def get_chain(
-        self,
-        symbol: str,
-        expiry: Optional[str] = None,
-        dte: Optional[int] = None
+        self, symbol: str, expiry: Optional[str] = None, dte: Optional[int] = None
     ) -> Dict[str, Any]:
         """Get options chain data for symbol
 

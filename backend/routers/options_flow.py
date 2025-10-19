@@ -10,9 +10,10 @@ DEFAULT_PROXY = "SPY"  # For symbol=ALL
 
 @router.get("/summary")
 async def flow_summary(
-    request: Request, symbol: str = Query(
-        "ALL", description="Ticker or ALL"), days: int = Query(
-            7, ge=1, le=30, description="Window for historical data"), ):
+    request: Request,
+    symbol: str = Query("ALL", description="Ticker or ALL"),
+    days: int = Query(7, ge=1, le=30, description="Window for historical data"),
+):
     """
     Get flow summary data:
     - live: trades in last 24h (from UW)
@@ -36,7 +37,8 @@ async def flow_summary(
         logger.info(
             f"UW flow summary for {sym_or_proxy}: live={
                 len(trades_live)}, hist={
-                len(trades_hist)}")
+                len(trades_hist)}"
+        )
 
         return {
             "live": len(trades_live),

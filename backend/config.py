@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class Settings(BaseModel):
     """Application settings with secure defaults and validation"""
 
@@ -32,6 +33,7 @@ class Settings(BaseModel):
     )
     ts_redirect_uri: str = Field("http://localhost:8080", alias="TS_REDIRECT_URI")
     ts_token_margin_sec: int = Field(120, alias="TS_TOKEN_MARGIN_SEC")
+
 
 def get_settings() -> Settings:
     """Get validated settings with proper error handling"""
@@ -82,6 +84,7 @@ def get_settings() -> Settings:
 
     except Exception as e:
         raise RuntimeError(f"Configuration error: {e}")
+
 
 # Global settings instance
 settings = get_settings()

@@ -11,6 +11,7 @@ SECRET_PATTERNS = [
     (r"(Bearer\s+)([A-Za-z0-9_\-\.]+)", r"\1***MASKED***"),
 ]
 
+
 def mask_secrets(text: str) -> str:
     """Mask sensitive information in logs"""
     if not isinstance(text, str):
@@ -20,6 +21,7 @@ def mask_secrets(text: str) -> str:
         text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
     return text
+
 
 def safe_dict(d: Dict[str, Any]) -> Dict[str, Any]:
     """Return dict with masked sensitive keys"""
