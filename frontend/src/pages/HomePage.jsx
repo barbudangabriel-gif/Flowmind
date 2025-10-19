@@ -78,8 +78,7 @@ export default function HomePage() {
 
         {/* Quick Actions Grid */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-            <Zap className="w-6 h-6 text-emerald-400" />
+          <h2 className="text-2xl font-bold text-white mb-6">
             Quick Actions
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
