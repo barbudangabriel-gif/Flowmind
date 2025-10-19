@@ -166,19 +166,19 @@ function App() {
  
  <div className="flex h-screen bg-[#0a0e1a]">
  {/* Sidebar with toggle button */}
- <div className={`relative transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-[226px]'}`}>
+ <div className={`relative transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-[218px]'}`}>
  <SidebarSimple ctx={ctx} collapsed={sidebarCollapsed} />
  
  {/* Toggle button - positioned on left side of sidebar at header height */}
  <button
  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
- className="absolute top-0 left-0 h-16 w-12 flex items-center justify-center bg-gradient-to-r from-[#0f1419] to-[#0a0e1a] hover:bg-slate-800 transition-colors z-10"
+ className="absolute top-0 left-0 h-[50px] w-10 flex items-center justify-center bg-gradient-to-r from-[#0f1419] to-[#0a0e1a] hover:bg-slate-800 transition-colors z-10"
  title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
  >
- <div className="flex flex-col gap-1">
- <div className="w-5 h-0.5 bg-slate-300 rounded-full"></div>
- <div className="w-5 h-0.5 bg-slate-300 rounded-full"></div>
- <div className="w-5 h-0.5 bg-slate-300 rounded-full"></div>
+ <div className="flex flex-col gap-0.5">
+ <div className="w-4 h-0.5 bg-slate-300 rounded-full"></div>
+ <div className="w-4 h-0.5 bg-slate-300 rounded-full"></div>
+ <div className="w-4 h-0.5 bg-slate-300 rounded-full"></div>
  </div>
  </button>
  </div>
