@@ -188,11 +188,11 @@ function App() {
  {/* Header */}
  <header className="bg-gradient-to-r from-[#0f1419] to-[#0a0e1a] border-b border-[#1e293b] h-16 flex items-center px-6 gap-4">
  {/* Logo */}
- <div className="flex items-center gap-3 text-white transform translate-y-1">
+ <div className="flex items-center gap-3 text-white transform translate-y-1 ml-[-16px]">
  <img 
  src="/assets/logos/flowmind_analytics_horizontal.png" 
  alt="FlowMind Analytics" 
- className="h-[106px] w-auto"
+ className="h-[110px] w-auto"
  />
  </div>
 
