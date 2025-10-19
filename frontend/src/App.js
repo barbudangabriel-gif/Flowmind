@@ -199,19 +199,13 @@ function App() {
  {/* Spacer */}
  <div className="flex-1"></div>
 
- {/* Right side - Market Status + Welcome */}
+ {/* Right side - Market Status */}
  <div className="flex items-center gap-4">
- {/* Market Status Badge */}
- <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${
- marketOpen 
- ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
- : 'bg-slate-700 text-slate-400 border border-slate-600'
- }`}>
- <div className={`w-2 h-2 rounded-full ${marketOpen ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`}></div>
+ {/* Market Status - Clean text without card */}
+ <div className="flex items-center gap-2 text-[8.4px] font-medium text-slate-400">
+ <div className={`w-2 h-2 rounded-full ${marketOpen ? 'bg-emerald-400' : 'bg-slate-500'}`}></div>
  <span>{marketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}</span>
  </div>
- 
- <span className="text-sm text-[#94a3b8]">Welcome back</span>
  </div>
  </header>
 
