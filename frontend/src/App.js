@@ -166,7 +166,7 @@ function App() {
  
  <div className="flex h-screen bg-[#0a0e1a]">
  {/* Sidebar with toggle button */}
- <div className={`relative transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-[218px]'}`}>
+ <div className={`relative transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-[212px]'}`}>
  <SidebarSimple ctx={ctx} collapsed={sidebarCollapsed} />
  
  {/* Toggle button - positioned on left side of sidebar at header height */}
