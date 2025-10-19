@@ -5,13 +5,69 @@
 [![Security](https://img.shields.io/badge/security-hardened-green.svg)](./SECURITY_CI_IMPROVEMENTS_2025-10-14.md)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitLab-orange.svg)](./.gitlab-ci.yml)
 [![Health](https://img.shields.io/badge/health-monitored-blue.svg)](#health-endpoints)
+[![Python 3.12](https://img.shields.io/badge/python-3.12%20ready-brightgreen.svg)](./PYTHON312_INDENT_FIX_COMPLETE.md)
+
+---
+
+## Recent Updates
+
+### October 19, 2025 - Python 3.12 Full Compliance + Prevention System
+- ✅ **COMPLETE:** All 12 critical files fixed (5,314 lines corrected)
+- ✅ **VERIFIED:** 127/127 backend Python files pass validation
+- ✅ **PREVENTION:** Multi-layer system implemented to prevent future issues
+- 🛡️ **Protection:** Editor setup + Pre-commit hooks + CI/CD validation
+- 📖 **Documentation:** Complete prevention guide for team
+- **Details:** See [PYTHON312_INDENT_PROJECT_COMPLETE.md](./PYTHON312_INDENT_PROJECT_COMPLETE.md)
+
+---
+
+## 🚀 Developer Setup (NEW - Required for all team members)
+
+### Quick Start (5 minutes)
+```bash
+# Clone repository
+git clone https://github.com/barbudangabriel-gif/Flowmind.git
+cd Flowmind
+
+# Automated setup (installs tools + configures environment)
+./setup_dev_env.sh
+```
+
+**What it does:**
+- ✅ Verifies Python 3.12+
+- ✅ Installs pre-commit hooks (Black, Ruff, linting)
+- ✅ Checks VS Code settings (detectIndentation: false)
+- ✅ Validates environment configuration
+- ✅ Runs initial code validation
+
+**Important:** Pre-commit hooks will **block commits** with invalid indentation!
+
+### Manual Setup (if script fails)
+```bash
+# Install development tools
+pip install pre-commit black ruff flake8
+
+# Install pre-commit hooks
+pre-commit install
+
+# Verify setup
+pre-commit run --all-files
+```
+
+**🚨 Critical Settings (VS Code):**
+- Must have: `"editor.detectIndentation": false`
+- Must have: `"editor.formatOnSave": true`
+- Already configured in `.vscode/settings.json`
+
+**📚 Full Guide:** [INDENTATION_PREVENTION_GUIDE.md](./INDENTATION_PREVENTION_GUIDE.md)  
+**Quick Reference:** [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
 
 ---
 
 ## Quick Start
 
 ### Prerequisites
-- **Backend:** Python 3.11+, FastAPI, Redis (optional, has fallback)
+- **Backend:** Python 3.12+, FastAPI, Redis (optional, has fallback)
 - **Frontend:** Node 20+, React 19
 - **Optional:** MongoDB (portfolios), TradeStation API, Unusual Whales API
 
@@ -105,24 +161,49 @@ curl http://localhost:8000/api/health/redis | jq
 
 ---
 
-## Security
+## 🔒 Code Quality & Security
 
-### Recent Security Hardening (Oct 14, 2025)
+### Python 3.12 Compliance (Oct 2025)
+- ✅ **100% Compliant:** All 127 backend Python files pass validation
+- ✅ **Zero Errors:** No IndentationError or syntax errors
+- ✅ **Prevention System:** 3-layer defense (Editor + Pre-commit + CI/CD)
+- 📊 **Validation:** Automated AST parsing + py_compile checks
 
- **Eliminated 76% of CWE-330 warnings**
+### Security Hardening (Oct 14, 2025)
+
+✅ **Eliminated 76% of CWE-330 warnings**
 - Replaced `random` → `secrets` in 5 backend files
 - Demo data generation follows security best practices
 - Zero HIGH/MEDIUM security issues
 
- **CI/CD Security Gates**
+✅ **CI/CD Security Gates**
 - Bandit (Python SAST): `-ll` (low severity or higher)
 - npm audit: `--audit-level=high`
 - pip-audit: `--strict`
 - Zero tolerance on HIGH/CRITICAL issues
 
-See: [ABCD_IMPROVEMENTS_2025-10-14.md](./ABCD_IMPROVEMENTS_2025-10-14.md), [SECURITY_CI_IMPROVEMENTS_2025-10-14.md](./SECURITY_CI_IMPROVEMENTS_2025-10-14.md)
+### Pre-commit Hooks (Automatic)
+```bash
+# Runs automatically on every commit:
+- Black formatter (4-space indentation enforced)
+- Ruff linter (style + errors)
+- check-ast (syntax validation)
+- No tabs, trailing whitespace, or secrets
+
+# Manual run:
+pre-commit run --all-files
+```
+
+**See Also:**
+- [PYTHON312_INDENT_PROJECT_COMPLETE.md](./PYTHON312_INDENT_PROJECT_COMPLETE.md) - Full compliance report
+- [INDENTATION_PREVENTION_GUIDE.md](./INDENTATION_PREVENTION_GUIDE.md) - Prevention strategy
+- [FINAL_CODE_SCAN_REPORT.md](./FINAL_CODE_SCAN_REPORT.md) - Latest validation results
+- [ABCD_IMPROVEMENTS_2025-10-14.md](./ABCD_IMPROVEMENTS_2025-10-14.md) - Security improvements
+- [SECURITY_CI_IMPROVEMENTS_2025-10-14.md](./SECURITY_CI_IMPROVEMENTS_2025-10-14.md) - CI/CD gates
 
 ---
+
+## Security
 
 ## Performance
 

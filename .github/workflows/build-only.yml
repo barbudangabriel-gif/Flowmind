@@ -1,0 +1,37 @@
+name: build-only
+on: [push, pull_request]
+
+jobs:
+  fe-build:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+          cache-dependency-path: frontend/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+
+  be-import:
+    name: Backend import sanity
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -U pip
+      - run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+      - run: python -c "from app.main import app; print('✅ Backend import OK')"
