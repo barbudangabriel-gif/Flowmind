@@ -57,7 +57,7 @@ export default function HomePage() {
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl">
             Professional-grade stocks and options trading analytics with real-time flow monitoring, 
-            strategy building, and AI-powered algos and recommendations.
+            strategy building, and AI-powered <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 font-semibold">algos</span> and recommendations.
           </p>
         </div>
 
