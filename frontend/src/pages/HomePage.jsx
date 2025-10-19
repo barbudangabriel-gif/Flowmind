@@ -44,7 +44,7 @@ export default function HomePage() {
   const stats = [
     { label: 'Strategies Available', value: '54+', icon: TrendingUp },
     { label: 'Live Data Feeds', value: '2', icon: Activity },
-    { label: 'Real-time Updates', value: '24/7', icon: Zap },
+    { label: 'Real-time Updates', value: '24/7', icon: Activity },
   ];
 
   return (
@@ -78,7 +78,7 @@ export default function HomePage() {
 
         {/* Quick Actions Grid */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">
+          <h2 className="text-2xl font-normal text-white mb-6">
             Quick Actions
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -115,7 +115,7 @@ export default function HomePage() {
                       )}
                     </div>
                     
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-white transition-colors">
+                    <h3 className="text-xl font-normal text-white mb-2 group-hover:text-white transition-colors">
                       {action.title}
                     </h3>
                     <p className="text-slate-300 text-sm mb-4">
