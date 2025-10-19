@@ -2,9 +2,43 @@
 // FlowMind — Sidebar (Safe Minimal)
 // =============================================
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
 import { buildNav } from '../lib/nav.simple';
+
+// Custom tooltip component with better visibility
+function Tooltip({ text, children, delay = 500 }) {
+ const [show, setShow] = useState(false);
+ const [timer, setTimer] = useState(null);
+
+ const handleMouseEnter = () => {
+ const t = setTimeout(() => setShow(true), delay);
+ setTimer(t);
+ };
+
+ const handleMouseLeave = () => {
+ if (timer) clearTimeout(timer);
+ setShow(false);
+ };
+
+ return (
+ <div 
+ className="relative inline-block"
+ onMouseEnter={handleMouseEnter}
+ onMouseLeave={handleMouseLeave}
+ >
+ {children}
+ {show && (
+ <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-[200] pointer-events-none animate-in fade-in slide-in-from-left-1 duration-200">
+ <div className="bg-slate-800 text-white text-xs px-2.5 py-1.5 rounded-md shadow-xl border border-slate-700 whitespace-nowrap font-medium">
+ {text}
+ <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+ </div>
+ </div>
+ )}
+ </div>
+ );
+}
 
 // Safe icon component
 function IconByName({ name, className = "w-4 h-4" }) {
@@ -44,6 +78,8 @@ function Badge({ b }) {
 
 // Safe row renderer
 function Row({ item, ctx, depth = 0, expandedItems, toggleItem }) {
+ const location = useLocation();
+ 
  // Safety checks
  if (!item || !item.label) return null;
  
@@ -74,44 +110,48 @@ function Row({ item, ctx, depth = 0, expandedItems, toggleItem }) {
  console.warn('Badge resolution failed:', e);
  }
 
- const baseClasses = `flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] font-medium transition-colors ${depth > 0 ? 'ml-4' : ''}`;
+ // Check if this route is active
+ const isActive = item.to && location.pathname === item.to;
+
+ const baseClasses = `flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] font-medium transition-all duration-200 ${depth > 0 ? 'ml-4' : ''}`;
  const stateClasses = disabled 
  ? "opacity-50 pointer-events-none text-slate-500"
- : "text-slate-300 hover:bg-slate-800 cursor-pointer";
+ : isActive
+ ? "bg-emerald-900/40 text-emerald-400 border-l-2 border-emerald-400 shadow-sm"
+ : "text-slate-300 hover:bg-slate-800/80 hover:text-white hover:shadow-md hover:border-l-2 hover:border-slate-700 hover:scale-[1.02] cursor-pointer";
 
  const hasChildren = item.children && item.children.length > 0;
  const isExpanded = expandedItems[item.label];
  
- // Debug logging for items with children
- if (hasChildren && depth === 0) {
- console.log(`🔍 Item "${item.label}" has ${item.children.length} children, expanded: ${isExpanded}`);
- }
-
  const content = (
  <div className={`${baseClasses} ${stateClasses}`}>
  <span className="flex items-center gap-2 flex-1">
  {hasChildren && (
- <LucideIcons.ChevronRight className={`w-4 h-4 text-slate-400 opacity-60 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+ <LucideIcons.ChevronRight className={`w-4 h-4 text-slate-400 opacity-60 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
  )}
- <IconByName name={item.icon} className="w-4 h-4 shrink-0 opacity-80" />
+ <IconByName name={item.icon} className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-400' : 'opacity-80'}`} />
  <span className="text-[13px] font-medium truncate">{item.label}</span>
  </span>
- {/* Badge removed - no PRO/NEW/BETA labels */}
+ {badge && <Badge b={badge} />}
  </div>
  );
  
  if (hasChildren) {
- // If has children, make it clickable to toggle
+ // If has children, make it clickable to toggle with smooth animation
  return (
  <>
- <div onClick={() => toggleItem(item.label)}>{content}</div>
- {isExpanded && (
+ <div onClick={() => toggleItem(item.label)} className="cursor-pointer">{content}</div>
+ <div 
+ className={`overflow-hidden transition-all duration-300 ease-in-out ${
+ isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+ }`}
+ >
  <div className="mt-1 ml-2 space-y-1">
  {item.children.map((ch, cidx) => (
  <Row key={cidx} item={ch} ctx={ctx} depth={depth + 1} expandedItems={expandedItems} toggleItem={toggleItem} />
  ))}
  </div>
- )}
+ </div>
  </>
  );
  }
@@ -124,6 +164,8 @@ function Row({ item, ctx, depth = 0, expandedItems, toggleItem }) {
 }
 
 export default function SidebarSimple({ ctx, collapsed = false }) {
+ const location = useLocation();
+ 
  // State for collapsed sections
  const [collapsedSections, setCollapsedSections] = useState({});
  // State for expanded items with children
@@ -155,22 +197,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  
  const nav = React.useMemo(() => {
  try {
- const result = buildNav(safeCtx);
- console.log(' Nav built:', {
- sections: result.length,
- collapsed,
- portfoliosInCtx: safeCtx.portfolios.length
- });
- // Log fiecare secțiune
- result.forEach((sec, i) => {
- console.log(` Section ${i}: "${sec.title}" - ${sec.items?.length || 0} items`);
- sec.items?.forEach((it, j) => {
- if (it.children) {
- console.log(` Item ${j}: "${it.label}" - ${it.children.length} children`);
- }
- });
- });
- return result;
+ return buildNav(safeCtx);
  } catch (e) {
  console.error('buildNav failed:', e);
  return [];
@@ -178,9 +205,9 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  }, [JSON.stringify(safeCtx)]);
  
  return (
- <aside className={`border-r border-[#1e293b] bg-gradient-to-b from-[#0f1419] to-[#0a0e1a] h-screen overflow-y-auto transition-all duration-300 ${collapsed ? 'w-16' : 'w-[226px]'} scrollbar-hide`} style={{ borderRightWidth: '1px', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial', fontSize: '13px', lineHeight: '20.8px', fontWeight: '400' }}>
+ <aside className={`border-r border-[#1e293b] bg-gradient-to-b from-[#0f1419] to-[#0a0e1a] h-screen overflow-y-auto transition-all duration-300 ${collapsed ? 'w-16' : 'w-[212px]'} scrollbar-hide`} style={{ borderRightWidth: '1px', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial', fontSize: '13px', lineHeight: '20.8px', fontWeight: '400' }}>
  {/* Space for hamburger button */}
- <div className="h-16"></div>
+ <div className="h-[50px]"></div>
  
  {nav.map((sec, i) => {
  const isCollapsed = collapsedSections[sec.title];
@@ -191,21 +218,27 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  {!collapsed && (
  <button
  onClick={() => toggleSection(sec.title)}
- className={`w-full flex items-center gap-2 px-1 mb-2 text-[13px] uppercase tracking-wide font-semibold ${sec.isComplete ? 'text-cyan-400' : 'text-[#94a3b8]'} hover:text-[rgb(252, 251, 255)] transition-colors`}
+ className="w-full flex items-center gap-2 px-1 mb-2 text-[13px] uppercase tracking-wide font-semibold text-[#94a3b8] hover:text-white hover:scale-[1.02] hover:translate-x-0.5 transition-all duration-200"
  >
  <LucideIcons.ChevronRight 
- className={`w-4 h-4 text-slate-400 transition-transform ${isCollapsed ? '' : 'rotate-90'}`}
+ className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${isCollapsed ? '' : 'rotate-90'}`}
  />
- <span>{sec.title}</span>
+ <span className="flex-1 text-left">{sec.title}</span>
  </button>
  )}
  
- {/* Section items - full view when expanded */}
- {!isCollapsed && !collapsed && (
+ {/* Section items - full view when expanded with smooth animation */}
+ {!collapsed && (
+ <div 
+ className={`overflow-hidden transition-all duration-300 ease-in-out ${
+ isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[2000px] opacity-100'
+ }`}
+ >
  <div className="space-y-1">
  {(sec.items || []).map((it, idx) => (
  <Row key={`${sec.title}-${idx}`} item={it} ctx={safeCtx} expandedItems={expandedItems} toggleItem={toggleItem} />
  ))}
+ </div>
  </div>
  )}
  
@@ -216,29 +249,24 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  const itemKey = `${sec.title}-${idx}`;
  const hasChildren = it.children && it.children.length > 0;
  const isActive = activePopover === itemKey;
- 
- // DEBUG: Log TOATE items din secțiunea Account
- if (sec.title === 'Account') {
- console.log(` ${sec.title} item ${idx}:`, {
- label: it.label,
- icon: it.icon,
- hasChildren,
- childrenCount: it.children?.length || 0,
- itemKey
- });
- }
+ const isItemActive = it.to && location.pathname === it.to;
+ const isChildActive = hasChildren && it.children.some(ch => ch.to && location.pathname === ch.to);
  
  // Regular item without children - just show icon with link
  if (!hasChildren) {
  return (
+ <Tooltip key={itemKey} text={it.label} delay={400}>
  <Link
- key={itemKey}
  to={it.to || '#'}
- className="flex items-center justify-center p-2 text-slate-300 hover:bg-slate-800 rounded transition-colors"
- title={it.label}
+ className={`flex items-center justify-center p-2 rounded transition-all duration-200 ${
+ isItemActive 
+ ? 'bg-emerald-900/40 text-emerald-400 ring-2 ring-emerald-400/50'
+ : 'text-slate-300 hover:bg-slate-800'
+ }`}
  >
  <IconByName name={it.icon} className="w-4 h-4" />
  </Link>
+ </Tooltip>
  );
  }
  
@@ -247,36 +275,35 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  <div 
  key={itemKey} 
  className="relative"
- onMouseEnter={() => {
- console.log('🖱️ HOVER:', it.label, 'itemKey:', itemKey);
- setActivePopover(itemKey);
- }}
- onMouseLeave={() => {
- console.log('🚪 LEAVE:', it.label);
- setActivePopover(null);
- }}
+ onMouseEnter={() => setActivePopover(itemKey)}
+ onMouseLeave={() => setActivePopover(null)}
  >
- {/* Icon button */}
+ {/* Icon button with custom tooltip */}
+ <Tooltip text={it.label} delay={400}>
  <div
- className={`flex items-center justify-center p-2 rounded transition-all relative cursor-pointer ${
+ className={`flex items-center justify-center p-2 rounded transition-all duration-200 relative cursor-pointer ${
  isActive 
  ? 'bg-slate-800 text-emerald-400' 
- : 'text-slate-300 hover:bg-slate-800'
+ : isChildActive
+ ? 'bg-emerald-900/40 text-emerald-400 ring-2 ring-emerald-400/50'
+ : 'text-slate-300 hover:bg-slate-800/80 hover:text-white hover:scale-110 hover:shadow-lg'
  }`}
- title={it.label}
  >
  <IconByName name={it.icon} className="w-4 h-4" />
- {/* Green dot indicator */}
- <span className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+ {/* Green dot indicator when has active children */}
+ {isChildActive && (
+ <span className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+ )}
  </div>
+ </Tooltip>
  
- {/* Popover menu */}
+ {/* Popover menu with smooth fade-in animation */}
  {isActive && (
  <div 
- className="absolute left-full top-0 ml-2 z-[100] min-w-[200px]"
+ className="absolute left-full top-0 ml-2 z-[100] min-w-[200px] animate-in fade-in slide-in-from-left-2 duration-200"
  style={{ backgroundColor: '#1e293b' }}
  >
- <div className="bg-[#1e293b] border border-[#334155] rounded-lg shadow-2xl py-2">
+ <div className="bg-[#1e293b] border border-[#334155] rounded-lg shadow-2xl py-2 backdrop-blur-sm">
  {/* Header */}
  <div className="px-3 py-2 text-[13px] font-medium text-slate-400 uppercase border-b border-[#334155] flex items-center gap-2">
  <IconByName name={it.icon} className="w-3.5 h-3.5" />
@@ -284,14 +311,18 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  </div>
  {/* Children items */}
  {it.children.map((ch, cidx) => {
- console.log('🔗 Rendering child:', ch.label);
+ const isChildActive = ch.to && location.pathname === ch.to;
  return (
  <Link
  key={cidx}
  to={ch.to || '#'}
- className="flex items-center gap-2 px-3 py-2.5 text-[13px] font-medium text-slate-300 hover:bg-slate-700/50 hover:text-[rgb(252, 251, 255)] transition-all"
+ className={`flex items-center gap-2 px-3 py-2.5 text-[13px] font-medium transition-all duration-200 ${
+ isChildActive
+ ? 'bg-emerald-900/40 text-emerald-400 border-l-2 border-emerald-400'
+ : 'text-slate-300 hover:bg-slate-700/70 hover:text-white hover:border-l-2 hover:border-slate-600 hover:shadow-sm'
+ }`}
  >
- <IconByName name={ch.icon} className="w-4 h-4" />
+ <IconByName name={ch.icon} className={`w-4 h-4 ${isChildActive ? 'text-emerald-400' : ''}`} />
  <span>{ch.label}</span>
  </Link>
  );

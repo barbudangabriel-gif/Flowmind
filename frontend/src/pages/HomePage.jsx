@@ -24,7 +24,7 @@ export default function HomePage() {
       badge: 'Live'
     },
     {
-      title: 'Portfolio Manager',
+      title: 'Mindfolio Manager',
       description: 'Track positions & performance',
       icon: Wallet,
       link: '/portfolios',
@@ -32,7 +32,7 @@ export default function HomePage() {
       badge: 'Multi-Portfolio'
     },
     {
-      title: 'Strategy Optimizer',
+      title: 'Optimize',
       description: 'AI-powered strategy recommendations',
       icon: BarChart3,
       link: '/optimize',
@@ -44,7 +44,7 @@ export default function HomePage() {
   const stats = [
     { label: 'Strategies Available', value: '54+', icon: TrendingUp },
     { label: 'Live Data Feeds', value: '2', icon: Activity },
-    { label: 'Real-time Updates', value: '24/7', icon: Zap },
+    { label: 'Real-time Updates', value: '24/7', icon: Activity },
   ];
 
   return (
@@ -56,8 +56,8 @@ export default function HomePage() {
             Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">FlowMind Analytics</span>
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl">
-            Professional-grade options trading analytics with real-time flow monitoring, 
-            strategy building, and AI-powered recommendations.
+            Professional-grade stocks and options trading analytics with real-time flow monitoring, 
+            strategy building, and AI-powered <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 font-semibold">algos</span> and recommendations.
           </p>
         </div>
 
@@ -71,15 +71,14 @@ export default function HomePage() {
                 </div>
                 <span className="text-slate-400 text-sm">{stat.label}</span>
               </div>
-              <div className="text-3xl font-bold text-white">{stat.value}</div>
+              <div className="text-[26px] font-normal text-white">{stat.value}</div>
             </div>
           ))}
         </div>
 
         {/* Quick Actions Grid */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-            <Zap className="w-6 h-6 text-emerald-400" />
+          <h2 className="text-2xl font-normal text-white mb-6">
             Quick Actions
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -107,7 +106,7 @@ export default function HomePage() {
                   <div className="relative z-10">
                     <div className="flex items-start justify-between mb-4">
                       <div className={`p-3 bg-slate-900/50 rounded-lg backdrop-blur-sm`}>
-                        <action.icon className={`w-7 h-7 ${iconColorClasses[action.color]}`} />
+                        <action.icon className={`w-5 h-5 ${iconColorClasses[action.color]}`} />
                       </div>
                       {action.badge && (
                         <span className="px-2 py-1 bg-slate-900/70 backdrop-blur-sm text-white text-xs font-medium rounded-full border border-slate-700">
@@ -116,7 +115,7 @@ export default function HomePage() {
                       )}
                     </div>
                     
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-white transition-colors">
+                    <h3 className="text-xl font-normal text-white mb-2 group-hover:text-white transition-colors">
                       {action.title}
                     </h3>
                     <p className="text-slate-300 text-sm mb-4">
@@ -139,7 +138,7 @@ export default function HomePage() {
 
         {/* Feature Highlights */}
         <div className="bg-slate-900/30 border border-slate-800 rounded-xl p-8 backdrop-blur-sm">
-          <h2 className="text-2xl font-bold text-white mb-6">Platform Features</h2>
+          <h2 className="text-2xl font-normal text-white mb-6">Platform Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex gap-4">
               <div className="shrink-0">
@@ -148,7 +147,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-1">Advanced Strategy Builder</h3>
+                <h3 className="text-white font-normal mb-1">Advanced Strategy Builder</h3>
                 <p className="text-slate-400 text-sm">
                   54+ pre-built strategies with real-time P&L visualization, Greeks calculation, and quality scoring.
                 </p>
@@ -162,7 +161,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-1">Real-Time Options Flow</h3>
+                <h3 className="text-white font-normal mb-1">Real-Time Options Flow</h3>
                 <p className="text-slate-400 text-sm">
                   Monitor unusual options activity, sweeps, and blocks from institutional traders.
                 </p>
@@ -176,7 +175,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-1">Portfolio Management</h3>
+                <h3 className="text-white font-normal mb-1">Mindfolio Management</h3>
                 <p className="text-slate-400 text-sm">
                   Multi-portfolio support with budget allocation, FIFO position tracking, and performance analytics.
                 </p>
@@ -190,7 +189,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-white font-semibold mb-1">AI-Powered Optimization</h3>
+                <h3 className="text-white font-normal mb-1">AI-Powered Optimization</h3>
                 <p className="text-slate-400 text-sm">
                   Get strategy recommendations based on market conditions, sentiment, and risk tolerance.
                 </p>

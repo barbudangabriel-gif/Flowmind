@@ -166,20 +166,20 @@ function App() {
  
  <div className="flex h-screen bg-[#0a0e1a]">
  {/* Sidebar with toggle button */}
- <div className={`relative transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-[226px]'}`}>
+ <div className={`relative transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-[212px]'}`}>
  <SidebarSimple ctx={ctx} collapsed={sidebarCollapsed} />
  
  {/* Toggle button - positioned on left side of sidebar at header height */}
  <button
  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
- className="absolute top-0 left-0 h-16 w-12 flex items-center justify-center bg-gradient-to-r from-[#0f1419] to-[#0a0e1a] hover:bg-slate-800 transition-colors z-10"
+ className="absolute top-[12px] left-1 h-[50px] w-10 flex items-center justify-center bg-gradient-to-r from-[#0f1419] to-[#0a0e1a] hover:bg-slate-800 transition-all duration-200 z-10 group"
  title={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
  >
- <div className="flex flex-col gap-1">
- <div className="w-5 h-0.5 bg-slate-300 rounded-full"></div>
- <div className="w-5 h-0.5 bg-slate-300 rounded-full"></div>
- <div className="w-5 h-0.5 bg-slate-300 rounded-full"></div>
- </div>
+            <div className="flex flex-col gap-0.5">
+              <div className="w-4 h-px bg-slate-300 group-hover:bg-white rounded-full transition-colors duration-200"></div>
+              <div className="w-4 h-px bg-slate-300 group-hover:bg-white rounded-full transition-colors duration-200"></div>
+              <div className="w-4 h-px bg-slate-300 group-hover:bg-white rounded-full transition-colors duration-200"></div>
+            </div>
  </button>
  </div>
  
@@ -188,30 +188,24 @@ function App() {
  {/* Header */}
  <header className="bg-gradient-to-r from-[#0f1419] to-[#0a0e1a] border-b border-[#1e293b] h-16 flex items-center px-6 gap-4">
  {/* Logo */}
- <div className="flex items-center gap-3 text-white transform translate-y-1">
+ <div className="flex items-center gap-3 text-white transform translate-y-1 ml-[-22px]">
  <img 
  src="/assets/logos/flowmind_analytics_horizontal.png" 
  alt="FlowMind Analytics" 
- className="h-[106px] w-auto"
+ className="h-[114px] w-auto"
  />
  </div>
 
  {/* Spacer */}
  <div className="flex-1"></div>
 
- {/* Right side - Market Status + Welcome */}
+ {/* Right side - Market Status */}
  <div className="flex items-center gap-4">
- {/* Market Status Badge */}
- <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${
- marketOpen 
- ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
- : 'bg-slate-700 text-slate-400 border border-slate-600'
- }`}>
- <div className={`w-2 h-2 rounded-full ${marketOpen ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`}></div>
+ {/* Market Status - Clean text without card */}
+ <div className="flex items-center gap-2 text-[8.4px] font-medium text-slate-400">
+ <div className={`w-2 h-2 rounded-full ${marketOpen ? 'bg-emerald-400' : 'bg-slate-500'}`}></div>
  <span>{marketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}</span>
  </div>
- 
- <span className="text-sm text-[#94a3b8]">Welcome back</span>
  </div>
  </header>
 
