@@ -66,9 +66,7 @@ export default function HomePage() {
           {stats.map((stat, idx) => (
             <div key={idx} className="bg-slate-900/50 border border-slate-800 rounded-lg p-6 backdrop-blur-sm">
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-emerald-500/10 rounded-lg">
-                  <stat.icon className="w-5 h-5 text-emerald-400" />
-                </div>
+                <stat.icon className="w-4 h-4 text-emerald-400" />
                 <span className="text-slate-400 text-sm">{stat.label}</span>
               </div>
               <div className="text-[26px] font-normal text-white">{stat.value}</div>
@@ -105,9 +103,7 @@ export default function HomePage() {
                 >
                   <div className="relative z-10">
                     <div className="flex items-start justify-between mb-4">
-                      <div className={`p-3 bg-slate-900/50 rounded-lg backdrop-blur-sm`}>
-                        <action.icon className={`w-5 h-5 ${iconColorClasses[action.color]}`} />
-                      </div>
+                      <action.icon className={`w-4 h-4 ${iconColorClasses[action.color]}`} />
                       {action.badge && (
                         <span className="px-2 py-1 bg-slate-900/70 backdrop-blur-sm text-white text-xs font-medium rounded-full border border-slate-700">
                           {action.badge}
@@ -142,9 +138,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex gap-4">
               <div className="shrink-0">
-                <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-emerald-400" />
-                </div>
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
                 <h3 className="text-white font-normal mb-1">Advanced Strategy Builder</h3>
@@ -156,9 +150,7 @@ export default function HomePage() {
 
             <div className="flex gap-4">
               <div className="shrink-0">
-                <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                  <Activity className="w-5 h-5 text-blue-400" />
-                </div>
+                <Activity className="w-4 h-4 text-blue-400" />
               </div>
               <div>
                 <h3 className="text-white font-normal mb-1">Real-Time Options Flow</h3>
@@ -170,9 +162,7 @@ export default function HomePage() {
 
             <div className="flex gap-4">
               <div className="shrink-0">
-                <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                  <Wallet className="w-5 h-5 text-purple-400" />
-                </div>
+                <Wallet className="w-4 h-4 text-purple-400" />
               </div>
               <div>
                 <h3 className="text-white font-normal mb-1">Mindfolio Management</h3>
@@ -184,9 +174,7 @@ export default function HomePage() {
 
             <div className="flex gap-4">
               <div className="shrink-0">
-                <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-5 h-5 text-amber-400" />
-                </div>
+                <BarChart3 className="w-4 h-4 text-amber-400" />
               </div>
               <div>
                 <h3 className="text-white font-normal mb-1">AI-Powered Optimization</h3>
