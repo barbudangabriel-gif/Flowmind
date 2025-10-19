@@ -6,6 +6,40 @@ import { Link, useLocation } from 'react-router-dom';
 import * as LucideIcons from 'lucide-react';
 import { buildNav } from '../lib/nav.simple';
 
+// Custom tooltip component with better visibility
+function Tooltip({ text, children, delay = 500 }) {
+ const [show, setShow] = useState(false);
+ const [timer, setTimer] = useState(null);
+
+ const handleMouseEnter = () => {
+ const t = setTimeout(() => setShow(true), delay);
+ setTimer(t);
+ };
+
+ const handleMouseLeave = () => {
+ if (timer) clearTimeout(timer);
+ setShow(false);
+ };
+
+ return (
+ <div 
+ className="relative inline-block"
+ onMouseEnter={handleMouseEnter}
+ onMouseLeave={handleMouseLeave}
+ >
+ {children}
+ {show && (
+ <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-[200] pointer-events-none animate-in fade-in slide-in-from-left-1 duration-200">
+ <div className="bg-slate-800 text-white text-xs px-2.5 py-1.5 rounded-md shadow-xl border border-slate-700 whitespace-nowrap font-medium">
+ {text}
+ <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-800"></div>
+ </div>
+ </div>
+ )}
+ </div>
+ );
+}
+
 // Safe icon component
 function IconByName({ name, className = "w-4 h-4" }) {
  if (!name) return <LucideIcons.Circle className={className} />;
@@ -224,18 +258,18 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  // Regular item without children - just show icon with link
  if (!hasChildren) {
  return (
+ <Tooltip key={itemKey} text={it.label} delay={400}>
  <Link
- key={itemKey}
  to={it.to || '#'}
  className={`flex items-center justify-center p-2 rounded transition-all duration-200 ${
  isItemActive 
  ? 'bg-emerald-900/40 text-emerald-400 ring-2 ring-emerald-400/50'
  : 'text-slate-300 hover:bg-slate-800'
  }`}
- title={it.label}
  >
  <IconByName name={it.icon} className="w-4 h-4" />
  </Link>
+ </Tooltip>
  );
  }
  
@@ -247,7 +281,8 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  onMouseEnter={() => setActivePopover(itemKey)}
  onMouseLeave={() => setActivePopover(null)}
  >
- {/* Icon button */}
+ {/* Icon button with custom tooltip */}
+ <Tooltip text={it.label} delay={400}>
  <div
  className={`flex items-center justify-center p-2 rounded transition-all duration-200 relative cursor-pointer ${
  isActive 
@@ -256,7 +291,6 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  ? 'bg-emerald-900/40 text-emerald-400 ring-2 ring-emerald-400/50'
  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white hover:scale-110 hover:shadow-lg'
  }`}
- title={it.label}
  >
  <IconByName name={it.icon} className="w-4 h-4" />
  {/* Green dot indicator when has active children */}
@@ -264,6 +298,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  <span className="absolute bottom-1 right-1 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
  )}
  </div>
+ </Tooltip>
  
  {/* Popover menu with smooth fade-in animation */}
  {isActive && (
