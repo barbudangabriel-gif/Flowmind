@@ -59,7 +59,7 @@ export default function HomePage() {
             <img 
               src="/assets/logos/flowmind_brain_orange_transparent_10s.gif" 
               alt="FlowMind Brain" 
-              className="w-16 h-16 mb-4"
+              className="w-[160px] h-[160px] mb-4"
             />
           </div>
           <p className="text-xl text-slate-300 max-w-3xl">
