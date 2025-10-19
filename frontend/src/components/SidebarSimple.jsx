@@ -189,7 +189,10 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  <LucideIcons.ChevronRight 
  className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${isCollapsed ? '' : 'rotate-90'}`}
  />
- <span>{sec.title}</span>
+ <span className="flex-1 text-left">{sec.title}</span>
+ {sec.isComplete && (
+ <LucideIcons.CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 opacity-70" />
+ )}
  </button>
  )}
  

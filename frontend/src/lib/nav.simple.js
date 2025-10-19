@@ -10,6 +10,7 @@ export function buildNav(ctx) {
  // OVERVIEW
  {
  title: "Overview",
+ isComplete: true,
  items: [
  { label: "Dashboard", to: "/dashboard", icon: "LayoutDashboard" },
  ],
@@ -18,6 +19,7 @@ export function buildNav(ctx) {
  // ACCOUNTS
  {
  title: "Accounts",
+ isComplete: true,
  items: [
  { label: "Account Balance", to: "/account/balance", icon: "Wallet" },
  ],
@@ -68,6 +70,7 @@ export function buildNav(ctx) {
  // OPTIONS (Quick Tools)
  {
  title: "Options Data",
+ isComplete: true,
  items: [
  { 
  label: "Builder", 
@@ -151,6 +154,7 @@ export function buildNav(ctx) {
  // SETTINGS
  {
  title: "Settings",
+ isComplete: true,
  items: [
  { label: "Risk & Gates", to: "/settings/gates", icon: "Shield" },
  { label: "Screensaver", to: "/settings/screensaver", icon: "Monitor" },
@@ -179,6 +183,7 @@ export function buildNav(ctx) {
  // HELP
  {
  title: "Help",
+ isComplete: true,
  items: [
  { label: "Docs", to: "/help/docs", icon: "BookOpenCheck" },
  ],
