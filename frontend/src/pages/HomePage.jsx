@@ -115,14 +115,14 @@ export default function HomePage() {
                       )}
                     </div>
                     
-                    <h3 className="text-xl font-normal text-white mb-2 group-hover:text-white transition-colors">
+                    <h3 className="text-xl font-normal text-white mb-2 group-hover:text-white transition-colors ml-[52px]">
                       {action.title}
                     </h3>
-                    <p className="text-slate-300 text-sm mb-4">
+                    <p className="text-slate-300 text-sm mb-4 ml-[52px]">
                       {action.description}
                     </p>
                     
-                    <div className="flex items-center gap-2 text-white text-sm font-medium">
+                    <div className="flex items-center gap-2 text-white text-sm font-medium ml-[52px]">
                       <span>Get Started</span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </div>
