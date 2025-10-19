@@ -21,8 +21,10 @@ def test_summary_nvda():
     assert j["symbol"] == "NVDA"
 
 def test_batch_calendar_default():
-    r = client.get(
-        "/api/iv/batch", params={"watchlist": "WL_MAIN", "rule": "calendar", "limit": 3}
+    # Use POST instead of GET (API contract change)
+    r = client.post(
+        "/api/iv/batch", 
+        json={"watchlist": "WL_MAIN", "rule": "calendar", "limit": 3}
     )
     assert r.status_code == 200
     j = r.json()
