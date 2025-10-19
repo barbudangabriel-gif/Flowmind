@@ -12,6 +12,20 @@ FlowMind is an options analytics platform (FastAPI backend, React frontend, Mong
 
 ### Key Patterns & Conventions
 - **STRICT: Dark theme only:** All UI uses hardcoded Tailwind dark classes (see `DARK_THEME_ONLY_VALIDATION.md`). NO theme toggles, NO light mode, ONLY dark theme.
+- **CRITICAL: Favicon Configuration (Oct 19, 2025 - INCOMPLETE/PROBLEM UNRESOLVED):**
+  - **PROBLEM:** User reports seeing "double text" in browser tab favicon area
+  - **WHAT USER WANTS:** Only the logo PNG (which contains brain + "FlowMind Analytics" text in the image itself)
+  - **WHAT USER SEES:** Logo image PLUS additional duplicate text "FlowMind Analytics" appearing separately
+  - **ATTEMPTS MADE:**
+    1. Removed `<title>FlowMind Analytics</title>` from index.html
+    2. Removed `<meta name="description">` from index.html
+    3. Deleted `frontend/public/favicon.ico` file
+    4. Set `<link rel="icon">` to point only to `flowmind_analytics_horizontal.png`
+  - **STATUS:** Issue NOT resolved - user still sees duplicate text after cache clear and hard refresh
+  - **CURRENT STATE:** `frontend/public/index.html` line 5 has only PNG favicon, no title tag, no description
+  - **UNKNOWN SOURCE:** The duplicate text is coming from an unidentified location - not from index.html, not from favicon.ico
+  - **TODO:** Future AI agents must investigate other possible sources (manifest.json, dynamic title setting, browser behavior, service worker, etc.)
+  - **RULE:** DO NOT add back `<title>` tag, `<meta description>`, or `favicon.ico` - these were intentionally removed
 - **CRITICAL: Python 3.12 Indent Compliance (Oct 19, 2025 - COMPLETE):**
   - **STATUS:** ✅ 100% COMPLETE - All 12 critical files fixed (5,314 lines)
   - **VERIFIED:** 127/127 backend Python files pass validation
