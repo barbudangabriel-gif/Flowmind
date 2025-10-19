@@ -205,9 +205,9 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  }, [JSON.stringify(safeCtx)]);
  
  return (
- <aside className={`border-r border-[#1e293b] bg-gradient-to-b from-[#0f1419] to-[#0a0e1a] h-screen overflow-y-auto transition-all duration-300 ${collapsed ? 'w-16' : 'w-[226px]'} scrollbar-hide`} style={{ borderRightWidth: '1px', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial', fontSize: '13px', lineHeight: '20.8px', fontWeight: '400' }}>
+ <aside className={`border-r border-[#1e293b] bg-gradient-to-b from-[#0f1419] to-[#0a0e1a] h-screen overflow-y-auto transition-all duration-300 ${collapsed ? 'w-16' : 'w-[218px]'} scrollbar-hide`} style={{ borderRightWidth: '1px', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial', fontSize: '13px', lineHeight: '20.8px', fontWeight: '400' }}>
  {/* Space for hamburger button */}
- <div className="h-16"></div>
+ <div className="h-[60px]"></div>
  
  {nav.map((sec, i) => {
  const isCollapsed = collapsedSections[sec.title];
