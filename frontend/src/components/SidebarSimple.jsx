@@ -207,7 +207,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  return (
  <aside className={`border-r border-[#1e293b] bg-gradient-to-b from-[#0f1419] to-[#0a0e1a] h-screen overflow-y-auto transition-all duration-300 ${collapsed ? 'w-16' : 'w-[218px]'} scrollbar-hide`} style={{ borderRightWidth: '1px', fontFamily: 'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial', fontSize: '13px', lineHeight: '20.8px', fontWeight: '400' }}>
  {/* Space for hamburger button */}
- <div className="h-[60px]"></div>
+ <div className="h-[50px]"></div>
  
  {nav.map((sec, i) => {
  const isCollapsed = collapsedSections[sec.title];
@@ -224,9 +224,6 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  className={`w-4 h-4 text-slate-400 transition-transform duration-300 ease-in-out ${isCollapsed ? '' : 'rotate-90'}`}
  />
  <span className="flex-1 text-left">{sec.title}</span>
- {sec.isComplete && (
- <LucideIcons.CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 opacity-70" />
- )}
  </button>
  )}
  
