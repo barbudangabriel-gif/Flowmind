@@ -24,7 +24,7 @@ export default function HomePage() {
       badge: 'Live'
     },
     {
-      title: 'Portfolio Manager',
+      title: 'Mindfolio Manager',
       description: 'Track positions & performance',
       icon: Wallet,
       link: '/portfolios',
@@ -32,7 +32,7 @@ export default function HomePage() {
       badge: 'Multi-Portfolio'
     },
     {
-      title: 'Strategy Optimizer',
+      title: 'Optimize',
       description: 'AI-powered strategy recommendations',
       icon: BarChart3,
       link: '/optimize',
