@@ -106,7 +106,7 @@ export default function HomePage() {
                   <div className="relative z-10">
                     <div className="flex items-start justify-between mb-4">
                       <div className={`p-3 bg-slate-900/50 rounded-lg backdrop-blur-sm`}>
-                        <action.icon className={`w-7 h-7 ${iconColorClasses[action.color]}`} />
+                        <action.icon className={`w-5 h-5 ${iconColorClasses[action.color]}`} />
                       </div>
                       {action.badge && (
                         <span className="px-2 py-1 bg-slate-900/70 backdrop-blur-sm text-white text-xs font-medium rounded-full border border-slate-700">
