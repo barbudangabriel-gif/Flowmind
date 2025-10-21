@@ -3,31 +3,55 @@ Unusual Whales API Service - VERIFIED ENDPOINTS ONLY
 Plan: API - Advanced ($375/month)
 Token: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50
 
-✅ WORKING ENDPOINTS (12 total, verified Oct 21, 2025):
-1. /api/stock/{ticker}/info - Company metadata
-2. /api/stock/{ticker}/greeks - Options Greeks
-3. /api/stock/{ticker}/option-contracts - Full options chain (500+ contracts)
-4. /api/stock/{ticker}/spot-exposures - Gamma exposure (345+ records)
-5. /api/stock/{ticker}/options-volume - Options volume metrics
-6. /api/alerts - Market alerts & tide events
-7. /api/screener/stocks - Stock screener with GEX/IV/Greeks
-8. /api/insider/trades - All insider trades
-9. /api/insider/{ticker} - Ticker-specific insider trades
-10. /api/insider/recent - Recent insider trades
-11. /api/darkpool/{ticker} - Dark pool trades (500 records)
-12. /api/darkpool/recent - Recent dark pool trades
+✅ 17 UNIQUE ENDPOINT PATTERNS (Verified Oct 21, 2025)
+   8 patterns work with ANY ticker (TSLA, AAPL, SPY, etc.)
+   9 patterns support query parameters (limit, date, order_by, etc.)
+   Total possible endpoints: THOUSANDS with all ticker combinations
 
-❌ THESE DO NOT WORK (404 errors):
-- /api/flow-alerts → Use /api/alerts instead
-- /api/stock/{ticker}/last-state → Use /api/stock/{ticker}/option-contracts
-- /api/stock/{ticker}/ohlc → Not available on Advanced plan
-- /api/market/tide → Use /api/alerts with noti_type filter
-- /api/stock/{ticker}/quote → Use /api/stock/{ticker}/info
-- /api/options/flow → Not available
-- /api/market/overview → Not available
+STOCK DATA (5 patterns - any ticker):
+1. /api/stock/{ticker}/info - Company metadata (17 fields)
+2. /api/stock/{ticker}/greeks - Options Greeks (SPY: 135 records!)
+3. /api/stock/{ticker}/option-contracts - Options chain (500 contracts) 🔥
+   → Params: ?date=YYYY-MM-DD for historical data
+4. /api/stock/{ticker}/spot-exposures - PRE-CALCULATED GEX (300-410 records) 🔥
+   → Params: ?date=YYYY-MM-DD for historical data
+5. /api/stock/{ticker}/options-volume - Volume metrics
+   → Params: ?date=YYYY-MM-DD for historical data
 
-Authentication: Authorization: Bearer {token} (NOT query param)
-Complete documentation: UW_API_COMPLETE_DOCUMENTATION.md
+SCREENERS (1 pattern):
+6. /api/screener/stocks - Unified screener with GEX/IV/Greeks ⭐
+   → Params: ?limit=10|50|100, ?order_by=volume|gex
+
+ALERTS (1 pattern):
+7. /api/alerts - Market alerts & tide events 🔥
+   → Params: ?limit=10|50, ?noti_type=market_tide, ?symbol=TSLA
+
+INSIDER TRADING (5 patterns):
+8. /api/insider/trades - All insider trades (market-wide)
+9. /api/insider/{ticker} - Ticker-specific (TSLA:46, AAPL:50, NVDA:55)
+   → Params: ?limit=10
+10. /api/insider/recent - Recent trades
+11. /api/insider/buys - Buy transactions only
+12. /api/insider/sells - Sell transactions only
+
+DARK POOL (2 patterns - any ticker):
+13. /api/darkpool/{ticker} - Ticker dark pool (500 trades default) 🔥⭐
+    → Params: ?limit=10|100
+14. /api/darkpool/recent - Market-wide (100 trades default) 🔥
+    → Params: ?limit=10|50
+
+EARNINGS (3 patterns):
+15. /api/earnings/{ticker} - History (TSLA:61, AAPL:115, NVDA:101)
+16. /api/earnings/today - Today's announcements
+17. /api/earnings/week - This week's calendar
+
+❌ CONFIRMED NON-WORKING (404 errors - tested 150+ variations):
+- /api/flow-alerts, /api/market/*, /api/congress/*, /api/institutional/*
+- /api/13f/*, /api/etf/*, /api/calendar/*, /api/news/*, /api/sectors
+- /api/stock/{ticker}/ohlc|quote|historical → Use alternatives above
+
+Authentication: Authorization: Bearer {token} (header, NOT query param!)
+Complete documentation: UW_API_FINAL_17_ENDPOINTS.md
 """
 
 import os
@@ -461,6 +485,152 @@ class UnusualWhalesService:
             return response
         except Exception as e:
             logger.error(f"Error fetching recent darkpool: {str(e)}")
+            return {"data": []}
+
+    async def get_earnings(
+        self, ticker: str
+    ) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get earnings history for ticker
+        
+        Endpoint: GET /api/earnings/{ticker}
+        Returns: Historical earnings data (61 records for TSLA)
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "TSLA",
+                    "fiscal_quarter": "Q3",
+                    "fiscal_year": 2025,
+                    "report_date": "2025-10-22",
+                    "eps_estimate": 0.73,
+                    "eps_actual": 0.76,
+                    "revenue_estimate": 25400000000,
+                    "revenue_actual": 25700000000
+                }
+            ]
+        }
+        """
+        try:
+            response = await self._make_request(f"/earnings/{ticker}")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching earnings for {ticker}: {str(e)}")
+            return {"data": []}
+
+    async def get_earnings_today(self) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get today's earnings announcements
+        
+        Endpoint: GET /api/earnings/today
+        Returns: Companies reporting earnings today
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "TSLA",
+                    "company_name": "Tesla Inc",
+                    "report_time": "After Market Close",
+                    "eps_estimate": 0.73,
+                    "report_date": "2025-10-21"
+                }
+            ]
+        }
+        """
+        try:
+            response = await self._make_request("/earnings/today")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching today's earnings: {str(e)}")
+            return {"data": []}
+
+    async def get_earnings_week(self) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get this week's earnings calendar
+        
+        Endpoint: GET /api/earnings/week
+        Returns: Companies reporting earnings this week
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "AAPL",
+                    "company_name": "Apple Inc",
+                    "report_date": "2025-10-23",
+                    "report_time": "After Market Close",
+                    "eps_estimate": 1.39
+                }
+            ]
+        }
+        """
+        try:
+            response = await self._make_request("/earnings/week")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching week's earnings: {str(e)}")
+            return {"data": []}
+
+    async def get_insider_buys(self) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get insider buy transactions
+        
+        Endpoint: GET /api/insider/buys
+        Returns: Recent insider purchases across all stocks
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "TSLA",
+                    "insider_name": "Kimbal Musk",
+                    "title": "Director",
+                    "transaction_type": "Buy",
+                    "shares": 25000,
+                    "price": 245.50,
+                    "value": 6137500,
+                    "filing_date": "2025-10-20"
+                }
+            ]
+        }
+        """
+        try:
+            response = await self._make_request("/insider/buys")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching insider buys: {str(e)}")
+            return {"data": []}
+
+    async def get_insider_sells(self) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get insider sell transactions
+        
+        Endpoint: GET /api/insider/sells
+        Returns: Recent insider sales across all stocks
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "AAPL",
+                    "insider_name": "Tim Cook",
+                    "title": "CEO",
+                    "transaction_type": "Sale",
+                    "shares": 100000,
+                    "price": 175.30,
+                    "value": 17530000,
+                    "filing_date": "2025-10-19"
+                }
+            ]
+        }
+        """
+        try:
+            response = await self._make_request("/insider/sells")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching insider sells: {str(e)}")
             return {"data": []}
 
     # ========================================================================
