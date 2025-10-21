@@ -155,7 +155,7 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
 
             if (countdown <= 0) {
                 clearInterval(interval);
-                window.location.href = 'http://localhost:3000/';
+                window.location.href = '{frontend_url}';
             }
         }, 1000);
         </script>
@@ -168,12 +168,12 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
         <p style="font-size: 14px; color: #6b7280;">
         Redirecting in <span id="countdown" class="countdown">3</span> seconds...
         </p>
-        <a href="http://localhost:3000/" class="btn">Go to Dashboard Now →</a>
+        <a href="{frontend_url}/" class="btn">Go to Dashboard Now →</a>
         </div>
         </body>
         </html>
         """
-        )
+        ).format(frontend_url=os.getenv("FRONTEND_URL", "http://localhost:3000"))
 
     except HTTPException:
         raise

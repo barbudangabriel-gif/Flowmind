@@ -12,7 +12,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 # Import observability and config (optional for security audit)
 try:
     from config import get_settings
-    from observability import configure_logging, wire_observability
+
+    # TODO: Wire observability when needed
+    # from observability import configure_logging, wire_observability
 
     OBSERVABILITY_AVAILABLE = True
 except ImportError:
