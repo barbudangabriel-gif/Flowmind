@@ -760,6 +760,307 @@ link: '/mindfolio',   // ✅ CORRECT
 
 ---
 
+### 17. 📊 Create Top Picks Page (LOW PRIORITY)
+**Status:** 🔵 NICE-TO-HAVE  
+**Assignee:** TBD  
+**Due:** Nov 7, 2025  
+**Time:** 2-3 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #5
+
+**Problem:**
+- Sidebar "Stocks Data > Top Picks" links to `/stocks/top-picks` → 404
+- Curated list of AI-recommended stocks
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/TopPicksPage.jsx`
+- [ ] Add route: `<Route path="/stocks/top-picks" element={<TopPicksPage />} />`
+- [ ] UI Components:
+  - [ ] Featured stock cards (top 10)
+  - [ ] Score badge, recommendation, price, change %
+  - [ ] "Analyze" button → StockScoringPage
+  - [ ] Auto-refresh every 30 minutes
+- [ ] Backend Integration:
+  - [ ] `GET /api/stocks/top-picks`
+  - [ ] Returns stocks with score > 80
+  - [ ] Sorted by score + recent momentum
+- [ ] Design:
+  - [ ] Card grid layout
+  - [ ] Color-coded by recommendation strength
+  - [ ] Hover effects with mini chart
+
+**Success Criteria:**
+- [ ] Shows AI-curated top stocks
+- [ ] Auto-refreshes periodically
+- [ ] Quick access to detailed analysis
+- [ ] Mobile responsive
+
+---
+
+### 18. 📋 Create Trade Preview Queue Page (LOW PRIORITY)
+**Status:** 🔵 NICE-TO-HAVE  
+**Assignee:** TBD  
+**Due:** Nov 8, 2025  
+**Time:** 3-4 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #14
+
+**Problem:**
+- Sidebar "Options Data > Algos > Preview Queue" links to `/trades/preview` → 404
+- Trade queue management before execution
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/TradePreviewPage.jsx`
+- [ ] Add route: `<Route path="/trades/preview" element={<TradePreviewPage />} />`
+- [ ] UI Components:
+  - [ ] Queued trades table:
+    - [ ] Strategy, Symbol, Legs, Max Risk, Expected Return
+    - [ ] "Execute Now" button
+    - [ ] "Remove" button
+  - [ ] Total capital requirement summary
+  - [ ] Bulk actions:
+    - [ ] "Execute All" button
+    - [ ] "Clear Queue" button
+  - [ ] Filters:
+    - [ ] By strategy type
+    - [ ] By symbol
+- [ ] Backend Integration:
+  - [ ] `GET /api/trades/queue`
+  - [ ] `POST /api/trades/queue` (add trade)
+  - [ ] `DELETE /api/trades/queue/{id}` (remove)
+  - [ ] `POST /api/trades/execute/{id}` (execute single)
+- [ ] Integration:
+  - [ ] Receives trades from screener pages ("Add to Queue")
+  - [ ] Shows position sizing recommendations
+
+**Success Criteria:**
+- [ ] Can queue trades from screeners
+- [ ] Manage queue (add/remove/execute)
+- [ ] Shows capital allocation
+- [ ] Mobile responsive
+
+---
+
+### 19. 📄 Create SIM Orders Page (LOW PRIORITY)
+**Status:** 🔵 NICE-TO-HAVE  
+**Assignee:** TBD  
+**Due:** Nov 9, 2025  
+**Time:** 3-4 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #15
+
+**Problem:**
+- Sidebar "Options Data > Algos > Orders (SIM)" links to `/trades/orders/sim` → 404
+- TradeStation SIMULATION account orders history
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/SIMOrdersPage.jsx`
+- [ ] Add route: `<Route path="/trades/orders/sim" element={<SIMOrdersPage />} />`
+- [ ] UI Components:
+  - [ ] Orders table:
+    - [ ] Order ID, Symbol, Type, Status, Qty, Price, Time
+    - [ ] Status badges (Filled/Pending/Cancelled/Rejected)
+  - [ ] Filters:
+    - [ ] Date range picker
+    - [ ] Status filter
+    - [ ] Symbol filter
+  - [ ] Pagination
+  - [ ] "Refresh" button
+- [ ] Backend Integration:
+  - [ ] `GET /api/tradestation/orders/sim` with filters
+  - [ ] Uses TradeStation Orders API (SIMULATION environment)
+  - [ ] Real-time status updates if WebSocket available
+- [ ] Design:
+  - [ ] Color-coded status (green=filled, yellow=pending, red=rejected)
+  - [ ] Expandable row for order details
+  - [ ] Export to CSV
+
+**Success Criteria:**
+- [ ] Shows SIMULATION orders history
+- [ ] Status updates in real-time
+- [ ] Can filter and search
+- [ ] Mobile responsive
+
+---
+
+### 20. 💳 Create LIVE Orders Page (LOW PRIORITY)
+**Status:** 🔵 NICE-TO-HAVE  
+**Assignee:** TBD  
+**Due:** Nov 10, 2025  
+**Time:** 3-4 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #16
+
+**Problem:**
+- Sidebar "Options Data > Algos > Orders (LIVE)" links to `/trades/orders/live` → 404
+- TradeStation LIVE account orders history (PRODUCTION)
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/LIVEOrdersPage.jsx`
+- [ ] Add route: `<Route path="/trades/orders/live" element={<LIVEOrdersPage />} />`
+- [ ] **CRITICAL: Conditional visibility**:
+  - [ ] Only show if `flags.TS_LIVE === true` AND `environment === 'LIVE'`
+  - [ ] Show warning banner: "⚠️ LIVE TRADING ENVIRONMENT - REAL MONEY"
+- [ ] UI Components: Same as SIMOrdersPage but:
+  - [ ] Red warning banner at top
+  - [ ] Additional "Cancel Order" buttons (for pending orders)
+  - [ ] Confirmation modals before actions
+- [ ] Backend Integration:
+  - [ ] `GET /api/tradestation/orders/live`
+  - [ ] `DELETE /api/tradestation/orders/live/{id}` (cancel order)
+  - [ ] Requires elevated permissions
+- [ ] Safety:
+  - [ ] Double-confirmation for cancellations
+  - [ ] Audit log all actions
+  - [ ] Rate limiting on cancel requests
+
+**Success Criteria:**
+- [ ] Only accessible in LIVE mode
+- [ ] Clear visual distinction from SIM
+- [ ] Safe order cancellation flow
+- [ ] Complete audit trail
+
+---
+
+### 21. ✅ Create Verified Chains Page (LOW PRIORITY)
+**Status:** 🔵 NICE-TO-HAVE  
+**Assignee:** TBD  
+**Due:** Nov 11, 2025  
+**Time:** 2-3 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #19
+
+**Problem:**
+- Sidebar "Options Data > Analytics > Verified Chains" links to `/analytics/verified` → 404
+- Option chain quality verification and data integrity checks
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/VerifiedChainsPage.jsx`
+- [ ] Add route: `<Route path="/analytics/verified" element={<VerifiedChainsPage />} />`
+- [ ] UI Components:
+  - [ ] Verified chains table:
+    - [ ] Ticker, Expiry, Verification Status, Data Quality Score
+    - [ ] Last Verified timestamp
+    - [ ] Issues count (if any)
+  - [ ] Filters:
+    - [ ] Verification status (Verified/Failed/Pending)
+    - [ ] Date range
+    - [ ] Min quality score
+  - [ ] Detail modal:
+    - [ ] Shows verification checks passed/failed
+    - [ ] Data quality metrics
+    - [ ] Missing strikes/contracts
+- [ ] Backend Integration:
+  - [ ] `GET /api/analytics/verified-chains`
+  - [ ] Runs verification checks:
+    - Complete strike coverage
+    - Bid-ask spread reasonability
+    - IV smile consistency
+    - Volume/OI correlation
+  - [ ] Returns quality score (0-100)
+
+**Success Criteria:**
+- [ ] Shows option chain quality metrics
+- [ ] Identifies data issues
+- [ ] Can re-verify chains manually
+- [ ] Export verification report
+
+---
+
+### 22. ⚖️ Create Smart Rebalancing Page (LOW PRIORITY)
+**Status:** 🔵 NICE-TO-HAVE  
+**Assignee:** TBD  
+**Due:** Nov 12, 2025  
+**Time:** 4-5 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #21
+
+**Problem:**
+- Sidebar "Mindfolio Manager > Smart Rebalancing" links to `/mindfolio/rebalancing` → 404
+- AI-driven portfolio rebalancing recommendations
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/SmartRebalancingPage.jsx`
+- [ ] Add route: `<Route path="/mindfolio/rebalancing" element={<SmartRebalancingPage />} />`
+- [ ] Mindfolio selector dropdown
+- [ ] UI Components:
+  - [ ] Current allocation chart (pie/treemap)
+  - [ ] Target allocation chart (AI recommended)
+  - [ ] Rebalancing actions table:
+    - [ ] Symbol, Action (Buy/Sell), Quantity, Reason
+    - [ ] Expected impact on Greeks, risk metrics
+  - [ ] "Apply Rebalancing" button
+  - [ ] Rebalancing rules configurator:
+    - [ ] Max position size %
+    - [ ] Correlation threshold
+    - [ ] Greeks targets (delta neutral, etc.)
+- [ ] Backend Integration:
+  - [ ] `GET /api/mindfolio/{id}/rebalancing`
+  - [ ] Uses `smart_rebalancing_service.py`
+  - [ ] Calculates optimal trades to reach target allocation
+  - [ ] Considers: correlation, Greeks, sector exposure, risk metrics
+- [ ] Preview Mode:
+  - [ ] Shows "before/after" comparison
+  - [ ] Impact on portfolio metrics
+
+**Success Criteria:**
+- [ ] Generates smart rebalancing recommendations
+- [ ] Clear reasoning for each action
+- [ ] Can apply recommendations with one click
+- [ ] Mobile responsive
+
+---
+
+### 23. 🔧 Create Additional Settings Pages (LOW PRIORITY - 5 pages)
+**Status:** 🔵 NICE-TO-HAVE  
+**Assignee:** TBD  
+**Due:** Nov 13-15, 2025  
+**Time:** 1-2 hours each (5-10 hours total)  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` items #22, #23, #25, #26, #27, #28
+
+**Problem:**
+- Multiple settings pages missing: Risk Gates, API Keys, UW Settings, System Diagnostics, Help Docs
+
+**Requirements (5 separate pages):**
+
+**A. Risk & Gates Page** (`/settings/gates`):
+- [ ] Gate rules configurator
+- [ ] Daily loss limits, position size limits
+- [ ] Auto-pause triggers
+- [ ] Gates history log
+
+**B. API Keys Page** (`/settings/keys`):
+- [ ] Encrypted key storage UI
+- [ ] Add/Remove API keys
+- [ ] Test connection button per key
+- [ ] Security best practices warnings
+
+**C. Unusual Whales Settings** (`/providers/uw`):
+- [ ] API token input
+- [ ] Connection status indicator
+- [ ] Rate limit settings
+- [ ] Test UW API endpoints
+
+**D. Redis Cache Diagnostics** (`/ops/redis`):
+- [ ] Cache stats (hit rate, miss rate, size)
+- [ ] Key browser/search
+- [ ] Manual cache clear buttons
+- [ ] Performance metrics
+
+**E. Backtest Ops** (`/ops/bt`):
+- [ ] Backtest cache management
+- [ ] Clear old backtests button
+- [ ] Storage usage stats
+- [ ] Performance benchmarks
+
+**F. Help Docs** (`/help/docs`):
+- [ ] User documentation browser
+- [ ] Search functionality
+- [ ] Video tutorials embed
+- [ ] FAQs accordion
+
+**Success Criteria:**
+- [ ] All 5 pages functional
+- [ ] Settings persist correctly
+- [ ] Dark theme consistent
+- [ ] Mobile responsive
+
+---
+
 ## 📦 Backlog (Planned)
 
 ### Phase 2: GEX Backtesting (Weeks 3-4)
