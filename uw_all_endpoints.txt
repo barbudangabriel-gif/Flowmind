@@ -1,0 +1,12 @@
+/stock/TSLA/info | Company info, sector, market cap, earnings
+/stock/TSLA/greeks | Options Greeks (Delta, Gamma, Theta, Vega)
+/stock/TSLA/option-contracts | Full options chain (500+ contracts)
+/stock/TSLA/spot-exposures | Gamma exposure data (345+ records)
+/stock/TSLA/options-volume | Options volume data
+/alerts | Custom alerts & market tide events
+/screener/stocks | Stock screener
+/insider/trades | All insider trades
+/insider/TSLA | Insider trades for ticker
+/insider/recent | Recent insider trades
+/darkpool/TSLA | Dark pool trades for ticker
+/darkpool/recent | Recent dark pool trades

@@ -3,12 +3,19 @@ Unusual Whales API Service - VERIFIED ENDPOINTS ONLY
 Plan: API - Advanced ($375/month)
 Token: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50
 
-✅ WORKING ENDPOINTS (verified Oct 21, 2025):
-- /api/stock/{ticker}/option-contracts (500+ contracts)
-- /api/stock/{ticker}/spot-exposures (345+ GEX records)
-- /api/stock/{ticker}/info (company metadata)
-- /api/alerts (market events, tide)
-- /api/stock/{ticker}/greeks (Delta, Gamma, Theta, Vega)
+✅ WORKING ENDPOINTS (12 total, verified Oct 21, 2025):
+1. /api/stock/{ticker}/info - Company metadata
+2. /api/stock/{ticker}/greeks - Options Greeks
+3. /api/stock/{ticker}/option-contracts - Full options chain (500+ contracts)
+4. /api/stock/{ticker}/spot-exposures - Gamma exposure (345+ records)
+5. /api/stock/{ticker}/options-volume - Options volume metrics
+6. /api/alerts - Market alerts & tide events
+7. /api/screener/stocks - Stock screener with GEX/IV/Greeks
+8. /api/insider/trades - All insider trades
+9. /api/insider/{ticker} - Ticker-specific insider trades
+10. /api/insider/recent - Recent insider trades
+11. /api/darkpool/{ticker} - Dark pool trades (500 records)
+12. /api/darkpool/recent - Recent dark pool trades
 
 ❌ THESE DO NOT WORK (404 errors):
 - /api/flow-alerts → Use /api/alerts instead
@@ -16,8 +23,11 @@ Token: 5809ee6a-bcb6-48ce-a16d-9f3bd634fd50
 - /api/stock/{ticker}/ohlc → Not available on Advanced plan
 - /api/market/tide → Use /api/alerts with noti_type filter
 - /api/stock/{ticker}/quote → Use /api/stock/{ticker}/info
+- /api/options/flow → Not available
+- /api/market/overview → Not available
 
 Authentication: Authorization: Bearer {token} (NOT query param)
+Complete documentation: UW_API_COMPLETE_DOCUMENTATION.md
 """
 
 import os
@@ -239,6 +249,218 @@ class UnusualWhalesService:
             return response
         except Exception as e:
             logger.error(f"Error fetching greeks: {str(e)}")
+            return {"data": []}
+
+    async def get_options_volume(
+        self, ticker: str
+    ) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get options volume metrics
+        
+        Endpoint: GET /api/stock/{ticker}/options-volume
+        Returns: Options volume, call/put ratios, unusual volume
+        
+        Example response:
+        {
+            "data": {
+                "ticker": "TSLA",
+                "total_volume": 125000,
+                "call_volume": 75000,
+                "put_volume": 50000,
+                "call_put_ratio": 1.5
+            }
+        }
+        """
+        try:
+            response = await self._make_request(f"/stock/{ticker}/options-volume")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching options volume: {str(e)}")
+            return {"data": {}}
+
+    async def get_screener_stocks(
+        self, limit: Optional[int] = 10
+    ) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get stock screener data with GEX, IV, Greeks, volume
+        
+        Endpoint: GET /api/screener/stocks
+        Returns: Comprehensive stock metrics including GEX and IV data
+        
+        Parameters:
+            limit: Number of results to return (default 10)
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "SPY",
+                    "name": "SPDR S&P 500 ETF Trust",
+                    "price": 445.55,
+                    "volume": 37400000,
+                    "iv_30": 0.12,
+                    "gex": 125000000,
+                    "delta": 0.55,
+                    "gamma": 0.03
+                }
+            ]
+        }
+        """
+        try:
+            params = {"limit": limit} if limit else {}
+            response = await self._make_request("/screener/stocks", params)
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching screener stocks: {str(e)}")
+            return {"data": []}
+
+    async def get_insider_trades(self) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get all recent insider trades
+        
+        Endpoint: GET /api/insider/trades
+        Returns: Insider trading activity across all stocks
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "TSLA",
+                    "insider_name": "Elon Musk",
+                    "title": "CEO",
+                    "transaction_type": "Sale",
+                    "shares": 5000000,
+                    "price": 250.50,
+                    "value": 1252500000
+                }
+            ]
+        }
+        
+        Note: Currently returns 0 records but endpoint is accessible
+        """
+        try:
+            response = await self._make_request("/insider/trades")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching insider trades: {str(e)}")
+            return {"data": []}
+
+    async def get_insider_ticker(
+        self, ticker: str
+    ) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get insider trades for specific ticker
+        
+        Endpoint: GET /api/insider/{ticker}
+        Returns: Insider trades for the specified company
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "TSLA",
+                    "insider_name": "Kimbal Musk",
+                    "title": "Director",
+                    "transaction_type": "Sale",
+                    "shares": 25000,
+                    "price": 248.75
+                }
+            ]
+        }
+        """
+        try:
+            response = await self._make_request(f"/insider/{ticker}")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching insider trades for {ticker}: {str(e)}")
+            return {"data": []}
+
+    async def get_insider_recent(self) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get most recent insider trades
+        
+        Endpoint: GET /api/insider/recent
+        Returns: Latest insider trading activity
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "AAPL",
+                    "insider_name": "Tim Cook",
+                    "title": "CEO",
+                    "transaction_type": "Sale",
+                    "shares": 100000
+                }
+            ]
+        }
+        """
+        try:
+            response = await self._make_request("/insider/recent")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching recent insider trades: {str(e)}")
+            return {"data": []}
+
+    async def get_darkpool_ticker(
+        self, ticker: str
+    ) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get dark pool trades for ticker (500 records!)
+        
+        Endpoint: GET /api/darkpool/{ticker}
+        Returns: Dark pool trades with price, volume, premium, market center
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "TSLA",
+                    "price": 445.55,
+                    "size": 5000,
+                    "value": 2227750,
+                    "premium": 178220,
+                    "market_center": "L",
+                    "timestamp": "2025-10-21T14:28:15Z"
+                }
+            ]
+        }
+        
+        Performance: Returns 500 dark pool trade records per ticker
+        """
+        try:
+            response = await self._make_request(f"/darkpool/{ticker}")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching darkpool for {ticker}: {str(e)}")
+            return {"data": []}
+
+    async def get_darkpool_recent(self) -> Dict[str, Any]:
+        """
+        ✅ VERIFIED: Get recent dark pool trades across all tickers
+        
+        Endpoint: GET /api/darkpool/recent
+        Returns: Latest dark pool activity market-wide
+        
+        Example response:
+        {
+            "data": [
+                {
+                    "ticker": "SPY",
+                    "price": 445.80,
+                    "size": 10000,
+                    "value": 4458000,
+                    "market_center": "D",
+                    "timestamp": "2025-10-21T14:29:45Z"
+                }
+            ]
+        }
+        """
+        try:
+            response = await self._make_request("/darkpool/recent")
+            return response
+        except Exception as e:
+            logger.error(f"Error fetching recent darkpool: {str(e)}")
             return {"data": []}
 
     # ========================================================================

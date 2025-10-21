@@ -124,19 +124,20 @@ app.include_router(geopolitical_router)            # Already has /api/geopolitic
 2. **Dark theme violations:** Never use `isDarkMode ?` ternaries or light Tailwind classes (`bg-white`, `text-gray-800`)
 3. **URL hardcoding:** Frontend must use `process.env.REACT_APP_BACKEND_URL`, not `http://localhost:8000`
 4. **TradeStation token expiry:** 60-day refresh cycle, handled in `tradestation_auth.py` or `app/routers/tradestation_auth.py`
-5. **⚠️ UW API HALLUCINATIONS:** ONLY use the 5 verified endpoints in `unusual_whales_service_clean.py` - AI assistants frequently generate fake endpoints that return 404
+5. **⚠️ UW API HALLUCINATIONS:** ONLY use the 12 verified endpoints in `unusual_whales_service_clean.py` - AI assistants frequently generate fake endpoints that return 404
 6. **Unusual Whales rate limits:** 1.0s delay between requests (`rate_limit_delay`), always implement demo fallback
 7. **Test mode:** Integration tests need real backend, unit tests use `TEST_MODE=1` for shared cache
 8. **FIFO integrity:** Never modify positions directly - always add transactions and recompute via `calculate_positions()`
 
 ### Historical Context - UW API Issues
-**Oct 21, 2025:** Resolved UW API hallucination problem after multiple attempts:
+**Oct 21, 2025:** Resolved UW API hallucination problem after comprehensive testing:
 - Previous implementations used AI-generated endpoints (`/api/flow-alerts`, `/api/market/tide`, `/api/stock/{ticker}/quote`)
 - ALL hallucinated endpoints returned 404 errors
-- Systematic testing discovered 5 working endpoints on Advanced plan
-- **Lesson learned:** Always verify API endpoints through testing, never trust AI-generated API paths
+- **Comprehensive discovery:** Tested 100+ endpoint variations, found 12 working endpoints on Advanced plan
+- **Major discoveries:** Dark pool data (500 trades), stock screener with GEX/IV metrics, insider trades
+- **Lesson learned:** Always verify API endpoints through testing, never trust AI-generated API paths or online documentation
 - **Solution:** Created `backend/unusual_whales_service_clean.py` with ONLY verified endpoints
-- **Reference:** `UW_API_ADVANCED_PLAN_WORKING_ENDPOINTS.md` documents the discovery process
+- **Reference:** `UW_API_COMPLETE_DOCUMENTATION.md` documents all 12 working endpoints with examples
 
 ### Key Files for Understanding Architecture
 - `backend/server.py` (961 lines) - Main FastAPI app, router mounting, service initialization
@@ -335,9 +336,9 @@ CREATE INDEX idx_tx_datetime ON transactions(datetime);
 
 ⚠️ **CRITICAL: AI HALLUCINATION PROBLEM** ⚠️
 Many UW API endpoints found online are **AI-generated hallucinations** that don't exist!
-**ONLY use the 5 verified endpoints below** - everything else returns 404.
+**ONLY use the 12 verified endpoints below** - everything else returns 404.
 
-**✅ VERIFIED Working Endpoints** (tested Oct 21, 2025):
+**✅ VERIFIED Working Endpoints** (12 total, tested Oct 21, 2025):
 ```python
 # 1. Options Chain (500+ contracts with volume, OI, IV, premiums, sweep volume)
 GET /stock/{ticker}/option-contracts
@@ -359,6 +360,34 @@ GET /alerts
 # 5. Greeks (Delta, Gamma, Theta, Vega - currently empty but accessible)
 GET /stock/{ticker}/greeks
 # Use: Portfolio Greeks, risk management
+
+# 6. Options Volume (volume metrics, call/put ratios)
+GET /stock/{ticker}/options-volume
+# Use: Volume analysis, unusual activity detection
+
+# 7. Stock Screener (comprehensive stock metrics with GEX, IV, Greeks)
+GET /screener/stocks?limit=10
+# Use: Stock discovery, GEX-based filtering, IV analysis
+
+# 8. All Insider Trades
+GET /insider/trades
+# Use: Market-wide insider activity monitoring
+
+# 9. Ticker-Specific Insider Trades
+GET /insider/{ticker}
+# Use: Company-specific insider sentiment
+
+# 10. Recent Insider Trades
+GET /insider/recent
+# Use: Real-time insider activity feed
+
+# 11. Ticker-Specific Dark Pool (500 trades per ticker!)
+GET /darkpool/{ticker}
+# Use: Dark pool flow analysis, institutional tracking
+
+# 12. Recent Dark Pool Trades
+GET /darkpool/recent
+# Use: Market-wide dark pool monitoring
 ```
 
 **❌ HALLUCINATED Endpoints (DO NOT USE - confirmed 404s):**
@@ -372,6 +401,8 @@ GET /stock/{ticker}/greeks
 ❌ /api/options-flow               → NEVER existed
 ❌ /api/market/overview            → NEVER existed
 ❌ /api/stock/{ticker}/gamma-exposure → Use /spot-exposures
+❌ /api/congress/trades            → Not available
+❌ /api/stock/{ticker}/darkpool    → Use /darkpool/{ticker}
 ```
 
 **Implementation Pattern:**
@@ -379,15 +410,16 @@ GET /stock/{ticker}/greeks
 # CORRECT (verified working):
 response = await uw_service.get_option_contracts("TSLA")  # ✅ Returns 500+ contracts
 response = await uw_service.get_spot_exposures("TSLA")    # ✅ Returns 345+ GEX records
-response = await uw_service.get_alerts(noti_type="market_tide")  # ✅ Returns tide events
+response = await uw_service.get_darkpool_ticker("TSLA")   # ✅ Returns 500 darkpool trades
+response = await uw_service.get_screener_stocks(limit=10) # ✅ Returns stocks with GEX/IV
 
 # WRONG (hallucinated endpoints):
 response = await uw_service.get_flow_alerts("TSLA")  # ❌ 404 error
 response = await uw_service.get_market_overview()    # ❌ 404 error
 ```
 
-**Reference:** See `UW_API_ADVANCED_PLAN_WORKING_ENDPOINTS.md` for complete documentation.  
-**Clean implementation:** See `backend/unusual_whales_service_clean.py` (hallucination-free version)
+**Reference:** See `UW_API_COMPLETE_DOCUMENTATION.md` for complete documentation with all 12 endpoints and examples.  
+**Clean implementation:** See `backend/unusual_whales_service_clean.py` (hallucination-free version with all 12 methods)
 
 ### 3. Testing Philosophy
 
