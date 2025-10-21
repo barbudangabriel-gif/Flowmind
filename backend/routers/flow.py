@@ -1,3 +1,4 @@
+import logging
 import os
 from datetime import datetime, timezone
 from typing import Optional
@@ -12,6 +13,8 @@ from services.uw_flow import (
     news_flow,
     summary_from_live,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/flow", tags=["flow"])
 
@@ -37,7 +40,8 @@ def make_builder_link(row):
                 f"/builder?symbol={symbol}&strike={strike}&expiry={expiry}&type={kind}"
             )
         return "/builder"
-    except:
+    except (KeyError, AttributeError, TypeError) as e:
+        logger.warning(f"Failed to build link from row: {e}")
         return "/builder"
 
 

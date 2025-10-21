@@ -838,7 +838,8 @@ async def redis_health():
                 try:
                     info = await kv.info("memory")
                     memory_used = info.get("used_memory_human", "N/A")
-                except:
+                except (ConnectionError, TimeoutError, AttributeError) as e:
+                    logger.debug(f"Could not fetch Redis memory info: {e}")
                     memory_used = "N/A"
 
             return {
