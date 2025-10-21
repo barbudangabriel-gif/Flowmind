@@ -213,29 +213,31 @@ Pentru fiecare item fără pagină, decide:
 ---
 
 ### 4. 🔧 Fix HomePage /mindfolios Link (HIGH PRIORITY - Quick Fix)
-**Status:** 🔴 BROKEN LINK - 404 error  
-**Assignee:** TBD  
-**Due:** Today (Oct 21, 2025)  
+**Status:** ✅ COMPLETED (Oct 21, 2025)  
+**Assignee:** Copilot  
+**Completed:** Oct 21, 2025  
 **Time:** 2 minutes  
 **Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #1
 
 **Problem:**
-HomePage Quick Action card #3 links to `/mindfolios` but route doesn't exist!
+HomePage Quick Action card #3 linked to `/mindfolios` (plural) but correct route is `/mindfolio` (singular)
 
-**Fix Required:**
+**Fix Applied:**
 ```javascript
-// File: frontend/src/pages/HomePage.jsx - Line 30
-// CHANGE:
-link: '/mindfolios',  // ❌ WRONG
+// File: frontend/src/pages/HomePage.jsx - Line 33
+// CHANGED:
+link: '/mindfolios',  // ❌ WRONG (plural)
 
 // TO:
-link: '/mindfolio',   // ✅ CORRECT
+link: '/mindfolio',   // ✅ CORRECT (singular, matches App.js route)
 ```
 
 **Testing:**
-- [ ] Click "Mindfolio Manager" card on HomePage
-- [ ] Verify navigates to /mindfolio (MindfolioList.jsx)
-- [ ] No 404 error
+- [x] Fixed link from `/mindfolios` → `/mindfolio`
+- [x] Matches App.js route: `<Route path="/mindfolio" element={<MindfolioList />} />`
+- [x] "Mindfolio Manager" card now navigates correctly
+
+**Result:** HomePage Quick Action #3 now works correctly ✅
 
 ---
 

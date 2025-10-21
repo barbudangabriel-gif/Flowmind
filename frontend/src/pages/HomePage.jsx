@@ -27,7 +27,7 @@ export default function HomePage() {
       title: 'Mindfolio Manager',
       description: 'Track positions & performance',
       icon: Wallet,
-      link: '/mindfolios',
+      link: '/mindfolio',
       color: 'purple',
       badge: 'Multi-Mindfolio'
     },
