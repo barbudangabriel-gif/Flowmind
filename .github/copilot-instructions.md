@@ -1,6 +1,45 @@
 https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestation/callback
 ## FlowMind AI Agent Quick Reference
 
+### 🚨 CRITICAL RULE: Task Tracker Workflow (October 21, 2025)
+
+**ALL development work MUST use the centralized task tracker:**
+
+📋 **Primary Task File:** `PROJECT_TASKS.md` (Single source of truth)
+- Contains: Active tasks, Backlog, Completed, Architecture improvements, Bugs, Documentation roadmap
+- Structure: 6-month project roadmap with priorities, timelines, dependencies, success criteria
+- Update frequency: After every task completion, bug fix, or new requirement
+
+**Workflow Rules:**
+1. ✅ **BEFORE starting ANY work:** Check `PROJECT_TASKS.md` for task definition
+2. ✅ **If task doesn't exist:** Add it to Active Tasks or Backlog section with priority/timeline/dependencies
+3. ✅ **While working:** Update checkboxes [ ] as subtasks complete
+4. ✅ **After completion:** Move to Completed section with date + summary
+5. ✅ **For bugs:** Add to Bug Fixes section with priority (Critical/High/Medium/Low)
+6. ❌ **NEVER work on undocumented tasks** - always add to tracker first
+
+**Task Reference Files:**
+- `PROJECT_TASKS.md` - Main tracker (462 lines, comprehensive roadmap)
+- `GEX_ENHANCEMENT_TASK.md` - Detailed GEX implementation (544 lines, 5 phases)
+- `MINDFOLIO_BROKER_ARCHITECTURE.md` - Multi-broker architecture (890 lines, 3-day plan)
+
+**Example Task Flow:**
+```
+User: "Implement X feature"
+Agent: 1. Check PROJECT_TASKS.md if X is documented
+        2. If not → Add to Active/Backlog with details
+        3. Commit task addition to git
+        4. Start implementation with task reference
+        5. Update checkboxes as work progresses
+        6. Move to Completed when done + commit
+```
+
+**Current Active Tasks (Priority Order):**
+1. 🏦 Multi-Broker Architecture (CRITICAL - 3 days) - `MINDFOLIO_BROKER_ARCHITECTURE.md`
+2. 🎯 GEX Enhancement Phase 1 (HIGH - Weeks 1-2) - `GEX_ENHANCEMENT_TASK.md`
+
+---
+
 ### Project Overview
 FlowMind is an options analytics platform (FastAPI backend, React 19 frontend, Redis/MongoDB storage) for building options strategies, monitoring real-time flow, and managing portfolios with FIFO-based P&L tracking.
 
