@@ -19,7 +19,75 @@
 
 ## 🚀 Active Tasks (In Progress)
 
-### 1. 🎯 GEX Enhancement - Phase 1 (HIGH PRIORITY)
+### 1. � Multi-Broker Architecture - Mindfolio Manager (CRITICAL PRIORITY)
+**Status:** 🔴 NEW REQUIREMENT - Must implement before other features  
+**Assignee:** TBD  
+**Due:** 2-3 days (October 23-24, 2025)  
+**Task File:** `MINDFOLIO_BROKER_ARCHITECTURE.md`
+
+**Objectives:**
+- [ ] **Phase 0: Foundation (Day 1)**
+  - [ ] Add broker/environment/account_type fields to Portfolio model (`backend/mindfolio.py`)
+  - [ ] Add validators to PortfolioCreate
+  - [ ] Update `create_portfolio()` to save new fields
+  - [ ] Add filtering to `list_portfolios()` endpoint (broker, environment, account_type params)
+  - [ ] Test with curl: Create TS SIM Equity portfolio
+- [ ] **Phase 1: UI Implementation (Day 2)**
+  - [ ] Add Broker Tabs (TradeStation/TastyTrade) to `frontend/src/pages/MindfolioList.jsx`
+  - [ ] Add Environment Sub-tabs (SIM/LIVE)
+  - [ ] Add Account Type Dropdown (All/Equity/Futures/Crypto)
+  - [ ] Update MindfolioCard with broker badges
+  - [ ] Add Stats Cards Breakdown (per-broker/environment totals)
+- [ ] **Phase 2: Create Form (Day 2)**
+  - [ ] Update `frontend/src/pages/MindfolioCreate.jsx`
+  - [ ] Add broker selection (TradeStation/TastyTrade radio buttons)
+  - [ ] Add environment selection (SIM/LIVE radio buttons)
+  - [ ] Add account type dropdown
+  - [ ] Add optional account_id field
+- [ ] **Phase 3: Context-Aware Features (Day 3)**
+  - [ ] Quick Actions: Reset for SIM, extra confirm for LIVE
+  - [ ] ROI color coding based on environment
+  - [ ] Detail page: Show broker info in header
+  - [ ] LIVE delete confirmation modal
+
+**Data Model Changes:**
+```python
+# NEW Portfolio fields:
+broker: str  # "TradeStation" | "TastyTrade"
+environment: str  # "SIM" | "LIVE"
+account_type: str  # "Equity" | "Futures" | "Crypto"
+account_id: Optional[str] = None  # Broker's account number
+```
+
+**API Changes:**
+```python
+# GET /api/mindfolio with query params:
+?broker=TradeStation&environment=SIM&account_type=Equity
+```
+
+**Dependencies:**
+- ✅ Existing Mindfolio Manager
+- ✅ Redis/MongoDB storage
+- ⚠️ TradeStation OAuth (pending callback approval)
+
+**Success Criteria:**
+- Broker tabs working with proper filtering
+- Can create portfolios per broker/environment/type
+- Stats cards show per-broker breakdowns
+- SIM accounts have Reset button, LIVE have extra delete confirm
+
+**Migration Required:**
+- Existing mindfolios need default values: `broker='TradeStation', environment='SIM', account_type='Equity'`
+
+**Notes:**
+- **Color schemes:** TradeStation=Blue, TastyTrade=Orange, SIM=Blue, LIVE=Red
+- See `MINDFOLIO_BROKER_ARCHITECTURE.md` (890 lines) for complete specs
+- This is ARCHITECTURAL - must do before adding other manager features
+- 4 broker docs exist: TRADESTATION_CALLBACK_SETUP.md, EMAIL_TRADESTATION_CALLBACK_REQUEST.md, TRADESTATION_TIMELINE.md
+
+---
+
+### 2. �🎯 GEX Enhancement - Phase 1 (HIGH PRIORITY)
 **Status:** 🔄 Planning Complete, Ready to Start  
 **Assignee:** TBD  
 **Due:** Week 1-2 (Nov 4, 2025)  
