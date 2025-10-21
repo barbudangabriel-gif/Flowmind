@@ -902,13 +902,15 @@ async def metrics_endpoint():
         logger.error(f" Metrics export failed: {e}")
         raise HTTPException(status_code=500, detail="Metrics export failed")
 
-    return {
-        "status": "ready",
-        "service": "FlowMind Analytics API",
-        "redis": redis_status,
-        "tradestation": "configured" if ROBUST_TS_AVAILABLE else "not_configured",
-        "timestamp": datetime.now().isoformat(),
-    }
+    # This code appears to be unreachable due to return statement above
+    # Commenting out dead code
+    # return {
+    #     "status": "ready",
+    #     "service": "FlowMind Analytics API",
+    #     "redis": redis_status,  # ← Would be undefined here
+    #     "tradestation": "configured" if ROBUST_TS_AVAILABLE else "not_configured",
+    #     "timestamp": datetime.now().isoformat(),
+    # }
 
 
 # Rate limiting middleware

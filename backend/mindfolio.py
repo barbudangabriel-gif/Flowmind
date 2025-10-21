@@ -1180,7 +1180,7 @@ async def get_module_budget_usage(pid: str, module_name: str) -> dict:
             )
 
         # Get all transactions for this mindfolio
-        await list_transactions(pid)
+        await get_transactions(pid)
 
         # Filter transactions tagged with this module (we'll add module field to transactions)
         # For now, calculate based on all positions
