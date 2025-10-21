@@ -376,6 +376,390 @@ link: '/mindfolio',   // ✅ CORRECT
 
 ---
 
+### 8. 🎯 Create Investment Scoring Page (MEDIUM PRIORITY)
+**Status:** 🟡 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Oct 24-25, 2025  
+**Time:** 3-4 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #3
+
+**Problem:**
+- Sidebar "Stocks Data > Investment Scoring" links to `/stocks/scoring` → 404
+- AI-powered stock scoring system needs UI
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/StockScoringPage.jsx`
+- [ ] Add route: `<Route path="/stocks/scoring" element={<StockScoringPage />} />`
+- [ ] UI Components:
+  - [ ] Ticker input with autocomplete
+  - [ ] "Analyze" button
+  - [ ] Results card showing:
+    - [ ] Overall score (0-100)
+    - [ ] Category scores (Technical, Fundamental, Sentiment, Options Flow)
+    - [ ] Recommendation (Strong Buy/Buy/Hold/Sell/Strong Sell)
+    - [ ] Reasoning (AI-generated explanation)
+    - [ ] Key metrics table
+- [ ] Backend Integration:
+  - [ ] `POST /api/stocks/scoring` with ticker
+  - [ ] Uses existing `investment_scoring_agent.py`
+  - [ ] Combines UW data + TradeStation data
+- [ ] Design:
+  - [ ] Score visualization (circular progress bar)
+  - [ ] Color-coded categories (green = bullish, red = bearish)
+  - [ ] Expandable sections for detailed metrics
+
+**Success Criteria:**
+- [ ] Returns comprehensive stock analysis
+- [ ] AI reasoning is clear and actionable
+- [ ] Mobile responsive
+- [ ] Handles errors gracefully
+
+---
+
+### 9. 🔍 Create Stock Scanner Page (MEDIUM PRIORITY)
+**Status:** 🟡 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Oct 26-27, 2025  
+**Time:** 4-5 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #4
+
+**Problem:**
+- Sidebar "Stocks Data > Scoring Scanner" links to `/stocks/scanner` → 404
+- Bulk stock screening with scoring filters
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/StockScannerPage.jsx`
+- [ ] Add route: `<Route path="/stocks/scanner" element={<StockScannerPage />} />`
+- [ ] UI Components:
+  - [ ] Filter panel:
+    - [ ] Min overall score (slider 0-100)
+    - [ ] Sector multi-select
+    - [ ] Market cap range
+    - [ ] Min volume
+    - [ ] Scan universe selector (SP500, Russell2000, All Stocks)
+  - [ ] Results table:
+    - [ ] Ticker, Score, Recommendation, Price, Change, Volume
+    - [ ] Sortable columns
+    - [ ] "Analyze" button → opens StockScoringPage
+  - [ ] Pagination (show 50 per page)
+- [ ] Backend Integration:
+  - [ ] `GET /api/stocks/scanner` with filter params
+  - [ ] Uses UW screener API + scoring engine
+  - [ ] Returns top 100 stocks by score
+- [ ] Performance:
+  - [ ] Cache results for 5 minutes
+  - [ ] Show loading skeleton during scan
+
+**Success Criteria:**
+- [ ] Identifies high-scoring stocks quickly
+- [ ] Filters work correctly
+- [ ] Can export results to CSV
+- [ ] Mobile responsive table
+
+---
+
+### 10. 🤖 Create IV Strategy Scanner Variants (MEDIUM PRIORITY - 4 variants)
+**Status:** 🟡 MISSING PAGES  
+**Assignee:** TBD  
+**Due:** Oct 28-29, 2025  
+**Time:** 2-3 hours each (8-12 hours total)  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` items #7-10
+
+**Problem:**
+- IVScannerPage exists for base `/screener/iv`
+- But needs query param handling for 4 strategy variants:
+  - `/screener/iv?strategy=IRON_CONDOR`
+  - `/screener/iv?strategy=CALENDAR`
+  - `/screener/iv?strategy=DIAGONAL`
+  - `/screener/iv?strategy=DOUBLE_DIAGONAL`
+
+**Requirements:**
+- [ ] Update `frontend/src/pages/IVScannerPage.jsx`:
+  - [ ] Read `?strategy=` query param
+  - [ ] Show strategy-specific filters
+  - [ ] Adjust backend API call based on strategy
+- [ ] Strategy-Specific Filters:
+  - [ ] **Iron Condor**: Wing width, probability range
+  - [ ] **Calendar**: Front/back month DTE difference
+  - [ ] **Diagonal**: Strike spread, time spread
+  - [ ] **Double Diagonal**: Symmetric wing configuration
+- [ ] Backend Updates:
+  - [ ] Update `GET /api/screener/iv` to accept `strategy` param
+  - [ ] Filter logic per strategy type
+  - [ ] Return strategy-appropriate setups
+- [ ] UI Enhancements:
+  - [ ] Strategy selector dropdown at top
+  - [ ] Strategy description tooltip
+  - [ ] Results show strategy-specific metrics
+
+**Success Criteria:**
+- [ ] Each strategy variant works independently
+- [ ] Filters are relevant to strategy type
+- [ ] Backend returns appropriate setups
+- [ ] Can switch between strategies without page reload
+
+---
+
+### 11. 🛡️ Create Covered Calls Page (MEDIUM PRIORITY)
+**Status:** 🟡 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Oct 30, 2025  
+**Time:** 4-5 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #12
+
+**Problem:**
+- Sidebar "Options Data > Algos > Covered Calls" links to `/screener/covered-calls` → 404
+- Income generation strategy for stock holders
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/CoveredCallsPage.jsx`
+- [ ] Add route: `<Route path="/screener/covered-calls" element={<CoveredCallsPage />} />`
+- [ ] UI Components:
+  - [ ] Stock holdings input (import from Mindfolio or manual)
+  - [ ] Target premium per contract
+  - [ ] Max days to expiration
+  - [ ] Strike delta preference (0.20-0.40 typical)
+  - [ ] Results table per holding:
+    - [ ] Strike, DTE, Premium, Delta, Annualized Return
+    - [ ] "Write This Call" button
+- [ ] Backend Integration:
+  - [ ] `GET /api/screener/covered-calls` with holdings array
+  - [ ] Filter logic:
+    - OTM calls (strike > current price)
+    - High liquidity (volume > 50, OI > 200)
+    - Premium > threshold
+  - [ ] Calculate annualized return: (premium / stock_price) * (365 / DTE)
+- [ ] Mindfolio Integration:
+  - [ ] "Import Stock Holdings" button
+  - [ ] Load stocks from selected mindfolio
+  - [ ] Show current position qty
+
+**Success Criteria:**
+- [ ] Identifies best covered call opportunities
+- [ ] Annualized return calculation correct
+- [ ] Can import holdings from mindfolio
+- [ ] Mobile responsive
+
+---
+
+### 12. 💰 Create Cash-Secured Puts Page (MEDIUM PRIORITY)
+**Status:** 🟡 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Oct 31, 2025  
+**Time:** 4-5 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #13
+
+**Problem:**
+- Sidebar "Options Data > Algos > Cash-Secured Puts" links to `/screener/csp` → 404
+- Stock acquisition strategy with premium income
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/CSPPage.jsx`
+- [ ] Add route: `<Route path="/screener/csp" element={<CSPPage />} />`
+- [ ] UI Components:
+  - [ ] Available cash input
+  - [ ] Target stocks watchlist input (or scan all)
+  - [ ] Min premium per contract
+  - [ ] Delta range (0.20-0.35 typical)
+  - [ ] Max DTE
+  - [ ] Results table:
+    - [ ] Ticker, Strike, DTE, Premium, Delta, Cash Required
+    - [ ] Annualized Return %
+    - [ ] "Sell This Put" button
+- [ ] Backend Integration:
+  - [ ] `GET /api/screener/csp` with filters
+  - [ ] Filter logic:
+    - High-quality stocks (market cap > $1B)
+    - Strike < current price (OTM puts)
+    - Premium > threshold
+    - Liquidity check
+  - [ ] Calculate annualized return + cash requirement
+- [ ] Trade Preview:
+  - [ ] Show cash reserve needed (strike * 100)
+  - [ ] Calculate max positions based on available cash
+
+**Success Criteria:**
+- [ ] Identifies high-yield CSP opportunities
+- [ ] Cash requirement calculations correct
+- [ ] Can filter by specific tickers
+- [ ] Shows portfolio allocation impact
+
+---
+
+### 13. 📊 Create TradeStation Option Chain Page (MEDIUM PRIORITY)
+**Status:** 🟡 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Nov 1-2, 2025  
+**Time:** 5-6 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #17
+
+**Problem:**
+- Sidebar "Options Data > Option Chain (TS)" links to `/md/chain` → 404
+- TradeStation-specific option chain viewer (when `TS_LIVE` flag enabled)
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/TSOptionChainPage.jsx`
+- [ ] Add route: `<Route path="/md/chain" element={<TSOptionChainPage />} />`
+- [ ] Conditional visibility: Only show if `flags.TS_LIVE === true`
+- [ ] UI Components:
+  - [ ] Ticker input
+  - [ ] Expiration selector dropdown
+  - [ ] Strike range slider
+  - [ ] Option chain grid:
+    - [ ] CALLS (left side): Strike, Bid, Ask, Last, Volume, OI, IV, Delta, Theta
+    - [ ] PUTS (right side): Same columns mirrored
+    - [ ] ATM strike highlighted
+  - [ ] Real-time price updates (via WebSocket if available)
+- [ ] Backend Integration:
+  - [ ] `GET /api/tradestation/options/chain?symbol={ticker}&expiry={date}`
+  - [ ] Uses TradeStation API directly (not UW)
+  - [ ] Format data for grid display
+- [ ] Features:
+  - [ ] Click strike to view Greeks detail
+  - [ ] Color-coded by moneyness (ITM/ATM/OTM)
+  - [ ] Export to CSV
+
+**Success Criteria:**
+- [ ] Shows TradeStation option chain data
+- [ ] Only visible when TS connected
+- [ ] Grid is responsive and scrollable
+- [ ] Real-time updates if WebSocket available
+
+---
+
+### 14. 📈 Create Backtests History Page (MEDIUM PRIORITY)
+**Status:** 🟡 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Nov 3, 2025  
+**Time:** 4-5 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #18
+
+**Problem:**
+- Sidebar "Options Data > Analytics > Backtests" links to `/analytics/backtests` → 404
+- Historical backtest results repository
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/BacktestsPage.jsx`
+- [ ] Add route: `<Route path="/analytics/backtests" element={<BacktestsPage />} />`
+- [ ] UI Components:
+  - [ ] Backtests table:
+    - [ ] Strategy Name, Symbol, Date Range, Return %, Sharpe Ratio, Max DD
+    - [ ] Sortable columns
+    - [ ] "View Details" button → opens backtest detail modal
+  - [ ] Filter panel:
+    - [ ] Strategy type filter
+    - [ ] Symbol filter
+    - [ ] Date range picker
+    - [ ] Min return % filter
+  - [ ] Pagination
+- [ ] Backend Integration:
+  - [ ] `GET /api/analytics/backtests` with filters
+  - [ ] Retrieves from Redis `bt:*` keys or MongoDB archive
+  - [ ] Returns list with summary stats
+- [ ] Detail Modal:
+  - [ ] Full P&L chart
+  - [ ] Trade log table
+  - [ ] Performance metrics
+  - [ ] Strategy parameters used
+
+**Success Criteria:**
+- [ ] Shows all historical backtests
+- [ ] Can filter and search
+- [ ] Detail modal displays full analysis
+- [ ] Export results to CSV
+
+---
+
+### 15. 💼 Create Mindfolio Analytics Page (MEDIUM PRIORITY)
+**Status:** 🟡 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Nov 4-5, 2025  
+**Time:** 5-6 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #20
+
+**Problem:**
+- Sidebar "Mindfolio Manager > Mindfolio Analytics" links to `/mindfolio/analytics` → 404
+- Advanced portfolio analytics and insights
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/MindfolioAnalyticsPage.jsx`
+- [ ] Add route: `<Route path="/mindfolio/analytics" element={<MindfolioAnalyticsPage />} />`
+- [ ] Mindfolio selector dropdown at top
+- [ ] Analytics Sections:
+  - [ ] **Performance Metrics**:
+    - Total Return %, Sharpe Ratio, Max Drawdown
+    - Win Rate, Avg Win/Loss, Profit Factor
+  - [ ] **Portfolio Greeks**:
+    - Net Delta, Gamma, Theta, Vega
+    - Position-level Greeks breakdown
+  - [ ] **Risk Analysis**:
+    - Value at Risk (VaR 95%)
+    - Correlation matrix (positions)
+    - Concentration risk (top 5 holdings)
+  - [ ] **Trade Statistics**:
+    - Total trades, Win/Loss distribution
+    - Avg holding period
+    - Best/Worst trades
+  - [ ] **Equity Curve**:
+    - Historical NAV chart
+    - Drawdown overlay
+- [ ] Backend Integration:
+  - [ ] `GET /api/mindfolio/{id}/analytics`
+  - [ ] Comprehensive calculations using FIFO positions
+  - [ ] Greeks aggregation across all positions
+
+**Success Criteria:**
+- [ ] Shows comprehensive portfolio analytics
+- [ ] Greeks calculations accurate
+- [ ] Charts responsive and interactive
+- [ ] Export analytics report to PDF
+
+---
+
+### 16. 🔧 Create TradeStation Settings Page (MEDIUM PRIORITY)
+**Status:** 🟡 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Nov 6, 2025  
+**Time:** 2-3 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #24
+
+**Problem:**
+- Sidebar "Settings > Data & APIs > TradeStation" links to `/providers/ts` → 404
+- TradeStation connection management UI
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/TSSettingsPage.jsx`
+- [ ] Add route: `<Route path="/providers/ts" element={<TSSettingsPage />} />`
+- [ ] UI Components:
+  - [ ] Connection Status:
+    - [ ] Green/Red indicator (connected/disconnected)
+    - [ ] Last sync timestamp
+    - [ ] Account ID display
+  - [ ] OAuth Flow:
+    - [ ] "Connect TradeStation" button
+    - [ ] "Disconnect" button
+    - [ ] Refresh token status
+  - [ ] Settings:
+    - [ ] Environment toggle (SIMULATION / LIVE)
+    - [ ] Default account selector
+    - [ ] Data sync frequency
+  - [ ] Test Connection:
+    - [ ] "Test API Connection" button
+    - [ ] Shows balances, positions count
+- [ ] Backend Integration:
+  - [ ] `GET /api/tradestation/status`
+  - [ ] `POST /api/tradestation/connect` (OAuth)
+  - [ ] `DELETE /api/tradestation/disconnect`
+  - [ ] `POST /api/tradestation/test`
+
+**Success Criteria:**
+- [ ] Can connect/disconnect TS account
+- [ ] OAuth flow works smoothly
+- [ ] Shows real-time connection status
+- [ ] Environment switching works
+
+---
+
 ## 📦 Backlog (Planned)
 
 ### Phase 2: GEX Backtesting (Weeks 3-4)
