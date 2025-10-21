@@ -124,20 +124,46 @@ app.include_router(geopolitical_router)            # Already has /api/geopolitic
 2. **Dark theme violations:** Never use `isDarkMode ?` ternaries or light Tailwind classes (`bg-white`, `text-gray-800`)
 3. **URL hardcoding:** Frontend must use `process.env.REACT_APP_BACKEND_URL`, not `http://localhost:8000`
 4. **TradeStation token expiry:** 60-day refresh cycle, handled in `tradestation_auth.py` or `app/routers/tradestation_auth.py`
-5. **⚠️ UW API HALLUCINATIONS:** ONLY use the 12 verified endpoints in `unusual_whales_service_clean.py` - AI assistants frequently generate fake endpoints that return 404
+5. **⚠️ UW API HALLUCINATIONS:** ONLY use the 17 verified endpoints in `unusual_whales_service_clean.py` - AI assistants frequently generate fake endpoints that return 404
 6. **Unusual Whales rate limits:** 1.0s delay between requests (`rate_limit_delay`), always implement demo fallback
 7. **Test mode:** Integration tests need real backend, unit tests use `TEST_MODE=1` for shared cache
 8. **FIFO integrity:** Never modify positions directly - always add transactions and recompute via `calculate_positions()`
 
-### Historical Context - UW API Issues
-**Oct 21, 2025:** Resolved UW API hallucination problem after comprehensive testing:
-- Previous implementations used AI-generated endpoints (`/api/flow-alerts`, `/api/market/tide`, `/api/stock/{ticker}/quote`)
-- ALL hallucinated endpoints returned 404 errors
-- **Comprehensive discovery:** Tested 100+ endpoint variations, found 12 working endpoints on Advanced plan
-- **Major discoveries:** Dark pool data (500 trades), stock screener with GEX/IV metrics, insider trades
-- **Lesson learned:** Always verify API endpoints through testing, never trust AI-generated API paths or online documentation
-- **Solution:** Created `backend/unusual_whales_service_clean.py` with ONLY verified endpoints
-- **Reference:** `UW_API_COMPLETE_DOCUMENTATION.md` documents all 12 working endpoints with examples
+### Historical Context - UW API Discovery (Oct 21, 2025)
+**FINAL VERIFIED COUNT: 17 UNIQUE ENDPOINT PATTERNS** (not 12, not 30+)
+
+**Discovery Timeline:**
+- Initial implementation: 12 verified endpoints found through systematic testing
+- User challenge: "mai sunt si altele" (there are more) - **user was correct!**
+- Extended testing: 150+ endpoint variations tested across multiple categories
+- **Final discovery: 17 unique patterns** (5 NEW endpoints found)
+- **Key insight:** 8 patterns work with ANY ticker → thousands of possible combinations
+
+**The 17 Working Endpoint Patterns:**
+1. **Stock Data (5)**: info, greeks, option-contracts (500), spot-exposures (300-410 GEX 🔥), options-volume
+2. **Screeners (1)**: screener/stocks (unified GEX+IV+Greeks ⭐)
+3. **Alerts (1)**: alerts (market tide events 🔥)
+4. **Insider (5)**: trades, {ticker}, recent, **buys (NEW)**, **sells (NEW)**
+5. **Dark Pool (2)**: {ticker} (500 trades 🔥⭐), recent
+6. **Earnings (3)**: {ticker}, **today (NEW)**, **week (NEW)**
+
+**Major Discoveries:**
+- **Dark pool data:** 500 trades per ticker with price, volume, premium, market center
+- **Pre-calculated GEX:** 300-410 records per ticker (no calculation needed!)
+- **Screener API:** Unified metrics (GEX, IV, Greeks, volume) in single endpoint
+- **Parameter support:** 9 endpoints support query params (limit, date, order_by, noti_type, symbol)
+- **Ticker patterns:** 8 endpoints work with ANY ticker (TSLA, AAPL, SPY, NVDA, etc.)
+
+**Testing Methodology:**
+- 150+ endpoint variations tested systematically
+- Cross-validated with 8 different tickers (TSLA, AAPL, SPY, NVDA, MSFT, GOOGL, AMZN, META)
+- 18 parameter combinations verified
+- Real data volumes confirmed (SPY Greeks: 135 records, AAPL earnings: 115 records)
+
+**Critical Lesson:** Always verify API endpoints through exhaustive testing. User intuition was correct about more endpoints existing. The true count is 17 unique patterns, but with ticker combinations = thousands of possible endpoints.
+
+**Implementation:** `backend/unusual_whales_service_clean.py` with ALL 17 methods implemented
+**Documentation:** `UW_API_FINAL_17_ENDPOINTS.md` (complete 18KB reference with examples)
 
 ### Key Files for Understanding Architecture
 - `backend/server.py` (961 lines) - Main FastAPI app, router mounting, service initialization
@@ -145,12 +171,15 @@ app.include_router(geopolitical_router)            # Already has /api/geopolitic
 - `backend/portfolios.py` (1133 lines) - FIFO algorithm, position calculation, transaction tracking
 - `backend/services/builder_engine.py` - Options strategy engine (54+ strategies, Greeks)
 - `backend/services/quality.py` - Spread quality scoring (liquidity, spread width, risk metrics)
+- `backend/unusual_whales_service_clean.py` - UW API service with ALL 17 verified endpoints
 - `frontend/src/App.js` (250 lines) - React app entry, dark theme provider, routing
 - `DARK_THEME_ONLY_VALIDATION.md` - Dark theme migration details and validation results
 - `DEVELOPMENT_GUIDELINES.md` - Romanian workflow rules (iterative, feedback-driven)
+- `UW_API_FINAL_17_ENDPOINTS.md` - Complete UW API reference (18KB, all 17 patterns with examples)
+- `UW_API_DISCOVERY_COMPLETE.md` - Discovery task summary (150+ tests, final results)
 
 ---
-**When in doubt:** Check `redis_fallback.py` for cache patterns, `portfolios.py` for FIFO logic, `server.py` for router organization, and root `*_test.py` files for integration test examples.
+**When in doubt:** Check `redis_fallback.py` for cache patterns, `portfolios.py` for FIFO logic, `server.py` for router organization, `unusual_whales_service_clean.py` for UW API patterns, and root `*_test.py` files for integration test examples.
 
 ### MongoDB Collections
 
