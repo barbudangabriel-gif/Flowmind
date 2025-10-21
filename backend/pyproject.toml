@@ -4,3 +4,16 @@ target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
+
+[tool.ruff]
+# FlowMind linting configuration
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# Only check critical errors (not line length)
+select = ["E4", "E7", "E9", "F"]  # E4xx imports, E7xx statements, E9xx syntax, F all
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"server.py" = ["E402"]  # Intentional: Router imports after app config to avoid circular dependencies

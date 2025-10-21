@@ -668,6 +668,14 @@ async def get_chart_data(
         )
 
 
+# ============================================================================
+# ROUTER IMPORTS (After App Configuration)
+# ============================================================================
+# NOTE: These imports must come AFTER app initialization and configuration
+# to avoid circular import issues and ensure proper dependency injection.
+# Suppresses E402 (module-import-not-at-top-of-file) - intentional pattern.
+# ============================================================================
+
 # Watchlist module
 # Redis backtest cache
 from bt_cache_integration import router as bt_router
