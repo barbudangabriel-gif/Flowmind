@@ -10,6 +10,38 @@ https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestatio
 - Structure: 6-month project roadmap with priorities, timelines, dependencies, success criteria
 - Update frequency: After every task completion, bug fix, or new requirement
 
+**🔥 NEW SESSION PROTOCOL (MANDATORY):**
+At the START of EVERY new session, agent MUST:
+1. 📋 **Read `PROJECT_TASKS.md`** - Get all active/backlog tasks
+2. 📊 **Display formatted task list** to user with:
+   - Priority indicators (🔴 CRITICAL / 🟡 HIGH / 🟢 MEDIUM / ⚪ LOW)
+   - Status (🚀 Active / 📋 Backlog / ✅ Completed)
+   - Time estimates (hours/days)
+   - Task file references (if any)
+3. ⏸️ **WAIT for user decision** - Let user choose which task to work on
+4. ✅ **Track progress** - Update PROJECT_TASKS.md checkboxes as work progresses
+
+**Format for Task List Display:**
+```
+📋 Available Tasks (from PROJECT_TASKS.md):
+
+🔴 CRITICAL (Start ASAP):
+1. Multi-Broker Architecture - Mindfolio Manager
+   ⏱️ Time: 2-3 days | 📄 File: MINDFOLIO_BROKER_ARCHITECTURE.md
+   Status: 🚀 Active | Phase 0: Foundation (Day 1)
+
+🟡 HIGH (Important):
+2. GEX Enhancement Phase 1 - Pre-calculated Data Integration
+   ⏱️ Time: Weeks 1-2 | 📄 File: GEX_ENHANCEMENT_TASK.md
+   Status: 📋 Backlog | 5 phases defined
+
+🟢 MEDIUM (Can wait):
+3. [Task name]
+   [Details...]
+
+Which task would you like to work on? (Reply with number or description)
+```
+
 **Workflow Rules:**
 1. ✅ **BEFORE starting ANY work:** Check `PROJECT_TASKS.md` for task definition
 2. ✅ **If task doesn't exist:** Add it to Active Tasks or Backlog section with priority/timeline/dependencies
@@ -17,6 +49,7 @@ https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestatio
 4. ✅ **After completion:** Move to Completed section with date + summary
 5. ✅ **For bugs:** Add to Bug Fixes section with priority (Critical/High/Medium/Low)
 6. ❌ **NEVER work on undocumented tasks** - always add to tracker first
+7. 🆕 **NEW SESSION START:** Always display task list and wait for user choice
 
 **Task Reference Files:**
 - `PROJECT_TASKS.md` - Main tracker (462 lines, comprehensive roadmap)
