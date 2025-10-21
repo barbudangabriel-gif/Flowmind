@@ -1346,7 +1346,7 @@ class InvestmentScoringAgent:
         """Parse date string to datetime object."""
         try:
             return datetime.strptime(date_string, "%Y-%m-%d")
-        except:
+        except (ValueError, TypeError):
             return datetime.now() - timedelta(days=365)  # Default to old date
 
     # Additional utility methods for future enhancements

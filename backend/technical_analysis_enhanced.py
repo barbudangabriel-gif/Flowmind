@@ -170,7 +170,7 @@ class TechnicalAnalyzer:
                     else "LOW"
                 ),
             }
-        except:
+        except (ValueError, KeyError, AttributeError):
             return {"slope": 0, "r_squared": 0, "reliability": "LOW"}
 
     def _calculate_technical_indicators(self, df: pd.DataFrame) -> Dict[str, Any]:

@@ -426,7 +426,7 @@ class MarketSentimentAnalyzer:
                         timestamp=datetime.utcnow().isoformat(),
                         key_phrases=[key_phrase],
                     )
-            except:
+            except (KeyError, AttributeError, TypeError):
                 pass  # Insider data not available
 
             return None

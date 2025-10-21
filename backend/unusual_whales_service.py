@@ -160,28 +160,28 @@ class UnusualWhalesService:
                     expiry_date = datetime.strptime(expiry_str, "%Y-%m-%d").date()
                     today = datetime.now().date()
                     dte = (expiry_date - today).days
-                except:
+                except (ValueError, TypeError):
                     dte = 0
 
             # Convert premium from string to int (cents)
             total_premium = alert.get("total_premium", "0")
             try:
                 premium = int(float(total_premium)) if total_premium else 0
-            except:
+            except (ValueError, TypeError):
                 premium = 0
 
             # Process underlying price
             underlying_price = alert.get("underlying_price", "0")
             try:
                 underlying = float(underlying_price) if underlying_price else 0
-            except:
+            except (ValueError, TypeError):
                 underlying = 0
 
             # Process volume OI ratio
             volume_oi_ratio = alert.get("volume_oi_ratio", "0")
             try:
                 vol_oi = float(volume_oi_ratio) if volume_oi_ratio else 0
-            except:
+            except (ValueError, TypeError):
                 vol_oi = 0
 
             # Determine action based on bid/ask side premium
@@ -193,7 +193,7 @@ class UnusualWhalesService:
                 # If most premium is on ask side, it's likely a buy (buyers paying ask)
                 is_opener = ask_prem > bid_prem
                 action = "BUY" if is_opener else "SELL"
-            except:
+            except (ValueError, TypeError):
                 is_opener = True
                 action = "BUY"
 
@@ -856,7 +856,7 @@ class UnusualWhalesService:
                 return 0
             exp_date = datetime.strptime(expiration_date, "%Y-%m-%d")
             return (exp_date - datetime.now()).days
-        except:
+        except (ValueError, TypeError):
             return 0
 
     def _categorize_trade_size(self, amount: float) -> str:
@@ -894,7 +894,7 @@ class UnusualWhalesService:
                 return (low + high) // 2
             else:
                 return int(amount_str.replace("$", "").replace(",", ""))
-        except:
+        except (ValueError, TypeError, AttributeError):
             return 25000  # Default estimate
 
     def _convert_df_to_dict(self, df) -> Dict[str, Any]:

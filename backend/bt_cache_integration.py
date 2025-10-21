@@ -177,7 +177,7 @@ async def redis_diag():
     try:
         p = urlparse(url)
         db = p.path or "/0"
-    except:
+    except (ValueError, AttributeError):
         pass
 
     try:
