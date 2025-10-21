@@ -87,7 +87,101 @@ account_id: Optional[str] = None  # Broker's account number
 
 ---
 
-### 2. �🎯 GEX Enhancement - Phase 1 (HIGH PRIORITY)
+### 2. � Sidebar Audit & Missing Pages (HIGH PRIORITY)
+**Status:** 🔴 CRITICAL - Many sidebar links have NO pages  
+**Assignee:** TBD  
+**Due:** 1-2 days (October 22-23, 2025)  
+**Task File:** `frontend/src/SIDEBAR_TODO.md`
+
+**Problem:**
+Sidebar în `nav.simple.js` (400 lines) are ~40 menu items, dar multe NU au pagini create!
+
+**Phase 1: Audit Complet (4 ore)**
+- [ ] Mapare completă: Sidebar items → Routes în App.js
+- [ ] Identificare: Care links NU au pagină? (returnează 404 sau ComingSoonPage)
+- [ ] Documentare: Tabel complet cu 4 coloane: Menu Item | Route | Page Exists? | File Path
+
+**Phase 2: Decizie per Item (2 ore)**
+Pentru fiecare item fără pagină, decide:
+- [ ] **Option A:** Create pagină nouă (`pages/NewPage.jsx`)
+- [ ] **Option B:** Remove din sidebar (`nav.simple.js`)
+- [ ] **Option C:** Redirect la existing page (update route)
+
+**Phase 3: Implementare (varies)**
+- [ ] Create pages lipsa SAU
+- [ ] Remove items inutile din `nav.simple.js`
+- [ ] Update `App.js` routes
+- [ ] Test fiecare link din sidebar → NO 404s
+
+**Known Issues (din SIDEBAR_TODO.md):**
+```javascript
+// Items fără pagini (suspected):
+- /screener/iv → Scanner IV? Missing?
+- /screener/sell-puts → Missing?
+- /screener/covered-calls → Missing?
+- /screener/csp → Missing?
+- /trades/preview → Missing?
+- /trades/orders/sim → Missing?
+- /trades/orders/live → Missing?
+- /md/chain → TradeStation chain? Missing?
+- /mindfolio/analytics → Missing?
+- /mindfolio/rebalancing → Missing?
+- /stocks/scoring → Missing?
+- /stocks/scanner → Missing?
+- /stocks/top-picks → Missing?
+- /analytics/backtests → Missing?
+- /analytics/verified → Missing?
+- /settings/gates → Missing?
+- /settings/keys → Missing?
+- /providers/ts → TradeStationLogin exists? Check route
+- /providers/uw → Missing?
+- /ops/redis → Missing?
+- /ops/bt → Missing?
+- /help/docs → Missing?
+```
+
+**Existing Pages (VERIFIED in App.js):**
+```javascript
+✅ /dashboard → Dashboard.jsx
+✅ /builder → BuilderPage.jsx
+✅ /simulator → SimulatorPage.jsx
+✅ /flow → FlowPage.jsx
+✅ /mindfolio → MindfolioList.jsx
+✅ /mindfolio/:id → MindfolioDetail.jsx / MindfolioDetailNew.jsx
+✅ /mindfolio/new → MindfolioCreate.jsx
+✅ /account/balance → AccountBalancePage.jsx
+✅ /market-movers → MarketMoversPage.jsx
+✅ /congress-trades → CongressTradesPage.jsx
+✅ /dark-pool → DarkPoolPage.jsx
+✅ /institutional → InstitutionalPage.jsx
+```
+
+**Deliverables:**
+1. **AUDIT_REPORT.md** - Tabel complet cu toate sidebar items + status
+2. **Missing pages created** SAU **Sidebar cleaned** (remove dead links)
+3. **Zero 404 errors** când click oricare link din sidebar
+4. **Active state highlighting** fixed (isActive detection)
+
+**Success Criteria:**
+- ✅ Fiecare sidebar item → funcțional (pagină sau redirect)
+- ✅ No ComingSoonPage placeholders (resolve toate)
+- ✅ Sidebar logic flow: Dashboard → Builder → Flow → Mindfolio
+- ✅ Mobile menu funcțional (collapse/expand)
+
+**Dependencies:**
+- ✅ SidebarSimple.jsx (349 lines) - working
+- ✅ nav.simple.js (400 lines) - complete structure
+- ⚠️ App.js routes (250 lines) - many missing routes
+
+**Notes:**
+- 24 files în `/frontend/src/archive` - some pages might be there!
+- Chart pages archived: ChartPage.js, ChartProPage.js, etc.
+- OptionsWorkbench.jsx, OptionsAnalytics.jsx în archive
+- Consider restoring archived pages vs creating new ones
+
+---
+
+### 3. ��🎯 GEX Enhancement - Phase 1 (HIGH PRIORITY)
 **Status:** 🔄 Planning Complete, Ready to Start  
 **Assignee:** TBD  
 **Due:** Week 1-2 (Nov 4, 2025)  
