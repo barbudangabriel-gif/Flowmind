@@ -212,6 +212,170 @@ Pentru fiecare item fără pagină, decide:
 
 ---
 
+### 4. 🔧 Fix HomePage /portfolios Link (HIGH PRIORITY - Quick Fix)
+**Status:** 🔴 BROKEN LINK - 404 error  
+**Assignee:** TBD  
+**Due:** Today (Oct 21, 2025)  
+**Time:** 2 minutes  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #1
+
+**Problem:**
+HomePage Quick Action card #3 links to `/portfolios` but route doesn't exist!
+
+**Fix Required:**
+```javascript
+// File: frontend/src/pages/HomePage.jsx - Line 30
+// CHANGE:
+link: '/portfolios',  // ❌ WRONG
+
+// TO:
+link: '/mindfolio',   // ✅ CORRECT
+```
+
+**Testing:**
+- [ ] Click "Mindfolio Manager" card on HomePage
+- [ ] Verify navigates to /mindfolio (MindfolioList.jsx)
+- [ ] No 404 error
+
+---
+
+### 5. 📊 Create OptimizePage - AI Strategy Optimizer (HIGH PRIORITY)
+**Status:** 🔴 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Oct 22-23, 2025  
+**Time:** 4-6 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #2
+
+**Problem:**
+- HomePage Quick Action #4 links to `/optimize` → 404 error
+- Feature promised: "AI-powered strategy recommendations"
+- Backend endpoint exists: `POST /api/optimize/suggest`
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/OptimizePage.jsx`
+- [ ] Add route to `App.js`: `<Route path="/optimize" element={<OptimizePage />} />`
+- [ ] UI Components:
+  - [ ] Symbol input (ticker search)
+  - [ ] Sentiment selector (bullish/bearish/neutral)
+  - [ ] Target price input (optional)
+  - [ ] Budget slider
+  - [ ] DTE selector
+  - [ ] Risk bias slider (conservative ↔ aggressive)
+- [ ] Results Display:
+  - [ ] Top 3-5 strategy recommendations
+  - [ ] Expected return, max risk, max profit per strategy
+  - [ ] Probability of profit
+  - [ ] "Build This" button → redirect to BuilderPage with pre-filled legs
+- [ ] Backend Integration:
+  - [ ] `GET /api/optimize/suggest` with query params
+  - [ ] Handle loading states
+  - [ ] Error handling with demo fallback
+
+**Design:**
+- Dark theme (slate-900 bg, emerald accents)
+- Similar layout to BuilderPage (left form, right results)
+- Strategy cards with gradient backgrounds
+
+**Success Criteria:**
+- [ ] Page loads without errors
+- [ ] Can enter symbol + sentiment → get recommendations
+- [ ] "Build This" button works (navigates to BuilderPage)
+- [ ] Mobile responsive
+
+---
+
+### 6. 🔍 Create IVScannerPage - IV Setups Scanner (HIGH PRIORITY)
+**Status:** 🔴 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Oct 23-24, 2025  
+**Time:** 6-8 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #6
+
+**Problem:**
+- Sidebar "Options Data > Algos > IV Setups (Auto)" links to `/screener/iv` → 404
+- 4 strategy variants also missing:
+  - `/screener/iv?strategy=IRON_CONDOR`
+  - `/screener/iv?strategy=CALENDAR`
+  - `/screener/iv?strategy=DIAGONAL`
+  - `/screener/iv?strategy=DOUBLE_DIAGONAL`
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/IVScannerPage.jsx`
+- [ ] Add route: `<Route path="/screener/iv" element={<IVScannerPage />} />`
+- [ ] Support query param: `?strategy=STRATEGY_NAME`
+- [ ] UI Components:
+  - [ ] Strategy selector dropdown (All, Iron Condor, Calendar, Diagonal, Double Diagonal)
+  - [ ] Filters:
+    - [ ] Min IV Rank slider (0-100)
+    - [ ] Max days to expiration
+    - [ ] Min volume
+    - [ ] Sectors filter (checkboxes)
+  - [ ] Scan button
+  - [ ] Results table:
+    - [ ] Columns: Ticker, IV Rank, IV Percentile, Price, Volume, Setup Quality Score
+    - [ ] Sortable columns
+    - [ ] "Analyze" button per row → redirect to BuilderPage
+- [ ] Backend Integration:
+  - [ ] Create `backend/routers/screener.py` if doesn't exist
+  - [ ] `GET /api/screener/iv` endpoint
+  - [ ] Return top 20-50 candidates with IV metrics
+  - [ ] Use UW API screener endpoint: `/api/screener/stocks`
+
+**Success Criteria:**
+- [ ] Scanner loads and displays results
+- [ ] Strategy selector works (updates results)
+- [ ] Filters work correctly
+- [ ] "Analyze" button navigates to BuilderPage with ticker pre-filled
+- [ ] Mobile responsive table
+
+---
+
+### 7. 📉 Create SellPutsPage - Put Selling Engine (HIGH PRIORITY)
+**Status:** 🔴 MISSING PAGE  
+**Assignee:** TBD  
+**Due:** Oct 24-25, 2025  
+**Time:** 6-8 hours  
+**Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #11
+
+**Problem:**
+- Sidebar "Options Data > Algos > Sell Puts (Auto)" links to `/screener/sell-puts` → 404
+- Core algo feature for income generation strategy
+
+**Requirements:**
+- [ ] Create `frontend/src/pages/SellPutsPage.jsx`
+- [ ] Add route: `<Route path="/screener/sell-puts" element={<SellPutsPage />} />`
+- [ ] UI Components:
+  - [ ] Capital input (max cash allocation)
+  - [ ] Target premium per contract (min $100?)
+  - [ ] Max days to expiration slider
+  - [ ] Delta range (0.10 - 0.30 recommended)
+  - [ ] Sector exclusions
+  - [ ] Risk tolerance (conservative/moderate/aggressive)
+  - [ ] Scan button
+  - [ ] Results table:
+    - [ ] Ticker, Strike, DTE, Premium, Delta, Probability ITM
+    - [ ] "Sell This Put" button → add to trades preview
+- [ ] Backend Integration:
+  - [ ] `GET /api/screener/sell-puts` endpoint
+  - [ ] Filter logic:
+    - Min premium threshold
+    - Delta range check
+    - High liquidity (volume > 100, OI > 500)
+    - IV rank > 50 (sell high IV)
+  - [ ] Return top 20 candidates
+- [ ] Trade Preview Integration:
+  - [ ] "Add to Queue" button
+  - [ ] Show in `/trades/preview` (create this page later)
+
+**Success Criteria:**
+- [ ] Scanner identifies high-premium put opportunities
+- [ ] Filters work correctly
+- [ ] Can add selected puts to preview queue
+- [ ] Shows capital requirement per trade
+- [ ] Mobile responsive
+
+---
+
 ## 📦 Backlog (Planned)
 
 ### Phase 2: GEX Backtesting (Weeks 3-4)
