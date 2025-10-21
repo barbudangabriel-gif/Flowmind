@@ -1,11 +1,14 @@
 from __future__ import annotations
+
 import json
-import uuid
 import logging
+import uuid
 from datetime import datetime
 from typing import List, Optional
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, validator
+
 from redis_fallback import get_kv
 from utils.redis_client import get_redis
 
@@ -83,21 +86,21 @@ class ImportCSV(BaseModel):
 class Mindfolio(BaseModel):
     id: str
     name: str
-    
+
     # Broker account information (NEW)
     broker: str = "TradeStation"  # "TradeStation" | "TastyTrade"
     environment: str = "SIM"  # "SIM" | "LIVE"
     account_type: str = "Equity"  # "Equity" | "Futures" | "Crypto"
     account_id: Optional[str] = None  # Broker's account number (optional)
-    
+
     # Financial data
     cash_balance: float
     starting_balance: float = 10000.0  # Track initial balance for ROI calculation
     status: str = "ACTIVE"  # ACTIVE, PAUSED, CLOSED
-    
+
     # Configuration
     modules: List[ModuleAllocation] = []
-    
+
     # Metadata
     created_at: str
     updated_at: str
@@ -331,8 +334,8 @@ async def pf_list() -> List[Mindfolio]:
 async def get_tradestation_positions_grid():
     """Get TradeStation positions in grid format for dashboard"""
     try:
-        from tradestation_client import TradeStationClient
         from tradestation_auth_service import tradestation_auth_service as ts_auth
+        from tradestation_client import TradeStationClient
 
         ts_client = TradeStationClient(ts_auth)
 
@@ -510,7 +513,6 @@ async def stats(pid: str):
         return {
             "mindfolio_id": pid,
             "nav": mindfolio.cash_balance,
-            "pnl_realized": round2(total_realized),
             "pnl_realized": round2(total_realized),
             "pnl_unrealized": 0,  # Will be calculated with live market data integration
             "positions_count": len(positions),
@@ -1012,6 +1014,7 @@ async def create_eod_snapshot(pid: str):
     """Create a new EOD snapshot for the mindfolio"""
     try:
         from datetime import datetime
+
         import pytz
 
         # Use Europe/Bucharest timezone as requested
@@ -1114,6 +1117,7 @@ async def get_eod_series(pid: str):
         if not series:
             # If no series exists, create a sample one for demo
             from datetime import datetime, timedelta
+
             import pytz
 
             tz = pytz.timezone("Europe/Bucharest")
@@ -1176,7 +1180,7 @@ async def get_module_budget_usage(pid: str, module_name: str) -> dict:
             )
 
         # Get all transactions for this mindfolio
-        all_txs = await list_transactions(pid)
+        await list_transactions(pid)
 
         # Filter transactions tagged with this module (we'll add module field to transactions)
         # For now, calculate based on all positions

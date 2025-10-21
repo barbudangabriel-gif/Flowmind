@@ -2,15 +2,13 @@
 Enhanced module for collecting real-time stock data with pre/post market information
 """
 
-import requests
-import pandas as pd
-import yfinance as yf
 import asyncio
-from typing import List, Dict, Any, Optional
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any, Dict, List
+
 import aiohttp
-import json
+import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
@@ -409,7 +407,9 @@ class EnhancedTickerDataManager:
                     results.append(result)
 
             except Exception as e:
-                logger.error(f"Error processing batch {i}-{i+max_batch_size}: {str(e)}")
+                logger.error(
+                    f"Error processing batch {i}-{i + max_batch_size}: {str(e)}"
+                )
                 continue
 
             # Small delay between batches to avoid rate limiting

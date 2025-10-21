@@ -1,9 +1,11 @@
-import os
 import json
 import logging
+import os
 from typing import Any, Dict, Optional
-from .providers import get_provider
+
 from utils.redis_client import get_redis
+
+from .providers import get_provider
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +36,8 @@ def fetch_chain(
     try:
         logger.info(
             f"Fetching fresh options data for {symbol} from {
-                provider.__class__.__name__}"
+                provider.__class__.__name__
+            }"
         )
         spot = provider.get_spot(symbol)
         chain = provider.get_chain(symbol, expiry=expiry, dte=dte)

@@ -3,10 +3,10 @@ FlowMind Mindfolios - Database Layer (SQLite)
 Production-ready SQLite database for mindfolios, transactions, and analytics
 """
 
+import os
 import sqlite3
 from contextlib import contextmanager
-from typing import Dict, List, Optional, Any
-import os
+from typing import Any, Dict, List, Optional
 
 # Database path
 DB_PATH = os.getenv("SQLITE_DB_PATH", "/app/data/flowmind.db")
@@ -227,7 +227,7 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.execute(
                 """
-                INSERT INTO transactions 
+                INSERT INTO transactions
                 (account_id, datetime, symbol, side, qty, price, fee, currency, notes)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
@@ -273,9 +273,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             conn.execute(
                 """
-                INSERT INTO marks (symbol, last, today_open, updated_at) 
+                INSERT INTO marks (symbol, last, today_open, updated_at)
                 VALUES (?, ?, ?, datetime('now'))
-                ON CONFLICT(symbol) DO UPDATE SET 
+                ON CONFLICT(symbol) DO UPDATE SET
                 last = COALESCE(excluded.last, last),
                 today_open = COALESCE(excluded.today_open, today_open),
                 updated_at = datetime('now')

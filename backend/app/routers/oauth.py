@@ -5,9 +5,10 @@ Handles TradeStation OAuth callbacks
 
 import logging
 import os
+
+import requests
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import HTMLResponse
-import requests
 
 router = APIRouter(prefix="/oauth/tradestation", tags=["oauth"])
 
@@ -147,11 +148,11 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
         <script>
         let countdown = 3;
         const countdownEl = document.getElementById('countdown');
-        
+
         const interval = setInterval(() => {
             countdown--;
             if (countdownEl) countdownEl.textContent = countdown;
-        
+
             if (countdown <= 0) {
                 clearInterval(interval);
                 window.location.href = 'http://localhost:3000/';

@@ -1,15 +1,11 @@
-import numpy as np
 import matplotlib
+import numpy as np
 
 matplotlib.use("Agg")  # Non-interactive backend
+from typing import Any, Dict
+
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
-import base64
-from io import BytesIO
-import json
-from typing import Dict, List, Any, Tuple
 
 
 class OptionsStrategyChartGenerator:
@@ -190,7 +186,7 @@ class OptionsStrategyChartGenerator:
         fig = go.Figure()
 
         # Add P&L line with color coding
-        colors = ["#EF4444" if pl < 0 else "#22C55E" for pl in total_pl]
+        ["#EF4444" if pl < 0 else "#22C55E" for pl in total_pl]
 
         fig.add_trace(
             go.Scatter(
@@ -219,7 +215,7 @@ class OptionsStrategyChartGenerator:
 
         # Style the chart
         fig.update_layout(
-            title=f'{strategy_name} - {ticker}<br><sub>Unlimited {"Upside" if is_call else "Downside"} Potential</sub>',
+            title=f"{strategy_name} - {ticker}<br><sub>Unlimited {'Upside' if is_call else 'Downside'} Potential</sub>",
             xaxis_title="Stock Price at Expiration ($)",
             yaxis_title="Profit/Loss ($)",
             template="plotly_dark",
@@ -559,7 +555,7 @@ class OptionsStrategyChartGenerator:
 
         # Style the chart
         fig.update_layout(
-            title=f'{strategy_name} - {ticker}<br><sub>Generate Income from {"Put Sales" if is_put else "Covered Calls"}</sub>',
+            title=f"{strategy_name} - {ticker}<br><sub>Generate Income from {'Put Sales' if is_put else 'Covered Calls'}</sub>",
             xaxis_title="Stock Price at Expiration ($)",
             yaxis_title="Profit/Loss ($)",
             template="plotly_dark",
@@ -572,7 +568,7 @@ class OptionsStrategyChartGenerator:
         if is_put:
             max_profit = premium * 100
             max_loss_price = underlying_price * 0.8
-            max_loss = (strike - max_loss_price - premium) * 100
+            (strike - max_loss_price - premium) * 100
 
             fig.add_annotation(
                 x=underlying_price * 1.1,

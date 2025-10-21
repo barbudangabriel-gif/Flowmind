@@ -3,14 +3,14 @@ Smart Money Concepts & Price Action Analysis
 Comprehensive implementation for institutional trading analysis
 """
 
-import yfinance as yf
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
 import logging
 from dataclasses import dataclass
-import json
+from datetime import datetime
+from typing import Any, Dict, List
+
+import numpy as np
+import pandas as pd
+import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +201,6 @@ class SmartMoneyAnalyzer:
                 and current_candle["high_volume"]
                 and current_candle["Close"] > current_candle["Open"]
             ):
-
                 # Find the origin candle (last bearish before the move)
                 origin_idx = i
                 for j in range(i - 1, max(0, i - 10), -1):
@@ -230,7 +229,6 @@ class SmartMoneyAnalyzer:
                 and current_candle["high_volume"]
                 and current_candle["Close"] < current_candle["Open"]
             ):
-
                 # Find the origin candle (last bullish before the move)
                 origin_idx = i
                 for j in range(i - 1, max(0, i - 10), -1):
@@ -261,7 +259,7 @@ class SmartMoneyAnalyzer:
 
         for i in range(2, len(df)):
             prev_candle = df.iloc[i - 2]
-            current_candle = df.iloc[i - 1]
+            df.iloc[i - 1]
             next_candle = df.iloc[i]
 
             # Bullish FVG: prev_high < next_low
@@ -352,7 +350,6 @@ class SmartMoneyAnalyzer:
                 current["High"] > prev_recent_high
                 and current["Close"] < current["High"] * 0.995
             ):  # Price retreated after sweep
-
                 # Calculate significance based on volume and price action
                 volume_ratio = (
                     current["Volume"] / df["Volume"].rolling(20).mean().iloc[i]
@@ -374,7 +371,6 @@ class SmartMoneyAnalyzer:
                 current["Low"] < prev_recent_low
                 and current["Close"] > current["Low"] * 1.005
             ):  # Price recovered after sweep
-
                 # Calculate significance based on volume and price action
                 volume_ratio = (
                     current["Volume"] / df["Volume"].rolling(20).mean().iloc[i]
@@ -647,7 +643,7 @@ class SmartMoneyAnalyzer:
         for i in range(2, len(df)):
             current = df.iloc[i]
             prev = df.iloc[i - 1]
-            prev2 = df.iloc[i - 2]
+            df.iloc[i - 2]
 
             # Calculate body and shadow sizes
             body_size = abs(current["Close"] - current["Open"])
@@ -749,7 +745,6 @@ class SmartMoneyAnalyzer:
                 and df.iloc[i + 1]["Volume"]
                 > df.iloc[i - 20 : i]["Volume"].mean() * 1.5
             ):
-
                 demand_zones.append(
                     {
                         "high": float(consolidation_high),
@@ -766,7 +761,6 @@ class SmartMoneyAnalyzer:
                 and df.iloc[i + 1]["Volume"]
                 > df.iloc[i - 20 : i]["Volume"].mean() * 1.5
             ):
-
                 supply_zones.append(
                     {
                         "high": float(consolidation_high),
@@ -934,7 +928,7 @@ class SmartMoneyAnalyzer:
                 signals.append(
                     {
                         "type": "buy",
-                        "reason": f'Price near key support level at {support_resistance["nearest_support"]:.2f}',
+                        "reason": f"Price near key support level at {support_resistance['nearest_support']:.2f}",
                         "entry": support_resistance["nearest_support"],
                         "stop_loss": support_resistance["nearest_support"] * 0.98,
                         "target": current_price * 1.04,

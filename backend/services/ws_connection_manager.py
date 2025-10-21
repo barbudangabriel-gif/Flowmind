@@ -3,12 +3,12 @@ WebSocket Connection Manager
 Manages multiple frontend client connections and broadcasts messages from UW.
 """
 
-from typing import Dict, Set, List
-from fastapi import WebSocket
 import asyncio
 import logging
-import json
 from datetime import datetime
+from typing import Dict, List, Set
+
+from fastapi import WebSocket
 
 logger = logging.getLogger(__name__)
 

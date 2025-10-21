@@ -15,11 +15,9 @@ Author: FlowMind AI Team
 Date: October 15, 2025
 """
 
-import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional
-import statistics
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -322,7 +320,7 @@ class TermStructureAgent:
 
         for exp_str in expirations:
             exp_dt = datetime.strptime(exp_str, "%Y-%m-%d")
-            dte = (exp_dt - datetime.now()).days
+            (exp_dt - datetime.now()).days
 
             # Front month: expires 2-7 days before earnings
             if exp_dt < earnings_dt:

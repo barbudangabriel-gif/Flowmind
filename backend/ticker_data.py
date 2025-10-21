@@ -2,13 +2,11 @@
 Module for collecting and managing stock ticker data from S&P 500 and NASDAQ
 """
 
-import requests
-import pandas as pd
-import yfinance as yf
-from bs4 import BeautifulSoup
 import asyncio
-from typing import List, Dict, Any
 import logging
+from typing import Any, Dict, List
+
+import yfinance as yf
 
 logger = logging.getLogger(__name__)
 

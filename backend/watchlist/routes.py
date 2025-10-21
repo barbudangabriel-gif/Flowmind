@@ -1,15 +1,17 @@
-from fastapi import APIRouter, HTTPException, Query
-from typing import List
 import re
+from typing import List
+
+from fastapi import APIRouter, HTTPException, Query
+
 from .db import (
     create_watchlist,
-    get_watchlist,
-    update_watchlist,
     delete_watchlist,
-    list_watchlists,
+    get_watchlist,
     init_db,
+    list_watchlists,
+    update_watchlist,
 )
-from .schemas import WatchlistIn, WatchlistOut, WatchlistImport, ImportResponse
+from .schemas import ImportResponse, WatchlistImport, WatchlistIn, WatchlistOut
 
 router = APIRouter()
 

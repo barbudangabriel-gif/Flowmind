@@ -1,11 +1,11 @@
 # app/services/tradestation.py
 from __future__ import annotations
 
+import asyncio
+import logging
 import os
 import time
-import logging
-import asyncio
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 import httpx
 
@@ -30,9 +30,9 @@ HTTP_TIMEOUT = float(os.getenv("TS_HTTP_TIMEOUT", "15"))
 REFRESH_SKEW = int(os.getenv("TS_REFRESH_SKEW", "60"))  # secunde
 
 # === Mem-cache simplu per user_id ===
-_TOKENS: Dict[str, Dict] = (
-    {}
-)  # user_id -> token dict {access_token, refresh_token, expires_at}
+_TOKENS: Dict[
+    str, Dict
+] = {}  # user_id -> token dict {access_token, refresh_token, expires_at}
 _LOCKS: Dict[str, asyncio.Lock] = {}  # user_id -> lock pt. refresh/obținere
 
 
@@ -168,7 +168,7 @@ async def get_valid_token(user_id: str) -> Optional[Dict]:
 
 def bearer(auth: Dict) -> str:
     """Header Authorization: Bearer ..."""
-    return f'{auth.get("token_type","Bearer")} {auth.get("access_token","")}'
+    return f"{auth.get('token_type', 'Bearer')} {auth.get('access_token', '')}"
 
 
 async def call_ts_api(

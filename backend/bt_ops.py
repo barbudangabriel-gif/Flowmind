@@ -1,8 +1,10 @@
-import time
 import json
 import logging
+import time
 from typing import Optional
+
 from fastapi import APIRouter, HTTPException
+
 from redis_fallback import get_kv
 
 log = logging.getLogger("bt-ops")

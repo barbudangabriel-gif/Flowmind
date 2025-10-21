@@ -1,15 +1,16 @@
 import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
-from .routes.system import router as system_router
-from .routes.analytics import router as analytics_router
-from .routes.mindfolios import router as mindfolios_router
+from .routers.builder import router as builder_router
+from .routers.flow import router as flow_router
 from .routers.tradestation import router as tradestation_router
 from .routers.tradestation_auth import router as tradestation_auth_router
-from .routers.flow import router as flow_router
-from .routers.builder import router as builder_router
+from .routes.analytics import router as analytics_router
+from .routes.mindfolios import router as mindfolios_router
+from .routes.system import router as system_router
 
 app = FastAPI(title="Flowmind API", version="1.0")
 

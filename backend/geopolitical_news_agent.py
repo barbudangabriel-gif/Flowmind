@@ -13,10 +13,9 @@ Three-level analysis:
 3. INTEGRATION: Stocks + Options + News combined insights
 """
 
-import asyncio
+import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -453,7 +452,7 @@ class GeopoliticalNewsAgent:
 
         # Macro summary
         if macro_events.get("severity") == "high":
-            summary_parts.append(f" High-impact macro events detected.")
+            summary_parts.append(" High-impact macro events detected.")
 
         # Risk alerts
         if len(risk_alerts) > 0:

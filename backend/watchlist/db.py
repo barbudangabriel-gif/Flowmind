@@ -1,8 +1,9 @@
+import logging
 import os
 import re
-from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
-import logging
+
+from motor.motor_asyncio import AsyncIOMotorClient
 
 logger = logging.getLogger("watchlist.db")
 

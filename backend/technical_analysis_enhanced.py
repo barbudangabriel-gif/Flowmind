@@ -3,13 +3,14 @@ Enhanced Technical Analysis Module for Investment Scoring
 Includes: Overall Trend, Technical Indicators, Price Action Analysis
 """
 
-import yfinance as yf
-import pandas as pd
-import numpy as np
-import ta
-from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime
+from typing import Any, Dict, List
+
+import numpy as np
+import pandas as pd
+import ta
+import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
@@ -164,7 +165,9 @@ class TechnicalAnalyzer:
                 "reliability": (
                     "HIGH"
                     if r_squared > 0.7
-                    else "MEDIUM" if r_squared > 0.4 else "LOW"
+                    else "MEDIUM"
+                    if r_squared > 0.4
+                    else "LOW"
                 ),
             }
         except:
@@ -176,7 +179,7 @@ class TechnicalAnalyzer:
             close = df["Close"]
             high = df["High"]
             low = df["Low"]
-            volume = df["Volume"]
+            df["Volume"]
 
             indicators = {}
 
@@ -232,7 +235,7 @@ class TechnicalAnalyzer:
             # Bollinger Bands
             bb_high = ta.volatility.bollinger_hband(close)
             bb_low = ta.volatility.bollinger_lband(close)
-            bb_mid = ta.volatility.bollinger_mavg(close)
+            ta.volatility.bollinger_mavg(close)
 
             current_price = close.iloc[-1]
             bb_position = 0.5  # Default middle position
@@ -273,10 +276,10 @@ class TechnicalAnalyzer:
         """Analyze price action patterns and signals"""
         try:
             close = df["Close"]
-            high = df["High"]
-            low = df["Low"]
-            open_price = df["Open"]
-            volume = df["Volume"]
+            df["High"]
+            df["Low"]
+            df["Open"]
+            df["Volume"]
 
             # Calculate price action metrics
             price_action = {}
@@ -300,7 +303,9 @@ class TechnicalAnalyzer:
                 "signal": (
                     "BULLISH"
                     if momentum_5d > 0 and momentum_20d > 0
-                    else "BEARISH" if momentum_5d < 0 and momentum_20d < 0 else "MIXED"
+                    else "BEARISH"
+                    if momentum_5d < 0 and momentum_20d < 0
+                    else "MIXED"
                 ),
             }
 
@@ -352,7 +357,9 @@ class TechnicalAnalyzer:
             obv_trend = (
                 "RISING"
                 if obv.iloc[-1] > obv.iloc[-10]
-                else "FALLING" if len(obv) > 10 else "NEUTRAL"
+                else "FALLING"
+                if len(obv) > 10
+                else "NEUTRAL"
             )
 
             return {
@@ -363,7 +370,9 @@ class TechnicalAnalyzer:
                 "signal": (
                     "BULLISH"
                     if volume_confirmation and volume_increasing
-                    else "BEARISH" if volume_ratio < 0.8 else "NEUTRAL"
+                    else "BEARISH"
+                    if volume_ratio < 0.8
+                    else "NEUTRAL"
                 ),
             }
 
@@ -477,7 +486,9 @@ class TechnicalAnalyzer:
             volume_score = (
                 70
                 if volume_signal == "BULLISH"
-                else 30 if volume_signal == "BEARISH" else 50
+                else 30
+                if volume_signal == "BEARISH"
+                else 50
             )
             scores["volume_score"] = volume_score
 
@@ -488,7 +499,9 @@ class TechnicalAnalyzer:
             price_score = (
                 70
                 if price_signal == "BULLISH"
-                else 30 if price_signal == "BEARISH" else 50
+                else 30
+                if price_signal == "BEARISH"
+                else 50
             )
             scores["price_action_score"] = price_score
 
@@ -541,7 +554,7 @@ class TechnicalAnalyzer:
                     {
                         "type": "TREND",
                         "signal": "BUY",
-                        "description": f'Strong bullish trend with {trend.get("strength", 0):.1f}% strength',
+                        "description": f"Strong bullish trend with {trend.get('strength', 0):.1f}% strength",
                         "confidence": "HIGH",
                     }
                 )

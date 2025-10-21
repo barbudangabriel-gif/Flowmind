@@ -5,17 +5,19 @@ SCANNER ENGINE pentru toate tickerele din TradeStation
 """
 
 import asyncio
-from typing import List, Dict, Any
-from datetime import datetime
 import logging
 import os
+from datetime import datetime
+from typing import Any, Dict, List
+
 from motor.motor_asyncio import AsyncIOMotorClient
+
 from enhanced_ticker_data import enhanced_ticker_manager
-from technical_analysis_enhanced import technical_analyzer
 from market_sentiment_analyzer import (
     market_sentiment_analyzer,
     sentiment_to_investment_score,
 )
+from technical_analysis_enhanced import technical_analyzer
 
 logger = logging.getLogger(__name__)
 
@@ -571,7 +573,7 @@ class InvestmentScorer:
     def _calculate_growth_score(self, stock_data: Dict[str, Any]) -> float:
         """Estimate growth score based on available data"""
         sector = stock_data.get("sector", "Unknown")
-        market_cap = stock_data.get("market_cap", 0)
+        stock_data.get("market_cap", 0)
 
         # Sector-based growth expectations
         growth_sectors = ["Technology", "Healthcare", "Communication Services"]
@@ -880,7 +882,7 @@ class InvestmentScorer:
         financial_health = scores.get("financial_health", 50)
 
         # Technical risk factors
-        trend_strength = technical_data.get("trend_analysis", {}).get("strength", 50)
+        technical_data.get("trend_analysis", {}).get("strength", 50)
         price_action = technical_data.get("price_action", {})
         volatility = price_action.get("volatility", 0.3)
 

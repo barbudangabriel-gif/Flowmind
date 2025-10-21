@@ -1,10 +1,12 @@
-import os
 import json
 import logging
-from typing import Dict, Any, Optional
+import os
+from typing import Any, Dict, Optional
+
 from fastapi import APIRouter
-from redis_fallback import get_kv
+
 from backtest_proxy import Signal, canonical_key, proxy_backtest_double_diagonal
+from redis_fallback import get_kv
 
 log = logging.getLogger("bt-cache")
 
@@ -167,8 +169,8 @@ router = APIRouter()
 
 @router.get("/_redis/diag")
 async def redis_diag():
-    from urllib.parse import urlparse
     import os
+    from urllib.parse import urlparse
 
     url = os.getenv("REDIS_URL", "")
     db = None

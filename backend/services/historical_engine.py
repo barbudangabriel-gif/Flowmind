@@ -5,9 +5,10 @@ Mark-to-market P/L calculation over historical periods
 
 import os
 from datetime import datetime, timedelta
-from typing import Dict, Any, List
-from services.providers import get_provider
+from typing import Any, Dict, List
+
 from services.bs import call_price, put_price
+from services.providers import get_provider
 
 
 def historical_series(payload: Dict[str, Any]) -> Dict[str, Any]:

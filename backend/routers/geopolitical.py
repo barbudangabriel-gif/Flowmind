@@ -5,9 +5,10 @@ Provides macro and micro news intelligence with
 integration to Investment Scoring and Options strategies
 """
 
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
 import logging
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, Query
 
 from geopolitical_news_agent import GeopoliticalNewsAgent
 
@@ -207,7 +208,7 @@ async def get_trading_opportunities(mindfolio_id: str):
 
 @router.get("/calendar")
 async def get_economic_calendar(
-    days_ahead: int = Query(7, description="Number of days to look ahead")
+    days_ahead: int = Query(7, description="Number of days to look ahead"),
 ):
     """
     Get upcoming economic events and earnings calendars

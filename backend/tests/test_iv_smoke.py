@@ -3,6 +3,7 @@ import os
 os.environ.setdefault("IV_PROVIDER", "STUB")
 
 from fastapi.testclient import TestClient
+
 from iv_service.main import app
 
 client = TestClient(app)

@@ -5,9 +5,10 @@ Uses Unusual Whales data to generate comprehensive investment scores with ML-enh
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
 import statistics
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
 from unusual_whales_service import UnusualWhalesService
 
 # Configure logging
@@ -133,7 +134,8 @@ class InvestmentScoringAgent:
             # Fetch all UW data sources in parallel for efficiency
             tasks = [
                 self.uw_service.get_options_flow_alerts(
-                    minimum_premium=200000, limit=100  # Focus on significant flows
+                    minimum_premium=200000,
+                    limit=100,  # Focus on significant flows
                 ),
                 self.uw_service.get_dark_pool_recent(
                     minimum_volume=100000, minimum_dark_percentage=0.01, limit=50
@@ -236,9 +238,9 @@ class InvestmentScoringAgent:
         signal_scores = {}
 
         # 1. NEW: Discount Opportunity Analysis (most important)
-        signal_scores["discount_opportunity"] = (
-            await self._analyze_discount_opportunity(uw_data, symbol)
-        )
+        signal_scores[
+            "discount_opportunity"
+        ] = await self._analyze_discount_opportunity(uw_data, symbol)
 
         signal_scores["options_flow_bullish"] = self._analyze_options_flow(
             uw_data["options_flow"]
@@ -1278,7 +1280,9 @@ class InvestmentScoringAgent:
                 "strength": (
                     "strong"
                     if abs(score - 50) > 20
-                    else "moderate" if abs(score - 50) > 10 else "weak"
+                    else "moderate"
+                    if abs(score - 50) > 10
+                    else "weak"
                 ),
                 "direction": (
                     "bullish" if score > 50 else "bearish" if score < 50 else "neutral"

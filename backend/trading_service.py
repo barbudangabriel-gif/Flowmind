@@ -3,12 +3,11 @@ Trading Service
 Handles order placement, validation, risk management, and trading operations
 """
 
-import asyncio
 import logging
 from datetime import datetime, timedelta
-from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from pydantic import BaseModel, Field, validator
 
 from tradestation_client import TradeStationClient
@@ -142,7 +141,7 @@ class TradingRiskManager:
                     validation_result["valid"] = False
                 elif estimated_cost > buying_power * 0.8:
                     validation_result["warnings"].append(
-                        f"Order uses {(estimated_cost/buying_power)*100:.1f}% of available buying power"
+                        f"Order uses {(estimated_cost / buying_power) * 100:.1f}% of available buying power"
                     )
                     validation_result["risk_assessment"] = "MEDIUM"
 
@@ -159,12 +158,12 @@ class TradingRiskManager:
                 )
                 if price_deviation > 0.15:  # 15% deviation
                     validation_result["errors"].append(
-                        f"Order price ${order.price:.2f} deviates {price_deviation*100:.1f}% from market ${current_quote.last:.2f}"
+                        f"Order price ${order.price:.2f} deviates {price_deviation * 100:.1f}% from market ${current_quote.last:.2f}"
                     )
                     validation_result["valid"] = False
                 elif price_deviation > 0.10:  # 10% deviation warning
                     validation_result["warnings"].append(
-                        f"Order price ${order.price:.2f} is {price_deviation*100:.1f}% from market ${current_quote.last:.2f}"
+                        f"Order price ${order.price:.2f} is {price_deviation * 100:.1f}% from market ${current_quote.last:.2f}"
                     )
                     validation_result["risk_assessment"] = "MEDIUM"
 
@@ -183,8 +182,8 @@ class TradingRiskManager:
                 position_percentage = new_position_value / mindfolio_value
                 if position_percentage > self.limits.max_position_size:
                     validation_result["warnings"].append(
-                        f"Position would be {position_percentage*100:.1f}% of mindfolio "
-                        f"(limit: {self.limits.max_position_size*100:.1f}%)"
+                        f"Position would be {position_percentage * 100:.1f}% of mindfolio "
+                        f"(limit: {self.limits.max_position_size * 100:.1f}%)"
                     )
                     validation_result["risk_assessment"] = "HIGH"
 

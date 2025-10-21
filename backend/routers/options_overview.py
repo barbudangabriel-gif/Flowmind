@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Query, Request
-from typing import Optional, Dict, Any
-from datetime import datetime, timedelta
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from math import inf
-import os
 import logging
+import os
+from datetime import datetime, timedelta
+from math import inf
+from typing import Any, Dict, Optional
+
+from fastapi import APIRouter, Query, Request
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/options", tags=["options"])

@@ -1,8 +1,10 @@
 from __future__ import annotations
-from dataclasses import dataclass, asdict
-from typing import List, Dict, Literal, Optional, Tuple
-import math, json
+
+import json
+import math
+from dataclasses import asdict, dataclass
 from datetime import datetime
+from typing import Dict, List, Literal, Optional, Tuple
 
 Status = Literal["Active", "Closed", "Assigned"]
 Signal = Literal["SELL PUT", "ROLL", "COVERED CALL", ""]

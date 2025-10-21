@@ -4,13 +4,13 @@ Black-Scholes implementation pentru FlowMind Options Module
 Supports all Greeks calculations și multi-leg strategies
 """
 
-import numpy as np
 import math
-from scipy.stats import norm
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
+from typing import Dict, List
+
+import numpy as np
+from scipy.stats import norm
 
 
 class OptionType(Enum):

@@ -152,14 +152,11 @@ function App() {
  
  // Simple context for sidebar
  const ctx = {
- role: "user",
- flags: {},
- metrics: {},
- mindfolios: mindfolios,
- mindfolios: mindfolios // Alias for backwards compatibility
- };
-
- return (
+      role: "user",
+      flags: {},
+      metrics: {},
+      mindfolios: mindfolios
+    }; return (
  <WebSocketProvider>
  <BrowserRouter>
  {/* Inactivity monitor - returns to homepage after 5 minutes of inactivity */}

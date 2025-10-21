@@ -3,15 +3,15 @@ TradeStation OAuth 2.0 Authentication Handler
 Handles OAuth flows, token management, and authentication for TradeStation API
 """
 
-import asyncio
-import httpx
-import secrets
-import os
-import logging
 import json
-from pathlib import Path
+import logging
+import os
+import secrets
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import httpx
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)

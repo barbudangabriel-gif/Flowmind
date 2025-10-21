@@ -3,14 +3,13 @@ Mindfolio Analysis Service
 Provides mindfolio analytics, performance metrics, and risk analysis
 """
 
-import asyncio
 import logging
 from collections import defaultdict
-from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional
 from dataclasses import asdict
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
 
-from tradestation_client import TradeStationClient, Position
+from tradestation_client import Position, TradeStationClient
 
 logger = logging.getLogger(__name__)
 

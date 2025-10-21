@@ -6,8 +6,7 @@ Provides data and analysis for mindfolio performance charts and allocation visua
 import logging
 import secrets
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
-import asyncio
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

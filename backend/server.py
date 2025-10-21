@@ -1,17 +1,18 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
 import logging
+import os
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
-from datetime import datetime
+
+from dotenv import load_dotenv
+from fastapi import APIRouter, FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
 
 # Import observability and config (optional for security audit)
 try:
-    from observability import wire_observability, configure_logging
     from config import get_settings
+    from observability import configure_logging, wire_observability
 
     OBSERVABILITY_AVAILABLE = True
 except ImportError:
@@ -27,27 +28,25 @@ except ImportError:
 
 # AI Agents
 from investment_scoring_agent import InvestmentScoringAgent
-from technical_analysis_agent import TechnicalAnalysisAgent
 
 # Options Calculator
-
 # Mindfolio Charts and Smart Rebalancing
 from mindfolio_charts_service import MindfolioChartsService
-from smart_rebalancing_service import SmartRebalancingService
 
 # Mindfolio Management
-
 # NEW: Option Selling compute + monitor service + analysis
 from options_selling_service import (
-    ComputeRequest,
-    compute_selling,
-    MonitorStartRequest,
-    monitor_start,
-    monitor_stop,
-    monitor_status,
     AnalysisQuery,
+    ComputeRequest,
+    MonitorStartRequest,
+    compute_selling,
+    monitor_start,
+    monitor_status,
+    monitor_stop,
     options_analysis,
 )
+from smart_rebalancing_service import SmartRebalancingService
+from technical_analysis_agent import TechnicalAnalysisAgent
 
 # Logger setup
 logger = logging.getLogger("server")
@@ -107,8 +106,8 @@ ts_auth = None
 
 # Integration clients
 try:
-    from integrations.uw_client import UWClient
     from integrations.ts_client import TSClient
+    from integrations.uw_client import UWClient
 
     INTEGRATIONS_AVAILABLE = True
 except ImportError as e:
@@ -228,7 +227,7 @@ async def startup():
     warmup_enabled = os.getenv("WARMUP_ENABLED", "1") == "1"
     if warmup_enabled:
         try:
-            from services.warmup import warmup_cache, get_warmup_config
+            from services.warmup import get_warmup_config, warmup_cache
 
             config = get_warmup_config()
             logger.info(
@@ -608,8 +607,8 @@ async def get_chart_data(
     """Get OHLCV chart data for a symbol"""
     try:
         # Generate demo OHLCV data
-        import time
         import secrets
+        import time
 
         # Timeframe mapping to seconds
         tf_seconds = {
@@ -668,22 +667,20 @@ async def get_chart_data(
 
 
 # Watchlist module
-from watchlist.routes import router as watchlist_router
-
-# Trade routes
-from trade_routes import router as trade_router
-
 # Redis backtest cache
 from bt_cache_integration import router as bt_router
-from bt_ops import router as bt_ops_router
 
 # Mindfolios
-
 # Emergent status
 from bt_emergent import emergent_router, redis_diag_router
+from bt_ops import router as bt_ops_router
 
 # Mindfolio (formerly Mindfolios)
 from mindfolio import router as mindfolio_router
+
+# Trade routes
+from trade_routes import router as trade_router
+from watchlist.routes import router as watchlist_router
 
 # Mount main API router (includes legacy endpoints)
 app.include_router(api_router)
@@ -747,8 +744,8 @@ app.include_router(stream_router)  # Already has /api/stream prefix
 
 # Wire observability (metrics, structured logging, request correlation)
 try:
-    from observability import wire, setup_cors, setup_rate_limit
     from config import get_settings
+    from observability import setup_cors, setup_rate_limit, wire
 
     # Get settings
     settings = get_settings()
@@ -892,8 +889,9 @@ async def metrics_endpoint():
     - targets: ['localhost:8000']
     """
     try:
-        from observability.metrics import export_metrics
         from fastapi.responses import Response
+
+        from observability.metrics import export_metrics
 
         metrics_data, content_type = export_metrics()
 

@@ -4,12 +4,13 @@ Handles all interactions with TradeStation API for mindfolio data and trading fu
 """
 
 import asyncio
-import httpx
 import logging
-from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional, Union
-from enum import Enum
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional, Union
+
+import httpx
 from fastapi import HTTPException
 
 from tradestation_auth import TradeStationAuth

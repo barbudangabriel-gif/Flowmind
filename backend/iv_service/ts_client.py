@@ -1,7 +1,8 @@
-import time
 import math
-from typing import Dict, Any, List
-from .config import DEFAULT_FRONT_DTE, DEFAULT_BACK_DTE, CACHE_TTL_SECONDS
+import time
+from typing import Any, Dict, List
+
+from .config import CACHE_TTL_SECONDS, DEFAULT_BACK_DTE, DEFAULT_FRONT_DTE
 from .provider_base import round_to_tick
 
 
@@ -18,7 +19,7 @@ class StubProvider:
         out = []
         dte = 3
         for i in range(10):
-            out.append({"date": f"2025-12-{10+i:02d}", "dte": dte})
+            out.append({"date": f"2025-12-{10 + i:02d}", "dte": dte})
             dte += 7
         return out
 

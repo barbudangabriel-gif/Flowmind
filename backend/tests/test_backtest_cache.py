@@ -2,9 +2,10 @@
 FlowMind - Backtest cache tests
 """
 
+import sys
+
 import pytest
 from fastapi.testclient import TestClient
-import sys
 
 sys.path.insert(0, "/app/backend")
 
@@ -43,7 +44,7 @@ def test_cache_hit(client):
 
     # Check cache status
     if data1["items"] and data2["items"]:
-        cache1 = data1["items"][0].get("backtest", {}).get("cache", "unknown")
+        data1["items"][0].get("backtest", {}).get("cache", "unknown")
         cache2 = data2["items"][0].get("backtest", {}).get("cache", "unknown")
         # Note: May be MISS/MISS în fallback mode, HIT în Redis mode
         assert cache2 in ("HIT", "MISS")  # Either is acceptable

@@ -1,21 +1,18 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
 import logging
-from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+import os
 import uuid
-from datetime import datetime, timedelta
-import aiohttp
-import asyncio
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
 import yfinance as yf
-from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.techindicators import TechIndicators
-import pandas as pd
-import numpy as np
+from alpha_vantage.timeseries import TimeSeries
+from dotenv import load_dotenv
+from fastapi import APIRouter, FastAPI, HTTPException, Query
+from motor.motor_asyncio import AsyncIOMotorClient
+from pydantic import BaseModel, Field
+from starlette.middleware.cors import CORSMiddleware
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -221,7 +218,7 @@ async def get_technical_indicators(symbol: str) -> Dict[str, Any]:
                 ),
             },
         }
-    except Exception as e:
+    except Exception:
         # Fallback to basic calculations if Alpha Vantage fails
         return {"symbol": symbol.upper(), "rsi": None, "macd": None, "sma": None}
 

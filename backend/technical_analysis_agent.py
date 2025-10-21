@@ -6,9 +6,10 @@ Comprehensive technical analysis using multiple indicators, Smart Money Concepts
 import asyncio
 import logging
 import math
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
 import statistics
+from datetime import datetime, timedelta
+from typing import Any, Dict, List
+
 from unusual_whales_service import UnusualWhalesService
 
 # Configure logging
@@ -651,7 +652,7 @@ class TechnicalAnalysisAgent:
         for i in range(2, len(price_data) - 2):
             current = price_data[i]
             prev = price_data[i - 1]
-            next_candle = price_data[i + 1]
+            price_data[i + 1]
 
             # Bullish Order Block: Strong rejection from low
             if (
@@ -660,7 +661,6 @@ class TechnicalAnalysisAgent:
                 and (current["high"] - current["low"]) / current["low"]
                 > self.smc_params["order_block_threshold"]
             ):
-
                 bullish_ob.append(
                     {
                         "price_level": current["low"],
@@ -680,7 +680,6 @@ class TechnicalAnalysisAgent:
                 and (current["high"] - current["low"]) / current["low"]
                 > self.smc_params["order_block_threshold"]
             ):
-
                 bearish_ob.append(
                     {
                         "price_level": current["high"],
@@ -705,7 +704,7 @@ class TechnicalAnalysisAgent:
 
         for i in range(1, len(price_data) - 1):
             prev = price_data[i - 1]
-            current = price_data[i]
+            price_data[i]
             next_candle = price_data[i + 1]
 
             # Bullish FVG: Gap between previous high and next low
@@ -1308,7 +1307,7 @@ class TechnicalAnalysisAgent:
 
             high = float(current["high"])
             low = float(current["low"])
-            close = float(current["close"])
+            float(current["close"])
             prev_high = float(prev["high"])
             prev_low = float(prev["low"])
             prev_close = float(prev["close"])
@@ -1368,7 +1367,7 @@ class TechnicalAnalysisAgent:
         # Ichimoku lines calculation
         recent_9 = price_data[-9:]
         recent_26 = price_data[-26:]
-        recent_52 = price_data[-52:]
+        price_data[-52:]
 
         # Tenkan-sen (Conversion Line) - 9 period
         tenkan_high = max(float(candle["high"]) for candle in recent_9)
@@ -1469,7 +1468,7 @@ class TechnicalAnalysisAgent:
 
         # Calculate average volume
         volumes = [float(candle["volume"]) for candle in recent_data]
-        avg_volume = sum(volumes) / len(volumes)
+        sum(volumes) / len(volumes)
 
         # Recent volume trend
         recent_volumes = volumes[-5:]
@@ -1976,8 +1975,8 @@ class TechnicalAnalysisAgent:
                     lows = [float(candle["low"]) for candle in recent_days]
                     closes = [float(candle["close"]) for candle in recent_days]
 
-                    avg_high = sum(highs) / len(highs)
-                    avg_low = sum(lows) / len(lows)
+                    sum(highs) / len(highs)
+                    sum(lows) / len(lows)
                     latest_close = closes[-1]
 
                     # Estimate session levels based on current price and recent ranges
@@ -2437,7 +2436,9 @@ class TechnicalAnalysisAgent:
             signal_strength = (
                 "strong"
                 if abs(score - 50) > 25
-                else "moderate" if abs(score - 50) > 15 else "weak"
+                else "moderate"
+                if abs(score - 50) > 15
+                else "weak"
             )
             signal_direction = (
                 "bullish" if score > 50 else "bearish" if score < 50 else "neutral"

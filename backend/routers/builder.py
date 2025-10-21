@@ -1,5 +1,7 @@
+from typing import Any, Dict
+
 from fastapi import APIRouter
-from typing import Dict, Any
+
 from services.builder_engine import price_structure
 from services.historical_engine import historical_series
 

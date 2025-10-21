@@ -4,18 +4,14 @@ Integrates news, social media, Reddit, YouTube, and financial forums
 """
 
 import asyncio
-import aiohttp
-import re
-import json
-import numpy as np
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
 import logging
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import aiohttp
+import numpy as np
 import yfinance as yf
-import requests
-from bs4 import BeautifulSoup
-import time
 
 logger = logging.getLogger(__name__)
 

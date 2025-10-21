@@ -54,15 +54,14 @@ Authentication: Authorization: Bearer {token} (header, NOT query param!)
 Complete documentation: UW_API_FINAL_17_ENDPOINTS.md
 """
 
-import os
 import asyncio
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from fastapi import HTTPException
+import os
+from pathlib import Path
+from typing import Any, Dict, Optional
+
 import httpx
 from dotenv import load_dotenv
-from pathlib import Path
 
 load_dotenv(Path(__file__).parent / ".env")
 
@@ -78,7 +77,9 @@ class UnusualWhalesException(Exception):
 
 class UnusualWhalesService:
     def __init__(self):
-        self.api_token = os.getenv("UW_API_TOKEN") or os.getenv("UNUSUAL_WHALES_API_KEY")
+        self.api_token = os.getenv("UW_API_TOKEN") or os.getenv(
+            "UNUSUAL_WHALES_API_KEY"
+        )
         self.base_url = "https://api.unusualwhales.com/api"
 
         if not self.api_token:
@@ -101,14 +102,14 @@ class UnusualWhalesService:
             return {"data": []}
 
         url = f"{self.base_url}{endpoint}"
-        
+
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.get(url, headers=self.headers, params=params)
-                
+
                 # Rate limiting
                 await asyncio.sleep(self.rate_limit_delay)
-                
+
                 if response.status_code == 200:
                     return response.json()
                 else:
@@ -124,15 +125,13 @@ class UnusualWhalesService:
     # VERIFIED WORKING ENDPOINTS
     # ========================================================================
 
-    async def get_option_contracts(
-        self, ticker: str
-    ) -> Dict[str, Any]:
+    async def get_option_contracts(self, ticker: str) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get full options chain for ticker
-        
+
         Endpoint: GET /api/stock/{ticker}/option-contracts
         Returns: 500+ contracts with volume, OI, IV, premiums, sweep volume
-        
+
         Example response:
         {
             "data": [
@@ -158,15 +157,13 @@ class UnusualWhalesService:
             logger.error(f"Error fetching option contracts: {str(e)}")
             return {"data": []}
 
-    async def get_spot_exposures(
-        self, ticker: str
-    ) -> Dict[str, Any]:
+    async def get_spot_exposures(self, ticker: str) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get Gamma Exposure (GEX) data for ticker
-        
+
         Endpoint: GET /api/stock/{ticker}/spot-exposures
         Returns: 345+ records with gamma/charm/vanna per 1% move
-        
+
         Example response:
         {
             "data": [
@@ -188,15 +185,13 @@ class UnusualWhalesService:
             logger.error(f"Error fetching spot exposures: {str(e)}")
             return {"data": []}
 
-    async def get_stock_info(
-        self, ticker: str
-    ) -> Dict[str, Any]:
+    async def get_stock_info(self, ticker: str) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get stock metadata
-        
+
         Endpoint: GET /api/stock/{ticker}/info
         Returns: Company info, sector, market cap, earnings dates
-        
+
         Example response:
         {
             "data": {
@@ -216,18 +211,16 @@ class UnusualWhalesService:
             logger.error(f"Error fetching stock info: {str(e)}")
             return {"data": {}}
 
-    async def get_alerts(
-        self, noti_type: Optional[str] = None
-    ) -> Dict[str, Any]:
+    async def get_alerts(self, noti_type: Optional[str] = None) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get market alerts and events
-        
+
         Endpoint: GET /api/alerts
         Returns: Real-time alerts including market tide events
-        
+
         Parameters:
             noti_type: Filter by type (e.g., "market_tide")
-        
+
         Example response:
         {
             "data": [
@@ -250,22 +243,20 @@ class UnusualWhalesService:
             params = {}
             if noti_type:
                 params["noti_type"] = noti_type
-            
+
             response = await self._make_request("/alerts", params)
             return response
         except Exception as e:
             logger.error(f"Error fetching alerts: {str(e)}")
             return {"data": []}
 
-    async def get_greeks(
-        self, ticker: str
-    ) -> Dict[str, Any]:
+    async def get_greeks(self, ticker: str) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get options Greeks for ticker
-        
+
         Endpoint: GET /api/stock/{ticker}/greeks
         Returns: Delta, Gamma, Theta, Vega
-        
+
         Note: Currently returns empty data but endpoint is accessible
         """
         try:
@@ -275,15 +266,13 @@ class UnusualWhalesService:
             logger.error(f"Error fetching greeks: {str(e)}")
             return {"data": []}
 
-    async def get_options_volume(
-        self, ticker: str
-    ) -> Dict[str, Any]:
+    async def get_options_volume(self, ticker: str) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get options volume metrics
-        
+
         Endpoint: GET /api/stock/{ticker}/options-volume
         Returns: Options volume, call/put ratios, unusual volume
-        
+
         Example response:
         {
             "data": {
@@ -302,18 +291,16 @@ class UnusualWhalesService:
             logger.error(f"Error fetching options volume: {str(e)}")
             return {"data": {}}
 
-    async def get_screener_stocks(
-        self, limit: Optional[int] = 10
-    ) -> Dict[str, Any]:
+    async def get_screener_stocks(self, limit: Optional[int] = 10) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get stock screener data with GEX, IV, Greeks, volume
-        
+
         Endpoint: GET /api/screener/stocks
         Returns: Comprehensive stock metrics including GEX and IV data
-        
+
         Parameters:
             limit: Number of results to return (default 10)
-        
+
         Example response:
         {
             "data": [
@@ -341,10 +328,10 @@ class UnusualWhalesService:
     async def get_insider_trades(self) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get all recent insider trades
-        
+
         Endpoint: GET /api/insider/trades
         Returns: Insider trading activity across all stocks
-        
+
         Example response:
         {
             "data": [
@@ -359,7 +346,7 @@ class UnusualWhalesService:
                 }
             ]
         }
-        
+
         Note: Currently returns 0 records but endpoint is accessible
         """
         try:
@@ -369,15 +356,13 @@ class UnusualWhalesService:
             logger.error(f"Error fetching insider trades: {str(e)}")
             return {"data": []}
 
-    async def get_insider_ticker(
-        self, ticker: str
-    ) -> Dict[str, Any]:
+    async def get_insider_ticker(self, ticker: str) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get insider trades for specific ticker
-        
+
         Endpoint: GET /api/insider/{ticker}
         Returns: Insider trades for the specified company
-        
+
         Example response:
         {
             "data": [
@@ -402,10 +387,10 @@ class UnusualWhalesService:
     async def get_insider_recent(self) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get most recent insider trades
-        
+
         Endpoint: GET /api/insider/recent
         Returns: Latest insider trading activity
-        
+
         Example response:
         {
             "data": [
@@ -426,15 +411,13 @@ class UnusualWhalesService:
             logger.error(f"Error fetching recent insider trades: {str(e)}")
             return {"data": []}
 
-    async def get_darkpool_ticker(
-        self, ticker: str
-    ) -> Dict[str, Any]:
+    async def get_darkpool_ticker(self, ticker: str) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get dark pool trades for ticker (500 records!)
-        
+
         Endpoint: GET /api/darkpool/{ticker}
         Returns: Dark pool trades with price, volume, premium, market center
-        
+
         Example response:
         {
             "data": [
@@ -449,7 +432,7 @@ class UnusualWhalesService:
                 }
             ]
         }
-        
+
         Performance: Returns 500 dark pool trade records per ticker
         """
         try:
@@ -462,10 +445,10 @@ class UnusualWhalesService:
     async def get_darkpool_recent(self) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get recent dark pool trades across all tickers
-        
+
         Endpoint: GET /api/darkpool/recent
         Returns: Latest dark pool activity market-wide
-        
+
         Example response:
         {
             "data": [
@@ -487,15 +470,13 @@ class UnusualWhalesService:
             logger.error(f"Error fetching recent darkpool: {str(e)}")
             return {"data": []}
 
-    async def get_earnings(
-        self, ticker: str
-    ) -> Dict[str, Any]:
+    async def get_earnings(self, ticker: str) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get earnings history for ticker
-        
+
         Endpoint: GET /api/earnings/{ticker}
         Returns: Historical earnings data (61 records for TSLA)
-        
+
         Example response:
         {
             "data": [
@@ -522,10 +503,10 @@ class UnusualWhalesService:
     async def get_earnings_today(self) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get today's earnings announcements
-        
+
         Endpoint: GET /api/earnings/today
         Returns: Companies reporting earnings today
-        
+
         Example response:
         {
             "data": [
@@ -549,10 +530,10 @@ class UnusualWhalesService:
     async def get_earnings_week(self) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get this week's earnings calendar
-        
+
         Endpoint: GET /api/earnings/week
         Returns: Companies reporting earnings this week
-        
+
         Example response:
         {
             "data": [
@@ -576,10 +557,10 @@ class UnusualWhalesService:
     async def get_insider_buys(self) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get insider buy transactions
-        
+
         Endpoint: GET /api/insider/buys
         Returns: Recent insider purchases across all stocks
-        
+
         Example response:
         {
             "data": [
@@ -606,10 +587,10 @@ class UnusualWhalesService:
     async def get_insider_sells(self) -> Dict[str, Any]:
         """
         ✅ VERIFIED: Get insider sell transactions
-        
+
         Endpoint: GET /api/insider/sells
         Returns: Recent insider sales across all stocks
-        
+
         Example response:
         {
             "data": [
@@ -645,48 +626,51 @@ class UnusualWhalesService:
         Uses: /api/stock/{ticker}/option-contracts
         """
         contracts = await self.get_option_contracts(ticker)
-        
+
         if not contracts.get("data"):
             return {"status": "error", "data": []}
-        
+
         # Filter by expiry if provided
         if expiry:
             filtered = [
-                c for c in contracts["data"] 
-                if expiry in c.get("option_symbol", "")
+                c for c in contracts["data"] if expiry in c.get("option_symbol", "")
             ]
             contracts["data"] = filtered
-        
+
         return {
             "status": "success",
             "source": "UnusualWhales",
-            "data": contracts["data"]
+            "data": contracts["data"],
         }
 
-    async def get_gex_data(
-        self, ticker: str
-    ) -> Dict[str, Any]:
+    async def get_gex_data(self, ticker: str) -> Dict[str, Any]:
         """
         Get formatted GEX data for charting
         Uses: /api/stock/{ticker}/spot-exposures
         """
         exposures = await self.get_spot_exposures(ticker)
-        
+
         if not exposures.get("data"):
             return {"status": "error", "data": {}}
-        
+
         data = exposures["data"]
-        
+
         return {
             "status": "success",
             "data": {
                 "symbol": ticker,
                 "timestamps": [d.get("time") for d in data],
                 "prices": [float(d.get("price", 0)) for d in data],
-                "gamma_oi": [float(d.get("gamma_per_one_percent_move_oi", 0)) for d in data],
-                "charm_oi": [float(d.get("charm_per_one_percent_move_oi", 0)) for d in data],
-                "vanna_oi": [float(d.get("vanna_per_one_percent_move_oi", 0)) for d in data],
-            }
+                "gamma_oi": [
+                    float(d.get("gamma_per_one_percent_move_oi", 0)) for d in data
+                ],
+                "charm_oi": [
+                    float(d.get("charm_per_one_percent_move_oi", 0)) for d in data
+                ],
+                "vanna_oi": [
+                    float(d.get("vanna_per_one_percent_move_oi", 0)) for d in data
+                ],
+            },
         }
 
     async def get_market_tide(self) -> Dict[str, Any]:
@@ -695,34 +679,31 @@ class UnusualWhalesService:
         Uses: /api/alerts with noti_type=market_tide filter
         """
         alerts = await self.get_alerts(noti_type="market_tide")
-        
+
         if not alerts.get("data"):
             return {"status": "error", "data": []}
-        
-        return {
-            "status": "success",
-            "data": alerts["data"]
-        }
+
+        return {"status": "success", "data": alerts["data"]}
 
     async def get_spot_price(self, ticker: str) -> float:
         """
         Get current spot price from stock info
         Uses: /api/stock/{ticker}/info
-        
+
         Note: For real-time pricing, extract from option contracts
         """
-        info = await self.get_stock_info(ticker)
-        
+        await self.get_stock_info(ticker)
+
         # Stock info doesn't include price, would need to extract from options
         # or use option contracts to infer spot price
         contracts = await self.get_option_contracts(ticker)
-        
+
         if contracts.get("data"):
             # Extract underlying price from first contract if available
-            first_contract = contracts["data"][0]
+            contracts["data"][0]
             # You'd need to parse this from option_symbol or other fields
             pass
-        
+
         return 0.0  # Placeholder
 
     # ========================================================================
@@ -733,22 +714,24 @@ class UnusualWhalesService:
         """Demo options chain for testing/fallback"""
         spot = 250.0
         strikes = [spot + (i - 6) * 5 for i in range(13)]
-        
+
         demo_data = []
         for strike in strikes:
-            demo_data.append({
-                "option_symbol": f"{ticker}251024C{int(strike*100):08d}",
-                "open_interest": 1000,
-                "volume": 500,
-                "implied_volatility": "0.45",
-                "nbbo_bid": "5.00",
-                "nbbo_ask": "5.10",
-                "last_price": "5.05",
-                "total_premium": "252500.00",
-                "sweep_volume": 10,
-                "multi_leg_volume": 50
-            })
-        
+            demo_data.append(
+                {
+                    "option_symbol": f"{ticker}251024C{int(strike * 100):08d}",
+                    "open_interest": 1000,
+                    "volume": 500,
+                    "implied_volatility": "0.45",
+                    "nbbo_bid": "5.00",
+                    "nbbo_ask": "5.10",
+                    "last_price": "5.05",
+                    "total_premium": "252500.00",
+                    "sweep_volume": 10,
+                    "multi_leg_volume": 50,
+                }
+            )
+
         return {"data": demo_data}
 
 

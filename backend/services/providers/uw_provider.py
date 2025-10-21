@@ -1,7 +1,9 @@
-import os
-import requests
 import datetime
-from typing import Any, Dict, Optional, List
+import os
+from typing import Any, Dict, List, Optional
+
+import requests
+
 from ..options_provider import OptionsProvider
 
 
@@ -120,8 +122,8 @@ class UWProvider(OptionsProvider):
             # Parse option symbols and group by expiration
             # Format: {SYMBOL}{YYMMDD}{C/P}{STRIKE*1000}
             # Example: TSLA250117C00380000 = TSLA, exp: 2025-01-17, Call, strike: 380
-            from collections import defaultdict
             import re
+            from collections import defaultdict
 
             exp_buckets = defaultdict(lambda: {"Expiration": "", "Strikes": {}})
 

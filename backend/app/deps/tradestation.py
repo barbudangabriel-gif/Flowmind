@@ -1,10 +1,11 @@
 """TradeStation authentication dependencies."""
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict
+
 from fastapi import Depends, HTTPException, Request
 
-from ..services.tradestation import get_valid_token, get_cached_token
+from ..services.tradestation import get_cached_token, get_valid_token
 
 log = logging.getLogger("ts.deps")
 

@@ -7,8 +7,8 @@ Reduces first-request latency for popular symbols
 
 import asyncio
 import logging
-from typing import List, Optional
 import os
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ async def warmup_spot_prices(symbols: List[str]) -> int:
                         success_count += 1
                         logger.info(f" Warmed up {symbol} spot price")
                 else:
-                    logger.debug(f" Provider doesn't support get_quote")
+                    logger.debug(" Provider doesn't support get_quote")
 
             except Exception as e:
                 logger.warning(f" Spot price warmup failed for {symbol}: {e}")

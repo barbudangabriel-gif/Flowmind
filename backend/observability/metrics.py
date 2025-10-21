@@ -5,19 +5,20 @@ Tracks API performance, business metrics, and system health.
 Export endpoint: GET /metrics
 """
 
+import asyncio
+import logging
+import time
+from functools import wraps
+from typing import Callable
+
 from prometheus_client import (
+    CONTENT_TYPE_LATEST,
     Counter,
-    Histogram,
     Gauge,
+    Histogram,
     Info,
     generate_latest,
-    CONTENT_TYPE_LATEST,
 )
-from functools import wraps
-import time
-import logging
-from typing import Callable
-import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +186,7 @@ def track_endpoint_metrics(endpoint_name: str):
                 try:
                     result = await func(*args, **kwargs)
                     return result
-                except Exception as e:
+                except Exception:
                     status = "error"
                     raise
                 finally:
@@ -217,7 +218,7 @@ def track_endpoint_metrics(endpoint_name: str):
                 try:
                     result = func(*args, **kwargs)
                     return result
-                except Exception as e:
+                except Exception:
                     status = "error"
                     raise
                 finally:

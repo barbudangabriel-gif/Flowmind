@@ -1,10 +1,12 @@
-import os
 import json
-import requests
-from typing import Any, Dict
-from utils.redis_client import get_redis
+import os
 import secrets
 from datetime import datetime, timedelta
+from typing import Any, Dict
+
+import requests
+
+from utils.redis_client import get_redis
 
 BASE = os.getenv("UW_BASE_URL", "https://api.unusualwhales.com").rstrip("/")
 TOKEN = os.getenv("UW_API_TOKEN")

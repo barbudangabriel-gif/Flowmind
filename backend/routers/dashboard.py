@@ -3,9 +3,10 @@ Dashboard API - Aggregate data endpoint
 Provides unified dashboard data from all FlowMind modules
 """
 
-from fastapi import APIRouter
-from typing import Dict, Any
 import logging
+from typing import Any, Dict
+
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 logger = logging.getLogger(__name__)

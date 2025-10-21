@@ -1,14 +1,15 @@
 # app/routers/tradestation_auth.py
-from fastapi import APIRouter, Request, HTTPException
-from fastapi.responses import RedirectResponse, JSONResponse
 import os
 import secrets
+
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.services.tradestation import (
     auth_url,
     exchange_code,
-    set_token,
     get_cached_token,
+    set_token,
 )
 
 router = APIRouter(prefix="/ts", tags=["tradestation"])

@@ -3,19 +3,21 @@ WebSocket Streaming API Endpoints
 Real-time data streaming from Unusual Whales to frontend clients.
 """
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
-import sys
 import os
+import sys
+
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from services.ws_connection_manager import ws_manager
-from integrations.uw_websocket_client import UWWebSocketClient
 import asyncio
 import logging
 from datetime import datetime
 from typing import Optional
+
+from integrations.uw_websocket_client import UWWebSocketClient
+from services.ws_connection_manager import ws_manager
 
 logger = logging.getLogger(__name__)
 

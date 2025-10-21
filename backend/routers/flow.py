@@ -1,14 +1,16 @@
-from fastapi import APIRouter, Query
-from typing import Optional
-from datetime import datetime, timezone
 import os
+from datetime import datetime, timezone
+from typing import Optional
+
+from fastapi import APIRouter, Query
+
 from services.uw_flow import (
-    live_flow,
-    historical_flow,
-    summary_from_live,
-    news_flow,
     congress_flow,
+    historical_flow,
     insiders_flow,
+    live_flow,
+    news_flow,
+    summary_from_live,
 )
 
 router = APIRouter(prefix="/flow", tags=["flow"])
@@ -133,7 +135,9 @@ def _filters(
     min_dte: Optional[int] = None,
     max_dte: Optional[int] = None,
 ):
-    csv = lambda x: [s.strip() for s in x.split(",") if s.strip()] if x else None
+    def csv(x):
+        return [s.strip() for s in x.split(",") if s.strip()] if x else None
+
     d = {
         "tickers": csv(tickers),
         "side": csv(side),

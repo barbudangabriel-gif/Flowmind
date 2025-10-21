@@ -3,11 +3,13 @@ FlowMind - Emergent Status (SELL_PUTS) v0.1
 Status endpoint pentru module diagnostics
 """
 
-import os
 import json
+import os
 import time
 from typing import List
+
 from fastapi import APIRouter, Query
+
 from redis_fallback import get_kv
 
 emergent_router = APIRouter(prefix="/_emergent", tags=["emergent"])
@@ -30,7 +32,7 @@ async def redis_health():
         try:
             ping_result = await kv.ping()
             is_connected = bool(ping_result)
-        except Exception as ping_error:
+        except Exception:
             is_connected = False
 
         # Determine status

@@ -1,18 +1,20 @@
 from __future__ import annotations
-from typing import List, Dict, Any, Optional, Tuple
-from pydantic import BaseModel, Field
-from datetime import datetime, timedelta
+
 import asyncio
 import os
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
+
+from pydantic import BaseModel, Field
 
 from sell_puts_engine import (
     Config,
     Position,
     allocate_contracts_equal,
+    collect_signals,
     greedy_fill_by_risk,
     summarize,
     to_table,
-    collect_signals,
 )
 
 # Optional Mongo logging (simulated analysis source)

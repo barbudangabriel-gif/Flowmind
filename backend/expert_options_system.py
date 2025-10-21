@@ -3,16 +3,14 @@ Expert Options Trading System with Machine Learning
 Implements 3 expert strategies with auto-optimization and learning capabilities
 """
 
-import asyncio
-import numpy as np
-import pandas as pd
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional, Tuple
-import json
 import logging
-from dataclasses import dataclass
-from enum import Enum
 import statistics
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

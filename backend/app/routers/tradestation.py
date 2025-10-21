@@ -2,8 +2,9 @@
 
 import logging
 import os
+
 import requests
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from ..deps.tradestation import get_bearer_token, get_user_id
 

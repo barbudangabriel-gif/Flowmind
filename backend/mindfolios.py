@@ -1,11 +1,14 @@
 from __future__ import annotations
+
 import json
-import uuid
 import logging
+import uuid
 from datetime import datetime
 from typing import List, Optional
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, validator
+
 from redis_fallback import get_kv
 from utils.redis_client import get_redis
 
@@ -212,7 +215,7 @@ async def calculate_positions_fifo(mindfolio_id: str) -> List[Position]:
 
 async def calculate_realized_pnl(mindfolio_id: str) -> List[RealizedPnL]:
     """Calculate realized P&L for each symbol using FIFO"""
-    transactions = await get_mindfolio_transactions(mindfolio_id)
+    await get_mindfolio_transactions(mindfolio_id)
 
 
 async def calculate_realized_pnl(mindfolio_id: str) -> List[RealizedPnL]:
@@ -323,8 +326,8 @@ async def pf_list() -> List[Mindfolio]:
 async def get_tradestation_positions_grid():
     """Get TradeStation positions in grid format for dashboard"""
     try:
-        from tradestation_client import TradeStationClient
         from tradestation_auth_service import tradestation_auth_service as ts_auth
+        from tradestation_client import TradeStationClient
 
         ts_client = TradeStationClient(ts_auth)
 
@@ -988,6 +991,7 @@ async def create_eod_snapshot(pid: str):
     """Create a new EOD snapshot for the mindfolio"""
     try:
         from datetime import datetime
+
         import pytz
 
         # Use Europe/Bucharest timezone as requested
@@ -1090,6 +1094,7 @@ async def get_eod_series(pid: str):
         if not series:
             # If no series exists, create a sample one for demo
             from datetime import datetime, timedelta
+
             import pytz
 
             tz = pytz.timezone("Europe/Bucharest")

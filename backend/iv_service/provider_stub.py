@@ -1,5 +1,6 @@
 import secrets
-from .provider_base import IVProvider, tick_step, round_to_tick
+
+from .provider_base import IVProvider, round_to_tick, tick_step
 
 
 class StubProvider(IVProvider):
@@ -15,7 +16,7 @@ class StubProvider(IVProvider):
         out = []
         dte = 3
         for i in range(10):
-            out.append({"date": f"2025-12-{10+i:02d}", "dte": dte})
+            out.append({"date": f"2025-12-{10 + i:02d}", "dte": dte})
             dte += 7
         return out
 

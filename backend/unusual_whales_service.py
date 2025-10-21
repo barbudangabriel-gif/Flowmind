@@ -1,16 +1,15 @@
-import os
-import asyncio
 import logging
+import os
 import secrets
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
-from fastapi import HTTPException
-import pandas as pd
-import httpx
-from dotenv import load_dotenv
 
 # Load environment variables
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import httpx
+import pandas as pd
+from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent / ".env")
 
@@ -840,7 +839,9 @@ class UnusualWhalesService:
                 "significance": (
                     "high"
                     if transaction_amount > 100000
-                    else "medium" if transaction_amount > 50000 else "low"
+                    else "medium"
+                    if transaction_amount > 50000
+                    else "low"
                 ),
             }
         except Exception as e:
@@ -940,7 +941,6 @@ class UnusualWhalesService:
     # MOCK DATA METHODS (for when API key is not available or API fails)
     async def _get_mock_options_flow(self) -> List[Dict[str, Any]]:
         """Generate highly realistic mock options flow data based on actual market patterns"""
-        import secrets
         from datetime import datetime, timedelta
 
         # Real market symbols with actual option activity (August 14, 2025)
@@ -1198,7 +1198,7 @@ class UnusualWhalesService:
 
         # Identify unusual patterns
         large_trades = df[df["trade_size"].isin(["whale", "large"])]
-        opening_trades = df[df["is_opener"] == True]
+        opening_trades = df[df["is_opener"]]
 
         # Generate trading signals
         signals = []
@@ -1272,7 +1272,7 @@ class UnusualWhalesService:
         total_dark_volume = df["dark_volume"].sum()
         avg_dark_percentage = df["dark_percentage"].mean()
         high_significance = len(df[df["significance"].isin(["high", "very_high"])])
-        institutional_signals = len(df[df["institutional_signal"] == True])
+        institutional_signals = len(df[df["institutional_signal"]])
 
         # Generate implications
         implications = []

@@ -1,7 +1,9 @@
+import time
+from typing import List, Optional
+
 from fastapi import APIRouter, Header
 from fastapi.responses import JSONResponse
-from typing import Optional, List
-import time
+
 from gates_engine import *
 
 router = APIRouter(prefix="/trade", tags=["trade"])

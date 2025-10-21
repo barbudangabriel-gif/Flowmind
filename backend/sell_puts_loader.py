@@ -4,9 +4,12 @@ Permite citirea de poziții din CSV sau JSON și transformarea lor în Position.
 """
 
 from __future__ import annotations
-from typing import List
+
 import json
+from typing import List
+
 import pandas as pd
+
 from sell_puts_engine import Position
 
 CSV_COLUMNS = [

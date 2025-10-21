@@ -5,7 +5,7 @@ Handles automatic token refresh and background monitoring
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 
 logger = logging.getLogger(__name__)

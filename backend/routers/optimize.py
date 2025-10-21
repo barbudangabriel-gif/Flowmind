@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Query
 from typing import Optional
+
+from fastapi import APIRouter, Query
+
 from services.optimize_engine import suggest
 
 router = APIRouter(prefix="/optimize", tags=["optimize"])

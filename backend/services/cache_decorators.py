@@ -3,12 +3,12 @@ Cache Decorators for FlowMind API
 Provides response caching functionality using Redis with fallback support
 """
 
-import json
 import hashlib
 import inspect
-from functools import wraps
-from typing import Any, Callable, Optional, Union
+import json
 import logging
+from functools import wraps
+from typing import Any, Callable, Optional
 
 from redis_fallback import get_kv
 

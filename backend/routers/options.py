@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException, Query
-from typing import Optional
 import logging
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, Query
+
 from services.options_gex import compute_gex, fetch_chain
 
 logger = logging.getLogger(__name__)
@@ -188,8 +190,9 @@ def get_spot_price(symbol: str):
 def get_provider_status():
     """Get current options provider configuration and status"""
     try:
-        from services.providers import get_provider
         import os
+
+        from services.providers import get_provider
 
         provider = get_provider()
 

@@ -21,13 +21,13 @@ ALGORITMI:
 """
 
 import asyncio
-import numpy as np
-import pandas as pd
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime, timedelta
 import logging
 from dataclasses import dataclass
-import json
+from datetime import datetime
+from typing import Any, Dict
+
+import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +160,7 @@ class AdvancedScoringEngine:
             # Verifică dacă TradeStation client este disponibil și autentificat
             if self.ts_client:
                 logger.info(
-                    f" TradeStation client available, checking authentication..."
+                    " TradeStation client available, checking authentication..."
                 )
 
                 # Verifică autentificarea
@@ -207,10 +207,10 @@ class AdvancedScoringEngine:
                             )
                     else:
                         logger.warning(
-                            f" TradeStation not authenticated or missing methods"
+                            " TradeStation not authenticated or missing methods"
                         )
                 else:
-                    logger.warning(f" TradeStation client not available")
+                    logger.warning(" TradeStation client not available")
 
             # Fallback la mock data realistică
             logger.info(f"🔄 Using mock technical data for {symbol}")
@@ -614,12 +614,12 @@ class AdvancedScoringEngine:
         if score >= 80:
             return f"Excellent opportunity with strong technical ({tech_score:.1f}) and fundamental ({fund_score:.1f}) metrics"
         elif score >= 65:
-            return f"Good investment opportunity with balanced risk-reward profile"
+            return "Good investment opportunity with balanced risk-reward profile"
         elif score >= 45:
-            return f"Neutral position - consider market conditions and risk tolerance"
+            return "Neutral position - consider market conditions and risk tolerance"
         else:
             return (
-                f"High risk investment - consider alternatives or wait for better entry"
+                "High risk investment - consider alternatives or wait for better entry"
             )
 
     def _assess_risk_level(self, risk_data: Dict, risk_score: float) -> str:

@@ -3,15 +3,15 @@ TradeStation Authentication Service
 Complete solution for TradeStation OAuth authentication with automatic token refresh
 """
 
-import asyncio
-import httpx
+import json
 import logging
 import os
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
-from pathlib import Path
-import json
 import secrets
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import httpx
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
@@ -156,7 +156,7 @@ class TradeStationAuthService:
         query_string = urlencode(params)
         auth_url = f"{self.auth_url}?{query_string}"
 
-        logger.info(f"🔗 Generated TradeStation auth URL")
+        logger.info("🔗 Generated TradeStation auth URL")
 
         return {
             "status": "success",

@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Query, Request
-from datetime import datetime, timedelta, timezone
 import logging
+from datetime import datetime, timedelta, timezone
+
+from fastapi import APIRouter, Query, Request
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/options/flow", tags=["options-flow"])
@@ -35,9 +36,9 @@ async def flow_summary(
         trades_hist = await uw.trades(sym_or_proxy, dN, now)
 
         logger.info(
-            f"UW flow summary for {sym_or_proxy}: live={
-                len(trades_live)}, hist={
-                len(trades_hist)}"
+            f"UW flow summary for {sym_or_proxy}: live={len(trades_live)}, hist={
+                len(trades_hist)
+            }"
         )
 
         return {

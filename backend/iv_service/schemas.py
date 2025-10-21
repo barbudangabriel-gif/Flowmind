@@ -1,5 +1,6 @@
+from typing import List, Literal, Optional, Tuple
+
 from pydantic import BaseModel
-from typing import List, Optional, Literal, Tuple
 
 
 class Summary(BaseModel):

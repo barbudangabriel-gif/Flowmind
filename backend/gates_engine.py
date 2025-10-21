@@ -2,7 +2,8 @@ import hashlib
 import json
 import time
 from enum import Enum
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel
 
 
@@ -252,9 +253,9 @@ def gate_term_structure(ctx: TradeContext, cfg: GateConfig) -> GateResult:
         passed=passed,
         severity=Severity.BLOCK,
         reason=(
-            f"|Front-Back|={abs(diff)*100:.1f}pp OK"
+            f"|Front-Back|={abs(diff) * 100:.1f}pp OK"
             if passed
-            else f"Slope nefavorabil: {diff*100:.1f}pp"
+            else f"Slope nefavorabil: {diff * 100:.1f}pp"
         ),
     )
 

@@ -10,14 +10,15 @@ Features:
 - Message buffering and callbacks
 """
 
-import websockets
 import asyncio
 import json
 import logging
 import os
-from typing import Callable, Dict, Any, Optional, List
-from datetime import datetime
 import secrets
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
+
+import websockets
 
 logger = logging.getLogger(__name__)
 

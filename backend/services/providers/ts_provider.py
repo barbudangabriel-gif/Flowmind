@@ -1,6 +1,7 @@
-import os
 import logging
+import os
 from typing import Any, Dict, Optional
+
 from ..options_provider import OptionsProvider
 
 logger = logging.getLogger(__name__)
@@ -14,8 +15,8 @@ class TSProvider(OptionsProvider):
         """Get current spot price from TradeStation"""
         try:
             # Import here to avoid circular imports
-            from services.ts_oauth import authorized_get
             from database import DatabaseManager
+            from services.ts_oauth import authorized_get
 
             # Try to get from database first (fallback to existing system)
             try:

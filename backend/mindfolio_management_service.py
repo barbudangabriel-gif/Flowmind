@@ -6,13 +6,11 @@ Integrated with TradeStation API for real-time data
 
 import logging
 import uuid
-from datetime import datetime
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
-import asyncio
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 # Import TradeStation client for real data
-from tradestation_client import TradeStationClient
 
 logger = logging.getLogger(__name__)
 
@@ -163,8 +161,9 @@ class MindfolioManagementService:
             logger.info("🔄 Loading REAL TradeStation positions (NO MOCK DATA)")
 
             # Use the existing TradeStation client instance from server.py
-            import requests
             import os
+
+            import requests
 
             # Get accounts using direct API call (same pattern as IndividualMindfolio component)
             base_url = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8001")

@@ -1,8 +1,9 @@
 import math
 import os
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
+from services.bs import call_price, norm_cdf, put_price
 from services.providers import get_provider
-from services.bs import norm_cdf, call_price, put_price
 from utils.deeplink import builder_link
 
 

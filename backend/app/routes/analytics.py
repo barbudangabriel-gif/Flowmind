@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
 from datetime import datetime
+
+from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/v1/analytics", tags=["analytics"])
 

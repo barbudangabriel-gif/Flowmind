@@ -1,13 +1,14 @@
-import time
-import uuid
 import logging
 import sys
+import time
+import uuid
+
 from fastapi import FastAPI, Request
-from starlette.responses import Response
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import Response
 
 REQS = Counter("http_requests_total", "HTTP requests", ["path", "method", "status"])
 LAT = Histogram(
@@ -68,7 +69,7 @@ def wire(app: FastAPI):
             REQS.labels(path, method, status).inc()
             LAT.labels(path, method).observe(dur)
             logging.getLogger("app").info(
-                f'{{"msg":"req","rid":"{rid}","path":"{path}","method":"{method}","status":{status},"duration":{round(dur,3)}}}'
+                f'{{"msg":"req","rid":"{rid}","path":"{path}","method":"{method}","status":{status},"duration":{round(dur, 3)}}}'
             )
 
     @app.get("/healthz")

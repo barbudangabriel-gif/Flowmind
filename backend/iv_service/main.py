@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
-from .ts_client import summary, terms, strikes_calc, pick_calendar, pick_condor
+
+from .ts_client import pick_calendar, pick_condor, strikes_calc, summary, terms
 
 app = FastAPI(title="FlowMind IV Service", version="0.1.0")
 

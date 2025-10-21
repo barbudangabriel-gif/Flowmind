@@ -3,12 +3,11 @@ Smart Rebalancing Service
 AI/ML-powered mindfolio rebalancing recommendations with Smart DCA algorithms
 """
 
+import asyncio
 import logging
 import secrets
-import asyncio
-from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
-import json
+from datetime import datetime
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
