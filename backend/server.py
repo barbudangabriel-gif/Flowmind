@@ -888,8 +888,8 @@ async def metrics_endpoint():
     Prometheus scrape config:
     scrape_configs:
     - job_name: 'flowmind'
-      static_configs:
-      - targets: ['localhost:8000']
+    static_configs:
+    - targets: ['localhost:8000']
     """
     try:
         from observability.metrics import export_metrics

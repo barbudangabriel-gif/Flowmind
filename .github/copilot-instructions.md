@@ -124,9 +124,19 @@ app.include_router(geopolitical_router)            # Already has /api/geopolitic
 2. **Dark theme violations:** Never use `isDarkMode ?` ternaries or light Tailwind classes (`bg-white`, `text-gray-800`)
 3. **URL hardcoding:** Frontend must use `process.env.REACT_APP_BACKEND_URL`, not `http://localhost:8000`
 4. **TradeStation token expiry:** 60-day refresh cycle, handled in `tradestation_auth.py` or `app/routers/tradestation_auth.py`
-5. **Unusual Whales rate limits:** 1.0s delay between requests (`rate_limit_delay`), always implement demo fallback
-6. **Test mode:** Integration tests need real backend, unit tests use `TEST_MODE=1` for shared cache
-7. **FIFO integrity:** Never modify positions directly - always add transactions and recompute via `calculate_positions()`
+5. **⚠️ UW API HALLUCINATIONS:** ONLY use the 5 verified endpoints in `unusual_whales_service_clean.py` - AI assistants frequently generate fake endpoints that return 404
+6. **Unusual Whales rate limits:** 1.0s delay between requests (`rate_limit_delay`), always implement demo fallback
+7. **Test mode:** Integration tests need real backend, unit tests use `TEST_MODE=1` for shared cache
+8. **FIFO integrity:** Never modify positions directly - always add transactions and recompute via `calculate_positions()`
+
+### Historical Context - UW API Issues
+**Oct 21, 2025:** Resolved UW API hallucination problem after multiple attempts:
+- Previous implementations used AI-generated endpoints (`/api/flow-alerts`, `/api/market/tide`, `/api/stock/{ticker}/quote`)
+- ALL hallucinated endpoints returned 404 errors
+- Systematic testing discovered 5 working endpoints on Advanced plan
+- **Lesson learned:** Always verify API endpoints through testing, never trust AI-generated API paths
+- **Solution:** Created `backend/unusual_whales_service_clean.py` with ONLY verified endpoints
+- **Reference:** `UW_API_ADVANCED_PLAN_WORKING_ENDPOINTS.md` documents the discovery process
 
 ### Key Files for Understanding Architecture
 - `backend/server.py` (961 lines) - Main FastAPI app, router mounting, service initialization
@@ -323,33 +333,61 @@ CREATE INDEX idx_tx_datetime ON transactions(datetime);
 - **Base URL:** `https://api.unusualwhales.com/api`
 - **Rate limiting:** 1.0s delay between requests (graceful degradation)
 
-**VERIFIED Working Endpoints** (October 21, 2025):
+⚠️ **CRITICAL: AI HALLUCINATION PROBLEM** ⚠️
+Many UW API endpoints found online are **AI-generated hallucinations** that don't exist!
+**ONLY use the 5 verified endpoints below** - everything else returns 404.
+
+**✅ VERIFIED Working Endpoints** (tested Oct 21, 2025):
 ```python
-# Options Chain (500+ contracts with volume, OI, IV, premiums)
+# 1. Options Chain (500+ contracts with volume, OI, IV, premiums, sweep volume)
 GET /stock/{ticker}/option-contracts
-# Use case: Replace TradeStation options chain
+# Use: Replace TradeStation options chain, spread builder, unusual activity
 
-# Gamma Exposure (345+ GEX records with gamma/charm/vanna)
+# 2. Gamma Exposure (345+ GEX records with pre-calculated gamma/charm/vanna)
 GET /stock/{ticker}/spot-exposures
-# Use case: Direct GEX data - no calculation needed
+# Use: Direct GEX data - NO calculation needed, GEX charts
 
-# Stock Info (company metadata, earnings, sector)
+# 3. Stock Info (company metadata, earnings, sector, market cap)
 GET /stock/{ticker}/info
+# Use: Stock screening, earnings calendar, sector analysis
 
-# Market Alerts (real-time tide events, premium flows)
+# 4. Market Alerts (real-time tide events, premium flows)
 GET /alerts
 # Filter by noti_type: "market_tide"
+# Use: Market sentiment, flow alerts, unusual activity
 
-# Greeks (Delta, Gamma, Theta, Vega)
+# 5. Greeks (Delta, Gamma, Theta, Vega - currently empty but accessible)
 GET /stock/{ticker}/greeks
+# Use: Portfolio Greeks, risk management
 ```
 
-**Endpoints that DON'T work** (404 errors - likely Enterprise-only):
-- ❌ `/api/flow-alerts` → Use `/alerts` instead
-- ❌ `/api/stock/{ticker}/last-state` → Use `/option-contracts` for pricing
-- ❌ `/api/market/tide` → Use `/alerts?noti_type=market_tide` instead
+**❌ HALLUCINATED Endpoints (DO NOT USE - confirmed 404s):**
+```python
+# These were suggested by AI but DON'T EXIST:
+❌ /api/flow-alerts                → Use /alerts instead
+❌ /api/stock/{ticker}/last-state  → Use /option-contracts instead
+❌ /api/stock/{ticker}/ohlc        → Not available on Advanced plan
+❌ /api/market/tide                → Use /alerts?noti_type=market_tide
+❌ /api/stock/{ticker}/quote       → Use /stock/{ticker}/info
+❌ /api/options-flow               → NEVER existed
+❌ /api/market/overview            → NEVER existed
+❌ /api/stock/{ticker}/gamma-exposure → Use /spot-exposures
+```
 
-**Critical:** See `UW_API_ADVANCED_PLAN_WORKING_ENDPOINTS.md` for complete documentation
+**Implementation Pattern:**
+```python
+# CORRECT (verified working):
+response = await uw_service.get_option_contracts("TSLA")  # ✅ Returns 500+ contracts
+response = await uw_service.get_spot_exposures("TSLA")    # ✅ Returns 345+ GEX records
+response = await uw_service.get_alerts(noti_type="market_tide")  # ✅ Returns tide events
+
+# WRONG (hallucinated endpoints):
+response = await uw_service.get_flow_alerts("TSLA")  # ❌ 404 error
+response = await uw_service.get_market_overview()    # ❌ 404 error
+```
+
+**Reference:** See `UW_API_ADVANCED_PLAN_WORKING_ENDPOINTS.md` for complete documentation.  
+**Clean implementation:** See `backend/unusual_whales_service_clean.py` (hallucination-free version)
 
 ### 3. Testing Philosophy
 
