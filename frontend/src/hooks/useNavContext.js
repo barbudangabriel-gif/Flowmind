@@ -19,10 +19,10 @@ export function useNavContext() {
  useEffect(() => {
  async function fetchNavContext() {
  try {
- // Fetch metrics în paralel
- const [redisRes, emergentRes, tsRes] = await Promise.allSettled([
+ // Fetch metrics in parallel
+ const [redisRes, diagnosticsRes, tsRes] = await Promise.allSettled([
  fetch(`${BACKEND_URL}/_redis/diag`),
- fetch(`${BACKEND_URL}/_emergent/status?module=sell_puts`),
+ fetch(`${BACKEND_URL}/_diagnostics/status?module=sell_puts`),
  fetch(`${BACKEND_URL}/api/tradestation/connection/test`)
  ]);
 
@@ -34,11 +34,11 @@ export function useNavContext() {
  newCtx.metrics.ivOnline = redisData.ok && redisData.impl === 'Redis';
  }
 
- // Emergent status pentru verified ratio
- if (emergentRes.status === 'fulfilled' && emergentRes.value.ok) {
- const emergentData = await emergentRes.value.json();
- if (emergentData.cache) {
- const { keys_total, keys_verified } = emergentData.cache;
+ // Diagnostics status for verified ratio
+ if (diagnosticsRes.status === 'fulfilled' && diagnosticsRes.value.ok) {
+ const diagnosticsData = await diagnosticsRes.value.json();
+ if (diagnosticsData.cache) {
+ const { keys_total, keys_verified } = diagnosticsData.cache;
  newCtx.metrics.verifiedRatio = keys_total > 0 ? keys_verified / keys_total : 0;
  }
  }

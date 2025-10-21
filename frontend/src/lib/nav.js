@@ -1,8 +1,8 @@
 // Sidebar config (FlowMind)
 // — single source of truth —
-// Emergent: folosiți buildNav(ctx) pentru a genera meniul la runtime.
+// Dynamic menu generation via buildNav(ctx) using system diagnostics.
 
-// ——— Helpers pentru badge/visible/disable ———
+// ——— Helpers for badge/visible/disable ———
 const ivBadge = (ctx) => ctx.metrics.ivOnline
  ? { text: "IV", tone: "success" }
  : { text: "OFF", tone: "warn" };
@@ -154,8 +154,8 @@ export function buildNav(ctx) {
  visible: (c) => c.role === "admin" 
  },
  { 
- label: "Emergent Status", 
- to: "/ops/emergent", 
+ label: "System Diagnostics", 
+ to: "/ops/diagnostics", 
  icon: "Heartbeat", 
  visible: (c) => c.role === "admin" 
  },

@@ -118,23 +118,23 @@ class RedisIVCachingTester:
  return True, diag_data
 
  def test_emergent_status(self):
- """Test emergent status endpoint for cache statistics"""
- print("\n PHASE 2: Emergent Status Cache Verification")
+ """Test diagnostics status endpoint for cache statistics"""
+ print("\n PHASE 2: System Diagnostics Cache Verification")
  print("-" * 60)
 
  success, status_data = self.run_test(
- "Emergent Status (sell_puts)",
+ "System Diagnostics Status (sell_puts)",
  "GET",
- "/_emergent/status",
+ "/_diagnostics/status",
  200,
  params={"module": "sell_puts"},
  )
 
  if not success:
- print(" Emergent status endpoint failed")
+ print(" Diagnostics status endpoint failed")
  return False, {}
 
- print(f" Emergent Status Response: {status_data}")
+ print(f" Diagnostics Status Response: {status_data}")
 
  # Check for cache statistics
  cache_info = status_data.get("cache", {})
@@ -258,7 +258,7 @@ class RedisIVCachingTester:
  success1, initial_status = self.run_test(
  "Initial Cache State",
  "GET",
- "/_emergent/status",
+ "/_diagnostics/status",
  200,
  params={"module": "sell_puts"},
  )
@@ -280,7 +280,7 @@ class RedisIVCachingTester:
  success2, final_status = self.run_test(
  "Final Cache State",
  "GET",
- "/_emergent/status",
+ "/_diagnostics/status",
  200,
  params={"module": "sell_puts"},
  )

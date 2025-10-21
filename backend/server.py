@@ -673,8 +673,8 @@ async def get_chart_data(
 from bt_cache_integration import router as bt_router
 
 # Mindfolios
-# Emergent status
-from bt_emergent import emergent_router, redis_diag_router
+# Diagnostics & monitoring
+from bt_diagnostics import diagnostics_router, redis_diag_router
 from bt_ops import router as bt_ops_router
 
 # Mindfolio (formerly Mindfolios)
@@ -689,7 +689,7 @@ app.include_router(api_router)
 app.include_router(trade_router)
 app.include_router(bt_router)
 app.include_router(bt_ops_router)
-app.include_router(emergent_router)
+app.include_router(diagnostics_router)
 app.include_router(redis_diag_router)
 app.include_router(mindfolio_router, prefix="/api")
 app.include_router(watchlist_router, prefix="/api/watchlists")

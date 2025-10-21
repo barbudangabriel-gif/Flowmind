@@ -1,6 +1,6 @@
 """
-FlowMind - Emergent Status (SELL_PUTS) v0.1
-Status endpoint pentru module diagnostics
+FlowMind - Diagnostics & Monitoring Module v0.2
+Status endpoints for system health, cache monitoring, and Redis diagnostics
 """
 
 import json
@@ -12,7 +12,7 @@ from fastapi import APIRouter, Query
 
 from redis_fallback import get_kv
 
-emergent_router = APIRouter(prefix="/_emergent", tags=["emergent"])
+diagnostics_router = APIRouter(prefix="/_diagnostics", tags=["diagnostics"])
 
 # Add Redis diagnostics endpoint
 redis_diag_router = APIRouter(prefix="/_redis", tags=["redis"])
@@ -76,10 +76,10 @@ async def redis_diag_endpoint():
     return await _redis_diag()
 
 
-# Also add redis diag to emergent router for easier access
-@emergent_router.get("/redis/diag")
-async def emergent_redis_diag():
-    """Redis diagnostics endpoint via emergent router"""
+# Also add redis diag to diagnostics router for easier access
+@diagnostics_router.get("/redis/diag")
+async def diagnostics_redis_diag():
+    """Redis diagnostics endpoint via diagnostics router"""
     return await _redis_diag()
 
 
@@ -198,16 +198,16 @@ async def _sample_screener(limit: int = 5):
         return {"available": False}
 
 
-@emergent_router.get("/status")
-async def emergent_status(
+@diagnostics_router.get("/status")
+async def diagnostics_status(
     module: str = Query(
-        "sell_puts", description="Modul vizat: sell_puts / builder / gates / all"
+        "sell_puts", description="Module target: sell_puts / builder / gates / all"
     ),
     include_sample: bool = Query(
-        True, description="Include mostre din screener dacă sunt disponibile"
+        True, description="Include screener samples if available"
     ),
 ):
-    """Emergent status pentru SELL_PUTS module"""
+    """System diagnostics status for trading modules"""
     red = await _redis_diag()
     total, proxy, verified = await _scan_sell_put_keys()
     metrics = await _metrics_bt()
