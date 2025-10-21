@@ -215,11 +215,6 @@ async def calculate_positions_fifo(mindfolio_id: str) -> List[Position]:
 
 async def calculate_realized_pnl(mindfolio_id: str) -> List[RealizedPnL]:
     """Calculate realized P&L for each symbol using FIFO"""
-    await get_mindfolio_transactions(mindfolio_id)
-
-
-async def calculate_realized_pnl(mindfolio_id: str) -> List[RealizedPnL]:
-    """Calculate realized P&L for each symbol using FIFO"""
     transactions = await get_mindfolio_transactions(mindfolio_id)
 
     # Track FIFO lots and realized P&L

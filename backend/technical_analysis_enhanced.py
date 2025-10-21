@@ -395,7 +395,7 @@ class TechnicalAnalyzer:
 
             # Find nearest support and resistance
             resistance_levels = [h for h in recent_highs if h > current_price]
-            support_levels = [l for l in recent_lows if l < current_price]
+            support_levels = [level for level in recent_lows if level < current_price]
 
             nearest_resistance = (
                 min(resistance_levels) if resistance_levels else current_price * 1.1
@@ -409,9 +409,9 @@ class TechnicalAnalyzer:
                 "nearest_resistance": nearest_resistance,
                 "support_strength": len(
                     [
-                        l
-                        for l in recent_lows
-                        if abs(l - nearest_support) / nearest_support < 0.02
+                        level
+                        for level in recent_lows
+                        if abs(level - nearest_support) / nearest_support < 0.02
                     ]
                 ),
                 "resistance_strength": len(

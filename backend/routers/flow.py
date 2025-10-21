@@ -307,25 +307,6 @@ async def flow_insiders(tickers: Optional[str] = Query(None)):
     return {"mode": mode, "items": data, "ts": now_iso()}
 
 
-@router.get("/insiders")
-async def flow_insiders(tickers: Optional[str] = Query(None)):
-    """Insiders flow with fallback"""
-    mode = "LIVE" if UW_LIVE else "DEMO"
-    try:
-        if UW_LIVE:
-            data = insiders_flow(tickers.split(",") if tickers else [])
-            if not data:
-                data = []
-                mode = "DEMO"
-        else:
-            data = []
-    except Exception:
-        data = []
-        mode = "DEMO"
-
-    return {"mode": mode, "items": data, "ts": now_iso()}
-
-
 # ============================================================================
 # NEW ENDPOINTS - 2025-10-13 Extension
 # ============================================================================

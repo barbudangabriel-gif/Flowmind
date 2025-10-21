@@ -82,15 +82,15 @@ async def trade_preview(body: PreviewRequest):
     u = await market.get_underlying(body.underlying)
     legs: List[Leg] = []
 
-    for l in body.legs:
-        q = await market.get_option(l, body.underlying)
+    for leg in body.legs:
+        q = await market.get_option(leg, body.underlying)
         legs.append(
             Leg(
-                side=l.side,
-                type=l.type,
-                expiry=l.expiry,
-                strike=l.strike,
-                qty=l.qty,
+                side=leg.side,
+                type=leg.type,
+                expiry=leg.expiry,
+                strike=leg.strike,
+                qty=leg.qty,
                 quote=q,
             )
         )
@@ -132,7 +132,7 @@ async def trade_preview(body: PreviewRequest):
         "mode": body.mode,
         "strategy": body.strategy,
         "underlying": body.underlying,
-        "legs": [l.dict() for l in body.legs],
+        "legs": [leg.dict() for leg in body.legs],
         "u": {"bid": u.bid, "ask": u.ask, "last": u.last, "tsMs": u.tsMs},
         "frozenTs": int(time.time() * 1000),
     }
@@ -169,15 +169,15 @@ async def trade_place(
     u = await market.get_underlying(body.underlying)
     legs: List[Leg] = []
 
-    for l in body.legs:
-        q = await market.get_option(l, body.underlying)
+    for leg in body.legs:
+        q = await market.get_option(leg, body.underlying)
         legs.append(
             Leg(
-                side=l.side,
-                type=l.type,
-                expiry=l.expiry,
-                strike=l.strike,
-                qty=l.qty,
+                side=leg.side,
+                type=leg.type,
+                expiry=leg.expiry,
+                strike=leg.strike,
+                qty=leg.qty,
                 quote=q,
             )
         )
@@ -214,7 +214,7 @@ async def trade_place(
         "mode": mode.value,
         "strategy": body.strategy,
         "underlying": body.underlying,
-        "legs": [l.dict() for l in body.legs],
+        "legs": [leg.dict() for leg in body.legs],
         "subset": ["data.freshness", "pricing.sanity", "risk.buyingpower"],
     }
     ah = audit_hash(audit_payload)

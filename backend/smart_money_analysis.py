@@ -618,12 +618,12 @@ class SmartMoneyAnalyzer:
         current_price = float(df["Close"].iloc[-1])
 
         resistance_levels = [
-            l
-            for l in levels
-            if l["price"] > current_price and l["type"] == "resistance"
+            level
+            for level in levels
+            if level["price"] > current_price and level["type"] == "resistance"
         ]
         support_levels = [
-            l for l in levels if l["price"] < current_price and l["type"] == "support"
+            level for level in levels if level["price"] < current_price and level["type"] == "support"
         ]
 
         return {
@@ -631,8 +631,8 @@ class SmartMoneyAnalyzer:
             "nearest_resistance": (
                 resistance_levels[0]["price"] if resistance_levels else None
             ),
-            "all_support_levels": [l["price"] for l in support_levels[-5:]],
-            "all_resistance_levels": [l["price"] for l in resistance_levels[:5]],
+            "all_support_levels": [level["price"] for level in support_levels[-5:]],
+            "all_resistance_levels": [level["price"] for level in resistance_levels[:5]],
             "key_levels": levels[-20:],  # Last 20 significant levels
         }
 
