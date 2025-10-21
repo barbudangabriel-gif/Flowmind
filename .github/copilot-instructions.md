@@ -41,12 +41,12 @@ Agent: 1. Check PROJECT_TASKS.md if X is documented
 ---
 
 ### Project Overview
-FlowMind is an options analytics platform (FastAPI backend, React 19 frontend, Redis/MongoDB storage) for building options strategies, monitoring real-time flow, and managing portfolios with FIFO-based P&L tracking.
+FlowMind is an options analytics platform (FastAPI backend, React 19 frontend, Redis/MongoDB storage) for building options strategies, monitoring real-time flow, and managing mindfolios with FIFO-based P&L tracking.
 
 ### Architecture Overview
 - **Backend:** FastAPI (`backend/server.py`), routers in `backend/routers/` and `backend/app/routers/`, services in `backend/services/`, AI agents as `*_agent.py`
 - **Frontend:** React 19 monolith (`frontend/src/App.js`), feature pages in `pages/`, Zustand stores in `stores/`, craco for build config
-- **Storage:** Redis (primary cache with TTL-based keys), fallback to in-memory `AsyncTTLDict`, MongoDB (portfolios), SQLite (alternative)
+- **Storage:** Redis (primary cache with TTL-based keys), fallback to in-memory `AsyncTTLDict`, MongoDB (mindfolios), SQLite (alternative)
 - **External APIs:** TradeStation (OAuth, options chains, spot prices), Unusual Whales (flow/news/congress with rate limiting and demo fallback)
 
 ### Critical Architectural Patterns
@@ -61,9 +61,9 @@ FlowMind is an options analytics platform (FastAPI backend, React 19 frontend, R
 
 await get_kv()  # Returns Redis client OR AsyncTTLDict
 ```
-**Used everywhere:** All caching (`bt_cache_integration.py`, `portfolios.py`, `iv_service/`), never direct Redis imports
+**Used everywhere:** All caching (`bt_cache_integration.py`, `mindfolios.py`, `iv_service/`), never direct Redis imports
 
-#### 2. FIFO Position Tracking (`backend/portfolios.py`)
+#### 2. FIFO Position Tracking (`backend/mindfolios.py`)
 **The "why":** Tax-compliant realized P&L calculation for options/stock positions
 ```python
 # Algorithm: BUY adds to lots queue, SELL consumes from front (First-In-First-Out)
@@ -71,7 +71,7 @@ await get_kv()  # Returns Redis client OR AsyncTTLDict
 # Example: BUY 100@250 + BUY 50@260 → SELL 120@270 consumes 100@250 + 20@260
 # Result: Realized $2,200, Remaining: 30@260
 ```
-**Key functions:** `calculate_positions()`, `get_portfolio_transactions()` - positions computed from transactions, not stored
+**Key functions:** `calculate_positions()`, `get_mindfolio_transactions()` - positions computed from transactions, not stored
 
 #### 3. Dark Theme Enforcement (`DARK_THEME_ONLY_VALIDATION.md`)
 **The "why":** Consistent UX, no light mode support (removed toggle to simplify codebase)
@@ -125,7 +125,7 @@ docker-compose up  # Backend on :8000, Redis on :6379
 ```
 
 ### Naming Conventions (Discoverable via File Patterns)
-- **Services:** `*_service.py` (e.g., `unusual_whales_service.py`, `portfolio_service.py`)
+- **Services:** `*_service.py` (e.g., `unusual_whales_service.py`, `mindfolio_service.py`)
 - **Routers:** `backend/routers/*.py` (feature routers) OR `backend/app/routers/*.py` (OAuth, auth)
 - **AI Agents:** `*_agent.py` (e.g., `investment_scoring_agent.py`, `technical_analysis_agent.py`)
 - **Integration Tests:** Root `*_test.py` (e.g., `backend_test.py`, `builder_backend_test.py`)
@@ -138,7 +138,7 @@ REDIS_URL=redis://localhost:6379/0  # Optional (has fallback)
 FM_FORCE_FALLBACK=1                 # Force in-memory cache (dev/test)
 FM_REDIS_REQUIRED=1                 # Fail fast if Redis unavailable
 TEST_MODE=1                         # Shared in-memory instance for tests
-MONGO_URL=mongodb://...             # Required for portfolio persistence
+MONGO_URL=mongodb://...             # Required for mindfolio persistence
 TS_CLIENT_ID/TS_CLIENT_SECRET/TS_REDIRECT_URI  # TradeStation OAuth
 UW_API_TOKEN or UNUSUAL_WHALES_API_KEY         # Unusual Whales API
 
@@ -207,7 +207,7 @@ app.include_router(geopolitical_router)            # Already has /api/geopolitic
 ### Key Files for Understanding Architecture
 - `backend/server.py` (961 lines) - Main FastAPI app, router mounting, service initialization
 - `backend/redis_fallback.py` (98 lines) - Cache abstraction, fallback logic, singleton pattern
-- `backend/portfolios.py` (1133 lines) - FIFO algorithm, position calculation, transaction tracking
+- `backend/mindfolios.py` (1133 lines) - FIFO algorithm, position calculation, transaction tracking
 - `backend/services/builder_engine.py` - Options strategy engine (54+ strategies, Greeks)
 - `backend/services/quality.py` - Spread quality scoring (liquidity, spread width, risk metrics)
 - `backend/unusual_whales_service_clean.py` - UW API service with ALL 17 verified endpoints
@@ -218,17 +218,17 @@ app.include_router(geopolitical_router)            # Already has /api/geopolitic
 - `UW_API_DISCOVERY_COMPLETE.md` - Discovery task summary (150+ tests, final results)
 
 ---
-**When in doubt:** Check `redis_fallback.py` for cache patterns, `portfolios.py` for FIFO logic, `server.py` for router organization, `unusual_whales_service_clean.py` for UW API patterns, and root `*_test.py` files for integration test examples.
+**When in doubt:** Check `redis_fallback.py` for cache patterns, `mindfolios.py` for FIFO logic, `server.py` for router organization, `unusual_whales_service_clean.py` for UW API patterns, and root `*_test.py` files for integration test examples.
 
 ### MongoDB Collections
 
-**Note**: FlowMind uses **Redis** for primary storage with optional MongoDB for persistence. Schema defined in `backend/portfolios.py`.
+**Note**: FlowMind uses **Redis** for primary storage with optional MongoDB for persistence. Schema defined in `backend/mindfolios.py`.
 
-#### Portfolio Model
+#### Mindfolio Model
 ```python
 {
   "id": "uuid-string",
-  "name": "My Trading Portfolio",
+  "name": "My Trading Mindfolio",
   "cash_balance": 10000.0,
   "status": "ACTIVE",  # ACTIVE, PAUSED, CLOSED
   "modules": [
@@ -249,7 +249,7 @@ app.include_router(geopolitical_router)            # Already has /api/geopolitic
 ```python
 {
   "id": "uuid-string",
-  "portfolio_id": "portfolio-uuid",
+  "mindfolio_id": "mindfolio-uuid",
   "account_id": "optional-account-id",
   "datetime": "2025-10-13T14:30:00Z",
   "symbol": "TSLA",
@@ -280,12 +280,12 @@ app.include_router(geopolitical_router)            # Already has /api/geopolitic
 FlowMind uses Redis with TTL-based caching and fallback to in-memory storage:
 
 ```python
-# Portfolio data
-pf:{portfolio_id}                    # Portfolio object
-pf:list                              # List of all portfolio IDs
-pf:{portfolio_id}:stats              # Portfolio statistics
-pf:{portfolio_id}:transactions       # List of transaction IDs
-pf:{portfolio_id}:positions          # Current positions
+# Mindfolio data
+pf:{mindfolio_id}                    # Mindfolio object
+pf:list                              # List of all mindfolio IDs
+pf:{mindfolio_id}:stats              # Mindfolio statistics
+pf:{mindfolio_id}:transactions       # List of transaction IDs
+pf:{mindfolio_id}:positions          # Current positions
 
 # Transactions
 tx:{transaction_id}                  # Transaction object
@@ -302,7 +302,7 @@ For deployments without Redis, FlowMind supports SQLite (`backend/database.py`):
 
 ```sql
 -- Core tables
-CREATE TABLE portfolios (
+CREATE TABLE mindfolios (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   base_currency TEXT DEFAULT 'USD',
@@ -311,11 +311,11 @@ CREATE TABLE portfolios (
 
 CREATE TABLE accounts (
   id INTEGER PRIMARY KEY,
-  portfolio_id INTEGER NOT NULL,
+  mindfolio_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   broker TEXT,
   currency TEXT DEFAULT 'USD',
-  FOREIGN KEY (portfolio_id) REFERENCES portfolios(id)
+  FOREIGN KEY (mindfolio_id) REFERENCES mindfolios(id)
 );
 
 CREATE TABLE transactions (
@@ -340,7 +340,7 @@ CREATE INDEX idx_tx_datetime ON transactions(datetime);
 
 ### FIFO Position Calculation
 
-**Critical Algorithm** (`backend/portfolios.py`):
+**Critical Algorithm** (`backend/mindfolios.py`):
 ```python
 # Positions calculated from transactions using FIFO (First-In-First-Out)
 # BUY: Add to lots queue
@@ -427,7 +427,7 @@ GET /alerts
 
 # 5. Greeks (Delta, Gamma, Theta, Vega - currently empty but accessible)
 GET /stock/{ticker}/greeks
-# Use: Portfolio Greeks, risk management
+# Use: Mindfolio Greeks, risk management
 
 # 6. Options Volume (volume metrics, call/put ratios)
 GET /stock/{ticker}/options-volume
@@ -556,7 +556,7 @@ raise HTTPException(status_code=400, detail="Descriptive error message")
 
 ### Frontend State Management
 
-- **Zustand stores** (`frontend/src/stores/`): Global state (user, portfolios)
+- **Zustand stores** (`frontend/src/stores/`): Global state (user, mindfolios)
 - **React hooks** for local state
 - **SWR** (`swr` package) for data fetching with caching
 
@@ -838,13 +838,13 @@ Response:
 }
 ```
 
-### Portfolio Endpoints (`/api/portfolios`)
+### Mindfolio Endpoints (`/api/mindfolios`)
 
-**GET /api/portfolios** - List all portfolios
-**POST /api/portfolios** - Create portfolio
-**GET /api/portfolios/{id}** - Get portfolio details
-**PATCH /api/portfolios/{id}** - Update portfolio
-**DELETE /api/portfolios/{id}** - Delete portfolio
+**GET /api/mindfolios** - List all mindfolios
+**POST /api/mindfolios** - Create mindfolio
+**GET /api/mindfolios/{id}** - Get mindfolio details
+**PATCH /api/mindfolios/{id}** - Update mindfolio
+**DELETE /api/mindfolios/{id}** - Delete mindfolio
 
 MongoDB-backed, includes positions and performance tracking.
 

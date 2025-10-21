@@ -50,7 +50,7 @@ class Leg(BaseModel):
     quote: Quote
 
 
-class PortfolioGreeks(BaseModel):
+class MindfolioGreeks(BaseModel):
     delta: float = 0
     gamma: float = 0
     theta: float = 0
@@ -87,7 +87,7 @@ class TradeContext(BaseModel):
     underlying: str
     underlyingQuote: Quote
     legs: List[Leg]
-    portfolio: PortfolioGreeks
+    mindfolio: MindfolioGreeks
     account: AccountState
     market: MarketMetrics
     session: SessionInfo
@@ -98,7 +98,7 @@ class TradeContext(BaseModel):
 
 class GateConfig(BaseModel):
     maxPositionsPerSymbol: int = 5
-    maxPortfolioNotional: float = 1000000
+    maxMindfolioNotional: float = 1000000
     minBuyingPowerRatio: float = 0.2
     maxQuoteAgeMs: int = 30000
     minLiquidity: int = 100
@@ -274,11 +274,11 @@ def gate_iv_regime(ctx: TradeContext, cfg: GateConfig) -> GateResult:
     )
 
 
-def gate_portfolio_risk(ctx: TradeContext, cfg: GateConfig) -> GateResult:
-    delta = abs(ctx.portfolio.delta)
+def gate_mindfolio_risk(ctx: TradeContext, cfg: GateConfig) -> GateResult:
+    delta = abs(ctx.mindfolio.delta)
     passed = delta <= cfg.maxDelta
     return GateResult(
-        gateName="portfolio.risk",
+        gateName="mindfolio.risk",
         passed=passed,
         severity=Severity.WARN,
         reason=f"Delta: {delta:.2f}" if passed else f"High delta: {delta:.2f}",
@@ -314,7 +314,7 @@ STUB_GATES = [
         gateName="em.atr", passed=True, severity=Severity.WARN, reason="EM/ATR OK"
     ),
     lambda ctx, cfg: GateResult(
-        gateName="greeks.portfolio",
+        gateName="greeks.mindfolio",
         passed=True,
         severity=Severity.WARN,
         reason="Greeks OK",
@@ -337,7 +337,7 @@ ALL_GATES = [
     gate_liquidity,
     gate_pricing_sanity,
     gate_iv_regime,
-    gate_portfolio_risk,
+    gate_mindfolio_risk,
     gate_max_positions,
 ] + STUB_GATES
 

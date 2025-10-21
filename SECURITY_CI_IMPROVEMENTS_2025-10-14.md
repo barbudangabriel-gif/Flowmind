@@ -176,7 +176,7 @@ GET /health → 404 or 500
 
 **Note:** Remaining `random` usage is in:
 - `advanced_scoring_engine.py` (ML simulations - legitimate use case)
-- `portfolio_charts_service.py` (chart demo data)
+- `mindfolio_charts_service.py` (chart demo data)
 - `server.py` (demo endpoints)
 - `integrations/uw_websocket_client.py` (reconnect jitter - acceptable)
 

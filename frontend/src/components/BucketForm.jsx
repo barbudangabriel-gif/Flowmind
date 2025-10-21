@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { portfolioAPI } from '../lib/portfolioAPI';
+import { mindfolioAPI } from '../lib/mindfolioAPI';
 
-export default function BucketForm({ portfolioId, onCreated }) {
+export default function BucketForm({ mindfolioId, onCreated }) {
  const [name, setName] = useState('Sell Puts Income');
  const [startValue, setStartValue] = useState(100000);
  const [symbolContains, setSymbolContains] = useState('');
@@ -20,7 +20,7 @@ export default function BucketForm({ portfolioId, onCreated }) {
  setError(null);
 
  try {
- await portfolioAPI.createBucket(portfolioId, {
+ await mindfolioAPI.createBucket(mindfolioId, {
  name: name.trim(),
  start_value: startValue,
  description: `Auto-created bucket for ${side} ${optType} strategy`,

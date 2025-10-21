@@ -75,24 +75,24 @@ async def get_ticker_intelligence(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/portfolio/{mindfolio_id}")
-async def get_portfolio_news_digest(mindfolio_id: str):
+@router.get("/mindfolio/{mindfolio_id}")
+async def get_mindfolio_news_digest(mindfolio_id: str):
     """
-    Get aggregated news intelligence for entire portfolio
+    Get aggregated news intelligence for entire mindfolio
 
     Analyzes all positions and provides:
     - Macro market events
     - Per-ticker news and sentiment
     - Risk alerts for negative news
     - Opportunities for positive momentum
-    - Portfolio-wide sentiment score
+    - Mindfolio-wide sentiment score
     - Executive summary
 
     Args:
-    mindfolio_id: Portfolio ID
+    mindfolio_id: Mindfolio ID
 
     Returns:
-    Complete portfolio news digest with alerts and opportunities
+    Complete mindfolio news digest with alerts and opportunities
     """
     try:
         # TODO: Fetch actual positions from mindfolio service
@@ -105,13 +105,13 @@ async def get_portfolio_news_digest(mindfolio_id: str):
             {"symbol": "MSFT", "quantity": 60, "cost_basis": 380},
         ]
 
-        portfolio_digest = await news_agent.get_portfolio_news_digest(
+        mindfolio_digest = await news_agent.get_mindfolio_news_digest(
             mindfolio_id=mindfolio_id, positions=demo_positions
         )
 
-        return {"status": "success", "data": portfolio_digest}
+        return {"status": "success", "data": mindfolio_digest}
     except Exception as e:
-        logger.error(f"Failed to generate portfolio digest for {mindfolio_id}: {e}")
+        logger.error(f"Failed to generate mindfolio digest for {mindfolio_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -126,21 +126,21 @@ async def get_risk_alerts(
     Get active risk alerts based on news sentiment
 
     Args:
-    mindfolio_id: Portfolio ID
+    mindfolio_id: Mindfolio ID
     severity: Optional severity filter
 
     Returns:
     List of active risk alerts requiring attention
     """
     try:
-        # Get full portfolio digest
+        # Get full mindfolio digest
         demo_positions = [
             {"symbol": "TSLA", "quantity": 100},
             {"symbol": "AAPL", "quantity": 50},
             {"symbol": "NVDA", "quantity": 75},
         ]
 
-        digest = await news_agent.get_portfolio_news_digest(
+        digest = await news_agent.get_mindfolio_news_digest(
             mindfolio_id=mindfolio_id, positions=demo_positions
         )
 
@@ -175,7 +175,7 @@ async def get_trading_opportunities(mindfolio_id: str):
     Get trading opportunities based on positive news momentum
 
     Args:
-    mindfolio_id: Portfolio ID
+    mindfolio_id: Mindfolio ID
 
     Returns:
     List of bullish opportunities with strategy suggestions
@@ -186,7 +186,7 @@ async def get_trading_opportunities(mindfolio_id: str):
             {"symbol": "NVDA", "quantity": 75},
         ]
 
-        digest = await news_agent.get_portfolio_news_digest(
+        digest = await news_agent.get_mindfolio_news_digest(
             mindfolio_id=mindfolio_id, positions=demo_positions
         )
 

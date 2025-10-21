@@ -54,9 +54,9 @@ Teal Accent: #14b8a6
 │ │
 │ ACCOUNT ▼ │
 │ [icon] Account Balance │
-│ [icon] Portfolios ▶ │
-│ └─ [icon] My Portfolio 1 │ ← Children (nested)
-│ └─ [icon] + Create Portfolio │
+│ [icon] Mindfolios ▶ │
+│ └─ [icon] My Mindfolio 1 │ ← Children (nested)
+│ └─ [icon] + Create Mindfolio │
 │ │
 │ OPTIONS ▼ │
 │ [icon] IV Setups [LIVE] │ ← Badge (pulse)
@@ -250,7 +250,7 @@ Then use as:
 1. Dashboard - cards, stats, charts
 2. Builder Page - controls, preview, charts
 3. Flow Page - tables, heatmaps, indicators
-4. Portfolio Page - positions table, P&L chart
+4. Mindfolio Page - positions table, P&L chart
 5. Analytics - data visualizations
 
 ### **Components to Create:**

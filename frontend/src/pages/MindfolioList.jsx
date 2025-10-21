@@ -26,7 +26,7 @@ export default function MindfolioList() {
  setItems([
  {
  id: '1',
- name: 'Growth Portfolio',
+ name: 'Growth Mindfolio',
  cash_balance: 50000,
  status: 'ACTIVE',
  modules: [{ module: 'IV_SERVICE', budget: 10000 }],
@@ -34,7 +34,7 @@ export default function MindfolioList() {
  },
  {
  id: '2',
- name: 'Income Portfolio',
+ name: 'Income Mindfolio',
  cash_balance: 75000,
  status: 'ACTIVE',
  modules: [{ module: 'FLOW_SCANNER', budget: 15000 }],
@@ -42,7 +42,7 @@ export default function MindfolioList() {
  },
  {
  id: '3',
- name: 'Tech Portfolio',
+ name: 'Tech Mindfolio',
  cash_balance: 100000,
  status: 'PAUSED',
  modules: [{ module: 'EARNINGS', budget: 20000 }],
@@ -95,7 +95,7 @@ export default function MindfolioList() {
 
  // Calculate totals and counts
  const totalValue = items.reduce((sum, pf) => sum + (pf.cash_balance || 0), 0);
- const totalPortfolios = items.length;
+ const totalMindfolios = items.length;
  const activeCount = items.filter(p => p.status === 'ACTIVE').length;
  const pausedCount = items.filter(p => p.status === 'PAUSED').length;
 
@@ -106,7 +106,7 @@ export default function MindfolioList() {
  <div className="flex items-center justify-center h-64">
  <div className="text-center">
  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
- <div className="text-gray-400">Loading portfolios...</div>
+ <div className="text-gray-400">Loading mindfolios...</div>
  </div>
  </div>
  </div>
@@ -121,7 +121,7 @@ export default function MindfolioList() {
  // <div className="flex items-start gap-3">
  // <span className="text-lg"></span>
  // <div>
- // <div className="font-semibold text-red-400 mb-2">Error Loading Portfolios</div>
+ // <div className="font-semibold text-red-400 mb-2">Error Loading Mindfolios</div>
  // <div className="text-sm text-gray-400">{err}</div>
  // </div>
  // </div>
@@ -150,7 +150,7 @@ export default function MindfolioList() {
  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
  <div className="text-sm text-gray-400 mb-1">Total Mindfolios</div>
- <div className="text-xl font-bold text-white">{totalPortfolios}</div>
+ <div className="text-xl font-bold text-white">{totalMindfolios}</div>
  </div>
  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
  <div className="text-sm text-gray-400 mb-1">Total Cash</div>
@@ -175,7 +175,7 @@ export default function MindfolioList() {
  <div className="relative">
  <input
  type="text"
- placeholder="Search portfolios..."
+ placeholder="Search mindfolios..."
  value={searchQuery}
  onChange={(e) => setSearchQuery(e.target.value)}
  className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-2 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
@@ -273,7 +273,7 @@ export default function MindfolioList() {
  {/* Results count */}
  <div className="flex items-center justify-between text-sm text-gray-400">
  <span>
- Showing {filteredAndSortedItems.length} of {totalPortfolios} mindfolio{totalPortfolios !== 1 ? 's' : ''}
+ Showing {filteredAndSortedItems.length} of {totalMindfolios} mindfolio{totalMindfolios !== 1 ? 's' : ''}
  </span>
  <span>
  Sorted by: <span className="text-blue-400 font-semibold">

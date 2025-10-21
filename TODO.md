@@ -99,7 +99,7 @@
 
 - [ ] **Congress Trades Enhancements:**
  - [ ] Add politician photo/avatar
- - [ ] Add portfolio value chart per politician
+ - [ ] Add mindfolio value chart per politician
  - [ ] Add "Follow" button pentru alerts
  - [ ] Add export to CSV
 
@@ -155,10 +155,10 @@
  - [ ] Custom alerts per user
  - [ ] Alert history log
 
-- [ ] **Portfolio Integration:**
+- [ ] **Mindfolio Integration:**
  - [ ] Track holdings vs Congress trades
  - [ ] Track holdings vs Institutional changes
- - [ ] Show impact pe portfolio
+ - [ ] Show impact pe mindfolio
  - [ ] Correlation analysis
 
 - [ ] **Advanced Analytics:**

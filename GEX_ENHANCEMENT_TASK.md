@@ -286,13 +286,13 @@ if orb_breakout_detected() and price_near_max_call_gex() and iv_rank > 30:
 ```
 
 ### 4.4 Position Notes & Snapshots
-**File:** `backend/portfolios.py` (UPDATE)
+**File:** `backend/mindfolios.py` (UPDATE)
 
 ```python
 # Transaction Model Enhancement:
 {
   "id": "uuid",
-  "portfolio_id": "uuid",
+  "mindfolio_id": "uuid",
   "symbol": "SPY",
   "notes": "Short put spread at max GEX strike. R/R: 55%",
   "attachments": [
@@ -471,7 +471,7 @@ Filters Applied:
 ### Already Available:
 ✅ UW API integration (17 endpoints)
 ✅ Redis caching system with fallback
-✅ Portfolio FIFO tracking
+✅ Mindfolio FIFO tracking
 ✅ Dark theme UI components
 ✅ FastAPI backend with async support
 ✅ React 19 frontend with Zustand stores
@@ -531,7 +531,7 @@ Filters Applied:
 - **Option Alpha GEX Announcement:** [Link in task description]
 - **UW API Documentation:** `UW_API_FINAL_17_ENDPOINTS.md`
 - **FlowMind Architecture:** `.github/copilot-instructions.md`
-- **FIFO Tracking:** `backend/portfolios.py`
+- **FIFO Tracking:** `backend/mindfolios.py`
 - **Backtest Cache:** `backend/bt_cache_integration.py`
 
 ---

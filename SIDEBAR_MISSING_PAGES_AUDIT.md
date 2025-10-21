@@ -45,7 +45,7 @@
 ### 🏠 Homepage Broken Links (2)
 | # | Route | Link From | Status | Priority |
 |---|-------|-----------|--------|----------|
-| 1 | `/portfolios` | HomePage Quick Action #3 | WRONG - should be `/mindfolio` | HIGH |
+| 1 | `/mindfolios` | HomePage Quick Action #3 | WRONG - should be `/mindfolio` | HIGH |
 | 2 | `/optimize` | HomePage Quick Action #4 | MISSING PAGE | HIGH |
 
 ### 📊 Stocks Data (3)
@@ -104,7 +104,7 @@
 
 ### 🔴 HIGH Priority (4 pages)
 **Must create before deploy - user-facing features**
-1. Fix `/portfolios` → `/mindfolio` (HomePage line 30)
+1. Fix `/mindfolios` → `/mindfolio` (HomePage line 30)
 2. `/optimize` - AI strategy optimizer (HomePage + Sidebar)
 3. `/screener/iv` - IV scanner (core algo feature)
 4. `/screener/sell-puts` - Put selling engine (core algo feature)
@@ -121,7 +121,7 @@
 12. `/screener/csp` - Cash-secured puts
 13. `/md/chain` - TradeStation option chain viewer
 14. `/analytics/backtests` - Backtest history
-15. `/mindfolio/analytics` - Portfolio analytics
+15. `/mindfolio/analytics` - Mindfolio analytics
 16. `/providers/ts` - TradeStation settings
 
 ### 🟢 LOW Priority (13 pages)
@@ -143,7 +143,7 @@ Located in `/frontend/src/archive/` (24 files):
 ## 📋 Recommended Action Plan
 
 ### Phase 1: Quick Fixes (30 minutes)
-1. ✅ Fix `/portfolios` → `/mindfolio` in HomePage.jsx line 30
+1. ✅ Fix `/mindfolios` → `/mindfolio` in HomePage.jsx line 30
 2. ✅ Update PROJECT_TASKS.md with individual tasks
 
 ### Phase 2: HIGH Priority Pages (2-3 days)
@@ -162,7 +162,7 @@ Located in `/frontend/src/archive/` (24 files):
 ## 🛠️ Individual Task Files to Create
 
 Each missing page should have a task in PROJECT_TASKS.md:
-- Task #3: Fix HomePage /portfolios link
+- Task #3: Fix HomePage /mindfolios link
 - Task #4: Create OptimizePage (/optimize)
 - Task #5: Create IVScannerPage (/screener/iv)
 - Task #6: Create SellPutsPage (/screener/sell-puts)

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { pfClient } from '../services/portfolioClient';
+import { pfClient } from '../services/mindfolioClient';
 
-export default function CSVImport({ portfolioId, onImportComplete }) {
+export default function CSVImport({ mindfolioId, onImportComplete }) {
  const [csvData, setCsvData] = useState('');
  const [importing, setImporting] = useState(false);
  const [result, setResult] = useState(null);
@@ -23,7 +23,7 @@ export default function CSVImport({ portfolioId, onImportComplete }) {
  setResult(null);
 
  try {
- const response = await pfClient.importCSV(portfolioId, csvData.trim());
+ const response = await pfClient.importCSV(mindfolioId, csvData.trim());
  setResult(response);
  setCsvData('');
  

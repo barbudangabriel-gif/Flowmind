@@ -235,7 +235,7 @@ jobs:
           echo "### Services Tested" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Redis (in-memory cache)" >> $GITHUB_STEP_SUMMARY
-          echo "- MongoDB (portfolio storage)" >> $GITHUB_STEP_SUMMARY
+          echo "- MongoDB (mindfolio storage)" >> $GITHUB_STEP_SUMMARY
           echo "- Backend API (FastAPI)" >> $GITHUB_STEP_SUMMARY
           echo "- Health endpoints" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

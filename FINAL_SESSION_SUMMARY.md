@@ -13,7 +13,7 @@
   - Status: ✅ FIXED
 
 - **Backend starting_balance Field**
-  - Modified `backend/mindfolio.py` lines 86 (Portfolio model), 428 (create function)
+  - Modified `backend/mindfolio.py` lines 86 (Mindfolio model), 428 (create function)
   - Field: `starting_balance: float = 10000.0`
   - Status: ✅ IMPLEMENTED
 
@@ -32,7 +32,7 @@
 - **Size:** 600+ lines
 - **Content:**
   - **Hierarchy Structure:** Broker → Environment (SIM/LIVE) → Account Type (Equity/Futures/Crypto)
-  - **Backend Data Model:** Portfolio + PortfolioCreate cu broker fields + validators
+  - **Backend Data Model:** Mindfolio + MindfolioCreate cu broker fields + validators
   - **Frontend UI Design:** Tabs layout complet cu code samples
   - **Create Form:** Broker selection cu toate field-urile
   - **Stats Cards:** Per-broker/environment breakdown (2x2 grid)
@@ -81,24 +81,24 @@ Created **10 tasks** pentru implementarea completă:
 
 **Changes:**
 ```python
-# Portfolio model (lines 82-89)
+# Mindfolio model (lines 82-89)
 + broker: str = "TradeStation"
 + environment: str = "SIM"
 + account_type: str = "Equity"
 + account_id: Optional[str] = None
 
-# PortfolioCreate model (lines 95-97)
+# MindfolioCreate model (lines 95-97)
 + @validator('broker') # TradeStation | TastyTrade
 + @validator('environment') # SIM | LIVE
 + @validator('account_type') # Equity | Futures | Crypto
 
-# create_portfolio() (line 420+)
+# create_mindfolio() (line 420+)
 + broker=body.broker
 + environment=body.environment
 + account_type=body.account_type
 + account_id=body.account_id
 
-# list_portfolios() (line 415+)
+# list_mindfolios() (line 415+)
 + broker: Optional[str] = None
 + environment: Optional[str] = None
 + account_type: Optional[str] = None
@@ -189,10 +189,10 @@ FINAL_SESSION_SUMMARY.md (new file)
 feat: Add broker account architecture to Mindfolio Manager
 
 Backend changes:
-- Add broker, environment, account_type, account_id fields to Portfolio model
-- Add validators for broker/environment/account_type in PortfolioCreate
-- Update create_portfolio() to save new fields
-- Add filtering to list_portfolios() endpoint (by broker/env/type)
+- Add broker, environment, account_type, account_id fields to Mindfolio model
+- Add validators for broker/environment/account_type in MindfolioCreate
+- Update create_mindfolio() to save new fields
+- Add filtering to list_mindfolios() endpoint (by broker/env/type)
 
 Frontend fixes:
 - Remove emoji from MindfolioList.jsx (Zero Emoji Policy)

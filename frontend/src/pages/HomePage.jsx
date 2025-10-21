@@ -27,9 +27,9 @@ export default function HomePage() {
       title: 'Mindfolio Manager',
       description: 'Track positions & performance',
       icon: Wallet,
-      link: '/portfolios',
+      link: '/mindfolios',
       color: 'purple',
-      badge: 'Multi-Portfolio'
+      badge: 'Multi-Mindfolio'
     },
     {
       title: 'Optimize',
@@ -180,7 +180,7 @@ export default function HomePage() {
               <div>
                 <h3 className="text-white font-normal mb-1">Mindfolio Management</h3>
                 <p className="text-slate-400 text-sm">
-                  Multi-portfolio support with budget allocation, FIFO position tracking, and performance analytics.
+                  Multi-mindfolio support with budget allocation, FIFO position tracking, and performance analytics.
                 </p>
               </div>
             </div>

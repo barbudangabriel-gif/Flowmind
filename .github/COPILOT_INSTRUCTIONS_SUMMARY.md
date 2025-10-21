@@ -50,7 +50,7 @@ The `.github/copilot-instructions.md` file is **already comprehensive and well-o
 9 specific issues to avoid with solutions
 
 ### 7. Data Models (Lines 193-313)
-- MongoDB collections (Portfolio, Transaction, Position)
+- MongoDB collections (Mindfolio, Transaction, Position)
 - Redis key patterns
 - SQLite schema (alternative storage)
 - FIFO position calculation algorithm with example
@@ -66,7 +66,7 @@ Complete documentation for:
 - Options endpoints (`/api/options`)
 - Flow endpoints (`/api/flow`)
 - Optimize endpoints (`/api/optimize`)
-- Portfolio endpoints (`/api/portfolios`)
+- Mindfolio endpoints (`/api/mindfolios`)
 - Health endpoints
 
 ### 10. Pro Tips (Lines 815-825)

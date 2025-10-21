@@ -400,7 +400,7 @@ const InvestmentScoring = React.memo(() => {
  { id: 'ai-agent', label: '🤖 AI Agent', icon: Zap },
  { id: 'top-picks', label: 'Top Picks', icon: Award },
  { id: 'sectors', label: 'Sector Leaders', icon: PieChart },
- { id: 'portfolio-risk', label: 'Portfolio Risk Analysis', icon: Shield }
+ { id: 'mindfolio-risk', label: 'Mindfolio Risk Analysis', icon: Shield }
  ].map((tab) => {
  const Icon = tab.icon;
  return (
@@ -1203,26 +1203,26 @@ const InvestmentScoring = React.memo(() => {
  </div>
  )}
 
- {/* Portfolio Risk Analysis Tab - Portfolio Construction Guidelines */}
- {activeTab === 'portfolio-risk' && (
+ {/* Mindfolio Risk Analysis Tab - Mindfolio Construction Guidelines */}
+ {activeTab === 'mindfolio-risk' && (
  <div className="space-y-6">
  {/* Header Section */}
  <div className="bg-white p-6 rounded-lg shadow-md">
  <h3 className="text-xl font-medium mb-4 flex items-center">
  <Shield className="mr-3" size={24} />
- Portfolio Risk Analysis & Construction
+ Mindfolio Risk Analysis & Construction
  </h3>
  <p className="text-gray-600 text-xl mb-4">
- Strategic guidelines for building balanced portfolios based on risk tolerance, investment horizon, and diversification principles.
+ Strategic guidelines for building balanced mindfolios based on risk tolerance, investment horizon, and diversification principles.
  </p>
  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
  <p className="text-blue-800 text-xl">
- <strong>Your individual portfolio risk</strong> will be calculated based on your actual holdings, allocation percentages, and the risk categories selected from our analysis.
+ <strong>Your individual mindfolio risk</strong> will be calculated based on your actual holdings, allocation percentages, and the risk categories selected from our analysis.
  </p>
  </div>
  </div>
 
- {/* Portfolio Allocation Strategies */}
+ {/* Mindfolio Allocation Strategies */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
  
  {/* Conservative Strategy */}
@@ -1409,13 +1409,13 @@ const InvestmentScoring = React.memo(() => {
  </div>
  </div>
 
- {/* Portfolio Tools */}
+ {/* Mindfolio Tools */}
  <div className="bg-gray-50 p-6 rounded-lg">
- <h4 className="text-3xl font-medium mb-4 text-gray-800">Portfolio Construction Tools</h4>
+ <h4 className="text-3xl font-medium mb-4 text-gray-800">Mindfolio Construction Tools</h4>
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
  <div className="bg-white p-4 rounded-lg shadow-sm">
  <h5 className="font-medium text-blue-600 mb-2"> Risk Calculator</h5>
- <p className="text-xl text-gray-600">Calculate your portfolio's overall risk score based on individual holdings</p>
+ <p className="text-xl text-gray-600">Calculate your mindfolio's overall risk score based on individual holdings</p>
  </div>
  <div className="bg-white p-4 rounded-lg shadow-sm">
  <h5 className="font-medium text-green-600 mb-2"> Allocation Optimizer</h5>
@@ -1423,7 +1423,7 @@ const InvestmentScoring = React.memo(() => {
  </div>
  <div className="bg-white p-4 rounded-lg shadow-sm">
  <h5 className="font-medium text-purple-600 mb-2">🔄 Rebalancing Assistant</h5>
- <p className="text-xl text-gray-600">Get recommendations for portfolio rebalancing</p>
+ <p className="text-xl text-gray-600">Get recommendations for mindfolio rebalancing</p>
  </div>
  </div>
  </div>
@@ -1433,10 +1433,10 @@ const InvestmentScoring = React.memo(() => {
  <div className="bg-white p-6 rounded-lg shadow-md">
  <h4 className="text-3xl font-medium mb-4 flex items-center">
  <Award className="mr-3 text-orange-600" size={20} />
- Stock Categories for Portfolio Construction
+ Stock Categories for Mindfolio Construction
  </h4>
  <p className="text-gray-600 text-xl mb-4">
- Use these categorized stocks to build your portfolio according to the strategies above:
+ Use these categorized stocks to build your mindfolio according to the strategies above:
  </p>
  
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1448,7 +1448,7 @@ const InvestmentScoring = React.memo(() => {
  {riskLevel} RISK STOCKS
  </h4>
  <p className="text-lg mt-1">
- {riskLevel === 'LOW' && 'For portfolio stability and income'}
+ {riskLevel === 'LOW' && 'For mindfolio stability and income'}
  {riskLevel === 'MODERATE' && 'For balanced growth and stability'}
  {riskLevel === 'HIGH' && 'For maximum growth potential'}
  </p>
@@ -1467,10 +1467,10 @@ const InvestmentScoring = React.memo(() => {
  <div className="bg-white p-6 rounded-lg shadow-md">
  <h4 className="text-3xl font-medium mb-4 flex items-center">
  <Award className="mr-3 text-orange-600" size={20} />
- Stock Categories for Portfolio Construction
+ Stock Categories for Mindfolio Construction
  </h4>
  <p className="text-gray-600 text-xl mb-4">
- Choose from these risk-categorized stocks to build your optimal portfolio:
+ Choose from these risk-categorized stocks to build your optimal mindfolio:
  </p>
  
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1481,7 +1481,7 @@ const InvestmentScoring = React.memo(() => {
  <Shield className="mr-2" size={16} />
  LOW RISK STOCKS
  </h4>
- <p className="text-lg mt-1">For portfolio stability and income generation</p>
+ <p className="text-lg mt-1">For mindfolio stability and income generation</p>
  </div>
  
  <div className="space-y-3">

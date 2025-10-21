@@ -252,7 +252,7 @@ const [viewMode, setViewMode] = useState(localStorage.getItem('mindfolio_view') 
               {new Date(p.created_at).toLocaleDateString()}
             </td>
             <td className="p-4">
-              <ActionMenu portfolio={p} />
+              <ActionMenu mindfolio={p} />
             </td>
           </tr>
         ))}
@@ -497,7 +497,7 @@ import { FixedSizeGrid as Grid } from 'react-window';
       const p = filteredAndSortedItems[idx];
       return (
         <div style={style}>
-          <MindfolioCard portfolio={p} />
+          <MindfolioCard mindfolio={p} />
         </div>
       );
     }}

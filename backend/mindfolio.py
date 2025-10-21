@@ -25,7 +25,7 @@ class ModuleAllocation(BaseModel):
 
 class Transaction(BaseModel):
     id: str
-    portfolio_id: str
+    mindfolio_id: str
     account_id: Optional[str] = None
     datetime: str  # ISO format
     symbol: str
@@ -45,7 +45,7 @@ class Transaction(BaseModel):
 
 
 class TransactionCreate(BaseModel):
-    portfolio_id: str
+    mindfolio_id: str
     account_id: Optional[str] = None
     datetime: str
     symbol: str
@@ -80,7 +80,7 @@ class ImportCSV(BaseModel):
     csv_data: str
 
 
-class Portfolio(BaseModel):
+class Mindfolio(BaseModel):
     id: str
     name: str
     
@@ -103,13 +103,13 @@ class Portfolio(BaseModel):
     updated_at: str
 
 
-class PortfolioCreate(BaseModel):
+class MindfolioCreate(BaseModel):
     name: str
     starting_balance: float = 10000.0
     modules: List[ModuleAllocation] = []
 
 
-class PortfolioPatch(BaseModel):
+class MindfolioPatch(BaseModel):
     name: Optional[str] = None
     status: Optional[str] = None
 
@@ -124,11 +124,11 @@ class AllocOp(BaseModel):
 
 
 # ——— Redis Keys ———
-def key_portfolio(pid: str) -> str:
+def key_mindfolio(pid: str) -> str:
     return f"mf:{pid}"
 
 
-def key_portfolio_list() -> str:
+def key_mindfolio_list() -> str:
     return "mf:list"
 
 
@@ -140,11 +140,11 @@ def key_transaction(tid: str) -> str:
     return f"tx:{tid}"
 
 
-def key_portfolio_transactions(pid: str) -> str:
+def key_mindfolio_transactions(pid: str) -> str:
     return f"mf:{pid}:transactions"
 
 
-def key_portfolio_positions(pid: str) -> str:
+def key_mindfolio_positions(pid: str) -> str:
     return f"mf:{pid}:positions"
 
 
@@ -153,10 +153,10 @@ def round2(n: float) -> float:
     return round(n * 100) / 100
 
 
-async def get_portfolio_transactions(portfolio_id: str) -> List[Transaction]:
-    """Get all transactions for a portfolio, sorted by datetime"""
+async def get_mindfolio_transactions(mindfolio_id: str) -> List[Transaction]:
+    """Get all transactions for a mindfolio, sorted by datetime"""
     cli = await get_kv()
-    tx_list_raw = await cli.get(key_portfolio_transactions(portfolio_id)) or "[]"
+    tx_list_raw = await cli.get(key_mindfolio_transactions(mindfolio_id)) or "[]"
     tx_ids = json.loads(tx_list_raw)
 
     transactions = []
@@ -171,9 +171,9 @@ async def get_portfolio_transactions(portfolio_id: str) -> List[Transaction]:
     return transactions
 
 
-async def calculate_positions_fifo(portfolio_id: str) -> List[Position]:
+async def calculate_positions_fifo(mindfolio_id: str) -> List[Position]:
     """Calculate current positions using FIFO method"""
-    transactions = await get_portfolio_transactions(portfolio_id)
+    transactions = await get_mindfolio_transactions(mindfolio_id)
 
     # FIFO lots tracking: {symbol: [{"qty": float, "price": float}, ...]}
     lots: "dict[str, list[dict[str, float]]]" = {}
@@ -223,9 +223,9 @@ async def calculate_positions_fifo(portfolio_id: str) -> List[Position]:
     return sorted(positions, key=lambda x: x.symbol)
 
 
-async def calculate_realized_pnl(portfolio_id: str) -> List[RealizedPnL]:
+async def calculate_realized_pnl(mindfolio_id: str) -> List[RealizedPnL]:
     """Calculate realized P&L for each symbol using FIFO"""
-    transactions = await get_portfolio_transactions(portfolio_id)
+    transactions = await get_mindfolio_transactions(mindfolio_id)
 
     # Track FIFO lots and realized P&L
     fifo_lots: "dict[str, list[dict[str, float]]]" = {}
@@ -281,46 +281,46 @@ async def calculate_realized_pnl(portfolio_id: str) -> List[RealizedPnL]:
 
 
 # ——— CRUD Operations ———
-async def pf_get(pid: str) -> Portfolio:
-    """Get portfolio by ID"""
+async def pf_get(pid: str) -> Mindfolio:
+    """Get mindfolio by ID"""
     cli = await get_kv()
-    raw = await cli.get(key_portfolio(pid))
+    raw = await cli.get(key_mindfolio(pid))
     if not raw:
-        raise HTTPException(404, f"Portfolio {pid} not found")
+        raise HTTPException(404, f"Mindfolio {pid} not found")
     data = json.loads(raw)
-    return Portfolio(**data)
+    return Mindfolio(**data)
 
 
-async def pf_put(p: Portfolio) -> None:
-    """Save portfolio"""
+async def pf_put(p: Mindfolio) -> None:
+    """Save mindfolio"""
     cli = await get_kv()
     p.updated_at = datetime.utcnow().isoformat()
-    await cli.set(key_portfolio(p.id), json.dumps(p.dict()))
+    await cli.set(key_mindfolio(p.id), json.dumps(p.dict()))
 
     # Update list index
-    current_list = await cli.get(key_portfolio_list()) or "[]"
+    current_list = await cli.get(key_mindfolio_list()) or "[]"
     pf_list = json.loads(current_list)
     if p.id not in pf_list:
         pf_list.append(p.id)
-        await cli.set(key_portfolio_list(), json.dumps(pf_list))
+        await cli.set(key_mindfolio_list(), json.dumps(pf_list))
 
 
-async def pf_list() -> List[Portfolio]:
-    """List all portfolios"""
+async def pf_list() -> List[Mindfolio]:
+    """List all mindfolios"""
     cli = await get_kv()
-    raw_list = await cli.get(key_portfolio_list()) or "[]"
+    raw_list = await cli.get(key_mindfolio_list()) or "[]"
     pf_ids = json.loads(raw_list)
 
-    portfolios = []
+    mindfolios = []
     for pid in pf_ids:
         try:
             p = await pf_get(pid)
-            portfolios.append(p)
+            mindfolios.append(p)
         except HTTPException:
-            # Skip deleted/missing portfolios
+            # Skip deleted/missing mindfolios
             continue
 
-    return portfolios
+    return mindfolios
 
 
 # ——— API Endpoints ———
@@ -422,16 +422,16 @@ async def get_tradestation_positions_grid():
         raise HTTPException(500, f"Failed to get TradeStation positions grid: {str(e)}")
 
 
-@router.get("", response_model=List[Portfolio])
-async def list_portfolios():
-    """List all portfolios"""
+@router.get("", response_model=List[Mindfolio])
+async def list_mindfolios():
+    """List all mindfolios"""
     return await pf_list()
 
 
-@router.post("", response_model=Portfolio)
-async def create_portfolio(body: PortfolioCreate):
-    """Create new portfolio with module budget validation"""
-    portfolio = Portfolio(
+@router.post("", response_model=Mindfolio)
+async def create_mindfolio(body: MindfolioCreate):
+    """Create new mindfolio with module budget validation"""
+    mindfolio = Mindfolio(
         id=f"mf_{str(uuid.uuid4()).replace('-', '')[:12]}",  # Changed prefix to 'mf' for mindfolio
         name=body.name,
         cash_balance=body.starting_balance,
@@ -442,26 +442,26 @@ async def create_portfolio(body: PortfolioCreate):
     )
 
     # Validate module budgets
-    is_valid, error_msg = validate_module_budget_allocation(portfolio)
+    is_valid, error_msg = validate_module_budget_allocation(mindfolio)
     if not is_valid:
         raise HTTPException(400, f"Invalid module budget allocation: {error_msg}")
 
-    await pf_put(portfolio)
+    await pf_put(mindfolio)
     logger.info(
-        f"Created mindfolio {portfolio.id} with {len(portfolio.modules)} modules, total budget: ${sum(m.budget for m in portfolio.modules):,.2f}"
+        f"Created mindfolio {mindfolio.id} with {len(mindfolio.modules)} modules, total budget: ${sum(m.budget for m in mindfolio.modules):,.2f}"
     )
-    return portfolio
+    return mindfolio
 
 
-@router.get("/{pid}", response_model=Portfolio)
-async def get_portfolio(pid: str):
-    """Get portfolio by ID"""
+@router.get("/{pid}", response_model=Mindfolio)
+async def get_mindfolio(pid: str):
+    """Get mindfolio by ID"""
     return await pf_get(pid)
 
 
-@router.patch("/{pid}", response_model=Portfolio)
-async def patch_portfolio(pid: str, body: PortfolioPatch):
-    """Update portfolio"""
+@router.patch("/{pid}", response_model=Mindfolio)
+async def patch_mindfolio(pid: str, body: MindfolioPatch):
+    """Update mindfolio"""
     p = await pf_get(pid)
     if body.name is not None:
         p.name = body.name
@@ -471,16 +471,16 @@ async def patch_portfolio(pid: str, body: PortfolioPatch):
     return p
 
 
-@router.post("/{pid}/funds", response_model=Portfolio)
+@router.post("/{pid}/funds", response_model=Mindfolio)
 async def funds(pid: str, body: FundsOp):
-    """Add/subtract funds from portfolio"""
+    """Add/subtract funds from mindfolio"""
     p = await pf_get(pid)
     p.cash_balance = round(p.cash_balance + float(body.delta), 2)
     await pf_put(p)
     return p
 
 
-@router.post("/{pid}/allocate", response_model=Portfolio)
+@router.post("/{pid}/allocate", response_model=Mindfolio)
 async def allocate(pid: str, body: AllocOp):
     """Allocate budget to module"""
     p = await pf_get(pid)
@@ -494,7 +494,7 @@ async def allocate(pid: str, body: AllocOp):
 
 @router.get("/{pid}/stats")
 async def stats(pid: str):
-    """Get portfolio statistics with real P&L data"""
+    """Get mindfolio statistics with real P&L data"""
     try:
         # Calculate real statistics from transactions
         positions = await calculate_positions_fifo(pid)
@@ -504,12 +504,12 @@ async def stats(pid: str):
         total_realized = sum(pnl.realized for pnl in realized_pnl_data)
         total_trades = sum(pnl.trades for pnl in realized_pnl_data)
 
-        # Portfolio NAV
-        portfolio = await pf_get(pid)
+        # Mindfolio NAV
+        mindfolio = await pf_get(pid)
 
         return {
-            "portfolio_id": pid,
-            "nav": portfolio.cash_balance,
+            "mindfolio_id": pid,
+            "nav": mindfolio.cash_balance,
             "pnl_realized": round2(total_realized),
             "pnl_realized": round2(total_realized),
             "pnl_unrealized": 0,  # Will be calculated with live market data integration
@@ -522,10 +522,10 @@ async def stats(pid: str):
         }
     except Exception as e:
         # Fallback to basic stats
-        portfolio = await pf_get(pid)
+        mindfolio = await pf_get(pid)
         return {
-            "portfolio_id": pid,
-            "nav": portfolio.cash_balance,
+            "mindfolio_id": pid,
+            "nav": mindfolio.cash_balance,
             "pnl_realized": 0,
             "pnl_unrealized": 0,
             "error": str(e),
@@ -535,8 +535,8 @@ async def stats(pid: str):
 # ——— Transaction Endpoints ———
 @router.get("/{pid}/transactions", response_model=List[Transaction])
 async def get_transactions(pid: str, symbol: Optional[str] = None):
-    """Get all transactions for portfolio, optionally filtered by symbol"""
-    transactions = await get_portfolio_transactions(pid)
+    """Get all transactions for mindfolio, optionally filtered by symbol"""
+    transactions = await get_mindfolio_transactions(pid)
 
     if symbol:
         symbol = symbol.upper()
@@ -548,12 +548,12 @@ async def get_transactions(pid: str, symbol: Optional[str] = None):
 @router.post("/{pid}/transactions", response_model=Transaction)
 async def create_transaction(pid: str, body: TransactionCreate):
     """Create new transaction"""
-    # Verify portfolio exists
+    # Verify mindfolio exists
     await pf_get(pid)
 
     transaction = Transaction(
         id=f"tx_{str(uuid.uuid4()).replace('-', '')[:8]}",
-        portfolio_id=pid,
+        mindfolio_id=pid,
         account_id=body.account_id,
         datetime=body.datetime,
         symbol=body.symbol.upper(),
@@ -584,7 +584,7 @@ async def get_realized_pnl(pid: str):
 @router.post("/{pid}/import-csv")
 async def import_transactions_csv(pid: str, body: ImportCSV):
     """Import transactions from CSV data"""
-    # Verify portfolio exists
+    # Verify mindfolio exists
     await pf_get(pid)
 
     # Parse and validate CSV
@@ -598,7 +598,7 @@ async def import_transactions_csv(pid: str, body: ImportCSV):
 
     return {
         "imported": imported_count,
-        "portfolio_id": pid,
+        "mindfolio_id": pid,
         "message": f"Successfully imported {imported_count} transactions",
     }
 
@@ -609,12 +609,12 @@ async def tx_create(tx: Transaction) -> Transaction:
     cli = await get_kv()
     await cli.set(key_transaction(tx.id), json.dumps(tx.dict()))
 
-    # Update portfolio transaction list
-    current_list = await cli.get(key_portfolio_transactions(tx.portfolio_id)) or "[]"
+    # Update mindfolio transaction list
+    current_list = await cli.get(key_mindfolio_transactions(tx.mindfolio_id)) or "[]"
     tx_list = json.loads(current_list)
     if tx.id not in tx_list:
         tx_list.append(tx.id)
-        await cli.set(key_portfolio_transactions(tx.portfolio_id), json.dumps(tx_list))
+        await cli.set(key_mindfolio_transactions(tx.mindfolio_id), json.dumps(tx_list))
 
     return tx
 
@@ -629,7 +629,7 @@ async def tx_get(tid: str) -> Transaction:
     return Transaction(**data)
 
 
-async def parse_csv_transactions(csv_data: str, portfolio_id: str) -> List[Transaction]:
+async def parse_csv_transactions(csv_data: str, mindfolio_id: str) -> List[Transaction]:
     """Parse CSV data into transactions"""
     lines = csv_data.strip().split("\n")
     if len(lines) < 2:
@@ -659,7 +659,7 @@ async def parse_csv_transactions(csv_data: str, portfolio_id: str) -> List[Trans
             # Create transaction
             tx = Transaction(
                 id=f"tx_{str(uuid.uuid4()).replace('-', '')[:8]}",
-                portfolio_id=portfolio_id,
+                mindfolio_id=mindfolio_id,
                 account_id=row_data.get("account_id", "").strip() or None,
                 datetime=row_data["datetime"].strip(),
                 symbol=row_data["symbol"].strip().upper(),
@@ -747,15 +747,15 @@ async def unsubscribe_from_quotes(symbols: List[str]):
 
 # ——— Buckets System Endpoints ———
 @router.get("/{pid}/buckets")
-async def get_portfolio_buckets(pid: str):
-    """Get all buckets for a portfolio"""
+async def get_mindfolio_buckets(pid: str):
+    """Get all buckets for a mindfolio"""
     try:
-        # First verify portfolio exists
+        # First verify mindfolio exists
         await pf_get(pid)
 
         # For now, return mock buckets data
         # TODO[OPS-002]: Implement actual database integration when available
-        portfolio_buckets = [
+        mindfolio_buckets = [
             {
                 "id": "bucket_001",
                 "name": "Growth Stocks",
@@ -780,22 +780,22 @@ async def get_portfolio_buckets(pid: str):
 
         return {
             "status": "success",
-            "portfolio_id": pid,
-            "buckets": portfolio_buckets,
-            "total_buckets": len(portfolio_buckets),
+            "mindfolio_id": pid,
+            "buckets": mindfolio_buckets,
+            "total_buckets": len(mindfolio_buckets),
         }
 
     except Exception as e:
-        raise HTTPException(500, f"Failed to get portfolio buckets: {str(e)}")
+        raise HTTPException(500, f"Failed to get mindfolio buckets: {str(e)}")
 
 
 @router.post("/{pid}/buckets")
-async def create_portfolio_bucket(
+async def create_mindfolio_bucket(
     pid: str, name: str, start_value: float = 0, notes: Optional[str] = None
 ):
-    """Create a new bucket for portfolio"""
+    """Create a new bucket for mindfolio"""
     try:
-        # Verify portfolio exists
+        # Verify mindfolio exists
         await pf_get(pid)
 
         # Create mock bucket (TODO[OPS-003]: Implement actual database integration)
@@ -810,7 +810,7 @@ async def create_portfolio_bucket(
             "position_count": 0,
             "created_at": datetime.utcnow().isoformat(),
             "notes": notes,
-            "portfolio_id": pid,
+            "mindfolio_id": pid,
         }
 
         return {
@@ -830,11 +830,11 @@ async def create_portfolio_bucket(
 
 # ——— Analytics & Equity Charts Endpoint ———
 @router.get("/{pid}/analytics/equity")
-async def get_portfolio_equity_chart(pid: str, timeframe: str = "1M"):
-    """Get equity curve data for portfolio analytics"""
+async def get_mindfolio_equity_chart(pid: str, timeframe: str = "1M"):
+    """Get equity curve data for mindfolio analytics"""
     try:
-        # Get portfolio transactions
-        transactions = await get_portfolio_transactions(pid)
+        # Get mindfolio transactions
+        transactions = await get_mindfolio_transactions(pid)
         realized_pnl = await calculate_realized_pnl(pid)
         positions = await calculate_positions_fifo(pid)
 
@@ -886,18 +886,18 @@ async def get_portfolio_equity_chart(pid: str, timeframe: str = "1M"):
             "generated_at": datetime.utcnow().isoformat(),
         }
 
-        return {"status": "success", "portfolio_id": pid, "analytics": analytics}
+        return {"status": "success", "mindfolio_id": pid, "analytics": analytics}
 
     except Exception as e:
         raise HTTPException(500, f"Failed to generate equity analytics: {str(e)}")
 
 
 @router.get("/{pid}/analytics/equity.csv")
-async def export_portfolio_equity_csv(pid: str, timeframe: str = "1M"):
+async def export_mindfolio_equity_csv(pid: str, timeframe: str = "1M"):
     """Export equity curve data as CSV file"""
     try:
         # Get equity data using existing endpoint
-        equity_response = await get_portfolio_equity_chart(pid, timeframe)
+        equity_response = await get_mindfolio_equity_chart(pid, timeframe)
         equity_data = equity_response["analytics"]["equity_curve"]
 
         if not equity_data:
@@ -927,7 +927,7 @@ async def export_portfolio_equity_csv(pid: str, timeframe: str = "1M"):
             content=csv_content,
             media_type="text/csv",
             headers={
-                "Content-Disposition": f"attachment; filename=portfolio_{pid}_equity.csv"
+                "Content-Disposition": f"attachment; filename=mindfolio_{pid}_equity.csv"
             },
         )
 
@@ -936,15 +936,15 @@ async def export_portfolio_equity_csv(pid: str, timeframe: str = "1M"):
 
 
 # ——— Budget check helper (pentru /trade/preview & /place) ———
-async def portfolio_budget_ok(
+async def mindfolio_budget_ok(
     pid: str, module: str, risk_cost: float
 ) -> tuple[bool, str]:
-    """Check if portfolio has budget for trade"""
+    """Check if mindfolio has budget for trade"""
     try:
         p = await pf_get(pid)
 
         if p.status != "ACTIVE":
-            return False, "Portfolio not active"
+            return False, "Mindfolio not active"
 
         # Find module allocation
         alloc = next((m for m in p.modules if m.module == module), None)
@@ -958,12 +958,12 @@ async def portfolio_budget_ok(
             return False, "Exceeds module budget"
 
         if risk_cost > p.cash_balance:
-            return False, "Insufficient portfolio cash"
+            return False, "Insufficient mindfolio cash"
 
         return True, "OK"
 
     except HTTPException:
-        return False, "Portfolio not found"
+        return False, "Mindfolio not found"
     except Exception as e:
         return False, f"Budget check failed: {str(e)}"
 
@@ -971,7 +971,7 @@ async def portfolio_budget_ok(
 # ——— EOD (End-of-Day) Snapshots ———
 class EODSnapshot(BaseModel):
     id: str
-    portfolio_id: str
+    mindfolio_id: str
     date: str  # YYYY-MM-DD in Europe/Bucharest timezone
     realized: float
     unrealized: float
@@ -1009,7 +1009,7 @@ async def _calculate_unrealized_pnl(positions: List[Position]) -> float:
 
 @router.post("/{pid}/analytics/eod/snapshot")
 async def create_eod_snapshot(pid: str):
-    """Create a new EOD snapshot for the portfolio"""
+    """Create a new EOD snapshot for the mindfolio"""
     try:
         from datetime import datetime
         import pytz
@@ -1020,8 +1020,8 @@ async def create_eod_snapshot(pid: str):
         date_str = now.strftime("%Y-%m-%d")
         timestamp = now.isoformat()
 
-        # Get portfolio data
-        portfolio = await pf_get(pid)
+        # Get mindfolio data
+        mindfolio = await pf_get(pid)
         positions = await calculate_positions_fifo(pid)
         realized_pnl = await calculate_realized_pnl(pid)
 
@@ -1034,12 +1034,12 @@ async def create_eod_snapshot(pid: str):
         # Create snapshot
         snapshot = EODSnapshot(
             id=str(uuid.uuid4()),
-            portfolio_id=pid,
+            mindfolio_id=pid,
             date=date_str,
             realized=round(total_realized, 2),
             unrealized=round(total_unrealized, 2),
             total=round(total_realized + total_unrealized, 2),
-            cash_balance=portfolio.cash_balance,
+            cash_balance=mindfolio.cash_balance,
             positions_count=len(positions),
             timestamp=timestamp,
             timezone="Europe/Bucharest",
@@ -1098,7 +1098,7 @@ async def create_eod_snapshot(pid: str):
 
 @router.get("/{pid}/analytics/eod")
 async def get_eod_series(pid: str):
-    """Get EOD snapshot series for the portfolio"""
+    """Get EOD snapshot series for the mindfolio"""
     try:
         # Try Redis cache first, fallback to sample data
         series = []
@@ -1145,7 +1145,7 @@ async def get_eod_series(pid: str):
 
         return {
             "status": "success",
-            "portfolio_id": pid,
+            "mindfolio_id": pid,
             "series": series,
             "count": len(series),
             "timezone": "Europe/Bucharest",
@@ -1165,7 +1165,7 @@ async def get_module_budget_usage(pid: str, module_name: str) -> dict:
     Returns: {budget, used, available, positions_count, buying_power_used}
     """
     try:
-        # Get portfolio
+        # Get mindfolio
         pf = await pf_get(pid)
 
         # Find module
@@ -1262,9 +1262,9 @@ async def get_all_modules_budget_usage(pid: str) -> dict:
         raise HTTPException(500, f"Failed to get all modules budget usage: {str(e)}")
 
 
-def validate_module_budget_allocation(pf: Portfolio) -> tuple[bool, str]:
+def validate_module_budget_allocation(pf: Mindfolio) -> tuple[bool, str]:
     """
-    Validate that module budgets don't exceed portfolio cash.
+    Validate that module budgets don't exceed mindfolio cash.
     Returns: (is_valid, error_message)
     """
     total_allocated = sum(m.budget for m in pf.modules)
@@ -1272,7 +1272,7 @@ def validate_module_budget_allocation(pf: Portfolio) -> tuple[bool, str]:
     if total_allocated > pf.cash_balance:
         return (
             False,
-            f"Total module budgets (${total_allocated:,.2f}) exceed portfolio cash (${pf.cash_balance:,.2f})",
+            f"Total module budgets (${total_allocated:,.2f}) exceed mindfolio cash (${pf.cash_balance:,.2f})",
         )
 
     # Check for duplicate modules
@@ -1314,10 +1314,10 @@ async def check_module_can_trade(
     Returns: (can_trade, reason)
     """
     try:
-        # Get portfolio
+        # Get mindfolio
         pf = await pf_get(pid)
 
-        # Check portfolio status
+        # Check mindfolio status
         if pf.status != "ACTIVE":
             return False, f"Mindfolio status is {pf.status}, not ACTIVE"
 

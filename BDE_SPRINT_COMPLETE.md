@@ -9,7 +9,7 @@
 ## Objectives Achieved
 
 ### B) Fix Remaining Random Usage 
-- Fixed 3 additional backend files (advanced_scoring_engine.py, portfolio_charts_service.py, server.py)
+- Fixed 3 additional backend files (advanced_scoring_engine.py, mindfolio_charts_service.py, server.py)
 - Total CWE-330 warnings eliminated across project: **76%+ reduction**
 
 ### D) Performance Testing 
@@ -52,7 +52,7 @@ Files Fixed: 8
  - routers/options.py
  - iv_service/provider_stub.py
  - advanced_scoring_engine.py
- - portfolio_charts_service.py
+ - mindfolio_charts_service.py
  - server.py
 ```
 
@@ -92,7 +92,7 @@ Total: 3000+ lines of production-grade documentation
 
 ### Code Changes (B)
 - `backend/advanced_scoring_engine.py` - Replaced random with secrets (6 locations)
-- `backend/portfolio_charts_service.py` - Fixed random usage
+- `backend/mindfolio_charts_service.py` - Fixed random usage
 - `backend/server.py` - Demo endpoints use secrets
 
 ### Testing Tools (D)
@@ -304,7 +304,7 @@ Target SLA:
 - [ ] Add health endpoint alerting (PagerDuty/Slack)
 
 ### Medium-term (Next Month)
-- [ ] Add more performance tests (builder, flow, portfolios)
+- [ ] Add more performance tests (builder, flow, mindfolios)
 - [ ] Implement distributed tracing (OpenTelemetry)
 - [ ] Add synthetic monitoring
 - [ ] Create load testing CI stage

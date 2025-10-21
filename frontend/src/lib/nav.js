@@ -29,23 +29,23 @@ export function buildNav(ctx) {
  ],
  },
 
- // ACCOUNT & PORTFOLIOS
+ // ACCOUNT & MINDFOLIOS
  {
  title: "Account",
  items: [
  { label: "Account Balance", to: "/account/balance", icon: "Wallet" },
  {
- label: "Portfolios", icon: "Briefcase",
+ label: "Mindfolios", icon: "Briefcase",
  children: [
  // ramificare dinamică: toate portofoliile
- ...ctx.portfolios.map(p => ({
+ ...ctx.mindfolios.map(p => ({
  label: p.name,
- to: `/portfolios/${p.id}`,
+ to: `/mindfolios/${p.id}`,
  icon: "FolderKanban",
  badge: p.nav != null ? { text: `$${Math.round(p.nav/1000)}k`, tone: "default" } : undefined,
  })),
  // separator logic: + create
- { label: "+ Create Portfolio", to: "/portfolios/new", icon: "PlusCircle" },
+ { label: "+ Create Mindfolio", to: "/mindfolios/new", icon: "PlusCircle" },
  ],
  },
  ],

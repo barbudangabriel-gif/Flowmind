@@ -1,26 +1,26 @@
-# Portfolio Development Plan
+# Mindfolio Development Plan
 **Date**: October 15, 2025
-**Objective**: Enhance portfolio pages with dark theme, better UX, and TradeStation integration
+**Objective**: Enhance mindfolio pages with dark theme, better UX, and TradeStation integration
 
 ---
 
 ## Current State Analysis
 
 ### Existing Pages
-1. **PortfoliosList.jsx** (174 lines)
- - Basic list of portfolios
+1. **MindfoliosList.jsx** (174 lines)
+ - Basic list of mindfolios
  - Loading states 
  - Error handling 
  - Create button 
  
-2. **PortfolioDetail.jsx** (240 lines)
- - Portfolio overview with stats
+2. **MindfolioDetail.jsx** (240 lines)
+ - Mindfolio overview with stats
  - Tabs: Overview, Transactions, Positions, Analytics
  - CSV import 
  - Funds management 
  - Components: TransactionsTable, PositionsTable, AnalyticsPanel, BucketForm
 
-3. **PortfolioCreate.jsx** (105 lines)
+3. **MindfolioCreate.jsx** (105 lines)
  - Simple form: name + starting balance
  - Basic validation 
  - Navigation after create 
@@ -28,9 +28,9 @@
 ### Issues Found
 - **Light theme colors** (text-gray-900, bg-red-50, etc.) - NOT DARK THEME
 - **No TradeStation integration** on any page
-- **Limited features** in PortfoliosList (no search, filter, sort)
+- **Limited features** in MindfoliosList (no search, filter, sort)
 - **Basic design** - not consistent with dark theme from rest of app
-- **No portfolio statistics cards** on list page
+- **No mindfolio statistics cards** on list page
 - **No quick actions** in list view
 
 ---
@@ -40,7 +40,7 @@
 ### Phase 1: Dark Theme Conversion (Priority: HIGH)
 **Estimated Time**: 20 minutes
 
-#### PortfoliosList.jsx
+#### MindfoliosList.jsx
 - [ ] Convert all colors to dark theme palette:
  - `text-gray-900` → `text-white`
  - `text-gray-600` → `text-gray-400`
@@ -49,25 +49,25 @@
 - [ ] Update loading spinner colors (blue-500 → blue-400)
 - [ ] Enhance error states with dark theme
 
-#### PortfolioDetail.jsx
+#### MindfolioDetail.jsx
 - [ ] Convert to dark theme
 - [ ] Update tab colors and hover states
 - [ ] Enhance stat cards with gradients
 - [ ] Dark theme for tables and forms
 
-#### PortfolioCreate.jsx
+#### MindfolioCreate.jsx
 - [ ] Full dark theme conversion
 - [ ] Improve form design (larger, centered card)
 - [ ] Better input styling
 
 ---
 
-### Phase 2: Enhanced PortfoliosList (Priority: HIGH)
+### Phase 2: Enhanced MindfoliosList (Priority: HIGH)
 **Estimated Time**: 30 minutes
 
 **New Features:**
 - [ ] **Statistics Summary Cards** (top of page)
- - Total Portfolios
+ - Total Mindfolios
  - Total Value (sum of all)
  - Best Performer (highest %)
  - Total P&L
@@ -77,21 +77,21 @@
  - Filter by status (Active/Paused/Closed)
  - Sort: Name, Balance, Performance, Date
 
-- [ ] **Enhanced Portfolio Cards**
+- [ ] **Enhanced Mindfolio Cards**
  - Gradient borders (green for profit, red for loss)
- - Portfolio stats: Balance, P&L, P&L %
+ - Mindfolio stats: Balance, P&L, P&L %
  - Last updated timestamp
  - Quick actions: View, Edit, Delete
 
 - [ ] **Empty State**
  - Beautiful illustration or icon
- - CTA to create first portfolio
+ - CTA to create first mindfolio
  - Links to documentation
 
 **Layout:**
 ```
 ┌─────────────────────────────────────────────┐
-│ Portfolio Manager │
+│ Mindfolio Manager │
 │ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ │
 │ │ 12 │ │$2.5M │ │ TSLA │ │+$50K │ │
 │ │Total │ │Value │ │ Top │ │ P&L │ │
@@ -100,7 +100,7 @@
 │ [ Search...] [ Status ▼] [⬆️ Sort ▼] │
 │ │
 │ ┌─────────────────────────────────────┐ │
-│ │ Main Portfolio [$125,000] │ │
+│ │ Main Mindfolio [$125,000] │ │
 │ │ +$5,230 (+4.2%) │ │
 │ │ [View] [Edit] [Delete] │ │
 │ └─────────────────────────────────────┘ │
@@ -109,17 +109,17 @@
 │ │ -$1,200 (-2.6%) │ │
 │ └─────────────────────────────────────┘ │
 │ │
-│ [+ Create New Portfolio] │
+│ [+ Create New Mindfolio] │
 └─────────────────────────────────────────────┘
 ```
 
 ---
 
-### Phase 3: Enhanced PortfolioDetail (Priority: MEDIUM)
+### Phase 3: Enhanced MindfolioDetail (Priority: MEDIUM)
 **Estimated Time**: 30 minutes
 
 **New Features:**
-- [ ] **Header with Portfolio Stats**
+- [ ] **Header with Mindfolio Stats**
  - Large balance display
  - P&L with color coding
  - Performance chart (sparkline)
@@ -146,7 +146,7 @@
 ```
 ┌─────────────────────────────────────────────┐
 │ ← Back │
-│ Main Portfolio │
+│ Main Mindfolio │
 │ │
 │ ┌─────────────────────────────────────┐ │
 │ │ Balance: $125,000 │ │
@@ -170,7 +170,7 @@
 **Dependency**: OAuth approval from TradeStation
 
 **Features:**
-- [ ] **Connect TradeStation Button** on PortfolioDetail
+- [ ] **Connect TradeStation Button** on MindfolioDetail
 - [ ] **Sync Positions** from TradeStation account
 - [ ] **Import Trades** automatically
 - [ ] **Live Balance Updates** from TradeStation API
@@ -182,11 +182,11 @@
 3. After auth, show "Connected " badge
 4. Enable "Sync Now" button
 5. Fetch positions and transactions from TS API
-6. Display in portfolio
+6. Display in mindfolio
 
 ---
 
-### Phase 5: Create Portfolio Enhancement (Priority: LOW)
+### Phase 5: Create Mindfolio Enhancement (Priority: LOW)
 **Estimated Time**: 15 minutes
 
 **New Features:**
@@ -244,19 +244,19 @@ Inputs: bg-gray-800 border-gray-700 text-white
 
 ### Today (Oct 15, 2025) - Session 1
 1. **Phase 1: Dark Theme Conversion** (all 3 pages)
- - Start with PortfoliosList
- - Then PortfolioDetail
- - Finally PortfolioCreate
+ - Start with MindfoliosList
+ - Then MindfolioDetail
+ - Finally MindfolioCreate
  
-2. **Phase 2: Enhanced PortfoliosList** (if time permits)
+2. **Phase 2: Enhanced MindfoliosList** (if time permits)
  - Statistics cards
  - Search/filter/sort
- - Better portfolio cards
+ - Better mindfolio cards
 
 ### Next Session
-3. **Phase 3: Enhanced PortfolioDetail**
+3. **Phase 3: Enhanced MindfolioDetail**
 4. **Phase 4: TradeStation Integration** (when OAuth ready)
-5. **Phase 5: Create Portfolio Enhancement**
+5. **Phase 5: Create Mindfolio Enhancement**
 
 ---
 
@@ -280,7 +280,7 @@ After each phase:
 - Search/filter functionality working
 - Statistics cards displaying real data
 - TradeStation integration (when approved)
-- User can create, view, edit, delete portfolios
+- User can create, view, edit, delete mindfolios
 - No visual inconsistencies with rest of app
 
 ---

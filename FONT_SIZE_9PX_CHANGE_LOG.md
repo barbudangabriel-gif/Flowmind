@@ -35,14 +35,14 @@ text-[9px] leading-[14.4px] font-medium
 
 ### Files Modified:
 1. AccountBalancePage.jsx - 25 replacements
-2. PortfolioDetail.jsx - 35 replacements
+2. MindfolioDetail.jsx - 35 replacements
 3. BuilderPage.jsx - 8 replacements
 4. LiveFlowPage.jsx - 6 replacements
 5. LiveLitTradesFeed.jsx - 15 replacements
 6. LiveOffLitTradesFeed.jsx - 19 replacements
 7. InstitutionalPage.jsx - 12 replacements
 8. MindfolioList.jsx - 15 replacements
-9. PortfoliosList.jsx - 15 replacements
+9. MindfoliosList.jsx - 15 replacements
 10. App.js - 3 replacements
 
 ---

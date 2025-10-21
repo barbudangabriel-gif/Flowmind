@@ -1,6 +1,6 @@
 """
-FlowMind Portfolios - Database Layer (SQLite)
-Production-ready SQLite database for portfolios, transactions, and analytics
+FlowMind Mindfolios - Database Layer (SQLite)
+Production-ready SQLite database for mindfolios, transactions, and analytics
 """
 
 import sqlite3
@@ -40,8 +40,8 @@ class DatabaseManager:
             # Execute complete DDL
             conn.executescript(
                 """
-                -- PORTFOLIOS
-                CREATE TABLE IF NOT EXISTS portfolios (
+                -- MINDFOLIOS
+                CREATE TABLE IF NOT EXISTS mindfolios (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     base_currency TEXT NOT NULL DEFAULT 'USD',
@@ -51,14 +51,14 @@ class DatabaseManager:
                 -- ACCOUNTS
                 CREATE TABLE IF NOT EXISTS accounts (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    portfolio_id INTEGER NOT NULL,
+                    mindfolio_id INTEGER NOT NULL,
                     name TEXT NOT NULL,
                     broker TEXT,
                     currency TEXT NOT NULL DEFAULT 'USD',
                     created_at TEXT NOT NULL DEFAULT (datetime('now')),
-                    FOREIGN KEY (portfolio_id) REFERENCES portfolios(id)
+                    FOREIGN KEY (mindfolio_id) REFERENCES mindfolios(id)
                 );
-                CREATE INDEX IF NOT EXISTS idx_accounts_portfolio ON accounts(portfolio_id);
+                CREATE INDEX IF NOT EXISTS idx_accounts_mindfolio ON accounts(mindfolio_id);
 
                 -- TRANSACTIONS
                 CREATE TABLE IF NOT EXISTS transactions (
@@ -95,15 +95,15 @@ class DatabaseManager:
                     expires_at INTEGER NOT NULL
                 );
 
-                -- BUCKETS (sub-portfolios)
+                -- BUCKETS (sub-mindfolios)
                 CREATE TABLE IF NOT EXISTS buckets (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    portfolio_id INTEGER NOT NULL,
+                    mindfolio_id INTEGER NOT NULL,
                     name TEXT NOT NULL,
                     start_value REAL NOT NULL DEFAULT 0,
                     notes TEXT,
                     created_at TEXT NOT NULL DEFAULT (datetime('now')),
-                    FOREIGN KEY (portfolio_id) REFERENCES portfolios(id)
+                    FOREIGN KEY (mindfolio_id) REFERENCES mindfolios(id)
                 );
 
                 -- BUCKET RULES
@@ -121,46 +121,46 @@ class DatabaseManager:
             )
             conn.commit()
 
-    # Portfolio operations
-    def get_portfolios(self) -> List[Dict[str, Any]]:
-        """Get all portfolios"""
+    # Mindfolio operations
+    def get_mindfolios(self) -> List[Dict[str, Any]]:
+        """Get all mindfolios"""
         with self.get_connection() as conn:
-            cursor = conn.execute("SELECT * FROM portfolios ORDER BY created_at DESC")
+            cursor = conn.execute("SELECT * FROM mindfolios ORDER BY created_at DESC")
             return [dict(row) for row in cursor.fetchall()]
 
-    def create_portfolio(self, name: str, base_currency: str = "USD") -> Dict[str, Any]:
-        """Create new portfolio"""
+    def create_mindfolio(self, name: str, base_currency: str = "USD") -> Dict[str, Any]:
+        """Create new mindfolio"""
         with self.get_connection() as conn:
             cursor = conn.execute(
-                "INSERT INTO portfolios (name, base_currency) VALUES (?, ?)",
+                "INSERT INTO mindfolios (name, base_currency) VALUES (?, ?)",
                 (name, base_currency),
             )
-            portfolio_id = cursor.lastrowid
+            mindfolio_id = cursor.lastrowid
             conn.commit()
 
-            # Return created portfolio
+            # Return created mindfolio
             cursor = conn.execute(
-                "SELECT * FROM portfolios WHERE id = ?", (portfolio_id,)
+                "SELECT * FROM mindfolios WHERE id = ?", (mindfolio_id,)
             )
             return dict(cursor.fetchone())
 
-    def get_portfolio(self, portfolio_id: int) -> Optional[Dict[str, Any]]:
-        """Get portfolio by ID"""
+    def get_mindfolio(self, mindfolio_id: int) -> Optional[Dict[str, Any]]:
+        """Get mindfolio by ID"""
         with self.get_connection() as conn:
             cursor = conn.execute(
-                "SELECT * FROM portfolios WHERE id = ?", (portfolio_id,)
+                "SELECT * FROM mindfolios WHERE id = ?", (mindfolio_id,)
             )
             row = cursor.fetchone()
             return dict(row) if row else None
 
     # Account operations
-    def get_accounts(self, portfolio_id: Optional[int] = None) -> List[Dict[str, Any]]:
-        """Get accounts, optionally filtered by portfolio"""
+    def get_accounts(self, mindfolio_id: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Get accounts, optionally filtered by mindfolio"""
         with self.get_connection() as conn:
-            if portfolio_id:
+            if mindfolio_id:
                 cursor = conn.execute(
-                    "SELECT * FROM accounts WHERE portfolio_id = ? ORDER BY created_at DESC",
-                    (portfolio_id,),
+                    "SELECT * FROM accounts WHERE mindfolio_id = ? ORDER BY created_at DESC",
+                    (mindfolio_id,),
                 )
             else:
                 cursor = conn.execute("SELECT * FROM accounts ORDER BY created_at DESC")
@@ -168,7 +168,7 @@ class DatabaseManager:
 
     def create_account(
         self,
-        portfolio_id: int,
+        mindfolio_id: int,
         name: str,
         broker: Optional[str] = None,
         currency: str = "USD",
@@ -176,8 +176,8 @@ class DatabaseManager:
         """Create new account"""
         with self.get_connection() as conn:
             cursor = conn.execute(
-                "INSERT INTO accounts (portfolio_id, name, broker, currency) VALUES (?, ?, ?, ?)",
-                (portfolio_id, name, broker, currency),
+                "INSERT INTO accounts (mindfolio_id, name, broker, currency) VALUES (?, ?, ?, ?)",
+                (mindfolio_id, name, broker, currency),
             )
             account_id = cursor.lastrowid
             conn.commit()
@@ -192,10 +192,10 @@ class DatabaseManager:
         params = []
         where_clauses = []
 
-        if filters.get("portfolio_id"):
+        if filters.get("mindfolio_id"):
             query += " JOIN accounts a ON a.id = t.account_id"
-            where_clauses.append("a.portfolio_id = ?")
-            params.append(filters["portfolio_id"])
+            where_clauses.append("a.mindfolio_id = ?")
+            params.append(filters["mindfolio_id"])
 
         if filters.get("account_id"):
             where_clauses.append("t.account_id = ?")
@@ -317,13 +317,13 @@ class DatabaseManager:
             conn.commit()
 
     # Bucket operations
-    def get_buckets(self, portfolio_id: Optional[int] = None) -> List[Dict[str, Any]]:
-        """Get buckets, optionally filtered by portfolio"""
+    def get_buckets(self, mindfolio_id: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Get buckets, optionally filtered by mindfolio"""
         with self.get_connection() as conn:
-            if portfolio_id:
+            if mindfolio_id:
                 cursor = conn.execute(
-                    "SELECT * FROM buckets WHERE portfolio_id = ? ORDER BY created_at DESC",
-                    (portfolio_id,),
+                    "SELECT * FROM buckets WHERE mindfolio_id = ? ORDER BY created_at DESC",
+                    (mindfolio_id,),
                 )
             else:
                 cursor = conn.execute("SELECT * FROM buckets ORDER BY created_at DESC")
@@ -331,7 +331,7 @@ class DatabaseManager:
 
     def create_bucket(
         self,
-        portfolio_id: int,
+        mindfolio_id: int,
         name: str,
         start_value: float = 0,
         notes: Optional[str] = None,
@@ -339,8 +339,8 @@ class DatabaseManager:
         """Create new bucket"""
         with self.get_connection() as conn:
             cursor = conn.execute(
-                "INSERT INTO buckets (portfolio_id, name, start_value, notes) VALUES (?, ?, ?, ?)",
-                (portfolio_id, name, start_value, notes),
+                "INSERT INTO buckets (mindfolio_id, name, start_value, notes) VALUES (?, ?, ?, ?)",
+                (mindfolio_id, name, start_value, notes),
             )
             bucket_id = cursor.lastrowid
             conn.commit()

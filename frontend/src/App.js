@@ -156,7 +156,7 @@ function App() {
  flags: {},
  metrics: {},
  mindfolios: mindfolios,
- portfolios: mindfolios // Alias for backwards compatibility
+ mindfolios: mindfolios // Alias for backwards compatibility
  };
 
  return (

@@ -507,7 +507,7 @@ def get_mindfolio_aggregated_stats(mindfolio_id):
 ### **1. Budget Independence**
 - Each module has **its own budget**
 - Module can't exceed its allocation
-- Prevents one bad module from destroying entire portfolio
+- Prevents one bad module from destroying entire mindfolio
 
 ### **2. Risk Isolation**
 - Module hits daily loss limit → **auto-pauses** that module only
@@ -543,7 +543,7 @@ def get_mindfolio_aggregated_stats(mindfolio_id):
 
 ### **5. Emergency Controls**
 ```python
-# Portfolio-level emergency stop
+# Mindfolio-level emergency stop
 if total_daily_loss > 2000 or total_drawdown > 0.15:
  pause_all_modules()
  close_riskiest_positions()
@@ -668,7 +668,7 @@ if module_daily_loss > module["daily_loss_limit"]:
 
 ## Why This Is The Killer Feature
 
-### **Traditional Portfolio Managers:**
+### **Traditional Mindfolio Managers:**
 - Track what you already did manually 
 - No intelligence, no automation 
 - One strategy at a time 
@@ -1107,7 +1107,7 @@ class BotBudgetManager:
 5. **Risk Isolation**
  - Bot loses 50% → Auto-pause that bot only
  - Other bots keep running
- - Module-level and portfolio-level safeguards
+ - Module-level and mindfolio-level safeguards
 
 ### **Real-World Example:**
 

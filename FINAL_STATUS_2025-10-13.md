@@ -34,7 +34,7 @@
 - Quick Actions grid cu 4 cards:
  - Strategy Builder (emerald)
  - Options Flow (blue)
- - Portfolio Manager (purple)
+ - Mindfolio Manager (purple)
  - Strategy Optimizer (amber)
 - Feature highlights section
 - UW dark theme consistent
@@ -76,7 +76,7 @@ frontend/src/
 │ ├── FlowPage.jsx
 │ ├── LiveFlowPage.jsx
 │ ├── OptimizePage.jsx
-│ └── 3 Portfolio pages
+│ └── 3 Mindfolio pages
 ├── archive/ (24 fișiere nefolosite)
 ├── SIDEBAR_TODO.md
 ├── CLEANUP_SUMMARY.md
@@ -101,13 +101,13 @@ Professional-grade options trading analytics with real-time flow monitoring
 ### Quick Actions (4 Cards)
 1. **Strategy Builder** → `/builder` (emerald)
 2. **Options Flow** → `/flow` (blue)
-3. **Portfolio Manager** → `/portfolios` (purple)
+3. **Mindfolio Manager** → `/mindfolios` (purple)
 4. **Strategy Optimizer** → `/optimize` (amber)
 
 ### Feature Highlights
 - Advanced Strategy Builder (54+ pre-built)
 - Real-Time Options Flow (sweeps, blocks)
-- Portfolio Management (multi-portfolio, FIFO)
+- Mindfolio Management (multi-mindfolio, FIFO)
 - AI-Powered Optimization (recommendations)
 
 ---
@@ -196,7 +196,7 @@ useEffect(() => {
 - Sidebar UW theme (collapsible, clean)
 - Header cu logo + Market Status
 - HomePage dashboard (professional)
-- Portfolio Manager (multi-portfolio)
+- Mindfolio Manager (multi-mindfolio)
 - Builder + Flow pages integrated
 - Popover submenu functional
 - Code cleanup (24 files archived)

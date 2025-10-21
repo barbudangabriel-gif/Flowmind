@@ -39,7 +39,7 @@ flow_mock = '''
 mindfolio_mock = '''
   const mockMindfolio = {
     id: id,
-    name: 'Demo Portfolio',
+    name: 'Demo Mindfolio',
     cash_balance: 50000,
     status: 'ACTIVE',
     modules: [],

@@ -84,7 +84,7 @@ async def trade_preview(body: PreviewRequest):
         sum(leg.strike * leg.qty for leg in legs if leg.side == Side.SELL) * 100
     )
 
-    portfolio = PortfolioGreeks(
+    mindfolio = MindfolioGreeks(
         delta=0, gamma=0, theta=0, vega=0, notional=est_max_loss, equity=200000
     )
     account = AccountState(tradeable=True, buyingPower=100000)
@@ -95,7 +95,7 @@ async def trade_preview(body: PreviewRequest):
         underlying=body.underlying,
         underlyingQuote=u,
         legs=legs,
-        portfolio=portfolio,
+        mindfolio=mindfolio,
         account=account,
         market=market_metrics,
         session=session,
@@ -162,7 +162,7 @@ async def trade_place(
             )
         )
 
-    portfolio = PortfolioGreeks(
+    mindfolio = MindfolioGreeks(
         delta=0, gamma=0, theta=0, vega=0, notional=100000, equity=200000
     )
     account = AccountState(tradeable=True, buyingPower=100000)
@@ -173,7 +173,7 @@ async def trade_place(
         underlying=body.underlying,
         underlyingQuote=u,
         legs=legs,
-        portfolio=portfolio,
+        mindfolio=mindfolio,
         account=account,
         market=MarketMetrics(),
         session=SessionInfo(),

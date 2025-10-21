@@ -11,7 +11,7 @@
 ### Ce avem acces:
 - **WebSocket streaming** pentru date în timp real
 - **120 requests/min**, **3 concurrent connections**, **15K REST hits/day**
-- **All REST endpoints** (minus politician_portfolios)
+- **All REST endpoints** (minus politician_mindfolios)
 - **Official docs:** https://api.unusualwhales.com/docs#/operations/PublicApi.SocketController.channels
 - **OpenAPI spec:** https://api.unusualwhales.com/api/openapi
 

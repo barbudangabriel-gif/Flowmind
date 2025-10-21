@@ -6,9 +6,9 @@ import SidebarSimple from './components/SidebarSimple';
 import HomePage from './pages/HomePage';
 import BuilderPage from './pages/BuilderPage';
 import FlowPage from './pages/FlowPage';
-import PortfoliosList from './pages/PortfoliosList';
-import PortfolioDetail from './pages/PortfolioDetail';
-import PortfolioCreate from './pages/PortfolioCreate';
+import MindfoliosList from './pages/MindfoliosList';
+import MindfolioDetail from './pages/MindfolioDetail';
+import MindfolioCreate from './pages/MindfolioCreate';
 
 function ComingSoonPage() {
  const location = window.location.pathname;
@@ -51,7 +51,7 @@ function App() {
  role: "user",
  flags: {},
  metrics: {},
- portfolios: []
+ mindfolios: []
  };
 
  return (
@@ -116,9 +116,9 @@ function App() {
  <Route path="/builder/:strategySlug" element={<BuilderPage />} />
  <Route path="/flow" element={<FlowPage />} />
  <Route path="/flow/live" element={<FlowPage />} />
- <Route path="/portfolios" element={<PortfoliosList />} />
- <Route path="/portfolios/new" element={<PortfolioCreate />} />
- <Route path="/portfolios/:id" element={<PortfolioDetail />} />
+ <Route path="/mindfolios" element={<MindfoliosList />} />
+ <Route path="/mindfolios/new" element={<MindfolioCreate />} />
+ <Route path="/mindfolios/:id" element={<MindfolioDetail />} />
  {/* Catch-all for all other routes */}
  <Route path="*" element={<ComingSoonPage />} />
  </Routes>

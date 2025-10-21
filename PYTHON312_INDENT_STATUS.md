@@ -86,7 +86,7 @@ Between sessions, several files were edited (possibly by formatter/auto-save):
 - backend/server.py
 - backend/mindfolio.py
 - backend/redis_fallback.py
-- backend/portfolios.py
+- backend/mindfolios.py
 - backend/ticker_data.py
 - backend/enhanced_ticker_data.py
 - backend/geopolitical_news_agent.py

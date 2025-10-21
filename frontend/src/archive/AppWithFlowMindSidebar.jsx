@@ -9,10 +9,10 @@ const ScreenerV2 = React.lazy(() => import("../features/iv/ScreenerV2"));
 const OptionsModule = React.lazy(() => import("./OptionsModule"));
 const SmartRebalancingAgent = React.lazy(() => import("./SmartRebalancingAgent"));
 
-// Import Portfolio components
-const PortfoliosList = React.lazy(() => import("../pages/PortfoliosList"));
-const PortfolioDetail = React.lazy(() => import("../pages/PortfolioDetail"));
-const PortfolioCreate = React.lazy(() => import("../pages/PortfolioCreate"));
+// Import Mindfolio components
+const MindfoliosList = React.lazy(() => import("../pages/MindfoliosList"));
+const MindfolioDetail = React.lazy(() => import("../pages/MindfolioDetail"));
+const MindfolioCreate = React.lazy(() => import("../pages/MindfolioCreate"));
 
 // Loading fallback
 const LoadingFallback = ({ componentName }) => (
@@ -40,7 +40,7 @@ const RouteMapping = () => {
  </Suspense>
  } />
 
- {/* Account & Portfolios */}
+ {/* Account & Mindfolios */}
  <Route path="/account/balance" element={
  <div className="p-6">
  <h2 className="text-2xl font-medium mb-4">Account Balance</h2>
@@ -50,28 +50,28 @@ const RouteMapping = () => {
  </div>
  } />
  
- {/* Portfolios Routes */}
- <Route path="/portfolios" element={
- <Suspense fallback={<LoadingFallback componentName="Portfolios List" />}>
- <PortfoliosList />
+ {/* Mindfolios Routes */}
+ <Route path="/mindfolios" element={
+ <Suspense fallback={<LoadingFallback componentName="Mindfolios List" />}>
+ <MindfoliosList />
  </Suspense>
  } />
  
- <Route path="/portfolios/new" element={
- <Suspense fallback={<LoadingFallback componentName="Create Portfolio" />}>
- <PortfolioCreate />
+ <Route path="/mindfolios/new" element={
+ <Suspense fallback={<LoadingFallback componentName="Create Mindfolio" />}>
+ <MindfolioCreate />
  </Suspense>
  } />
  
- <Route path="/portfolios/:id" element={
- <Suspense fallback={<LoadingFallback componentName="Portfolio Details" />}>
- <PortfolioDetail />
+ <Route path="/mindfolios/:id" element={
+ <Suspense fallback={<LoadingFallback componentName="Mindfolio Details" />}>
+ <MindfolioDetail />
  </Suspense>
  } />
  
- {/* Legacy portfolio route */}
- <Route path="/portfolios/ts-main" element={
- <Suspense fallback={<LoadingFallback componentName="TS Main Portfolio" />}>
+ {/* Legacy mindfolio route */}
+ <Route path="/mindfolios/ts-main" element={
+ <Suspense fallback={<LoadingFallback componentName="TS Main Mindfolio" />}>
  <ChartProTSLive />
  </Suspense>
  } />

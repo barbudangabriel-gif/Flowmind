@@ -1,6 +1,6 @@
 # FlowMind - Options Analytics Platform
 
-**Advanced options analytics, real-time flow monitoring, and portfolio management platform**
+**Advanced options analytics, real-time flow monitoring, and mindfolio management platform**
 
 [![Security](https://img.shields.io/badge/security-hardened-green.svg)](./SECURITY_CI_IMPROVEMENTS_2025-10-14.md)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitLab-orange.svg)](./.gitlab-ci.yml)
@@ -69,7 +69,7 @@ pre-commit run --all-files
 ### Prerequisites
 - **Backend:** Python 3.12+, FastAPI, Redis (optional, has fallback)
 - **Frontend:** Node 20+, React 19
-- **Optional:** MongoDB (portfolios), TradeStation API, Unusual Whales API
+- **Optional:** MongoDB (mindfolios), TradeStation API, Unusual Whales API
 
 ### Development Setup
 
@@ -104,19 +104,19 @@ docker-compose up --build
 ### Backend (FastAPI)
 - **Options Module:** 54+ strategies, Greeks calculation, quality scoring
 - **Flow Analysis:** Real-time unusual options activity (Unusual Whales integration)
-- **Portfolio Management:** FIFO position tracking, P&L, performance analytics
+- **Mindfolio Management:** FIFO position tracking, P&L, performance analytics
 - **Data Providers:** TradeStation (options chains, spot prices), UW (flow/news)
 - **Caching:** Redis with intelligent fallback to in-memory (zero downtime)
 
 ### Frontend (React 19)
 - **Strategy Builder:** Interactive multi-leg options builder with live pricing
 - **Flow Dashboard:** Real-time options flow, dark pool, congress trades
-- **Portfolio Tracker:** Multi-portfolio management, charts, rebalancing AI
+- **Mindfolio Tracker:** Multi-mindfolio management, charts, rebalancing AI
 - **Market Intelligence:** Gamma exposure (GEX), IV analysis, scanner
 
 ### Data Storage
 - **Redis:** Primary cache (TTL-based), fallback to AsyncTTLDict
-- **MongoDB:** Portfolios, transactions, user data (optional)
+- **MongoDB:** Mindfolios, transactions, user data (optional)
 - **SQLite:** Alternative storage (see `backend/database.py`)
 
 ---
@@ -393,8 +393,8 @@ REACT_APP_BACKEND_URL=http://localhost:8000
 - Congress trading filings
 - Gamma exposure (GEX) tracking
 
-### Portfolio Management
-- Multi-portfolio support
+### Mindfolio Management
+- Multi-mindfolio support
 - FIFO position tracking
 - Realized/unrealized P&L
 - Performance charts
@@ -415,7 +415,7 @@ REACT_APP_BACKEND_URL=http://localhost:8000
 
 - [ ] Set all required environment variables
 - [ ] Configure Redis (or accept in-memory fallback)
-- [ ] Set up MongoDB (optional, for portfolios)
+- [ ] Set up MongoDB (optional, for mindfolios)
 - [ ] Configure TradeStation OAuth (for real options chains)
 - [ ] Set Unusual Whales API token (for live flow data)
 - [ ] Verify health endpoints: `/health`, `/readyz`, `/api/health/redis`
@@ -477,7 +477,7 @@ See LICENSE file (if applicable)
 ## 🎓 Learning Resources
 
 - **Options Theory:** [FlowMind_Options_Module_Blueprint.md](./FlowMind_Options_Module_Blueprint.md)
-- **FIFO Position Calc:** See docstring in `backend/portfolios.py`
+- **FIFO Position Calc:** See docstring in `backend/mindfolios.py`
 - **WebSocket Streaming:** [WEBSOCKET_STREAMING_DOCS.md](./WEBSOCKET_STREAMING_DOCS.md)
 - **Quality Scoring:** `backend/services/quality.py`
 

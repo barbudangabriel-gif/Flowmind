@@ -31,7 +31,7 @@ async function j(path, init = {}) {
 }
 
 export const mfClient = {
- // Portfolio operations
+ // Mindfolio operations
  list: () => j(`/api/mindfolio`),
  get: (pid) => j(`/api/mindfolio/${pid}`),
  create: (body) => j(`/api/mindfolio`, { 

@@ -138,7 +138,7 @@ toggleAllGroups(expand) // Expand/collapse all
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ Live Portfolio [Group ▼] [By Symbol ▼] [⊞][⊟] [Account ▼] │
+│ Live Mindfolio [Group ▼] [By Symbol ▼] [⊞][⊟] [Account ▼] │
 ├─────────────────────────────────────────────────────────────────┤
 │ │
 │ $851,176.97 -$64,533.30 63 Positions │
@@ -165,7 +165,7 @@ toggleAllGroups(expand) // Expand/collapse all
 ## Workflow Utilizator
 
 ### **Pas cu Pas:**
-1. **Access Portfolio** - Navighează la Live Portfolio
+1. **Access Mindfolio** - Navighează la Live Mindfolio
 2. **Click Group** - Activează controalele de grupare 
 3. **Select Grouping** - Alege "By Symbol", "By Position Type", etc.
 4. **Auto-Expand** - Toate grupurile se expandează automat
@@ -184,7 +184,7 @@ toggleAllGroups(expand) // Expand/collapse all
 
 ## Data Examples cu Grupări
 
-### **Current Portfolio (63 positions):**
+### **Current Mindfolio (63 positions):**
 ```
 By Symbol:
 - A-D: 15 positions, $350k market value
@@ -204,7 +204,7 @@ By Asset Type:
 
 ## Rezultatul Final
 
-**Portfolio-ul are acum EXACT funcționalitatea TradeStation:**
+**Mindfolio-ul are acum EXACT funcționalitatea TradeStation:**
 
 ### ** Implemented Features:**
 - Interactive grouping controls în header
@@ -233,7 +233,7 @@ By Asset Type:
 
 ## **MISIUNEA COMPLETĂ!**
 
-**Portfolio-ul FlowMind Analytics funcționează acum EXACT ca TradeStation:**
+**Mindfolio-ul FlowMind Analytics funcționează acum EXACT ca TradeStation:**
 - Group/Ungroup functionality completă
 - Interactive controls identice cu TS
 - Visual feedback professional

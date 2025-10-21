@@ -20,12 +20,12 @@ export default function MindfolioDetail() {
  if (!id) return;
  
  try {
- const [portfolio, statistics] = await Promise.all([
+ const [mindfolio, statistics] = await Promise.all([
  mfClient.get(id),
  mfClient.stats(id)
  ]);
  
- setP(portfolio);
+ setP(mindfolio);
  setStats(statistics);
  } catch (e) {
  setErr(String(e));
@@ -61,17 +61,17 @@ export default function MindfolioDetail() {
  if (err) {
  return (
  <div className="p-4 text-sm text-red-400 bg-red-900/20 border border-red-700/40 rounded">
- <div className="font-semibold">Error loading portfolio</div>
+ <div className="font-semibold">Error loading mindfolio</div>
  <div>{err}</div>
  <Link to="/mindfolio" className="text-blue-400 hover:text-blue-300 mt-2 inline-block">
- ← Back to portfolios
+ ← Back to mindfolios
  </Link>
  </div>
  );
  }
 
  if (!p) {
- return <div className="p-4 text-sm text-gray-400 bg-gray-950 min-h-screen">Loading portfolio…</div>;
+ return <div className="p-4 text-sm text-gray-400 bg-gray-950 min-h-screen">Loading mindfolio…</div>;
  }
 
  const tabs = [
@@ -93,7 +93,7 @@ export default function MindfolioDetail() {
  to="/mindfolio" 
  className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
  >
- ← <span className="hidden sm:inline">Back to Portfolios</span>
+ ← <span className="hidden sm:inline">Back to Mindfolios</span>
  </Link>
  <span className="text-gray-600">/</span>
  <h1 className="text-2xl font-bold text-white">{p.name}</h1>
@@ -384,21 +384,21 @@ export default function MindfolioDetail() {
 
  {activeTab === 'analytics' && (
  <div className="space-y-6">
- <AnalyticsPanel portfolioId={id} />
- <BucketForm portfolioId={id} onCreated={loadData} />
+ <AnalyticsPanel mindfolioId={id} />
+ <BucketForm mindfolioId={id} onCreated={loadData} />
  </div>
  )}
 
  {activeTab === 'positions' && (
- <PositionsTable portfolioId={id} />
+ <PositionsTable mindfolioId={id} />
  )}
 
  {activeTab === 'transactions' && (
- <TransactionsTable portfolioId={id} />
+ <TransactionsTable mindfolioId={id} />
  )}
 
  {activeTab === 'import' && (
- <CSVImport portfolioId={id} onImportComplete={handleImportComplete} />
+ <CSVImport mindfolioId={id} onImportComplete={handleImportComplete} />
  )}
  </div>
  </div>

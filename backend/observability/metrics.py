@@ -68,18 +68,18 @@ flow_trades_processed_total = Counter(
     ["symbol", "trade_type"],
 )
 
-portfolios_active = Gauge("flowmind_portfolios_active", "Number of active portfolios")
+mindfolios_active = Gauge("flowmind_mindfolios_active", "Number of active mindfolios")
 
 positions_open = Gauge(
     "flowmind_positions_open",
-    "Number of open positions across all portfolios",
-    ["portfolio_id"],
+    "Number of open positions across all mindfolios",
+    ["mindfolio_id"],
 )
 
-portfolio_value_usd = Gauge(
-    "flowmind_portfolio_value_usd",
-    "Portfolio market value in USD",
-    ["portfolio_id", "portfolio_name"],
+mindfolio_value_usd = Gauge(
+    "flowmind_mindfolio_value_usd",
+    "Mindfolio market value in USD",
+    ["mindfolio_id", "mindfolio_name"],
 )
 
 # ============================================================================
@@ -332,19 +332,19 @@ async def collect_cache_metrics():
         logger.warning(f" Failed to collect cache metrics: {e}")
 
 
-async def collect_portfolio_metrics():
-    """Collect portfolio metrics"""
+async def collect_mindfolio_metrics():
+    """Collect mindfolio metrics"""
     try:
         # Import here to avoid circular dependencies
-        from mindfolio import list_portfolios
+        from mindfolio import list_mindfolios
 
-        portfolios = await list_portfolios()
-        portfolios_active.set(len(portfolios))
+        mindfolios = await list_mindfolios()
+        mindfolios_active.set(len(mindfolios))
 
-        logger.debug(f" Collected portfolio metrics: {len(portfolios)} active")
+        logger.debug(f" Collected mindfolio metrics: {len(mindfolios)} active")
 
     except Exception as e:
-        logger.warning(f" Failed to collect portfolio metrics: {e}")
+        logger.warning(f" Failed to collect mindfolio metrics: {e}")
 
 
 def export_metrics() -> tuple[bytes, str]:

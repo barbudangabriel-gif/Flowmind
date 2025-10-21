@@ -50,7 +50,7 @@ function App() {
  role: "user",
  flags: {},
  metrics: {},
- portfolios: []
+ mindfolios: []
  };
 
  return (

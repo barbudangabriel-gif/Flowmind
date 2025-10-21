@@ -14,10 +14,10 @@
    - File: `frontend/src/pages/MindfolioList.jsx` (357 linii)
    - Removed emoji din filters, buttons, empty states
 
-2. **Backend starting_balance Field** - Adăugat în Portfolio model
+2. **Backend starting_balance Field** - Adăugat în Mindfolio model
    - File: `backend/mindfolio.py` (linii 86, 428)
    - Model: `starting_balance: float = 10000.0`
-   - Create function: salvează starting_balance la crearea portfolio-ului
+   - Create function: salvează starting_balance la crearea mindfolio-ului
 
 3. **Fixed MindfolioDetailNew.jsx** - roiPct calculation
    - File: `frontend/src/pages/MindfolioDetailNew.jsx` (linia 76-78)
@@ -50,13 +50,13 @@
 ### Task: Backend - Add Broker Account Fields
 
 **File:** `backend/mindfolio.py`  
-**Lines to modify:** 82-89 (Portfolio model), 95-97 (PortfolioCreate model), 420+ (create_portfolio function), 415+ (list_portfolios function)
+**Lines to modify:** 82-89 (Mindfolio model), 95-97 (MindfolioCreate model), 420+ (create_mindfolio function), 415+ (list_mindfolios function)
 
-#### Step 1: Update Portfolio Model (lines 82-89)
+#### Step 1: Update Mindfolio Model (lines 82-89)
 
 **Current code:**
 ```python
-class Portfolio(BaseModel):
+class Mindfolio(BaseModel):
     id: str
     name: str
     cash_balance: float
@@ -69,7 +69,7 @@ class Portfolio(BaseModel):
 
 **NEW code (replace with):**
 ```python
-class Portfolio(BaseModel):
+class Mindfolio(BaseModel):
     id: str
     name: str
     
@@ -92,11 +92,11 @@ class Portfolio(BaseModel):
     updated_at: str
 ```
 
-#### Step 2: Update PortfolioCreate Model (lines 95-97)
+#### Step 2: Update MindfolioCreate Model (lines 95-97)
 
 **Current code:**
 ```python
-class PortfolioCreate(BaseModel):
+class MindfolioCreate(BaseModel):
     name: str
     starting_balance: float = 10000.0
     modules: List[ModuleAllocation] = []
@@ -104,7 +104,7 @@ class PortfolioCreate(BaseModel):
 
 **NEW code (replace with):**
 ```python
-class PortfolioCreate(BaseModel):
+class MindfolioCreate(BaseModel):
     name: str
     
     # Broker account fields (NEW)
@@ -140,14 +140,14 @@ class PortfolioCreate(BaseModel):
 from pydantic import BaseModel, validator, Optional
 ```
 
-#### Step 3: Update create_portfolio Function (around line 420)
+#### Step 3: Update create_mindfolio Function (around line 420)
 
 **Find this section:**
 ```python
-@router.post("", response_model=Portfolio)
-async def create_portfolio(body: PortfolioCreate):
-    """Create new portfolio with module budget validation"""
-    portfolio = Portfolio(
+@router.post("", response_model=Mindfolio)
+async def create_mindfolio(body: MindfolioCreate):
+    """Create new mindfolio with module budget validation"""
+    mindfolio = Mindfolio(
         id=f"mf_{str(uuid.uuid4()).replace('-', '')[:12]}",
         name=body.name,
         cash_balance=body.starting_balance,
@@ -160,10 +160,10 @@ async def create_portfolio(body: PortfolioCreate):
 
 **ADD broker fields:**
 ```python
-@router.post("", response_model=Portfolio)
-async def create_portfolio(body: PortfolioCreate):
-    """Create new portfolio with module budget validation"""
-    portfolio = Portfolio(
+@router.post("", response_model=Mindfolio)
+async def create_mindfolio(body: MindfolioCreate):
+    """Create new mindfolio with module budget validation"""
+    mindfolio = Mindfolio(
         id=f"mf_{str(uuid.uuid4()).replace('-', '')[:12]}",
         name=body.name,
         
@@ -181,30 +181,30 @@ async def create_portfolio(body: PortfolioCreate):
     )
 ```
 
-#### Step 4: Update list_portfolios Function (around line 415)
+#### Step 4: Update list_mindfolios Function (around line 415)
 
 **Current code:**
 ```python
-@router.get("", response_model=List[Portfolio])
-async def list_portfolios():
-    """List all portfolios"""
+@router.get("", response_model=List[Mindfolio])
+async def list_mindfolios():
+    """List all mindfolios"""
     return await pf_list()
 ```
 
 **NEW code (add filtering):**
 ```python
-@router.get("", response_model=List[Portfolio])
-async def list_portfolios(
+@router.get("", response_model=List[Mindfolio])
+async def list_mindfolios(
     broker: Optional[str] = None,  # Filter by broker
     environment: Optional[str] = None,  # Filter by SIM/LIVE
     account_type: Optional[str] = None,  # Filter by account type
     status: Optional[str] = None  # Existing filter
 ):
-    """List portfolios with optional filtering by broker/env/type"""
-    all_portfolios = await pf_list()
+    """List mindfolios with optional filtering by broker/env/type"""
+    all_mindfolios = await pf_list()
     
     # Apply filters
-    filtered = all_portfolios
+    filtered = all_mindfolios
     if broker:
         filtered = [p for p in filtered if p.broker == broker]
     if environment:
@@ -284,7 +284,7 @@ curl -s http://localhost:8000/health
 **MANDATORY:** Citește aceste secțiuni din `MINDFOLIO_BROKER_ARCHITECTURE.md`:
 
 1. **Overview** - Înțelege hierarchy structure (Broker → Env → Type)
-2. **Data Model Changes** - Backend Portfolio model (ce adaugi)
+2. **Data Model Changes** - Backend Mindfolio model (ce adaugi)
 3. **Implementation Priority - Phase 0** - Backend foundation steps
 
 ---
@@ -293,10 +293,10 @@ curl -s http://localhost:8000/health
 
 ### ✅ Backend Changes Complete When:
 
-1. Portfolio model are 4 câmpuri noi: `broker`, `environment`, `account_type`, `account_id`
-2. PortfolioCreate model are validators pentru broker/environment/account_type
-3. create_portfolio() salvează toate câmpurile noi
-4. list_portfolios() permite filtering by broker/env/type
+1. Mindfolio model are 4 câmpuri noi: `broker`, `environment`, `account_type`, `account_id`
+2. MindfolioCreate model are validators pentru broker/environment/account_type
+3. create_mindfolio() salvează toate câmpurile noi
+4. list_mindfolios() permite filtering by broker/env/type
 5. `python -m py_compile mindfolio.py` - NO ERRORS
 6. curl POST test creează mindfolio cu toate câmpurile
 7. curl GET test returnează mindfolios cu câmpuri noi
@@ -330,12 +330,12 @@ cat START_HERE_TOMORROW.md  # Citește acest document
 ### 5. COMMIT (5 min)
 ```bash
 git add backend/mindfolio.py
-git commit -m "feat: Add broker account fields to Portfolio model
+git commit -m "feat: Add broker account fields to Mindfolio model
 
 - Add broker, environment, account_type, account_id fields
-- Add validators for broker/env/type in PortfolioCreate
-- Update create_portfolio() to save new fields
-- Add filtering to list_portfolios() endpoint
+- Add validators for broker/env/type in MindfolioCreate
+- Update create_mindfolio() to save new fields
+- Add filtering to list_mindfolios() endpoint
 
 Implements Phase 0 of MINDFOLIO_BROKER_ARCHITECTURE.md"
 ```

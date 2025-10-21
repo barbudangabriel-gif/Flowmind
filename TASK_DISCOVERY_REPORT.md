@@ -65,7 +65,7 @@
 
 ### Architecture Plans (2 files)
 4. **`MINDFOLIO_BROKER_ARCHITECTURE.md`** (890 lines) - Multi-broker system
-5. **`PORTFOLIO_DEVELOPMENT_PLAN.md`** - Portfolio UI enhancement (5 phases)
+5. **`MINDFOLIO_DEVELOPMENT_PLAN.md`** - Mindfolio UI enhancement (5 phases)
 
 ### TODO Lists (2 files)
 6. **`TODO.md`** - Root TODO list
@@ -146,7 +146,7 @@
 ### High Priority (6 bugs)
 1. Options chain caching invalidation
 2. GEX chart rendering performance
-3. Portfolio P&L precision errors
+3. Mindfolio P&L precision errors
 4. Dark theme inconsistencies
 5. Mobile responsiveness issues
 6. API rate limit handling
@@ -200,12 +200,12 @@
   - Task 3.2: Frontend E2E tests
   - Task 3.3: Documentation updates
 
-### Portfolio Development (`PORTFOLIO_DEVELOPMENT_PLAN.md`)
+### Mindfolio Development (`MINDFOLIO_DEVELOPMENT_PLAN.md`)
 - **Phase 1:** Dark theme conversion (HIGH)
-- **Phase 2:** Enhanced PortfoliosList (HIGH)
-- **Phase 3:** Enhanced PortfolioDetail (MEDIUM)
+- **Phase 2:** Enhanced MindfoliosList (HIGH)
+- **Phase 3:** Enhanced MindfolioDetail (MEDIUM)
 - **Phase 4:** TradeStation integration (LOW - OAuth pending)
-- **Phase 5:** Create portfolio enhancement (LOW)
+- **Phase 5:** Create mindfolio enhancement (LOW)
 
 ### Sidebar Improvements (`frontend/src/SIDEBAR_TODO.md`)
 - Active state highlighting
@@ -242,7 +242,7 @@
 ### By Priority
 - **CRITICAL:** 1 (Multi-Broker Architecture)
 - **HIGH:** 1 (GEX Phase 1)
-- **MEDIUM:** 5+ (Portfolio detail, documentation, etc.)
+- **MEDIUM:** 5+ (Mindfolio detail, documentation, etc.)
 - **LOW:** 10+ (Future enhancements, nice-to-haves)
 
 ### By Timeline
@@ -274,7 +274,7 @@
 1. Complete Multi-Broker Architecture (all 3 days/phases)
 2. Test multi-broker with curl
 3. Verify UI works with broker tabs
-4. Migration script for existing portfolios
+4. Migration script for existing mindfolios
 
 ### Medium-term (Next 2 Weeks)
 1. Start GEX Enhancement Phase 1

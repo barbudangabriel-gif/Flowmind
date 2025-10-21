@@ -10,7 +10,7 @@
   "summary": [
     "FlowMind Analytics is a comprehensive trading platform with 15K+ lines of Python code",
     "Architecture: FastAPI backend + React frontend + MongoDB database",
-    "Primary focus: Options trading strategies and portfolio management",
+    "Primary focus: Options trading strategies and mindfolio management",
     "Grade: A- (Excellent foundation with room for optimization)",
     "Technical debt: Minimal and manageable"
   ],

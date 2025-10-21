@@ -49,7 +49,7 @@ class StockData(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
-class PortfolioItem(BaseModel):
+class MindfolioItem(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     symbol: str
     shares: float
@@ -61,19 +61,19 @@ class PortfolioItem(BaseModel):
     profit_loss_percent: Optional[float] = None
 
 
-class PortfolioItemCreate(BaseModel):
+class MindfolioItemCreate(BaseModel):
     symbol: str
     shares: float
     purchase_price: float
     purchase_date: datetime
 
 
-class PortfolioSummary(BaseModel):
+class MindfolioSummary(BaseModel):
     total_value: float
     total_cost: float
     total_profit_loss: float
     total_profit_loss_percent: float
-    items: List[PortfolioItem]
+    items: List[MindfolioItem]
 
 
 class TechnicalIndicatorData(BaseModel):
@@ -283,14 +283,14 @@ async def search_stocks(query: str):
         return {"results": []}
 
 
-# Portfolio Routes
-@api_router.post("/portfolio", response_model=PortfolioItem)
-async def add_portfolio_item(item: PortfolioItemCreate):
-    """Add item to portfolio"""
+# Mindfolio Routes
+@api_router.post("/mindfolio", response_model=MindfolioItem)
+async def add_mindfolio_item(item: MindfolioItemCreate):
+    """Add item to mindfolio"""
     # Get current stock price
     current_data = await get_stock_quote(item.symbol)
 
-    portfolio_item = PortfolioItem(
+    mindfolio_item = MindfolioItem(
         **item.dict(),
         current_price=current_data["price"],
         current_value=current_data["price"] * item.shares,
@@ -301,15 +301,15 @@ async def add_portfolio_item(item: PortfolioItemCreate):
         * 100,
     )
 
-    await db.portfolio.insert_one(portfolio_item.dict())
-    return portfolio_item
+    await db.mindfolio.insert_one(mindfolio_item.dict())
+    return mindfolio_item
 
 
-@api_router.get("/portfolio", response_model=PortfolioSummary)
-async def get_portfolio():
-    """Get complete portfolio with current values"""
-    items = await db.portfolio.find().to_list(1000)
-    portfolio_items = []
+@api_router.get("/mindfolio", response_model=MindfolioSummary)
+async def get_mindfolio():
+    """Get complete mindfolio with current values"""
+    items = await db.mindfolio.find().to_list(1000)
+    mindfolio_items = []
 
     total_value = 0
     total_cost = 0
@@ -339,29 +339,29 @@ async def get_portfolio():
                 "current_value", item_data["purchase_price"] * item_data["shares"]
             )
 
-        portfolio_items.append(PortfolioItem(**item_data))
+        mindfolio_items.append(MindfolioItem(**item_data))
 
     total_profit_loss = total_value - total_cost
     total_profit_loss_percent = (
         (total_profit_loss / total_cost * 100) if total_cost > 0 else 0
     )
 
-    return PortfolioSummary(
+    return MindfolioSummary(
         total_value=total_value,
         total_cost=total_cost,
         total_profit_loss=total_profit_loss,
         total_profit_loss_percent=total_profit_loss_percent,
-        items=portfolio_items,
+        items=mindfolio_items,
     )
 
 
-@api_router.delete("/portfolio/{item_id}")
-async def delete_portfolio_item(item_id: str):
-    """Delete item from portfolio"""
-    result = await db.portfolio.delete_one({"id": item_id})
+@api_router.delete("/mindfolio/{item_id}")
+async def delete_mindfolio_item(item_id: str):
+    """Delete item from mindfolio"""
+    result = await db.mindfolio.delete_one({"id": item_id})
     if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Portfolio item not found")
-    return {"message": "Portfolio item deleted successfully"}
+        raise HTTPException(status_code=404, detail="Mindfolio item not found")
+    return {"message": "Mindfolio item deleted successfully"}
 
 
 # Watchlist Routes

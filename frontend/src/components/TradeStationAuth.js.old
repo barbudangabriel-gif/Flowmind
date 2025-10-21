@@ -243,7 +243,7 @@ const TradeStationAuth = () => {
  <div className="text-blue-300 text-xl space-y-1">
  <p>• <strong>Real-time data:</strong> Get live market quotes and prices</p>
  <p>• <strong>Professional charts:</strong> Display accurate candlestick data</p>
- <p>• <strong>Account integration:</strong> View your portfolio and balances</p>
+ <p>• <strong>Account integration:</strong> View your mindfolio and balances</p>
  <p>• <strong>Trading capabilities:</strong> Place and manage orders (future)</p>
  </div>
  </div>

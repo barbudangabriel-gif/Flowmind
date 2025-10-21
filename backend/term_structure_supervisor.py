@@ -8,7 +8,7 @@ Key Responsibilities:
 - Pre-trade validation (budget, risk limits, ML confidence)
 - Position monitoring (P&L, Greeks, time decay)
 - Auto-pause on daily loss limit
-- Emergency stop on portfolio drawdown
+- Emergency stop on mindfolio drawdown
 - Trade approval workflow for manual mode
 
 Author: FlowMind AI Team
@@ -51,7 +51,7 @@ class TermStructureSupervisor:
     - Risk limit validation
     - ML prediction confidence checks
     - Daily loss limits
-    - Portfolio-level emergency stops
+    - Mindfolio-level emergency stops
     """
 
     def __init__(self, mindfolio_id: str, module_config: Dict):

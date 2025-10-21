@@ -110,7 +110,7 @@
 | MindfolioList.jsx | 202 | `text-lg` | `text-[13px] leading-[20.8px]` | | Link text |
 | MindfolioList.jsx | 215 | `text-4xl` | Keep (header) | | Page header |
 | MindfolioList.jsx | 246 | `text-xl` | `text-[13px] leading-[20.8px]` | | Section header |
-| MindfolioList.jsx | 274 | `text-4xl` | Keep (value) | | Portfolio name |
+| MindfolioList.jsx | 274 | `text-4xl` | Keep (value) | | Mindfolio name |
 | MindfolioList.jsx | 277 | `text-lg` | `text-[13px] leading-[20.8px]` | | Date text |
 | MindfolioList.jsx | 281 | `text-lg` | `text-[13px] leading-[20.8px]` | | Status badge |
 | MindfolioList.jsx | 288-296 | Multiple `text-xl` | `text-[13px] leading-[20.8px]` | | Labels |
@@ -118,26 +118,26 @@
 | MindfolioList.jsx | 302 | `text-lg` | `text-[13px] leading-[20.8px]` | | Module badge |
 | MindfolioList.jsx | 309 | `text-lg` | `text-[13px] leading-[20.8px]` | | Empty text |
 | MindfolioList.jsx | 314 | `text-lg` | `text-[13px] leading-[20.8px]` | | Footer text |
-| **PortfoliosList.jsx** |
-| PortfoliosList.jsx | 90 | `text-5xl` | Remove emoji | | **CRITICAL: Remove icon** |
-| PortfoliosList.jsx | 93-314 | Same as MindfolioList | Same as MindfolioList | | Duplicate structure |
-| **PortfolioDetail.jsx** |
-| PortfolioDetail.jsx | 63 | `text-xl` | `text-[13px] leading-[20.8px]` | | Error message |
-| PortfolioDetail.jsx | 74 | `text-xl` | `text-[13px] leading-[20.8px]` | | Loading text |
-| PortfolioDetail.jsx | 99 | `text-5xl` | Keep (header) | | Portfolio name |
-| PortfolioDetail.jsx | 101 | `text-xl` | `text-[13px] leading-[20.8px]` | | Info row |
-| PortfolioDetail.jsx | 104 | `text-3xl` | Keep (value) | | Cash display |
-| PortfolioDetail.jsx | 110 | `text-lg` | `text-[13px] leading-[20.8px]` | | Status badge |
-| PortfolioDetail.jsx | 120 | `text-lg` | `text-[13px] leading-[20.8px]` | | ID display |
-| PortfolioDetail.jsx | 129 | `text-xl` | `text-[13px] leading-[20.8px]` | | Button text |
-| PortfolioDetail.jsx | 135 | `text-xl` | `text-[13px] leading-[20.8px]` | | Button text |
-| PortfolioDetail.jsx | 143 | `text-lg` | `text-[13px] leading-[20.8px]` | | Timestamp |
-| PortfolioDetail.jsx | 156-201 | Multiple sizes | Update labels to 13px | | Stat cards |
-| PortfolioDetail.jsx | 157, 170, 183, 196 | `text-5xl` | Remove emojis | | **CRITICAL: Remove all emojis** |
-| PortfolioDetail.jsx | 215 | `text-xl` | `text-[13px] leading-[20.8px]` | | Tab button |
-| PortfolioDetail.jsx | 222 | `text-5xl` | Remove emoji | | **CRITICAL: Remove tab icon** |
-| PortfolioDetail.jsx | 228 | `text-lg` | `text-[13px] leading-[20.8px]` | | Tab count |
-| PortfolioDetail.jsx | 244-291 | Multiple sizes | Update all labels | | Content sections |
+| **MindfoliosList.jsx** |
+| MindfoliosList.jsx | 90 | `text-5xl` | Remove emoji | | **CRITICAL: Remove icon** |
+| MindfoliosList.jsx | 93-314 | Same as MindfolioList | Same as MindfolioList | | Duplicate structure |
+| **MindfolioDetail.jsx** |
+| MindfolioDetail.jsx | 63 | `text-xl` | `text-[13px] leading-[20.8px]` | | Error message |
+| MindfolioDetail.jsx | 74 | `text-xl` | `text-[13px] leading-[20.8px]` | | Loading text |
+| MindfolioDetail.jsx | 99 | `text-5xl` | Keep (header) | | Mindfolio name |
+| MindfolioDetail.jsx | 101 | `text-xl` | `text-[13px] leading-[20.8px]` | | Info row |
+| MindfolioDetail.jsx | 104 | `text-3xl` | Keep (value) | | Cash display |
+| MindfolioDetail.jsx | 110 | `text-lg` | `text-[13px] leading-[20.8px]` | | Status badge |
+| MindfolioDetail.jsx | 120 | `text-lg` | `text-[13px] leading-[20.8px]` | | ID display |
+| MindfolioDetail.jsx | 129 | `text-xl` | `text-[13px] leading-[20.8px]` | | Button text |
+| MindfolioDetail.jsx | 135 | `text-xl` | `text-[13px] leading-[20.8px]` | | Button text |
+| MindfolioDetail.jsx | 143 | `text-lg` | `text-[13px] leading-[20.8px]` | | Timestamp |
+| MindfolioDetail.jsx | 156-201 | Multiple sizes | Update labels to 13px | | Stat cards |
+| MindfolioDetail.jsx | 157, 170, 183, 196 | `text-5xl` | Remove emojis | | **CRITICAL: Remove all emojis** |
+| MindfolioDetail.jsx | 215 | `text-xl` | `text-[13px] leading-[20.8px]` | | Tab button |
+| MindfolioDetail.jsx | 222 | `text-5xl` | Remove emoji | | **CRITICAL: Remove tab icon** |
+| MindfolioDetail.jsx | 228 | `text-lg` | `text-[13px] leading-[20.8px]` | | Tab count |
+| MindfolioDetail.jsx | 244-291 | Multiple sizes | Update all labels | | Content sections |
 | **SidebarSimple.jsx** |
 | SidebarSimple.jsx | 254 | `text-lg` | `text-[13px] leading-[20.8px]` | | Section header |
 | SidebarSimple.jsx | 265 | `text-xl` | Already fixed | | Menu items (verify) |
@@ -163,8 +163,8 @@ Files with emojis to remove:
 - **AccountBalancePage.jsx** - Lines 161, 173, 185, 197 ( icons)
 - **InstitutionalPage.jsx** - Lines 138, 265 (, icons)
 - **MindfolioList.jsx** - Line 90 (🚨 icon)
-- **PortfoliosList.jsx** - Line 90 (🚨 icon)
-- **PortfolioDetail.jsx** - Lines 157, 170, 183, 196, 222 (, , icons)
+- **MindfoliosList.jsx** - Line 90 (🚨 icon)
+- **MindfolioDetail.jsx** - Lines 157, 170, 183, 196, 222 (, , icons)
 - **LiveLitTradesFeed.jsx** - May have emoji usage (verify)
 
 ### 2. Standardize Menu/Button Text (HIGH Priority)
@@ -176,7 +176,7 @@ Files with emojis to remove:
 - All `text-xl` and `text-lg` labels → `text-[13px] leading-[20.8px]`
 
 ### 4. Preserve Large Display Values
-- Keep `text-3xl`, `text-4xl`, `text-5xl` for stat displays, headers, portfolio names
+- Keep `text-3xl`, `text-4xl`, `text-5xl` for stat displays, headers, mindfolio names
 
 ---
 

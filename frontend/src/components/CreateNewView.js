@@ -4,7 +4,7 @@ import { X, Search, GripVertical } from 'lucide-react';
 
 const CreateNewView = () => {
  const navigate = useNavigate();
- const { portfolioId } = useParams();
+ const { mindfolioId } = useParams();
  const [activeTab, setActiveTab] = useState('add');
  const [viewName, setViewName] = useState('My View 1');
  const [filterTerm, setFilterTerm] = useState('');
@@ -115,7 +115,7 @@ const CreateNewView = () => {
 
  const handleDone = () => {
  // Save the view configuration and navigate back
- navigate(`/portfolios/${portfolioId}`, { 
+ navigate(`/mindfolios/${mindfolioId}`, { 
  state: { 
  newView: {
  name: viewName,
@@ -126,7 +126,7 @@ const CreateNewView = () => {
  };
 
  const handleCancel = () => {
- navigate(`/portfolios/${portfolioId}`);
+ navigate(`/mindfolios/${mindfolioId}`);
  };
 
  return (

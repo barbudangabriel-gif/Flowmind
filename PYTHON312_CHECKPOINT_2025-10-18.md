@@ -89,7 +89,7 @@
 - `backend/tests/test_iv_smoke.py` (46 lines)
 
 #### Backend Core (40+ files)
-- Large files: `advanced_scoring_engine.py`, `expert_options_system.py`, `gates_engine.py`, `options_calculator.py`, `portfolio_management_service.py`, etc.
+- Large files: `advanced_scoring_engine.py`, `expert_options_system.py`, `gates_engine.py`, `options_calculator.py`, `mindfolio_management_service.py`, etc.
 - Medium files: `observability.py`, `mindfolio.py`, `investment_scoring.py`, `token_manager.py`, etc.
 - Small files: `sell_puts_loader.py`, `bt_ops.py`, `bt_emergent.py`, etc.
 

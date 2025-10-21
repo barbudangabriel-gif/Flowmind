@@ -142,7 +142,7 @@ npm start
 - [ ] Live Flow shows recent trades
 - [ ] Market Overview displays tide data
 - [ ] Builder can fetch options chains
-- [ ] Portfolio page loads correctly
+- [ ] Mindfolio page loads correctly
 - [ ] No JavaScript errors in browser console
 
 ### Performance Tests

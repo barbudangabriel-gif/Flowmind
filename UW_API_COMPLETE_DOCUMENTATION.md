@@ -63,7 +63,7 @@
 ```
 
 **Use Cases:**
-- Portfolio Greeks calculation
+- Mindfolio Greeks calculation
 - Risk management
 - Delta hedging
 - Options strategy optimization

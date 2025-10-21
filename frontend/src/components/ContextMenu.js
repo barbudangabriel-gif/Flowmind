@@ -6,7 +6,7 @@ const ContextMenu = ({
  position, 
  onClose, 
  selectedPosition,
- availablePortfolios,
+ availableMindfolios,
  onMovePosition
 }) => {
  const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
@@ -36,10 +36,10 @@ const ContextMenu = ({
  };
  }, [isVisible, onClose]);
 
- const handleMoveToPortfolio = async (portfolioId, portfolioName) => {
+ const handleMoveToMindfolio = async (mindfolioId, mindfolioName) => {
  setLoading(true);
  try {
- await onMovePosition(selectedPosition.id, portfolioId, portfolioName);
+ await onMovePosition(selectedPosition.id, mindfolioId, mindfolioName);
  onClose();
  } catch (error) {
  console.error('Error moving position:', error);
@@ -72,7 +72,7 @@ const ContextMenu = ({
  </div>
  </div>
 
- {/* Move to Portfolio Option */}
+ {/* Move to Mindfolio Option */}
  <div 
  className="px-4 py-2 hover:bg-blue-50 cursor-pointer flex items-center justify-between group"
  onMouseEnter={() => setIsSubmenuOpen(true)}
@@ -81,7 +81,7 @@ const ContextMenu = ({
  <div className="flex items-center">
  <Folder className="w-4 h-4 mr-2 text-gray-600 group-hover:text-blue-600" />
  <span className="text-xl text-gray-700 group-hover:text-blue-700">
- Move to Portfolio
+ Move to Mindfolio
  </span>
  </div>
  <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
@@ -99,7 +99,7 @@ const ContextMenu = ({
  </div>
  </div>
 
- {/* Submenu for Portfolio Selection */}
+ {/* Submenu for Mindfolio Selection */}
  {isSubmenuOpen && (
  <div 
  className="fixed z-60 bg-white border border-gray-200 rounded-lg shadow-lg min-w-48"
@@ -115,41 +115,41 @@ const ContextMenu = ({
  {/* Submenu Header */}
  <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
  <div className="text-xl font-medium text-gray-900">
- Select Portfolio
+ Select Mindfolio
  </div>
  </div>
 
- {/* Available Portfolios */}
- {availablePortfolios && availablePortfolios.length > 0 ? (
- availablePortfolios.map((portfolio) => (
+ {/* Available Mindfolios */}
+ {availableMindfolios && availableMindfolios.length > 0 ? (
+ availableMindfolios.map((mindfolio) => (
  <div 
- key={portfolio.id}
+ key={mindfolio.id}
  className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
- onClick={() => handleMoveToPortfolio(portfolio.id, portfolio.name)}
+ onClick={() => handleMoveToMindfolio(mindfolio.id, mindfolio.name)}
  >
  <div className="flex items-center">
  <Folder className="w-4 h-4 mr-2 text-blue-600" />
  <div>
- <div className="text-xl text-gray-900">{portfolio.name}</div>
- <div className="text-lg text-gray-500">{portfolio.description}</div>
+ <div className="text-xl text-gray-900">{mindfolio.name}</div>
+ <div className="text-lg text-gray-500">{mindfolio.description}</div>
  </div>
  </div>
  </div>
  ))
  ) : (
  <div className="px-4 py-2 text-xl text-gray-500">
- No portfolios available
+ No mindfolios available
  </div>
  )}
 
- {/* Create New Portfolio Option */}
+ {/* Create New Mindfolio Option */}
  <div className="border-t border-gray-100">
  <div className="px-4 py-2 hover:bg-green-50 cursor-pointer">
  <div className="flex items-center">
  <div className="w-4 h-4 mr-2 rounded border-2 border-dashed border-green-400 flex items-center justify-center">
  <span className="text-green-600 text-lg font-medium">+</span>
  </div>
- <span className="text-xl text-green-700">Create New Portfolio</span>
+ <span className="text-xl text-green-700">Create New Mindfolio</span>
  </div>
  </div>
  </div>

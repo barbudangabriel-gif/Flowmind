@@ -21,7 +21,7 @@ SAFE_PREFIXES = {"/health", "/readyz", "/healthz"}
 def _limit_for(path: str) -> int:
     if (
         path.startswith("/api/ts/")
-        or path.startswith("/api/portfolios")
+        or path.startswith("/api/mindfolios")
         and "/ts/" in path
     ):
         return LIMIT_TS

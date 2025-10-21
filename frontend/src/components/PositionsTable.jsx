@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { pfClient } from '../services/portfolioClient';
+import { pfClient } from '../services/mindfolioClient';
 
-export default function PositionsTable({ portfolioId }) {
+export default function PositionsTable({ mindfolioId }) {
  const [positions, setPositions] = useState([]);
  const [realizedPnL, setRealizedPnL] = useState([]);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState(null);
 
  const loadData = async () => {
- if (!portfolioId) return;
+ if (!mindfolioId) return;
  
  setLoading(true);
  setError(null);
  
  try {
  const [positionsData, pnlData] = await Promise.all([
- pfClient.getPositions(portfolioId),
- pfClient.getRealizedPnL(portfolioId)
+ pfClient.getPositions(mindfolioId),
+ pfClient.getRealizedPnL(mindfolioId)
  ]);
  
  setPositions(positionsData);
@@ -30,7 +30,7 @@ export default function PositionsTable({ portfolioId }) {
 
  useEffect(() => {
  loadData();
- }, [portfolioId]);
+ }, [mindfolioId]);
 
  const totalCostBasis = positions.reduce((sum, pos) => sum + pos.cost_basis, 0);
  const totalRealizedPnL = realizedPnL.reduce((sum, pnl) => sum + pnl.realized, 0);

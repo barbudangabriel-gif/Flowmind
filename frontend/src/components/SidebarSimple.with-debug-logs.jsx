@@ -147,7 +147,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  role: ctx?.role || "user",
  flags: ctx?.flags || {},
  metrics: ctx?.metrics || {},
- portfolios: Array.isArray(ctx?.portfolios) ? ctx.portfolios : [],
+ mindfolios: Array.isArray(ctx?.mindfolios) ? ctx.mindfolios : [],
  };
  
  const nav = React.useMemo(() => {

@@ -52,7 +52,7 @@ Minor cosmetic issue - does not affect functionality:
 - `backend/advanced_scoring_engine.py` (16 lines)
 - `backend/investment_scoring_agent.py` (13 lines)
 - `backend/options_calculator.py` (11 lines)
-- `backend/portfolio_charts_service.py` (13 lines)
+- `backend/mindfolio_charts_service.py` (13 lines)
 - `backend/technical_analysis_agent.py` (13 lines)
 - `backend/term_structure_agent.py` (16 lines)
 - `backend/tradestation_client.py` (13 lines)

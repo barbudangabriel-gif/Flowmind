@@ -206,7 +206,7 @@ Authorization: Bearer {token}
 
 **Use Cases:**
 - Delta, Gamma, Theta, Vega analysis
-- Portfolio Greeks calculation
+- Mindfolio Greeks calculation
 - Risk management
 
 ---

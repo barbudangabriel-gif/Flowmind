@@ -34,15 +34,15 @@ text-base (16px) → text-sm (14px) [-2px]
 
 ### Files Modified:
 1. AccountBalancePage.jsx - 23 changes
-2. PortfolioDetail.jsx - 19 changes
+2. MindfolioDetail.jsx - 19 changes
 3. BuilderPage.jsx - 1 change
 4. ⚪ LiveFlowPage.jsx - no changes
 5. LiveLitTradesFeed.jsx - 6 changes
 6. LiveOffLitTradesFeed.jsx - 8 changes
 7. InstitutionalPage.jsx - 8 changes
 8. MindfolioList.jsx - 10 changes
-9. PortfoliosList.jsx - 10 changes
-10. PortfolioCreate.jsx - 2 changes
+9. MindfoliosList.jsx - 10 changes
+10. MindfolioCreate.jsx - 2 changes
 11. StreamingDashboard.jsx - 2 changes
 12. HomePage.jsx - 6 changes
 13. App.js - 1 change
@@ -92,9 +92,9 @@ Git checkout restored old code with emojis. The following need to be removed aga
 
 ### Emojis Found:
 - AccountBalancePage.jsx: , , , , , 🔌 (6 emojis)
-- PortfolioDetail.jsx: , , , , , (6 emojis)
+- MindfolioDetail.jsx: , , , , , (6 emojis)
 - MindfolioList.jsx: , , (3 emojis)
-- PortfoliosList.jsx: , , (3 emojis)
+- MindfoliosList.jsx: , , (3 emojis)
 - InstitutionalPage.jsx: , (2 emojis)
 - FlowPage.jsx: (1 emoji)
 

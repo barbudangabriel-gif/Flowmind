@@ -17,7 +17,7 @@
 
 **Impact**:
 - Reduced `BuilderPage.jsx` from 7449 to ~7285 lines (-164 lines, -2.2%)
-- Reusable across FlowPage, PortfolioPage, Scanner
+- Reusable across FlowPage, MindfolioPage, Scanner
 - Enables React.memo optimization
 - Easier unit testing
 
@@ -76,7 +76,7 @@ async def get_options_chain(symbol: str):
 - **Fișier nou**: `backend/observability/metrics.py` (450 linii)
 - **Metrics Tracked** (15+ metrics):
  - **API Performance**: request count, latency (histogram), request/response size
- - **Business Metrics**: strategies priced, flow trades processed, portfolios active, portfolio value
+ - **Business Metrics**: strategies priced, flow trades processed, mindfolios active, mindfolio value
  - **Cache Metrics**: hits/misses, size, entries
  - **External APIs**: TradeStation/Unusual Whales calls, latency, errors
  - **Database**: query count, latency, active connections
@@ -143,7 +143,7 @@ async def fetch_ts_chain(symbol):
  - **Options**: `OptionsChainRequest`, `GEXRequest`
  - **Flow**: `FlowSummaryRequest`, `FlowLiveRequest`, `FlowHistoricalRequest`
  - **Optimizer**: `OptimizerSuggestRequest`
- - **Portfolio**: `PortfolioCreateRequest`, `TransactionCreateRequest`
+ - **Mindfolio**: `MindfolioCreateRequest`, `TransactionCreateRequest`
  - **Health**: `HealthCheckResponse`, `RedisHealthResponse`
 
 **Features**:
@@ -467,7 +467,7 @@ backend/server.py (+30 lines)
 - 15+ Prometheus metrics (full visibility)
 - Cache hit/miss tracking
 - External API latency monitoring
-- Business metrics (strategies, flow, portfolios)
+- Business metrics (strategies, flow, mindfolios)
 
 ### **Quality**
 - Zero syntax errors (100% validation)

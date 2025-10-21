@@ -285,12 +285,12 @@ class OptimizerSuggestRequest(BaseModel):
 
 
 # ============================================================================
-# Portfolio Models
+# Mindfolio Models
 # ============================================================================
 
 
-class PortfolioCreateRequest(BaseModel):
-    """Request to create a new portfolio"""
+class MindfolioCreateRequest(BaseModel):
+    """Request to create a new mindfolio"""
 
     name: str = Field(..., min_length=1, max_length=100)
     cash_balance: float = Field(10000.0, ge=0)
@@ -299,7 +299,7 @@ class PortfolioCreateRequest(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "name": "My Trading Portfolio",
+                "name": "My Trading Mindfolio",
                 "cash_balance": 10000.0,
                 "description": "Options trading strategies",
             }
@@ -309,7 +309,7 @@ class PortfolioCreateRequest(BaseModel):
 class TransactionCreateRequest(BaseModel):
     """Request to add a transaction"""
 
-    portfolio_id: str = Field(..., min_length=1)
+    mindfolio_id: str = Field(..., min_length=1)
     symbol: str = Field(..., pattern=r"^[A-Z]{1,10}$")
     side: Literal["BUY", "SELL"] = Field(...)
     qty: float = Field(..., gt=0)

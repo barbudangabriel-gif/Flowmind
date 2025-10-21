@@ -22,7 +22,7 @@ UW_API_TOKEN=5809ee6a8dc1d10f2c829ab0e947c1b7
  **Ai acces la:**
 - Unusual Whales **Pro tier**
 - **WebSocket streaming** (wss://api.unusualwhales.com/socket)
-- **All REST endpoints** (minus politician_portfolios)
+- **All REST endpoints** (minus politician_mindfolios)
 - **120 req/min**, **3 concurrent connections**, **15K hits/day**
 
  **Documentație oficială:**

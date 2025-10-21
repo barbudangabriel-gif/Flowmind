@@ -68,7 +68,7 @@ class InvestmentScoringAgent:
 
         Args:
             symbol: Stock ticker symbol
-            user_context: Optional user portfolio/preferences for personalization
+            user_context: Optional user mindfolio/preferences for personalization
 
         Returns:
             Dict containing investment score, signals, and recommendations

@@ -57,9 +57,9 @@
  - Stock data fallback (price, volume)
 - **Lines:** 15+ fixes
 
-### 5. **backend/portfolio_charts_service.py**
+### 5. **backend/mindfolio_charts_service.py**
 - **Change:** Chart volatility and variance calculations use `secrets`
-- **Impact:** Portfolio performance mock data cryptographically secure
+- **Impact:** Mindfolio performance mock data cryptographically secure
 - **Lines:** 6 fixes
 
 ### 6. **backend/routers/options.py**
@@ -171,7 +171,7 @@ cd backend && bandit -r . 2>/dev/null | grep -c "B311"
  - Added: Redis health endpoint, CI health validation
  
 3. **91944c9** - Performance + Documentation (partial fixes)
- - Fixed: `advanced_scoring_engine.py` (partial), `portfolio_charts_service.py` (partial), `server.py` (partial)
+ - Fixed: `advanced_scoring_engine.py` (partial), `mindfolio_charts_service.py` (partial), `server.py` (partial)
  - Added: Performance testing suite, comprehensive README, CHANGELOG
  
 4. **[THIS COMMIT]** - Complete CWE-330 elimination (final cleanup)

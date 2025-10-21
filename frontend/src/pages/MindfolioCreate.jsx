@@ -18,12 +18,12 @@ export default function MindfolioCreate() {
  
  try {
  console.log('Creating mindfolio with:', { name: name.trim(), starting_balance: Number(balance), modules: [] });
- const portfolio = await mfClient.create({
+ const mindfolio = await mfClient.create({
  name: name.trim(),
  starting_balance: Number(balance),
  modules: []
  });
- console.log('Created portfolio:', portfolio);
+ console.log('Created mindfolio:', mindfolio);
  // Navigate to mindfolio list instead of detail page
  navigate('/mindfolio');
  } catch (ex) {
@@ -102,7 +102,7 @@ export default function MindfolioCreate() {
  disabled={!name.trim() || creating}
  className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed transition-colors"
  >
- {creating ? "Creating..." : "Create Portfolio"}
+ {creating ? "Creating..." : "Create Mindfolio"}
  </button>
  
  <Link

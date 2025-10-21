@@ -36,7 +36,7 @@ A  backend/iv_service/service.py
 M  backend/iv_service/ts_client.py
 A  backend/middleware/__init__.py
 A  backend/middleware/rate_limit.py
-A  backend/portfolios.py
+A  backend/mindfolios.py
 A  backend/pytest.ini
 A  backend/redis_fallback.py
 M  backend/requirements.txt
@@ -89,7 +89,7 @@ A  data/flowmind.db
 M  detailed_chart_test.py
 A  docker-compose.yml
 A  enhanced_options_test.py
-M  enhanced_portfolio_test.py
+M  enhanced_mindfolio_test.py
 M  enhanced_trading_strategies_test.py
 M  etf_data_test.py
 M  etf_symbol_analysis.py
@@ -182,7 +182,7 @@ A  frontend/src/lib/flowApi.js
 A  frontend/src/lib/metrics.js
 A  frontend/src/lib/nav.js
 A  frontend/src/lib/nav.simple.js
-A  frontend/src/lib/portfolioAPI.js
+A  frontend/src/lib/mindfolioAPI.js
 A  frontend/src/lib/strategies.js
 A  frontend/src/logic/stanceFromStrategy.js
 A  frontend/src/options/api/useChain.js
@@ -193,12 +193,12 @@ A  frontend/src/pages/LiveFlowPage.jsx
 A  frontend/src/pages/OptimizePage.jsx
 A  frontend/src/pages/OptionsAnalytics.jsx
 A  frontend/src/pages/OptionsWorkbench.jsx
-A  frontend/src/pages/PortfolioCreate.jsx
-A  frontend/src/pages/PortfolioDetail.jsx
-A  frontend/src/pages/PortfoliosList.jsx
+A  frontend/src/pages/MindfolioCreate.jsx
+A  frontend/src/pages/MindfolioDetail.jsx
+A  frontend/src/pages/MindfoliosList.jsx
 A  frontend/src/services/ivClient.js
 A  frontend/src/services/optionsApi.js
-A  frontend/src/services/portfolioClient.js
+A  frontend/src/services/mindfolioClient.js
 A  frontend/src/stores/optionsStore.js
 A  frontend/src/ui/stance.js
 A  frontend/src/utils/date.js
@@ -229,9 +229,9 @@ M  options_backend_test.py
 M  options_module_test.py
 A  options_optimizer_test.py
 M  options_selling_backend_test.py
-A  portfolio_advanced_test.py
-A  portfolio_management_backend_test.py
-M  portfolio_management_test.py
+A  mindfolio_advanced_test.py
+A  mindfolio_management_backend_test.py
+M  mindfolio_management_test.py
 M  price_fix_verification.py
 M  pricing_data_source_test.py
 M  pricing_investigation_test.py
@@ -248,7 +248,7 @@ M  test_3tier_priority.py
 M  test_detailed_unusual_whales.py
 M  test_investment_scoring_enhanced.py
 M  test_options_calculator.py
-M  test_portfolio_management.py
+M  test_mindfolio_management.py
 M  test_result.md
 M  test_technical_analysis.py
 M  test_unusual_whales.py
@@ -267,10 +267,10 @@ M  tradestation_development_test.py
 M  tradestation_direct_test.py
 M  tradestation_final_test.py
 M  tradestation_integration_test.py
-M  tradestation_portfolio_investigation.py
-M  tradestation_portfolio_test.py
-M  tradestation_portfolio_values_test.py
-M  tradestation_portfolio_verification_test.py
+M  tradestation_mindfolio_investigation.py
+M  tradestation_mindfolio_test.py
+M  tradestation_mindfolio_values_test.py
+M  tradestation_mindfolio_verification_test.py
 M  tradestation_positions_test.py
 M  tradestation_test.py
 M  unusual_whales_test.py
@@ -294,17 +294,17 @@ audit_out/audit_20250824_204956/quality.txt:2:TODO/FIXME comments: 9
 audit_out/audit_20250824_204956/report.json:48:      "description": "TODO comments indicate pending features and improvements",
 audit_out/audit_20250824_204956/summary.txt:19:- TODO Items: 9
 backend/investment_scoring.py:49:            # TODO: Integrare TradeStation API pentru lista completă de tickere
-backend/portfolios.py:491:            "pnl_unrealized": 0,  # TODO: requires market prices
-backend/portfolios.py:494:            "win_rate": None,  # TODO: calculate from profitable vs losing trades
-backend/portfolios.py:495:            "expectancy": None,  # TODO: average profit per trade
-backend/portfolios.py:496:            "max_dd": None,  # TODO: calculate from equity curve
-backend/portfolios.py:698:        # TODO: Implement actual quote subscription when database service is available
-backend/portfolios.py:733:        # TODO: Implement actual database integration when available
-backend/portfolios.py:777:        # Create mock bucket (TODO: Implement actual database integration)
-backend/portfolios.py:850:                "win_rate": None,  # TODO: Calculate from profitable trades
-backend/portfolios.py:851:                "sharpe_ratio": None,  # TODO: Calculate from equity curve
-backend/portfolios.py:852:                "max_drawdown": None,  # TODO: Calculate from equity curve
-backend/portfolios.py:855:            "buckets": [],  # TODO: Implement bucket-level analytics
+backend/mindfolios.py:491:            "pnl_unrealized": 0,  # TODO: requires market prices
+backend/mindfolios.py:494:            "win_rate": None,  # TODO: calculate from profitable vs losing trades
+backend/mindfolios.py:495:            "expectancy": None,  # TODO: average profit per trade
+backend/mindfolios.py:496:            "max_dd": None,  # TODO: calculate from equity curve
+backend/mindfolios.py:698:        # TODO: Implement actual quote subscription when database service is available
+backend/mindfolios.py:733:        # TODO: Implement actual database integration when available
+backend/mindfolios.py:777:        # Create mock bucket (TODO: Implement actual database integration)
+backend/mindfolios.py:850:                "win_rate": None,  # TODO: Calculate from profitable trades
+backend/mindfolios.py:851:                "sharpe_ratio": None,  # TODO: Calculate from equity curve
+backend/mindfolios.py:852:                "max_drawdown": None,  # TODO: Calculate from equity curve
+backend/mindfolios.py:855:            "buckets": [],  # TODO: Implement bucket-level analytics
 scripts/audit.sh:97:    # TODO/FIXME comments
 scripts/audit.sh:98:    TODO_COUNT=$(grep -r "TODO\|FIXME\|HACK\|XXX" /app --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=audit_out 2>/dev/null | wc -l || echo "0")
 scripts/audit.sh:99:    echo "TODO/FIXME comments: $TODO_COUNT" >> "$AUDIT_DIR/quality.txt"
@@ -430,7 +430,7 @@ test_result.md:571:TS_TOKEN_MARGIN_SEC=120
 test_result.md:625:- 🔄 **Update .env** with new CLIENT_ID and CLIENT_SECRET  
 test_result.md:891:          comment: "✅ OPTIONS OVERVIEW ENDPOINT COMPREHENSIVE TESTING COMPLETE - EXCELLENT RESULTS: Successfully tested all 4 TradeStation integration endpoints as requested in review. ✅ ALL ENDPOINTS RESPONDING: GET /api/options/overview (default), GET /api/options/overview?symbol=ALL, GET /api/options/overview?symbol=TSLA all return HTTP 200 with proper JSON structure containing activeStrategies, expirationDates, dailyVolumeUsd, avgIvPct fields. Response times excellent (0.096s-0.424s). ✅ GRACEFUL ERROR HANDLING CONFIRMED: TradeStation API returning 401 Unauthorized due to placeholder token (TS_TOKEN='PLACEHOLDER_NEED_VALID_TS_OAUTH_TOKEN'), but system handles this gracefully by returning structured fallback data with zero values and proper source metadata indicating 'tradestation' provider. No crashes or 500 errors. ✅ SOURCE METADATA WORKING: All responses include proper source field showing 'chain': 'tradestation' and 'symbolUsed' indicating which symbol was used for data retrieval (SPY for ALL, TSLA for specific symbol). ✅ INTEGRATION ARCHITECTURE SOUND: TSClient properly configured, endpoints correctly routing through integration layer, error handling prevents UI crashes. System ready for production once valid TradeStation OAuth token is configured. SUCCESS RATE: 100% (3/3 overview endpoints working with graceful fallback). TradeStation integration architecture is production-ready and working correctly."
 test_result.md:925:          comment: "🎉 TRADESTATION INTEGRATION AND TOKEN REFRESH COMPREHENSIVE TESTING COMPLETE - EXCELLENT RESULTS: Conducted extensive testing of TradeStation integration and token refresh functionality as specifically requested in review. ✅ AUTHENTICATION ENDPOINTS WORKING PERFECTLY: GET /api/auth/tradestation/status returns complete authentication status (authenticated: true, has_access_token: true, has_refresh_token: true, environment: LIVE), GET /api/auth/tradestation/login generates proper OAuth URL with TradeStation domain and required parameters, POST /api/auth/tradestation/refresh successfully refreshes tokens with 'success' status. ✅ TRADESTATION API ENDPOINTS OPERATIONAL: GET /api/tradestation/accounts returns 2 accounts (11775499 Margin Active, 210MJP11 Futures Active) with complete account details, GET /api/tradestation/positions/11775499 returns 70 positions including stocks (AAPL 300 shares $68,424) and options with proper data structure, GET /api/tradestation/balances/11775499 returns comprehensive balance data with proper API response format. ✅ TOKEN AUTO-REFRESH MECHANISM VERIFIED: Initial authentication status shows needs_refresh: true, token refresh executed successfully in 0.756s, subsequent API calls work without issues, final authentication status shows authenticated: true with needs_refresh: false, confirming automatic token refresh is working correctly. ✅ CONNECTION STABILITY CONFIRMED: All 12 tests passed with 100% success rate, response times excellent (0.02-0.76s), no authentication failures or token expiration issues detected, all endpoints accessible via proper /api prefix. ✅ LIVE ENVIRONMENT INTEGRATION: System properly configured for LIVE TradeStation environment, real account data retrieved (not mock), proper OAuth flow with redirect_uri configured, token storage and persistence working correctly. SUCCESS RATE: 100% (12/12 tests passed, 7/7 phases completed). TradeStation integration and token refresh functionality is working perfectly and ready for production use with stable authentication and reliable API access."
-test_result.md:937:          comment: "🎯 TRADESTATION TOKEN REFRESH AND API INTEGRATION TESTING COMPLETE - OUTSTANDING RESULTS: Conducted comprehensive testing of TradeStation token refresh functionality and API integration as requested in review. ✅ TOKEN REFRESH ENDPOINTS IMPLEMENTED: POST /api/auth/tradestation/refresh successfully refreshes expired tokens, returns proper success/error status, handles token expiration gracefully with automatic refresh mechanism. ✅ AUTHENTICATION FLOW COMPLETE: GET /api/auth/tradestation/status provides complete authentication status including token expiration times, GET /api/auth/tradestation/login generates proper OAuth URLs for user authentication, POST /api/auth/tradestation/callback handles OAuth callback processing. ✅ API INTEGRATION WORKING: All TradeStation API endpoints properly integrated with authentication system, automatic token refresh occurs before API calls when needed, no manual token management required by client applications, seamless integration with existing portfolio management system. ✅ LIVE DATA ACCESS CONFIRMED: Real-time access to TradeStation LIVE environment, 2 active accounts accessible (11775499 Margin, 210MJP11 Futures), 70+ positions retrieved with accurate market values and P&L data, balance information accessible with comprehensive account details. ✅ ERROR HANDLING AND STABILITY: Proper error handling for expired tokens, graceful fallback when authentication fails, robust session management prevents token conflicts, all endpoints respond within acceptable timeframes (0.02-0.76s). SUCCESS RATE: 100% (all token refresh and API integration tests passed). TradeStation token refresh functionality is stable and reliable for production use."
+test_result.md:937:          comment: "🎯 TRADESTATION TOKEN REFRESH AND API INTEGRATION TESTING COMPLETE - OUTSTANDING RESULTS: Conducted comprehensive testing of TradeStation token refresh functionality and API integration as requested in review. ✅ TOKEN REFRESH ENDPOINTS IMPLEMENTED: POST /api/auth/tradestation/refresh successfully refreshes expired tokens, returns proper success/error status, handles token expiration gracefully with automatic refresh mechanism. ✅ AUTHENTICATION FLOW COMPLETE: GET /api/auth/tradestation/status provides complete authentication status including token expiration times, GET /api/auth/tradestation/login generates proper OAuth URLs for user authentication, POST /api/auth/tradestation/callback handles OAuth callback processing. ✅ API INTEGRATION WORKING: All TradeStation API endpoints properly integrated with authentication system, automatic token refresh occurs before API calls when needed, no manual token management required by client applications, seamless integration with existing mindfolio management system. ✅ LIVE DATA ACCESS CONFIRMED: Real-time access to TradeStation LIVE environment, 2 active accounts accessible (11775499 Margin, 210MJP11 Futures), 70+ positions retrieved with accurate market values and P&L data, balance information accessible with comprehensive account details. ✅ ERROR HANDLING AND STABILITY: Proper error handling for expired tokens, graceful fallback when authentication fails, robust session management prevents token conflicts, all endpoints respond within acceptable timeframes (0.02-0.76s). SUCCESS RATE: 100% (all token refresh and API integration tests passed). TradeStation token refresh functionality is stable and reliable for production use."
 test_result.md:1581:    - message: "🎉 TRADESTATION INTEGRATION AND TOKEN REFRESH TESTING COMPLETE - EXCELLENT RESULTS: Conducted comprehensive testing of TradeStation integration and token refresh functionality as specifically requested in review. ✅ ALL REQUESTED ENDPOINTS WORKING PERFECTLY: 1) GET /api/auth/tradestation/status - Authentication status check working (authenticated: true, LIVE environment, proper token management), 2) GET /api/auth/tradestation/login - Login URL generation working (proper OAuth URL with TradeStation domain), 3) POST /api/auth/tradestation/refresh - Token refresh working (successful refresh in 0.756s), 4) GET /api/tradestation/accounts - Accounts retrieval working (2 accounts: 11775499 Margin, 210MJP11 Futures), 5) GET /api/tradestation/positions/{account_id} - Positions retrieval working (70 positions with real market data), 6) GET /api/tradestation/balances/{account_id} - Balances retrieval working (comprehensive balance data). ✅ TOKEN AUTO-REFRESH MECHANISM VERIFIED: System automatically refreshes tokens when needed, no manual intervention required, seamless API access maintained, authentication status properly tracked throughout operations. ✅ CONNECTION STABILITY CONFIRMED: 100% success rate (12/12 tests passed), excellent response times (0.02-0.76s), no authentication failures, all endpoints accessible via proper /api prefix. ✅ LIVE ENVIRONMENT INTEGRATION: Real TradeStation LIVE environment access confirmed, authentic account data retrieved (not mock), proper OAuth flow configured, token storage and persistence working correctly. SUCCESS RATE: 100% (7/7 phases completed). TradeStation integration and token refresh functionality is working perfectly and ready for production use. All review requirements satisfied with stable authentication and reliable API access."
 test_result.md:1877:        - comment: "🎉 OAUTH AUTHENTICATION FULLY OPERATIONAL: TradeStation OAuth system now successfully authenticated and connected to LIVE environment. ✅ AUTHENTICATION STATUS: authenticated: true, environment: LIVE, expires_in_minutes: 11, connection successful with 2 accounts found. ✅ API CONNECTIVITY: Successfully connected to TradeStation API (https://api.tradestation.com/v3) with proper credentials configured. ✅ TOKEN MANAGEMENT: Active authentication tokens with proper expiration tracking. ✅ LIVE ENVIRONMENT: Connected to real trading environment, not simulation. The OAuth authentication system is now fully functional and enabling access to live trading data and account balances."
 test_result.md:1883:        - comment: "🎉 TRADESTATION AUTHENTICATION FLOW COMPREHENSIVE TESTING COMPLETE - EXCELLENT RESULTS: Conducted extensive testing of complete TradeStation authentication flow as requested in review after callback URL fix (http://localhost:8080). ✅ AUTHENTICATION STATUS ENDPOINT: GET /api/auth/tradestation/status working perfectly (200 OK, 0.02s) with complete response structure showing authenticated: false, environment: LIVE, credentials_configured: true, base_url: https://api.tradestation.com/v3, redirect_uri: http://localhost:8080. ✅ OAUTH LOGIN ENDPOINT: GET /api/auth/tradestation/login working excellently (200 OK, 0.11s) generating proper OAuth URL (305 chars) with all required parameters (client_id=XEs0URG1rMrGDUFRKVhlDaclvQKq8Qpj, redirect_uri=http://localhost:8080, response_type=code, scope) and 4-step authentication instructions. ✅ CALLBACK ENDPOINT FUNCTIONALITY: GET /api/auth/tradestation/callback responding correctly with proper parameter validation (422 for missing code/state), handles mock authorization codes appropriately (500 with 'invalid_grant' error as expected), and processes token exchange requests properly. ✅ TOKEN EXCHANGE TESTING: Simulated token exchange with mock codes working as expected - endpoint correctly rejects invalid codes with proper error messages, validates required parameters, and handles edge cases (malformed codes, SQL injection attempts) securely. ✅ STATUS CONSISTENCY: Authentication status remains consistent throughout testing flow, properly tracking authentication state changes. ✅ ERROR HANDLING: Robust error handling for all edge cases including malformed codes, missing parameters, and security threats. ✅ PERFORMANCE: Excellent response times (0.02-0.26s) across all endpoints. ✅ COMPLETE FLOW INTEGRATION: All 5 authentication flow steps working (Status → Login → Callback → Token Exchange → Status). SUCCESS RATE: 100% (8/8 assessment criteria passed). All review requirements met: callback endpoint responds correctly, token exchange functionality tested, token storage and status checking verified, complete authentication status flow operational. TradeStation OAuth authentication system is fully functional and ready for production use with resolved callback URL (http://localhost:8080)."

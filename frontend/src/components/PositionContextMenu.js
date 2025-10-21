@@ -16,7 +16,7 @@ const PositionContextMenu = ({
  y, 
  onClose, 
  onMovePosition,
- availablePortfolios = []
+ availableMindfolios = []
 }) => {
  const [showMoveSubmenu, setShowMoveSubmenu] = useState(false);
 
@@ -33,12 +33,12 @@ const PositionContextMenu = ({
 
  if (!isVisible) return null;
 
- const handleMoveToPortfolio = (targetPortfolio) => {
- onMovePosition(position, targetPortfolio);
+ const handleMoveToMindfolio = (targetMindfolio) => {
+ onMovePosition(position, targetMindfolio);
  onClose();
  };
 
- const getPortfolioIcon = (category) => {
+ const getMindfolioIcon = (category) => {
  switch (category) {
  case 'long_term': return <Clock size={14} className="text-green-500" />;
  case 'medium_term': return <TrendingUp size={14} className="text-blue-500" />;
@@ -74,7 +74,7 @@ const PositionContextMenu = ({
  </div>
  </div>
 
- {/* Move to Portfolio Option */}
+ {/* Move to Mindfolio Option */}
  <div
  className="relative"
  onMouseEnter={() => setShowMoveSubmenu(true)}
@@ -82,28 +82,28 @@ const PositionContextMenu = ({
  >
  <button className="w-full px-3 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 text-gray-700">
  <ArrowRightLeft size={16} />
- <span>Move to Portfolio</span>
+ <span>Move to Mindfolio</span>
  <span className="ml-auto text-gray-400">›</span>
  </button>
 
- {/* Submenu for Portfolio Selection */}
- {showMoveSubmenu && availablePortfolios.length > 0 && (
+ {/* Submenu for Mindfolio Selection */}
+ {showMoveSubmenu && availableMindfolios.length > 0 && (
  <div className="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 min-w-56 z-60">
  <div className="px-3 py-1 text-lg font-medium text-gray-500 border-b border-gray-100">
- Select Destination Portfolio
+ Select Destination Mindfolio
  </div>
- {availablePortfolios.map((portfolio) => (
+ {availableMindfolios.map((mindfolio) => (
  <button
- key={portfolio.id}
- onClick={() => handleMoveToPortfolio(portfolio)}
+ key={mindfolio.id}
+ onClick={() => handleMoveToMindfolio(mindfolio)}
  className="w-full px-3 py-2 text-left hover:bg-blue-50 flex items-center space-x-2"
  >
- {getPortfolioIcon(portfolio.category)}
+ {getMindfolioIcon(mindfolio.category)}
  <div className="flex-1">
- <div className="font-medium text-gray-900">{portfolio.name}</div>
- <div className="text-lg text-gray-600">{portfolio.description}</div>
+ <div className="font-medium text-gray-900">{mindfolio.name}</div>
+ <div className="text-lg text-gray-600">{mindfolio.description}</div>
  <div className="text-lg text-gray-500 mt-1">
- {portfolio.positions_count} positions • ${portfolio.total_value?.toLocaleString()}
+ {mindfolio.positions_count} positions • ${mindfolio.total_value?.toLocaleString()}
  </div>
  </div>
  </button>

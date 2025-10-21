@@ -1,6 +1,6 @@
 """
 TradeStation API Client
-Handles all interactions with TradeStation API for portfolio data and trading functionality
+Handles all interactions with TradeStation API for mindfolio data and trading functionality
 """
 
 import asyncio

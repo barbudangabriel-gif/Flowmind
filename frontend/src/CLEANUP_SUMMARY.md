@@ -64,7 +64,7 @@ POST /api/auth/tradestation/callback
 - ✅ **SidebarSimple.jsx** (194 lines, clean)
 - ✅ **BuilderPage.jsx** - 54+ strategies
 - ✅ **FlowPage.jsx** - Live monitoring
-- ✅ **Portfolio pages** (3 files)
+- ✅ **Mindfolio pages** (3 files)
 
 ### Backups (KEPT)
 - App.production-ready.js (backup identic)

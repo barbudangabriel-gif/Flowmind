@@ -81,7 +81,7 @@ class RiskLimits(BaseModel):
 
     max_order_value: float = 100000  # Maximum single order value
     max_daily_trades: int = 100  # Maximum daily trade count
-    max_position_size: float = 0.25  # Maximum position as % of portfolio
+    max_position_size: float = 0.25  # Maximum position as % of mindfolio
     max_sector_concentration: float = 0.40  # Maximum sector concentration
     min_account_balance: float = 1000  # Minimum account balance to maintain
 
@@ -174,16 +174,16 @@ class TradingRiskManager:
                 (pos for pos in positions if pos.symbol == order.symbol), None
             )
 
-            portfolio_value = sum(abs(pos.market_value) for pos in positions)
-            if portfolio_value > 0:
+            mindfolio_value = sum(abs(pos.market_value) for pos in positions)
+            if mindfolio_value > 0:
                 new_position_value = estimated_cost
                 if current_position:
                     new_position_value += abs(current_position.market_value)
 
-                position_percentage = new_position_value / portfolio_value
+                position_percentage = new_position_value / mindfolio_value
                 if position_percentage > self.limits.max_position_size:
                     validation_result["warnings"].append(
-                        f"Position would be {position_percentage*100:.1f}% of portfolio "
+                        f"Position would be {position_percentage*100:.1f}% of mindfolio "
                         f"(limit: {self.limits.max_position_size*100:.1f}%)"
                     )
                     validation_result["risk_assessment"] = "HIGH"

@@ -100,33 +100,33 @@
  - Zero-gamma levels
  - Market maker positioning
 
-### 4. **Portfolios** (Portfolio Management)
-**Portfolio Manager Module:**
+### 4. **Mindfolios** (Mindfolio Management)
+**Mindfolio Manager Module:**
 
-#### 4.1 **Portfolio Manager**
-- **Path:** `/portfolios`
-- **Backend:** `backend/portfolios.py`
+#### 4.1 **Mindfolio Manager**
+- **Path:** `/mindfolios`
+- **Backend:** `backend/mindfolios.py`
 - **Features:**
- - Create/manage portfolios
+ - Create/manage mindfolios
  - Track positions (FIFO)
  - Transaction history
  - P&L tracking (realized/unrealized)
  - Module allocation
  - Funds management
 
-#### 4.2 **Smart Rebalancing** (AI Portfolio Optimization)
-- **Path:** `/portfolio/rebalancing`
+#### 4.2 **Smart Rebalancing** (AI Mindfolio Optimization)
+- **Path:** `/mindfolio/rebalancing`
 - **Backend:** `backend/smart_rebalancing_service.py`
-- **Description:** AI-driven portfolio rebalancing
+- **Description:** AI-driven mindfolio rebalancing
 - **Features:**
  - Optimal allocation suggestions
  - Risk-adjusted rebalancing
  - Tax-loss harvesting awareness
  - Module budget optimization
 
-#### 4.3 **Portfolio Analytics**
-- **Path:** `/portfolio/analytics`
-- **Backend:** `backend/portfolio_charts_service.py`
+#### 4.3 **Mindfolio Analytics**
+- **Path:** `/mindfolio/analytics`
+- **Backend:** `backend/mindfolio_charts_service.py`
 - **Features:**
  - P&L charts
  - Greek exposure
@@ -213,10 +213,10 @@
 � Dashboard
 
 💼 Account
-└── Portfolio Manager
- ├── View All Portfolios
- ├── [Dynamic: User Portfolios]
- └── + Create Portfolio
+└── Mindfolio Manager
+ ├── View All Mindfolios
+ ├── [Dynamic: User Mindfolios]
+ └── + Create Mindfolio
 
  Stocks (Stock Analysis)
 ├── Investment Scoring
@@ -245,10 +245,10 @@
 ├── 🔗 Options Chain (TradeStation)
 └── GEX (Gamma Exposure)
 
-💼 Portfolios (Portfolio Management)
-├── Portfolio Manager (main)
+💼 Mindfolios (Mindfolio Management)
+├── Mindfolio Manager (main)
 ├── ⚖️ Smart Rebalancing (AI)
-└── Portfolio Analytics
+└── Mindfolio Analytics
 
  Analytics
 ├── Backtests
@@ -264,14 +264,14 @@
 ## Key Relationships & Data Flow
 
 1. **Stocks (Investment Scoring)** → Identifies best stocks → Feed into Strategy modules
-2. **Strategy (IV Service)** → Auto-scans setups → User reviews in Builder → Portfolio tracks
+2. **Strategy (IV Service)** → Auto-scans setups → User reviews in Builder → Mindfolio tracks
 3. **Strategy (Sell Puts)** → CSP sold → Assignment → Auto Covered Calls
-4. **Options Analytics (Builder)** → Manual construction → Uses 54+ strategy templates → Portfolio tracks
-5. **Options Analytics (Optimize)** → AI suggestions → User builds in Builder → Portfolio tracks
+4. **Options Analytics (Builder)** → Manual construction → Uses 54+ strategy templates → Mindfolio tracks
+5. **Options Analytics (Optimize)** → AI suggestions → User builds in Builder → Mindfolio tracks
 6. **Options Analytics (Flow)** → UW data → Identify opportunities → Build in Builder
-7. **Portfolios (Manager)** → Central hub tracking ALL positions from ALL modules
-8. **Portfolios (Smart Rebalancing)** → Analyzes portfolio → Suggests allocation changes
-9. **Portfolios (Analytics)** → Visualizes performance → P&L, Greeks, Risk metrics
+7. **Mindfolios (Manager)** → Central hub tracking ALL positions from ALL modules
+8. **Mindfolios (Smart Rebalancing)** → Analyzes mindfolio → Suggests allocation changes
+9. **Mindfolios (Analytics)** → Visualizes performance → P&L, Greeks, Risk metrics
 
 ---
 
@@ -280,7 +280,7 @@
 ```
 1. Scanner identifies AAPL with IV Rank > 50, VIX = 18
 2. Sell Puts Engine suggests 0.28 delta PUT @ 45 DTE
-3. User approves → Position opened in Portfolio Manager
+3. User approves → Position opened in Mindfolio Manager
 4. Share price drops → Assigned 100 shares of AAPL
 5. Module auto-switches to Covered Call mode
 6. Covered Calls Engine suggests 0.25 delta CALL @ 35 DTE
@@ -294,7 +294,7 @@
 - **Stocks** = Separate section for stock analysis (Investment Scoring)
 - **Strategy** = Auto trading modules (IV Service, Sell Puts)
 - **Options Analytics** = All options-related tools (Builder, Optimize, Flow, Chain, GEX)
-- **Portfolios** = Portfolio management section (Manager, Rebalancing, Analytics)
+- **Mindfolios** = Mindfolio management section (Manager, Rebalancing, Analytics)
 - **54+ Strategies** = Educational templates used in Builder + reference
 - **Covered Calls** appear in Sell Puts ONLY when user has shares (assigned/owned)
 - **Flow Analysis** = Umbrella for all Unusual Whales data (flow, news, congress, insiders, dark pool)
@@ -304,7 +304,7 @@
 ## Clarifications
 
 1. **Investment Scoring** is a STOCKS tool, NOT an options module
-2. **Smart Rebalancing** is a PORTFOLIO tool, NOT a strategy module
+2. **Smart Rebalancing** is a MINDFOLIO tool, NOT a strategy module
 3. **Options Analytics** is a HUB containing:
  - Builder (manual)
  - Optimize (AI suggestions)

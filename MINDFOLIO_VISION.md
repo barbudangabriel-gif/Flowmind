@@ -1,11 +1,11 @@
-# 🧠 Mindfolio Vision: The World's First AI-Powered Trading Portfolio
+# 🧠 Mindfolio Vision: The World's First AI-Powered Trading Mindfolio
 
 ## What Makes Mindfolio Special?
 
-Mindfolio is **NOT** just another portfolio tracker. It's a **living, learning trading entity** that combines:
+Mindfolio is **NOT** just another mindfolio tracker. It's a **living, learning trading entity** that combines:
 - **Autonomous AI Modules** that scout, analyze, and execute trades
 - **Real-time Intelligence** from options flow, dark pool, and congress trades
-- **Per-Portfolio Personality** - each Mindfolio has its own risk profile and learning curve
+- **Per-Mindfolio Personality** - each Mindfolio has its own risk profile and learning curve
 - **Smart Execution** via TradeStation with backtesting and paper trading
 - **FIFO-based P&L** with Greeks aggregation and correlation analysis
 
@@ -40,8 +40,8 @@ Each Mindfolio can run **multiple AI trading modules** simultaneously, each with
  "autotrade": false
  },
  "SMART_REBALANCER": {
- "function": "AI-driven portfolio rebalancing based on correlation, sector exposure, Greeks",
- "triggers": "Portfolio drift > 5%, high correlation clusters, theta decay imbalance",
+ "function": "AI-driven mindfolio rebalancing based on correlation, sector exposure, Greeks",
+ "triggers": "Mindfolio drift > 5%, high correlation clusters, theta decay imbalance",
  "actions": "Suggest closes, rolls, or hedges",
  "budget": 0, // Uses existing positions
  "autotrade": false
@@ -59,7 +59,7 @@ Each Mindfolio can run **multiple AI trading modules** simultaneously, each with
 
 ---
 
-### 2. **Real-time Portfolio Intelligence** 
+### 2. **Real-time Mindfolio Intelligence** 
 
 Every Mindfolio provides **live analytics**:
 
@@ -77,7 +77,7 @@ Every Mindfolio provides **live analytics**:
 #### **Greeks Aggregation**
 ```python
 {
- "portfolio_greeks": {
+ "mindfolio_greeks": {
  "delta": 250.5, # Net directional exposure
  "gamma": 12.3, # Rate of delta change
  "theta": -45.2, # Daily time decay ($45.20/day)
@@ -97,11 +97,11 @@ Every Mindfolio provides **live analytics**:
 {
  "risk_metrics": {
  "var_95": 2500, # 95% Value at Risk (1-day)
- "max_loss_scenario": -8500, # Worst-case portfolio loss
+ "max_loss_scenario": -8500, # Worst-case mindfolio loss
  "buying_power_used": 35000,
  "buying_power_available": 15000,
  "concentration_risk": {
- "TSLA": 0.28, # 28% of portfolio in TSLA (HIGH RISK!)
+ "TSLA": 0.28, # 28% of mindfolio in TSLA (HIGH RISK!)
  "AAPL": 0.15,
  "SPY": 0.12
  },
@@ -146,7 +146,7 @@ Each Mindfolio can have a **personality** that defines its behavior:
  {"module": "COVERED_CALLS", "budget": 10000, "autotrade": true}
  ],
  "rules": {
- "max_risk_per_trade": 2, # 2% of portfolio
+ "max_risk_per_trade": 2, # 2% of mindfolio
  "daily_loss_limit": 500,
  "min_delta_sold": 0.20, # Only sell puts/calls at 0.20 delta
  "target_theta": 100, # $100/day theta income
@@ -170,7 +170,7 @@ Each Mindfolio can have a **personality** that defines its behavior:
  {"module": "GAMMA_SCALPER", "budget": 5000, "autotrade": false}
  ],
  "rules": {
- "max_risk_per_trade": 5, # 5% of portfolio (higher risk)
+ "max_risk_per_trade": 5, # 5% of mindfolio (higher risk)
  "daily_loss_limit": 1000,
  "min_iv_rank": 60, # Only trade high IV
  "max_dte": 45, # Short-dated options
@@ -195,9 +195,9 @@ Each Mindfolio can have a **personality** that defines its behavior:
  {"module": "SMART_REBALANCER", "budget": 0, "autotrade": false}
  ],
  "rules": {
- "max_risk_per_trade": 3, # 3% of portfolio
+ "max_risk_per_trade": 3, # 3% of mindfolio
  "daily_loss_limit": 750,
- "portfolio_delta_target": [-100, 100], # Keep delta neutral
+ "mindfolio_delta_target": [-100, 100], # Keep delta neutral
  "rebalance_trigger": 0.05, # Rebalance if drift > 5%
  },
  "goals": [
@@ -241,7 +241,7 @@ graph TD
  "virtual_cash": 50000,
  "simulated_fills": "Real market data with realistic slippage",
  "purpose": "Test module performance before going live",
- "metrics": "Track paper portfolio vs. live portfolio"
+ "metrics": "Track paper mindfolio vs. live mindfolio"
  }
 }
 ```
@@ -254,7 +254,7 @@ graph TD
  "Sufficient buying power?",
  "Within daily loss limit?",
  "Position concentration < 20%?",
- "Portfolio delta within range?",
+ "Mindfolio delta within range?",
  "Backtested win rate > threshold?"
  ],
  "post_trade_monitoring": [
@@ -264,7 +264,7 @@ graph TD
  "Earnings date proximity warnings"
  ],
  "emergency_stop": {
- "trigger": "Daily loss > 2x limit OR portfolio drawdown > 15%",
+ "trigger": "Daily loss > 2x limit OR mindfolio drawdown > 15%",
  "action": "Pause all autotrade, notify user, suggest hedges"
  }
  }
@@ -298,7 +298,7 @@ Mindfolio **learns from every trade** and gets smarter over time:
  "win_probability": "Predict trade success based on entry conditions",
  "optimal_exit": "Suggest best exit timing",
  "strike_selection": "Recommend optimal strikes for strategy",
- "portfolio_allocation": "Optimize module budgets based on performance"
+ "mindfolio_allocation": "Optimize module budgets based on performance"
  }
  }
 }
@@ -326,7 +326,7 @@ Mindfolio **learns from every trade** and gets smarter over time:
 
 ## 🌟 Unique Value Propositions
 
-### **Why Mindfolio vs. Traditional Portfolio Trackers?**
+### **Why Mindfolio vs. Traditional Mindfolio Trackers?**
 
 | Feature | Traditional Tracker | **Mindfolio** |
 |---------|---------------------|---------------|
@@ -339,7 +339,7 @@ Mindfolio **learns from every trade** and gets smarter over time:
 | Learning | None | **ML optimization from outcomes** |
 | Backtesting | None | **Pre-trade backtesting** |
 | Module system | None | **Autonomous AI modules** |
-| Personality | One-size-fits-all | **Custom per-portfolio** |
+| Personality | One-size-fits-all | **Custom per-mindfolio** |
 
 ---
 
@@ -423,7 +423,7 @@ Mindfolio **learns from every trade** and gets smarter over time:
 
 ## Bottom Line
 
-**Mindfolio is NOT a portfolio tracker.**
+**Mindfolio is NOT a mindfolio tracker.**
 
 It's a **24/7 AI trading assistant** that:
 1. **Scouts** the market for high-probability setups
@@ -437,7 +437,7 @@ All while you sleep, work, or enjoy life. 🌴
 ---
 
 **Domain Ready:** Mindfolio.com 
-**Tagline:** *"Your Portfolio, Powered by AI"* 
+**Tagline:** *"Your Mindfolio, Powered by AI"* 
 **Target Launch:** Q1 2026
 
 ---

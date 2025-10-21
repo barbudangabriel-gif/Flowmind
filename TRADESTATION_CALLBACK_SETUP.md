@@ -16,7 +16,7 @@
 1. **Apasă pe "My Apps"** sau **"Create New App"**
 2. **Completează detaliile aplicației:**
    - **App Name:** FlowMind Analytics (sau cum vrei tu)
-   - **Description:** Options analytics and portfolio management platform
+   - **Description:** Options analytics and mindfolio management platform
 
 ### **Pasul 3: Configurează Redirect URI (IMPORTANT!)**
 

@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class GeopoliticalNewsAgent:
     """
     Aggregates and interprets geopolitical & macro news
-    Provides portfolio-level and ticker-level intelligence
+    Provides mindfolio-level and ticker-level intelligence
     """
 
     def __init__(self, uw_client=None):
@@ -163,14 +163,14 @@ class GeopoliticalNewsAgent:
             logger.error(f"Failed to get ticker news for {symbol}: {e}")
             return self._get_fallback_ticker_news(symbol)
 
-    async def get_portfolio_news_digest(
+    async def get_mindfolio_news_digest(
         self, mindfolio_id: str, positions: List[Dict]
     ) -> Dict:
         """
-        Aggregated news intelligence for entire portfolio
+        Aggregated news intelligence for entire mindfolio
 
         Args:
-        mindfolio_id: Portfolio ID
+        mindfolio_id: Mindfolio ID
         positions: List of positions with symbol, quantity, etc.
 
         Returns:
@@ -179,7 +179,7 @@ class GeopoliticalNewsAgent:
         "ticker_news": {...},
         "risk_alerts": [...],
         "opportunities": [...],
-        "portfolio_sentiment": float,
+        "mindfolio_sentiment": float,
         "news_summary": str
         }
         """
@@ -187,7 +187,7 @@ class GeopoliticalNewsAgent:
             # Get macro events
             macro_events = await self.get_macro_news()
 
-            # Get news for each ticker in portfolio
+            # Get news for each ticker in mindfolio
             ticker_news = {}
             risk_alerts = []
             opportunities = []
@@ -235,11 +235,11 @@ class GeopoliticalNewsAgent:
                         }
                     )
 
-            # Calculate portfolio-wide sentiment
-            portfolio_sentiment = self._calculate_portfolio_sentiment(ticker_news)
+            # Calculate mindfolio-wide sentiment
+            mindfolio_sentiment = self._calculate_mindfolio_sentiment(ticker_news)
 
             # Generate executive summary
-            news_summary = self._generate_portfolio_summary(
+            news_summary = self._generate_mindfolio_summary(
                 macro_events, ticker_news, risk_alerts, opportunities
             )
 
@@ -249,7 +249,7 @@ class GeopoliticalNewsAgent:
                 "ticker_news": ticker_news,
                 "risk_alerts": risk_alerts,
                 "opportunities": opportunities,
-                "portfolio_sentiment": portfolio_sentiment,
+                "mindfolio_sentiment": mindfolio_sentiment,
                 "news_summary": news_summary,
                 "total_news_items": sum(
                     len(t.get("news_items", [])) for t in ticker_news.values()
@@ -258,8 +258,8 @@ class GeopoliticalNewsAgent:
             }
 
         except Exception as e:
-            logger.error(f"Failed to generate portfolio digest: {e}")
-            return self._get_fallback_portfolio_digest(mindfolio_id)
+            logger.error(f"Failed to generate mindfolio digest: {e}")
+            return self._get_fallback_mindfolio_digest(mindfolio_id)
 
     # ========== HELPER METHODS ==========
 
@@ -432,22 +432,22 @@ class GeopoliticalNewsAgent:
         # Default
         return " Hold - Monitor for clearer signals"
 
-    def _calculate_portfolio_sentiment(self, ticker_news: Dict) -> float:
-        """Calculate weighted average sentiment for entire portfolio"""
+    def _calculate_mindfolio_sentiment(self, ticker_news: Dict) -> float:
+        """Calculate weighted average sentiment for entire mindfolio"""
         if not ticker_news:
             return 0.0
 
         total_sentiment = sum(t["aggregate_sentiment"] for t in ticker_news.values())
         return round(total_sentiment / len(ticker_news), 2)
 
-    def _generate_portfolio_summary(
+    def _generate_mindfolio_summary(
         self,
         macro_events: Dict,
         ticker_news: Dict,
         risk_alerts: List,
         opportunities: List,
     ) -> str:
-        """Generate executive summary of portfolio news"""
+        """Generate executive summary of mindfolio news"""
 
         summary_parts = []
 
@@ -472,11 +472,11 @@ class GeopoliticalNewsAgent:
         avg_sentiment = total_sentiment / len(ticker_news) if ticker_news else 0
 
         if avg_sentiment > 0.3:
-            summary_parts.append(" Overall portfolio sentiment is positive.")
+            summary_parts.append(" Overall mindfolio sentiment is positive.")
         elif avg_sentiment < -0.3:
-            summary_parts.append(" Overall portfolio sentiment is negative.")
+            summary_parts.append(" Overall mindfolio sentiment is negative.")
         else:
-            summary_parts.append(" Portfolio sentiment is neutral.")
+            summary_parts.append(" Mindfolio sentiment is neutral.")
 
         return (
             " ".join(summary_parts) if summary_parts else "No significant news today."
@@ -557,15 +557,15 @@ class GeopoliticalNewsAgent:
             "trading_recommendation": "Data unavailable",
         }
 
-    def _get_fallback_portfolio_digest(self, mindfolio_id: str) -> Dict:
-        """Fallback portfolio digest if generation fails"""
+    def _get_fallback_mindfolio_digest(self, mindfolio_id: str) -> Dict:
+        """Fallback mindfolio digest if generation fails"""
         return {
             "mindfolio_id": mindfolio_id,
             "macro_events": self._get_fallback_macro_news(),
             "ticker_news": {},
             "risk_alerts": [],
             "opportunities": [],
-            "portfolio_sentiment": 0.0,
+            "mindfolio_sentiment": 0.0,
             "news_summary": "Unable to fetch news data",
             "last_updated": datetime.now().isoformat(),
         }

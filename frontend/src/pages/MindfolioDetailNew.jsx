@@ -59,7 +59,7 @@ export default function MindfolioDetailNew() {
  // Fallback to mock data
  setMindfolio({
  id: id,
- name: 'Demo Portfolio',
+ name: 'Demo Mindfolio',
  cash_balance: 50000,
  starting_balance: 10000, // Add starting balance for ROI calculation
  status: 'ACTIVE',
@@ -311,7 +311,7 @@ export default function MindfolioDetailNew() {
  </div>
  <div>
  <h2 className="text-xl font-bold text-white">Money & Risk Management</h2>
- <p className="text-sm text-gray-400">Portfolio health and risk metrics</p>
+ <p className="text-sm text-gray-400">Mindfolio health and risk metrics</p>
  </div>
  </div>
  <button 
@@ -340,9 +340,9 @@ export default function MindfolioDetailNew() {
  <div className="p-6 space-y-6">
  {/* Top Row - Key Metrics */}
  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
- {/* Portfolio Health Score */}
+ {/* Mindfolio Health Score */}
  <div className="bg-slate-700/30 rounded-lg p-4">
- <div className="text-sm text-gray-400 mb-1">Portfolio Health</div>
+ <div className="text-sm text-gray-400 mb-1">Mindfolio Health</div>
  <div className="flex items-baseline gap-2">
  <div className="text-3xl font-bold text-green-400">87</div>
  <div className="text-sm text-gray-400">/100</div>
@@ -565,12 +565,12 @@ export default function MindfolioDetailNew() {
  <div>
  <div className="text-sm text-gray-400 mb-1">Largest Position</div>
  <div className="text-2xl font-bold text-yellow-400">$9,200</div>
- <div className="text-xs text-gray-400">TSLA (18% of portfolio)</div>
+ <div className="text-xs text-gray-400">TSLA (18% of mindfolio)</div>
  </div>
  <div>
  <div className="text-sm text-gray-400 mb-1">Smallest Position</div>
  <div className="text-2xl font-bold text-white">$2,100</div>
- <div className="text-xs text-gray-400">AMD (4% of portfolio)</div>
+ <div className="text-xs text-gray-400">AMD (4% of mindfolio)</div>
  </div>
  </div>
  </div>
@@ -652,7 +652,7 @@ export default function MindfolioDetailNew() {
  </div>
  </div>
  <div className="text-sm text-gray-400">
- {cashPct}% of portfolio • Available for trading
+ {cashPct}% of mindfolio • Available for trading
  </div>
  </div>
 
@@ -668,7 +668,7 @@ export default function MindfolioDetailNew() {
  </div>
  </div>
  <div className="text-sm text-gray-400">
- {stocksPct}% of portfolio • 8 positions
+ {stocksPct}% of mindfolio • 8 positions
  </div>
  </div>
 
@@ -684,7 +684,7 @@ export default function MindfolioDetailNew() {
  </div>
  </div>
  <div className="text-sm text-gray-400">
- {optionsPct}% of portfolio • 12 contracts
+ {optionsPct}% of mindfolio • 12 contracts
  </div>
  </div>
  </div>
@@ -2987,8 +2987,8 @@ function NewsIntelligenceTab({ mindfolioId }) {
  setLoading(true);
  const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
  
- // Fetch portfolio news digest
- const response = await fetch(`${backendUrl}/api/geopolitical/portfolio/${mindfolioId}`);
+ // Fetch mindfolio news digest
+ const response = await fetch(`${backendUrl}/api/geopolitical/mindfolio/${mindfolioId}`);
  const result = await response.json();
  
  if (result.status === "success") {
@@ -3024,7 +3024,7 @@ function NewsIntelligenceTab({ mindfolioId }) {
  const tickerNews = newsData.ticker_news || {};
  const riskAlerts = newsData.risk_alerts || [];
  const opportunities = newsData.opportunities || [];
- const portfolioSentiment = newsData.portfolio_sentiment || 0;
+ const mindfolioSentiment = newsData.mindfolio_sentiment || 0;
  const newsSummary = newsData.news_summary || "";
 
  return (
@@ -3037,9 +3037,9 @@ function NewsIntelligenceTab({ mindfolioId }) {
  <p className="text-gray-300 text-sm">{newsSummary}</p>
  </div>
  <div className="text-right">
- <div className="text-sm text-gray-400 mb-1">Portfolio Sentiment</div>
- <div className={`text-3xl font-bold ${portfolioSentiment > 0 ? 'text-green-400' : portfolioSentiment < 0 ? 'text-red-400' : 'text-gray-400'}`}>
- {portfolioSentiment > 0 ? '+' : ''}{portfolioSentiment.toFixed(2)}
+ <div className="text-sm text-gray-400 mb-1">Mindfolio Sentiment</div>
+ <div className={`text-3xl font-bold ${mindfolioSentiment > 0 ? 'text-green-400' : mindfolioSentiment < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+ {mindfolioSentiment > 0 ? '+' : ''}{mindfolioSentiment.toFixed(2)}
  </div>
  <div className="text-xs text-gray-500">(-1 to +1 scale)</div>
  </div>
@@ -3224,7 +3224,7 @@ function NewsIntelligenceTab({ mindfolioId }) {
 
  {/* RIGHT COLUMN: Digest + Alerts */}
  <div className="space-y-6">
- {/* Portfolio News Digest */}
+ {/* Mindfolio News Digest */}
  <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
  <h3 className="text-lg font-bold text-white mb-4"> Daily Digest</h3>
  
@@ -3234,18 +3234,18 @@ function NewsIntelligenceTab({ mindfolioId }) {
  <div className="flex items-center gap-2">
  <div className="flex-1 bg-slate-900 rounded-full h-2">
  <div 
- className={`h-2 rounded-full ${portfolioSentiment > 0 ? 'bg-green-500' : portfolioSentiment < 0 ? 'bg-red-500' : 'bg-gray-500'}`}
- style={{ width: `${Math.min(100, Math.abs(portfolioSentiment) * 100)}%` }}
+ className={`h-2 rounded-full ${mindfolioSentiment > 0 ? 'bg-green-500' : mindfolioSentiment < 0 ? 'bg-red-500' : 'bg-gray-500'}`}
+ style={{ width: `${Math.min(100, Math.abs(mindfolioSentiment) * 100)}%` }}
  ></div>
  </div>
- <span className={`font-semibold ${portfolioSentiment > 0 ? 'text-green-400' : portfolioSentiment < 0 ? 'text-red-400' : 'text-gray-400'}`}>
- {portfolioSentiment > 0 ? '+' : ''}{portfolioSentiment.toFixed(2)}
+ <span className={`font-semibold ${mindfolioSentiment > 0 ? 'text-green-400' : mindfolioSentiment < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+ {mindfolioSentiment > 0 ? '+' : ''}{mindfolioSentiment.toFixed(2)}
  </span>
  </div>
  </div>
  
  <div className="text-sm">
- <div className="text-gray-400 mb-1">Portfolio Risk Level</div>
+ <div className="text-gray-400 mb-1">Mindfolio Risk Level</div>
  <div className="flex items-center gap-2">
  <div className="flex-1 bg-slate-900 rounded-full h-2">
  <div 

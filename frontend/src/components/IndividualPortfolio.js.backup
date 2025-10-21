@@ -16,11 +16,11 @@ import {
   DollarSign
 } from 'lucide-react';
 import ContextMenu from './ContextMenu';
-import usePortfolioManagement from '../hooks/usePortfolioManagement';
+import useMindfolioManagement from '../hooks/useMindfolioManagement';
 
-const IndividualPortfolio = () => {
+const IndividualMindfolio = () => {
   const navigate = useNavigate();
-  const { portfolioId } = useParams();
+  const { mindfolioId } = useParams();
   const [activeTab, setActiveTab] = useState('holdings');
   const [loading, setLoading] = useState(false);
   
@@ -31,26 +31,26 @@ const IndividualPortfolio = () => {
     selectedPosition: null
   });
 
-  // Portfolio management hook
+  // Mindfolio management hook
   const {
-    portfolios,
-    availablePortfolios,
+    mindfolios,
+    availableMindfolios,
     loading: apiLoading,
     error: hookError,
-    fetchPortfolioPositions,
-    fetchAvailablePortfolios,
+    fetchMindfolioPositions,
+    fetchAvailableMindfolios,
     movePosition,
     clearError
-  } = usePortfolioManagement();
+  } = useMindfolioManagement();
 
-  // Current portfolio data
-  const [currentPortfolio, setCurrentPortfolio] = useState(null);
+  // Current mindfolio data
+  const [currentMindfolio, setCurrentMindfolio] = useState(null);
   const [positions, setPositions] = useState([]);
   const [error, setError] = useState(null);
 
-  // Load portfolio and positions data directly from TradeStation API
+  // Load mindfolio and positions data directly from TradeStation API
   useEffect(() => {
-    if (portfolioId === 'tradestation-main') {
+    if (mindfolioId === 'tradestation-main') {
       // For TradeStation Main, load REAL data directly from TradeStation API
       const loadRealTradeStationData = async () => {
         try {
@@ -78,7 +78,7 @@ const IndividualPortfolio = () => {
                 market_value: pos.market_value || Math.abs(pos.quantity * (pos.mark_price || pos.current_price || 0)),
                 unrealized_pnl: pos.unrealized_pnl || 0,
                 unrealized_pnl_percent: pos.unrealized_pnl_percent || 0,
-                portfolio_id: 'tradestation-main',
+                mindfolio_id: 'tradestation-main',
                 position_type: pos.asset_type === 'STOCK' ? 'stock' : 'option',
                 metadata: {
                   asset_type: pos.asset_type,
@@ -87,12 +87,12 @@ const IndividualPortfolio = () => {
                 }
               }));
               
-              // Calculate portfolio totals
+              // Calculate mindfolio totals
               const totalValue = transformedPositions.reduce((sum, pos) => sum + pos.market_value, 0);
               const totalPnl = transformedPositions.reduce((sum, pos) => sum + pos.unrealized_pnl, 0);
               
               setPositions(transformedPositions);
-              setCurrentPortfolio({
+              setCurrentMindfolio({
                 id: 'tradestation-main',
                 name: 'TradeStation Main',
                 total_value: totalValue,
@@ -119,25 +119,25 @@ const IndividualPortfolio = () => {
       
       loadRealTradeStationData();
       
-    } else if (portfolioId && portfolios.length > 0) {
-      // For other portfolios, use Portfolio Management Service
-      const portfolio = portfolios.find(p => p.id === portfolioId);
-      setCurrentPortfolio(portfolio);
+    } else if (mindfolioId && mindfolios.length > 0) {
+      // For other mindfolios, use Mindfolio Management Service
+      const mindfolio = mindfolios.find(p => p.id === mindfolioId);
+      setCurrentMindfolio(mindfolio);
       
-      // Use hook positions for non-TradeStation portfolios
-      const loadOtherPortfolioData = async () => {
+      // Use hook positions for non-TradeStation mindfolios
+      const loadOtherMindfolioData = async () => {
         try {
-          await fetchPortfolioPositions(portfolioId);
-          await fetchAvailablePortfolios(portfolioId);
+          await fetchMindfolioPositions(mindfolioId);
+          await fetchAvailableMindfolios(mindfolioId);
           // Positions will be set via hook's internal state
         } catch (error) {
           setError(error.message);
         }
       };
       
-      loadOtherPortfolioData();
+      loadOtherMindfolioData();
     }
-  }, [portfolioId, portfolios]);
+  }, [mindfolioId, mindfolios]);
 
   // Handle right-click context menu
   const handleContextMenu = (event, position) => {
@@ -160,16 +160,16 @@ const IndividualPortfolio = () => {
   };
 
   // Handle position move
-  const handleMovePosition = async (positionId, toPortfolioId, portfolioName) => {
+  const handleMovePosition = async (positionId, toMindfolioId, mindfolioName) => {
     try {
-      const result = await movePosition(positionId, toPortfolioId);
+      const result = await movePosition(positionId, toMindfolioId);
       
       if (result.success) {
         // Show success message
-        alert(`Position moved successfully to ${portfolioName}`);
+        alert(`Position moved successfully to ${mindfolioName}`);
         
         // Refresh positions
-        fetchPortfolioPositions(portfolioId);
+        fetchMindfolioPositions(mindfolioId);
       } else {
         throw new Error(result.error || 'Failed to move position');
       }
@@ -178,15 +178,15 @@ const IndividualPortfolio = () => {
     }
   };
 
-  // Calculate portfolio statistics for cards
-  const portfolioStats = React.useMemo(() => {
+  // Calculate mindfolio statistics for cards
+  const mindfolioStats = React.useMemo(() => {
     if (!positions || positions.length === 0) {
       return {
         stocksCount: 0,
         stocksValue: 0,
         optionsCount: 0,
         optionsValue: 0,
-        totalAccountValue: displayPortfolio?.total_value || 0,
+        totalAccountValue: displayMindfolio?.total_value || 0,
         cashBalance: 0 // Will be fetched from TradeStation API
       };
     }
@@ -199,7 +199,7 @@ const IndividualPortfolio = () => {
     
     // For now, cash balance will be 0, but we can fetch it from TradeStation API later
     const cashBalance = 0;
-    const totalAccountValue = (displayPortfolio?.total_value || 0) + cashBalance;
+    const totalAccountValue = (displayMindfolio?.total_value || 0) + cashBalance;
 
     return {
       stocksCount: stocks.length,
@@ -209,18 +209,18 @@ const IndividualPortfolio = () => {
       totalAccountValue,
       cashBalance
     };
-  }, [positions, displayPortfolio?.total_value]);
+  }, [positions, displayMindfolio?.total_value]);
 
-  // Default to TradeStation Main if no portfolio found
-  const displayPortfolio = currentPortfolio || {
+  // Default to TradeStation Main if no mindfolio found
+  const displayMindfolio = currentMindfolio || {
     name: 'TradeStation Main',
     total_value: 0,
     total_pnl: 0,
     positions_count: 0
   };
 
-  const changePercent = displayPortfolio.total_value > 0 
-    ? (displayPortfolio.total_pnl / (displayPortfolio.total_value - displayPortfolio.total_pnl)) * 100 
+  const changePercent = displayMindfolio.total_value > 0 
+    ? (displayMindfolio.total_pnl / (displayMindfolio.total_value - displayMindfolio.total_pnl)) * 100 
     : 0;
 
   const getRatingColor = (rating) => {
@@ -272,7 +272,7 @@ const IndividualPortfolio = () => {
       <div className="bg-blue-500 px-6 py-4">
         <div className="flex items-center space-x-2">
           <h1 className="text-2xl font-bold text-white flex items-center">
-            Portfolio {displayPortfolio.name}
+            Mindfolio {displayMindfolio.name}
             <ChevronDown className="ml-2" size={20} />
           </h1>
         </div>
@@ -280,18 +280,18 @@ const IndividualPortfolio = () => {
         <div className="flex items-center mt-2">
           <Eye className="text-white mr-2" size={16} />
           <span className="text-3xl font-bold text-white">
-            ${portfolioStats.totalAccountValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ${mindfolioStats.totalAccountValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
           <span className="text-sm text-blue-200 ml-2">(Total Account Value)</span>
-          <span className={`ml-4 text-lg font-medium ${displayPortfolio.total_pnl >= 0 ? 'text-green-300' : 'text-red-300'}`}>
-            {displayPortfolio.total_pnl >= 0 ? '+' : ''}${Math.abs(displayPortfolio.total_pnl).toFixed(2)} ({changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%)
+          <span className={`ml-4 text-lg font-medium ${displayMindfolio.total_pnl >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+            {displayMindfolio.total_pnl >= 0 ? '+' : ''}${Math.abs(displayMindfolio.total_pnl).toFixed(2)} ({changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%)
           </span>
         </div>
         
         {/* Action Buttons */}
         <div className="flex items-center mt-4 space-x-3">
           <button
-            onClick={() => navigate(`/portfolios/${portfolioId}/charts`)}
+            onClick={() => navigate(`/mindfolios/${mindfolioId}/charts`)}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <PieChartIcon size={16} />
@@ -299,7 +299,7 @@ const IndividualPortfolio = () => {
           </button>
           
           <button
-            onClick={() => navigate(`/portfolios/${portfolioId}/rebalancing`)}
+            onClick={() => navigate(`/mindfolios/${mindfolioId}/rebalancing`)}
             className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
             <Brain size={16} />
@@ -317,7 +317,7 @@ const IndividualPortfolio = () => {
               onClick={() => {
                 if (tab.id === 'add-edit-views') {
                   // Handle Add/Edit Views click - you mentioned you'll show the method
-                  navigate(`/portfolios/${portfolioId}/add-edit-views`);
+                  navigate(`/mindfolios/${mindfolioId}/add-edit-views`);
                 } else {
                   setActiveTab(tab.id);
                 }
@@ -361,7 +361,7 @@ const IndividualPortfolio = () => {
           
           {!loading && positions.length === 0 && !error && (
             <div className="text-center py-8 text-gray-500">
-              No positions found in this portfolio.
+              No positions found in this mindfolio.
             </div>
           )}
 
@@ -388,7 +388,7 @@ const IndividualPortfolio = () => {
                       key={position.id} 
                       className="border-b border-gray-100 hover:bg-gray-50 cursor-context-menu"
                       onContextMenu={(e) => handleContextMenu(e, position)}
-                      title="Right-click to move position to another portfolio"
+                      title="Right-click to move position to another mindfolio"
                     >
                       <td className="py-3 px-2">
                         <div>
@@ -500,7 +500,7 @@ const IndividualPortfolio = () => {
         </div>
       </div>
 
-      {/* Portfolio Statistics Cards */}
+      {/* Mindfolio Statistics Cards */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -510,9 +510,9 @@ const IndividualPortfolio = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Stock Positions</p>
-                  <p className="text-2xl font-bold text-gray-900">{portfolioStats.stocksCount}</p>
+                  <p className="text-2xl font-bold text-gray-900">{mindfolioStats.stocksCount}</p>
                   <p className="text-sm text-gray-500">
-                    ${portfolioStats.stocksValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    ${mindfolioStats.stocksValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-full">
@@ -526,9 +526,9 @@ const IndividualPortfolio = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Options Positions</p>
-                  <p className="text-2xl font-bold text-gray-900">{portfolioStats.optionsCount}</p>
+                  <p className="text-2xl font-bold text-gray-900">{mindfolioStats.optionsCount}</p>
                   <p className="text-sm text-gray-500">
-                    ${portfolioStats.optionsValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    ${mindfolioStats.optionsValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </p>
                 </div>
                 <div className="p-3 bg-purple-100 rounded-full">
@@ -543,7 +543,7 @@ const IndividualPortfolio = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Cash Balance</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    ${portfolioStats.cashBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    ${mindfolioStats.cashBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </p>
                   <p className="text-sm text-gray-500">Available Cash</p>
                 </div>
@@ -562,7 +562,7 @@ const IndividualPortfolio = () => {
         isVisible={contextMenu.isVisible}
         position={contextMenu.position}
         selectedPosition={contextMenu.selectedPosition}
-        availablePortfolios={availablePortfolios}
+        availableMindfolios={availableMindfolios}
         onClose={closeContextMenu}
         onMovePosition={handleMovePosition}
       />
@@ -570,4 +570,4 @@ const IndividualPortfolio = () => {
   );
 };
 
-export default IndividualPortfolio;
+export default IndividualMindfolio;

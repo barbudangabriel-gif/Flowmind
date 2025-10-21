@@ -27,11 +27,11 @@
 
 **Objectives:**
 - [ ] **Phase 0: Foundation (Day 1)**
-  - [ ] Add broker/environment/account_type fields to Portfolio model (`backend/mindfolio.py`)
-  - [ ] Add validators to PortfolioCreate
-  - [ ] Update `create_portfolio()` to save new fields
-  - [ ] Add filtering to `list_portfolios()` endpoint (broker, environment, account_type params)
-  - [ ] Test with curl: Create TS SIM Equity portfolio
+  - [ ] Add broker/environment/account_type fields to Mindfolio model (`backend/mindfolio.py`)
+  - [ ] Add validators to MindfolioCreate
+  - [ ] Update `create_mindfolio()` to save new fields
+  - [ ] Add filtering to `list_mindfolios()` endpoint (broker, environment, account_type params)
+  - [ ] Test with curl: Create TS SIM Equity mindfolio
 - [ ] **Phase 1: UI Implementation (Day 2)**
   - [ ] Add Broker Tabs (TradeStation/TastyTrade) to `frontend/src/pages/MindfolioList.jsx`
   - [ ] Add Environment Sub-tabs (SIM/LIVE)
@@ -52,7 +52,7 @@
 
 **Data Model Changes:**
 ```python
-# NEW Portfolio fields:
+# NEW Mindfolio fields:
 broker: str  # "TradeStation" | "TastyTrade"
 environment: str  # "SIM" | "LIVE"
 account_type: str  # "Equity" | "Futures" | "Crypto"
@@ -72,7 +72,7 @@ account_id: Optional[str] = None  # Broker's account number
 
 **Success Criteria:**
 - Broker tabs working with proper filtering
-- Can create portfolios per broker/environment/type
+- Can create mindfolios per broker/environment/type
 - Stats cards show per-broker breakdowns
 - SIM accounts have Reset button, LIVE have extra delete confirm
 
@@ -212,7 +212,7 @@ Pentru fiecare item fără pagină, decide:
 
 ---
 
-### 4. 🔧 Fix HomePage /portfolios Link (HIGH PRIORITY - Quick Fix)
+### 4. 🔧 Fix HomePage /mindfolios Link (HIGH PRIORITY - Quick Fix)
 **Status:** 🔴 BROKEN LINK - 404 error  
 **Assignee:** TBD  
 **Due:** Today (Oct 21, 2025)  
@@ -220,13 +220,13 @@ Pentru fiecare item fără pagină, decide:
 **Audit Reference:** `SIDEBAR_MISSING_PAGES_AUDIT.md` item #1
 
 **Problem:**
-HomePage Quick Action card #3 links to `/portfolios` but route doesn't exist!
+HomePage Quick Action card #3 links to `/mindfolios` but route doesn't exist!
 
 **Fix Required:**
 ```javascript
 // File: frontend/src/pages/HomePage.jsx - Line 30
 // CHANGE:
-link: '/portfolios',  // ❌ WRONG
+link: '/mindfolios',  // ❌ WRONG
 
 // TO:
 link: '/mindfolio',   // ✅ CORRECT
@@ -455,11 +455,11 @@ link: '/mindfolio',   // ✅ CORRECT
 
 ### High Priority
 
-#### 1. Portfolio Performance Optimization
+#### 1. Mindfolio Performance Optimization
 **Priority:** HIGH  
 **Status:** 📋 Backlog
 
-- [ ] Optimize FIFO calculation for large portfolios (1000+ transactions)
+- [ ] Optimize FIFO calculation for large mindfolios (1000+ transactions)
 - [ ] Add position caching with smart invalidation
 - [ ] Implement batch transaction processing
 - [ ] Add database indexes for transaction queries
@@ -577,7 +577,7 @@ link: '/mindfolio',   // ✅ CORRECT
 **Status:** 📋 Backlog
 
 - [ ] Installation instructions
-- [ ] First portfolio setup
+- [ ] First mindfolio setup
 - [ ] Building first options strategy
 - [ ] Understanding P&L tracking
 - [ ] Video walkthrough (10 min)
@@ -587,7 +587,7 @@ link: '/mindfolio',   // ✅ CORRECT
 **Status:** 📋 Backlog
 
 - [ ] Options Builder guide
-- [ ] Portfolio management guide
+- [ ] Mindfolio management guide
 - [ ] Flow analysis guide
 - [ ] GEX trading guide (post Phase 1)
 - [ ] Backtest tutorial (post Phase 2)
@@ -711,7 +711,7 @@ Still needed:
 - 📋 GEX Enhancement Phases 4-5
 - 📋 Multi-broker support (Interactive Brokers, TD Ameritrade)
 - 📋 Community features (strategy sharing)
-- 📋 Advanced portfolio analytics
+- 📋 Advanced mindfolio analytics
 
 ### Q2 2026 (Apr-Jun)
 - 📋 Machine learning trade signals

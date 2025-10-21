@@ -88,7 +88,7 @@ const TradeStationAuthHelper = () => {
  <h3 className="font-medium mb-2">What you'll get:</h3>
  <ul className="space-y-1">
  <li>• <strong>Live Market Data</strong> - Real-time quotes și charts</li>
- <li>• <strong>Account Access</strong> - Portfolio și balance data</li>
+ <li>• <strong>Account Access</strong> - Mindfolio și balance data</li>
  <li>• <strong>Trading Capabilities</strong> - Place și manage orders</li>
  </ul>
  </div>

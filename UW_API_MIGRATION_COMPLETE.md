@@ -251,7 +251,7 @@ Thanks for the clarification on the correct endpoints! We've updated our
 integration and all tests are now passing.
 
 FlowMind is an options trading analytics platform focused on strategy 
-building, real-time flow monitoring, and portfolio management. We integrate 
+building, real-time flow monitoring, and mindfolio management. We integrate 
 your API for flow alerts and market sentiment data.
 
 Currently it's an internal tool, but we're considering making it available 

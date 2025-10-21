@@ -67,7 +67,7 @@ Această implementare rezolvă problema expirării token-urilor TradeStation pri
 ### **Înainte (Problema)**
  **Token expiră în 16-18 minute** 
  **Trebuie reautentificare constantă** 
- **Portfolio se golește unexpected** 
+ **Mindfolio se golește unexpected** 
  **UX proastă - întreruperi frecvente** 
 
 ### **Acum (Soluția)**
@@ -138,7 +138,7 @@ GET /api/auth/tradestation/token-status
 ### **Beneficiile:**
 - **Nu mai expirează** - token-uri automat refreshed
 - **Rămâi conectat** - chiar și după restart browser/backend 
-- **Portfolio mereu cu date** - nu se mai golește
+- **Mindfolio mereu cu date** - nu se mai golește
 - **Zero întreținere** - totul automat în background
 
 ---
@@ -148,13 +148,13 @@ GET /api/auth/tradestation/token-status
 **TradeStation va funcționa acum ca TradingView:**
 - Autentificare o dată, rămâi conectat săptămâni
 - Token-uri se reîmprospătează automat 
-- Nu se mai pierd date din portfolio
+- Nu se mai pierd date din mindfolio
 - Experiență seamless, fără întreruperi
 
 **Utilizatorul nu va mai vedea niciodată:**
  "No access token available" 
  "Please authenticate first" 
- Portfolio cu $0.00 
+ Mindfolio cu $0.00 
  Necesitatea de relogare constantă
 
 ---

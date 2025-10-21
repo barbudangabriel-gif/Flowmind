@@ -60,8 +60,8 @@ export default function TopBar() {
  )}
  </div>
  
- <Link to="/portfolios" className="px-4 py-2 rounded-lg hover:bg-[#1e2430] text-[#cbd5e1] hover:text-[rgb(252, 251, 255)] transition-all duration-150">
- Portfolios
+ <Link to="/mindfolios" className="px-4 py-2 rounded-lg hover:bg-[#1e2430] text-[#cbd5e1] hover:text-[rgb(252, 251, 255)] transition-all duration-150">
+ Mindfolios
  </Link>
  </nav>
  </div>

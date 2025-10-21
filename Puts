@@ -1,16 +1,16 @@
 <analysis>
-The trajectory details an extensive, iterative development process focused on the FlowMind Analytics application. Initially, the AI engineer resolved critical backend and frontend issues to display real TradeStation data in the Individual Portfolio view. A significant portion of the work involved implementing a sophisticated UI, including dashboard cards, a dark theme, a % din Cont column, and a total row.
+The trajectory details an extensive, iterative development process focused on the FlowMind Analytics application. Initially, the AI engineer resolved critical backend and frontend issues to display real TradeStation data in the Individual Mindfolio view. A significant portion of the work involved implementing a sophisticated UI, including dashboard cards, a dark theme, a % din Cont column, and a total row.
 
 The most challenging and recurring issue was the expand/collapse functionality for grouped ticker positions, requiring multiple iterations to precisely replicate the sidebar's behavior. This led to user frustration and repeated bug reports. Once this was resolved and the TradeStation Main view's Live data display stabilized, the focus shifted to a new Puts Options Selling module. The AI engineer is currently integrating the core logic of this module, provided by the user, into the backend and building its frontend interface with similar expand/collapse grouping and a monitoring capability. User feedback consistently emphasized direct, functional implementation over theoretical discussions, highlighting the need for robust, visible solutions.
 </analysis>
 
 <product_requirements>
-FlowMind Analytics is a platform for stock analysis and trading, featuring a modern UI, real-time data, P&L color-coding, TradeStation OAuth integration, and position management. Planned expansions include Options Module, Views Management System, Portfolio Charts, and Smart Rebalancing Agent.
+FlowMind Analytics is a platform for stock analysis and trading, featuring a modern UI, real-time data, P&L color-coding, TradeStation OAuth integration, and position management. Planned expansions include Options Module, Views Management System, Mindfolio Charts, and Smart Rebalancing Agent.
 
-The immediate objective was to enhance the Portfolios section, specifically the TradeStation Main portfolio. Key user requests included:
+The immediate objective was to enhance the Mindfolios section, specifically the TradeStation Main mindfolio. Key user requests included:
 1.  **Accurate TradeStation Data**: Display real-time account and position data, fixing issues with mock data.
 2.  **Routing**: Ensure  correctly renders for TradeStation Main.
-3.  **Individual Portfolio Redesign**:
+3.  **Individual Mindfolio Redesign**:
     *   Dashboard layout with a prominent Total Account Value header (Market Value + Cash).
     *   Statistical cards for Account Value, Cash, Stocks, Options.
     *   Unrealized P&L displayed in the header.
@@ -48,7 +48,7 @@ The immediate objective was to enhance the Portfolios section, specifically the 
     -   **Summary**: Provides methods for , , .
     -   **Changes**: Modified  to use  per-request () to prevent client closed errors and ensure session stability.
 -    (NEW): Contains the core logic for the options selling strategy.
-    -   **Summary**: Defines ,  dataclasses, allocation strategies (, ), portfolio summarization, signal generation, and PnL/lifecycle functions.
+    -   **Summary**: Defines ,  dataclasses, allocation strategies (, ), mindfolio summarization, signal generation, and PnL/lifecycle functions.
     -   **Changes**: Newly added file, based on user-provided code.
 -    (NEW): Utility for loading positions data for the options selling engine.
     -   **Summary**: Provides , ,  functions.
@@ -62,7 +62,7 @@ The immediate objective was to enhance the Portfolios section, specifically the 
         *   Sidebar routing for TradeStation Main was updated multiple times, eventually pointing to  (loading ).
         *   A new sidebar entry Options Module ⚡ Options Selling was added, routing to .
         *   Routes for  (for detailed live positions) and  were configured.
--   : Displays details for a single portfolio.
+-   : Displays details for a single mindfolio.
     -   **Summary**: Heavily modified to display TradeStation data with dashboard cards, a dark theme, a dynamic positions table with grouping, expand/collapse, % din Cont, and a total row.
     -   **Changes**:
         *   Implemented a robust expand/collapse mechanism for ticker groups (similar to sidebar, using a Map/Object for state,  for persistence).

@@ -3,7 +3,7 @@
 ## Current Standard (Pages Only - Excluding Sidebar)
 
 ### Main Page Headers
-- **text-2xl** - Page titles (Dashboard, Portfolios, etc.)
+- **text-2xl** - Page titles (Dashboard, Mindfolios, etc.)
 - Font weight: font-bold
 - Color: text-white
 

@@ -22,7 +22,7 @@ except ImportError:
 # from unusual_whales_service import UnusualWhalesService
 # from tradestation_auth_service import tradestation_auth_service as ts_auth
 # from tradestation_client import TradeStationClient
-# from portfolio_service import PortfolioService
+# from mindfolio_service import MindfolioService
 # from trading_service import TradingService
 
 # AI Agents
@@ -31,11 +31,11 @@ from technical_analysis_agent import TechnicalAnalysisAgent
 
 # Options Calculator
 
-# Portfolio Charts and Smart Rebalancing
-from portfolio_charts_service import PortfolioChartsService
+# Mindfolio Charts and Smart Rebalancing
+from mindfolio_charts_service import MindfolioChartsService
 from smart_rebalancing_service import SmartRebalancingService
 
-# Portfolio Management
+# Mindfolio Management
 
 # NEW: Option Selling compute + monitor service + analysis
 from options_selling_service import (
@@ -85,24 +85,24 @@ db = client[os.environ["DB_NAME"]]
 # Initialize services (temporarily disabled for security audit)
 # uw_service = UnusualWhalesService()
 # ts_client = TradeStationClient(ts_auth)
-# portfolio_service = PortfolioService(ts_client)
+# mindfolio_service = MindfolioService(ts_client)
 # trading_service = TradingService(ts_client)
-# portfolio_management_service = PortfolioManagementService(ts_auth)
+# mindfolio_management_service = MindfolioManagementService(ts_auth)
 
 # Initialize AI Agents
 investment_scoring_agent = InvestmentScoringAgent()
 technical_analysis_agent = TechnicalAnalysisAgent()
 
 # Initialize new services
-portfolio_charts_service = PortfolioChartsService()
+mindfolio_charts_service = MindfolioChartsService()
 smart_rebalancing_service = SmartRebalancingService()
 
 # Placeholder services for disabled functionality
 uw_service = None
 ts_client = None
-portfolio_service = None
+mindfolio_service = None
 trading_service = None
-portfolio_management_service = None
+mindfolio_management_service = None
 ts_auth = None
 
 # Integration clients
@@ -118,26 +118,26 @@ except ImportError as e:
     TSClient = None
 
 # Global flag to track initialization
-portfolio_service_initialized = False
+mindfolio_service_initialized = False
 
 
-async def initialize_portfolio_service():
-    """Initialize portfolio management service with TradeStation data"""
-    global portfolio_service_initialized
-    if not portfolio_service_initialized:
+async def initialize_mindfolio_service():
+    """Initialize mindfolio management service with TradeStation data"""
+    global mindfolio_service_initialized
+    if not mindfolio_service_initialized:
         try:
-            if portfolio_management_service is not None:
-                await portfolio_management_service.initialize()
-                portfolio_service_initialized = True
-                logger.info("Portfolio management service initialized successfully")
+            if mindfolio_management_service is not None:
+                await mindfolio_management_service.initialize()
+                mindfolio_service_initialized = True
+                logger.info("Mindfolio management service initialized successfully")
             else:
                 logger.warning(
-                    "Portfolio management service is disabled for security audit"
+                    "Mindfolio management service is disabled for security audit"
                 )
-                portfolio_service_initialized = False
+                mindfolio_service_initialized = False
         except Exception as e:
-            logger.error(f"Failed to initialize portfolio management service: {str(e)}")
-            portfolio_service_initialized = False
+            logger.error(f"Failed to initialize mindfolio management service: {str(e)}")
+            mindfolio_service_initialized = False
 
 
 # Create the main app without a prefix
@@ -677,12 +677,12 @@ from trade_routes import router as trade_router
 from bt_cache_integration import router as bt_router
 from bt_ops import router as bt_ops_router
 
-# Portfolios
+# Mindfolios
 
 # Emergent status
 from bt_emergent import emergent_router, redis_diag_router
 
-# Mindfolio (formerly Portfolios)
+# Mindfolio (formerly Mindfolios)
 from mindfolio import router as mindfolio_router
 
 # Mount main API router (includes legacy endpoints)
@@ -957,4 +957,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# TEST: portfolios import
+# TEST: mindfolios import

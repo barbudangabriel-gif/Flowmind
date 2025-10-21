@@ -37,9 +37,9 @@ async def get_mindfolios():
     return {"status": "success", "data": MOCK_MINDFOLIOS}
 
 
-@router.get("/portfolios")
-async def get_portfolios():
-    """Get all portfolios (legacy endpoint, same as mindfolios)"""
+@router.get("/mindfolios")
+async def get_mindfolios():
+    """Get all mindfolios (legacy endpoint, same as mindfolios)"""
     return {"status": "success", "data": MOCK_MINDFOLIOS}
 
 
@@ -52,12 +52,12 @@ async def get_mindfolio(mindfolio_id: str):
     return {"status": "error", "message": "Mindfolio not found"}
 
 
-@router.get("/portfolios/{portfolio_id}")
-async def get_portfolio(portfolio_id: str):
-    """Get single portfolio by ID (legacy endpoint)"""
-    portfolio = next((p for p in MOCK_MINDFOLIOS if p["id"] == portfolio_id), None)
-    if portfolio:
+@router.get("/mindfolios/{mindfolio_id}")
+async def get_mindfolio(mindfolio_id: str):
+    """Get single mindfolio by ID (legacy endpoint)"""
+    mindfolio = next((p for p in MOCK_MINDFOLIOS if p["id"] == mindfolio_id), None)
+    if mindfolio:
         # Add mock positions for detail view
-        portfolio_with_positions = {**portfolio, "positions": []}  # Empty for now
-        return {"status": "success", "data": portfolio_with_positions}
-    return {"status": "error", "message": "Portfolio not found"}
+        mindfolio_with_positions = {**mindfolio, "positions": []}  # Empty for now
+        return {"status": "success", "data": mindfolio_with_positions}
+    return {"status": "error", "message": "Mindfolio not found"}

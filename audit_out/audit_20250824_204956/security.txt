@@ -29,7 +29,7 @@ Hardcoded URLs/endpoints:
 /app/price_fix_verification.py:    base_url = "http://localhost:8000"
 /app/monitor_debug_test.py:    base_url = "http://localhost:8000"
 /app/analysis_chart_backend_test.py:    def __init__(self, base_url="http://localhost:8000"):
-/app/test_portfolio_management.py:    def __init__(self, base_url="http://localhost:8000"):
+/app/test_mindfolio_management.py:    def __init__(self, base_url="http://localhost:8000"):
 /app/tradestation_api_test.py:    def __init__(self, base_url="http://localhost:8000"):
 /app/covered_calls_backend_test.py:    def __init__(self, base_url="http://localhost:8000"):
 /app/comprehensive_backend_test.py:    def __init__(self, base_url="http://localhost:8000"):

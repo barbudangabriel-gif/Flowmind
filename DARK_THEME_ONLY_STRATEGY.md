@@ -296,7 +296,7 @@ FlowMind uses an **exclusively dark theme** optimized for:
 - [ ] Elimină toate `toggleDarkMode` buttons
 - [ ] Cleanup conditional styling `{isDarkMode ? ... : ...}`
 - [ ] Update `tailwind.config.js` pentru dark optimizations
-- [ ] Testează toate paginile (Builder, Flow, Portfolio, etc.)
+- [ ] Testează toate paginile (Builder, Flow, Mindfolio, etc.)
 
 ### Polish (optional)
 - [ ] Optimizează dark scrollbars
@@ -340,7 +340,7 @@ npm start
 - `/builder` - BuilderChart rendering
 - `/flow` - Flow visualization
 - `/optimize` - Strategy optimizer
-- `/portfolios` - Portfolio management
+- `/mindfolios` - Mindfolio management
 - `/settings` - Fără theme toggle!
 
 ---

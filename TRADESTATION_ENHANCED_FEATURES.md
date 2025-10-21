@@ -23,10 +23,10 @@ Am implementat exact funcționalitatea din TradeStation cu dropdown pentru filtr
 - **Footer Totals**: Total Cost pentru toate pozițiile filtrate
 - **Professional Formatting**: Currency format cu separatori de mii
 
-### 3. **Enhanced Portfolio Calculations**
+### 3. **Enhanced Mindfolio Calculations**
 - **Filtered Totals** - Calculele se fac pe pozițiile filtrate, nu pe toate
 - **Dynamic Return %** - Calculat ca (Market Value - Total Cost) / Total Cost × 100
-- **Smart Summary Bar** - Arată "Stocks Portfolio Value" sau "Options Portfolio Value"
+- **Smart Summary Bar** - Arată "Stocks Mindfolio Value" sau "Options Mindfolio Value"
 - **Real-time Updates** - Toate valorile se updatează automat la schimbarea filtrului
 
 ### 4. **Improved Grouping System**
@@ -52,7 +52,7 @@ Am implementat exact funcționalitatea din TradeStation cu dropdown pentru filtr
 ├─────────┼────────┼────────┼──────────┼──────────┼──────────┼───────┤
 │ TOTALS │ 63 │ - │ - │$915,709 │$851,176 │-$64,533│
 └─────────┴────────┴────────┴──────────┴──────────┴──────────┴───────┘
-│ Total Portfolio Value: $851,176 | P&L: -$64,533 (-7.05%) | 63 pos │
+│ Total Mindfolio Value: $851,176 | P&L: -$64,533 (-7.05%) | 63 pos │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -68,7 +68,7 @@ Am implementat exact funcționalitatea din TradeStation cu dropdown pentru filtr
 ├─────────┼────────┼────────┼──────────┼──────────┼──────────┼───────┤
 │ TOTALS │ 55 │ - │ - │$820,176 │$780,432 │-$39,744│
 └─────────┴────────┴────────┴──────────┴──────────┴──────────┴───────┘
-│ Stocks Portfolio Value: $780,432 | P&L: -$39,744 (-4.84%) | 55 pos│
+│ Stocks Mindfolio Value: $780,432 | P&L: -$39,744 (-4.84%) | 55 pos│
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -84,7 +84,7 @@ Am implementat exact funcționalitatea din TradeStation cu dropdown pentru filtr
 ├─────────┼────────┼────────┼──────────┼──────────┼──────────┼───────┤
 │ TOTALS │ 8 │ - │ - │ $95,533 │ $70,744 │-$24,789│
 └─────────┴────────┴────────┴──────────┴──────────┴──────────┴───────┘
-│ Options Portfolio Value: $70,744 | P&L: -$24,789 (-25.95%) | 8 pos │
+│ Options Mindfolio Value: $70,744 | P&L: -$24,789 (-25.95%) | 8 pos │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -157,9 +157,9 @@ const label = assetFilter === 'stocks' ? 'Stocks' :
 
 ---
 
-## Real Portfolio Data Examples
+## Real Mindfolio Data Examples
 
-### **Current Portfolio (63 positions total):**
+### **Current Mindfolio (63 positions total):**
 
 #### **All Positions:**
 - **63 Total Positions**: $915,709 Total Cost → $851,176 Market Value = -$64,533 (-7.05%)
@@ -171,9 +171,9 @@ const label = assetFilter === 'stocks' ? 'Stocks' :
 - **Options Holdings**: $95,533 Total Cost → $70,744 Market Value = -$24,789 (-25.95%)
 
 ### **Key Insights from Filtering:**
-- **Stocks**: 55 positions, majority of portfolio, -4.84% loss
+- **Stocks**: 55 positions, majority of mindfolio, -4.84% loss
 - **Options**: 8 positions, higher risk, -25.95% loss
-- **Combined**: -7.05% total portfolio return
+- **Combined**: -7.05% total mindfolio return
 - **Analysis**: Options dragging down total performance
 
 ---
@@ -188,11 +188,11 @@ const label = assetFilter === 'stocks' ? 'Stocks' :
 - Smart grouping după filtrare
 - Live data cu 63 poziții reale
 
-### ** Professional Portfolio Analytics:**
+### ** Professional Mindfolio Analytics:**
 - Separate analytics pentru stocks vs options
 - Accurate cost basis tracking
 - Real-time return calculations
-- Position-level și portfolio-level metrics
+- Position-level și mindfolio-level metrics
 - Smart labeling based on filter selection
 
 ### ** Enhanced User Experience:**
@@ -206,7 +206,7 @@ const label = assetFilter === 'stocks' ? 'Stocks' :
 
 ## **MISIUNEA COMPLETĂ!**
 
-**Portfolio-ul FlowMind Analytics funcționează acum EXACT ca TradeStation:**
+**Mindfolio-ul FlowMind Analytics funcționează acum EXACT ca TradeStation:**
 
 ### **Stocks/Options Filtering:**
 - **Dropdown filtering** identic cu TradeStation
@@ -224,4 +224,4 @@ const label = assetFilter === 'stocks' ? 'Stocks' :
 - **Asset mix**: 55 stocks + 8 options
 - **Professional insights** prin filtering
 
-**Când accesezi Live Portfolio, poți acum filtra Stocks/Options exact ca în TradeStation și vezi Total Cost pentru fiecare poziție!** 💼
+**Când accesezi Live Mindfolio, poți acum filtra Stocks/Options exact ca în TradeStation și vezi Total Cost pentru fiecare poziție!** 💼

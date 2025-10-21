@@ -425,7 +425,7 @@ After deployment, verify:
 - [ ] Frontend can fetch flow data
 - [ ] Market overview page works
 - [ ] Builder page can fetch options chains
-- [ ] Portfolio page loads correctly
+- [ ] Mindfolio page loads correctly
 
 ---
 

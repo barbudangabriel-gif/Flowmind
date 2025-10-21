@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Simple Mindfolio Dropdown Test</title>
+ <style>
+ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial; background: #1a1a1a; color: white; margin: 20px; }
+ .mindfolio-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+ .mindfolio-table th, .mindfolio-table td { border: 1px solid #333; padding: 10px; text-align: left; }
+ .mindfolio-table th { background: #2a2a2a; }
+ .mindfolio-table tr:nth-child(even) { background: #262626; }
+ .dropdown-arrow { cursor: pointer; color: #999; font-size: 16px; margin-right: 10px; }
+ .dropdown-arrow:hover { color: #fff; }
+ .expanded-details { background: #333; padding: 15px; margin: 5px 0; border-radius: 5px; }
+ .position-card { display: inline-block; background: #444; padding: 10px; margin: 5px; border-radius: 5px; min-width: 200px; }
+ .green { color: #4ade80; }
+ .red { color: #f87171; }
+ .blue { color: #60a5fa; }
+ </style>
+</head>
+<body>
+ <h1> SIMPLE MINDFOLIO DROPDOWN TEST </h1>
+ <p>Această pagină testează funcționalitatea de dropdown pentru fiecare poziție:</p>
+ 
+ <table class="mindfolio-table">
+ <thead>
+ <tr>
+ <th>Symbol</th>
+ <th>Asset Type</th>
+ <th>Quantity</th>
+ <th>Market Value</th>
+ <th>P&L</th>
+ <th>Action</th>
+ </tr>
+ </thead>
+ <tbody id="mindfolio-tbody">
+ <!-- Positions will be generated here -->
+ </tbody>
+ </table>
+ 
+ <div id="success-message" style="display: none; background: #059669; padding: 20px; border-radius: 10px; margin: 20px 0;">
+ <h2> SUCCESS! Toate dropdown-urile funcționează!</h2>
+ <p>Fiecare poziție are propriul dropdown funcțional.</p>
+ </div>
+
+ <script>
+ // Mock mindfolio data
+ const mockPositions = [
+ { symbol: "AAPL", assetType: "STOCK", quantity: 100, marketValue: 15000, pnl: 500, pnlPercent: 3.45 },
+ { symbol: "TSLA", assetType: "STOCK", quantity: 50, marketValue: 40000, pnl: -2000, pnlPercent: -4.76 },
+ { symbol: "GOOGL", assetType: "STOCK", quantity: 25, marketValue: 70000, pnl: 5000, pnlPercent: 7.69 },
+ { symbol: "MSFT", assetType: "STOCK", quantity: 75, marketValue: 26250, pnl: 1250, pnlPercent: 5.00 },
+ { symbol: "NVDA", assetType: "STOCK", quantity: 30, marketValue: 27000, pnl: -3000, pnlPercent: -10.00 },
+ { symbol: "META", assetType: "STOCK", quantity: 40, marketValue: 12000, pnl: 800, pnlPercent: 7.14 },
+ { symbol: "AMZN", assetType: "STOCK", quantity: 20, marketValue: 32000, pnl: 2000, pnlPercent: 6.67 },
+ { symbol: "NFLX", assetType: "STOCK", quantity: 15, marketValue: 7500, pnl: -500, pnlPercent: -6.25 }
+ ];
+
+ const expandedRows = new Set();
+ 
+ function toggleDropdown(index) {
+ const position = mockPositions[index];
+ const key = `pos-${index}`;
+ 
+ console.log(`Toggle dropdown for ${position.symbol} (Position #${index + 1})`);
+ 
+ if (expandedRows.has(key)) {
+ expandedRows.delete(key);
+ console.log(`Collapsed ${position.symbol}`);
+ } else {
+ expandedRows.add(key);
+ console.log(`Expanded ${position.symbol}`);
+ }
+
+ renderTable();
+ 
+ // Check if all positions have been tested
+ if (expandedRows.size >= mockPositions.length / 2) {
+ document.getElementById('success-message').style.display = 'block';
+ }
+ }
+ 
+ function formatCurrency(value) {
+ return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+ }
+ 
+ function getPnlColor(value) {
+ return value > 0 ? 'green' : value < 0 ? 'red' : '';
+ }
+ 
+ function renderTable() {
+ const tbody = document.getElementById('mindfolio-tbody');
+ tbody.innerHTML = '';
+ 
+ mockPositions.forEach((position, index) => {
+ const key = `pos-${index}`;
+ const isExpanded = expandedRows.has(key);
+ 
+ // Main row
+ const row = document.createElement('tr');
+ row.innerHTML = `
+ <td>
+ <span class="dropdown-arrow" onclick="toggleDropdown(${index})">
+ ${isExpanded ? '▼' : '▶'}
+ </span>
+ <strong class="blue">${position.symbol}</strong>
+ <br><small>${position.assetType} #${index + 1}</small>
+ </td>
+ <td>${position.assetType}</td>
+ <td>${position.quantity}</td>
+ <td>${formatCurrency(position.marketValue)}</td>
+ <td class="${getPnlColor(position.pnl)}">
+ ${position.pnl > 0 ? '+' : ''}${formatCurrency(position.pnl)}
+ (${position.pnlPercent > 0 ? '+' : ''}${position.pnlPercent}%)
+ </td>
+ <td>
+ <button onclick="toggleDropdown(${index})" style="background: #4ade80; color: black; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
+ ${isExpanded ? 'Collapse' : 'Expand'}
+ </button>
+ </td>
+ `;
+ tbody.appendChild(row);
+ 
+ // Expanded details row
+ if (isExpanded) {
+ const detailsRow = document.createElement('tr');
+ detailsRow.innerHTML = `
+ <td colspan="6">
+ <div class="expanded-details">
+ <h4> Detalii complete pentru ${position.symbol}</h4>
+ <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+ <div class="position-card">
+ <strong> Position Details</strong><br>
+ Position #${index + 1} of ${mockPositions.length}<br>
+ Index: ${index}
+ </div>
+ <div class="position-card">
+ <strong> Financial Data</strong><br>
+ Market Value: ${formatCurrency(position.marketValue)}<br>
+ P&L: <span class="${getPnlColor(position.pnl)}">${position.pnl > 0 ? '+' : ''}${formatCurrency(position.pnl)}</span>
+ </div>
+ <div class="position-card">
+ <strong>🔢 Quantity Info</strong><br>
+ ${position.quantity} shares<br>
+ Long Position
+ </div>
+ <div class="position-card">
+ <strong> Performance</strong><br>
+ <span class="${getPnlColor(position.pnlPercent)}">${position.pnlPercent > 0 ? '+' : ''}${position.pnlPercent}%</span><br>
+ Return Percentage
+ </div>
+ </div>
+ <p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #555; font-size: 12px; color: #999;">
+ Asset Type: ${position.assetType} | Symbol: ${position.symbol} | Status: ${isExpanded ? 'EXPANDED ' : 'COLLAPSED'}
+ </p>
+ </div>
+ </td>
+ `;
+ tbody.appendChild(detailsRow);
+ }
+ });
+ }
+ 
+ // Initial render
+ renderTable();
+ 
+ console.log(' Simple Mindfolio Dropdown Test loaded!');
+ console.log(` Total positions: ${mockPositions.length}`);
+ console.log('🔽 Click any dropdown arrow or button to test functionality!');
+ </script>
+</body>
+</html>

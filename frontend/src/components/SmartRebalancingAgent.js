@@ -26,7 +26,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const SmartRebalancingAgent = () => {
- const { portfolioId } = useParams();
+ const { mindfolioId } = useParams();
  const navigate = useNavigate();
  
  // State management
@@ -40,39 +40,39 @@ const SmartRebalancingAgent = () => {
  const [activeTab, setActiveTab] = useState('analysis');
  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
- // Portfolio information
- const portfolioInfo = {
+ // Mindfolio information
+ const mindfolioInfo = {
  'htech-15t': { name: 'HTech 15T', value: 139902.60 }
  };
 
- const currentPortfolio = portfolioInfo[portfolioId] || portfolioInfo['htech-15t'];
+ const currentMindfolio = mindfolioInfo[mindfolioId] || mindfolioInfo['htech-15t'];
 
  // Fetch AI rebalancing analysis
  const fetchRebalancingAnalysis = async () => {
  setLoading(true);
  setError(null);
  try {
- // Get current portfolio analysis
+ // Get current mindfolio analysis
  const analysisResponse = await axios.post(`${API}/agents/rebalancing-analysis`, {
- portfolio_id: portfolioId
+ mindfolio_id: mindfolioId
  });
  setAnalysisData(analysisResponse.data?.analysis || {});
 
  // Get AI recommendations
  const recommendationsResponse = await axios.post(`${API}/agents/rebalancing-recommendations`, {
- portfolio_id: portfolioId
+ mindfolio_id: mindfolioId
  });
  setRecommendations(recommendationsResponse.data?.recommendations || []);
 
  // Get Smart DCA analysis
  const dcaResponse = await axios.post(`${API}/agents/smart-dca-analysis`, {
- portfolio_id: portfolioId
+ mindfolio_id: mindfolioId
  });
  setSmartDCAData(dcaResponse.data?.dca_analysis || {});
 
  // Get risk analysis
  const riskResponse = await axios.post(`${API}/agents/risk-analysis`, {
- portfolio_id: portfolioId
+ mindfolio_id: mindfolioId
  });
  setRiskAnalysis(riskResponse.data?.risk_analysis || {});
 
@@ -93,7 +93,7 @@ const SmartRebalancingAgent = () => {
  // Generate mock data for development
  const generateMockData = () => {
  setAnalysisData({
- portfolio_health: 7.8,
+ mindfolio_health: 7.8,
  diversification_score: 6.5,
  risk_score: 8.2,
  leverage_ratio: 1.35,
@@ -147,7 +147,7 @@ const SmartRebalancingAgent = () => {
  symbol: 'AAPL',
  current_weight: 18,
  target_weight: 12,
- reason: 'Position size exceeds optimal portfolio weight',
+ reason: 'Position size exceeds optimal mindfolio weight',
  impact: 'Improves risk-adjusted returns',
  confidence: 0.71
  }
@@ -197,7 +197,7 @@ const SmartRebalancingAgent = () => {
  risk_factors: [
  { factor: 'Sector Concentration', level: 'HIGH', impact: 'Tech sector dominance increases volatility' },
  { factor: 'Options Leverage', level: 'MODERATE', impact: 'Options positions add 35% leverage exposure' },
- { factor: 'Market Beta', level: 'HIGH', impact: 'Portfolio moves 45% more than market' }
+ { factor: 'Market Beta', level: 'HIGH', impact: 'Mindfolio moves 45% more than market' }
  ]
  });
 
@@ -219,7 +219,7 @@ const SmartRebalancingAgent = () => {
  try {
  // Trigger comprehensive AI analysis
  const aiAnalysisResponse = await axios.post(`${API}/agents/comprehensive-rebalancing`, {
- portfolio_id: portfolioId,
+ mindfolio_id: mindfolioId,
  include_ml_predictions: true,
  include_smart_dca: true,
  risk_tolerance: 'moderate'
@@ -236,7 +236,7 @@ const SmartRebalancingAgent = () => {
 
  useEffect(() => {
  fetchRebalancingAnalysis();
- }, [portfolioId]);
+ }, [mindfolioId]);
 
  const tabs = [
  { id: 'analysis', label: 'Current Analysis', icon: Brain },
@@ -265,7 +265,7 @@ const SmartRebalancingAgent = () => {
  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
  <div className="text-center">
  <Brain className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-pulse" />
- <p className="text-gray-600">AI is analyzing your portfolio...</p>
+ <p className="text-gray-600">AI is analyzing your mindfolio...</p>
  </div>
  </div>
  );
@@ -279,7 +279,7 @@ const SmartRebalancingAgent = () => {
  <div className="flex items-center justify-between py-6">
  <div className="flex items-center space-x-4">
  <button
- onClick={() => navigate(`/portfolios/view/${portfolioId}`)}
+ onClick={() => navigate(`/mindfolios/view/${mindfolioId}`)}
  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
  >
  <ArrowLeft size={20} />
@@ -290,15 +290,15 @@ const SmartRebalancingAgent = () => {
  Smart Rebalancing Agent
  </h1>
  <p className="text-purple-100">
- AI-powered portfolio optimization for {currentPortfolio.name}
+ AI-powered mindfolio optimization for {currentMindfolio.name}
  </p>
  </div>
  </div>
  
  <div className="flex items-center space-x-3">
  <div className="text-right">
- <div className="text-xl text-purple-200">Portfolio Value</div>
- <div className="text-xl font-medium">${currentPortfolio.value.toLocaleString()}</div>
+ <div className="text-xl text-purple-200">Mindfolio Value</div>
+ <div className="text-xl font-medium">${currentMindfolio.value.toLocaleString()}</div>
  </div>
  <button
  onClick={runAIAnalysis}
@@ -363,13 +363,13 @@ const SmartRebalancingAgent = () => {
  {activeTab === 'analysis' && (
  <div className="space-y-6">
  <div>
- <h2 className="text-xl font-medium text-gray-900 mb-4">Portfolio Health Overview</h2>
+ <h2 className="text-xl font-medium text-gray-900 mb-4">Mindfolio Health Overview</h2>
  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
  <div className="flex items-center justify-between">
  <div>
  <p className="text-blue-600 text-xl font-medium">Health Score</p>
- <p className="text-2xl font-medium text-blue-900">{analysisData?.portfolio_health}/10</p>
+ <p className="text-2xl font-medium text-blue-900">{analysisData?.mindfolio_health}/10</p>
  </div>
  <Activity size={24} className="text-blue-500" />
  </div>
@@ -581,7 +581,7 @@ const SmartRebalancingAgent = () => {
  <h2 className="text-xl font-medium text-gray-900 mb-4">Risk Analysis</h2>
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
  <div className="bg-white p-4 rounded-lg border">
- <p className="text-xl text-gray-600">Portfolio Beta</p>
+ <p className="text-xl text-gray-600">Mindfolio Beta</p>
  <p className="text-2xl font-medium text-gray-900">{riskAnalysis?.beta}</p>
  </div>
  <div className="bg-white p-4 rounded-lg border">

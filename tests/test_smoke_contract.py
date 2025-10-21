@@ -4,13 +4,13 @@ import pytest
 PID = "pf_test123"  # din seed-ul conftest
 
 
-def test_portfolios_list(client):
-    """Test basic portfolio listing"""
-    r = client.get("/api/portfolios")
+def test_mindfolios_list(client):
+    """Test basic mindfolio listing"""
+    r = client.get("/api/mindfolios")
     assert r.status_code == 200
     js = r.json()
     assert isinstance(js, list)
-    # In TEST_MODE, portfolio list might be empty initially (Redis in-memory)
+    # In TEST_MODE, mindfolio list might be empty initially (Redis in-memory)
     # This is expected behavior and validates the endpoint works
 
 
@@ -30,19 +30,19 @@ def test_health_endpoints(client):
 
 def test_eod_workflow(client):
     """Test EOD snapshot creation and retrieval"""
-    # First create a portfolio for testing
-    portfolio_data = {
-        "name": "Test EOD Portfolio",
+    # First create a mindfolio for testing
+    mindfolio_data = {
+        "name": "Test EOD Mindfolio",
         "cash_balance": 10000.0,
         "status": "ACTIVE",
     }
-    r = client.post("/api/portfolios", json=portfolio_data)
+    r = client.post("/api/mindfolios", json=mindfolio_data)
     assert r.status_code in (200, 201)
-    created_portfolio = r.json()
-    test_portfolio_id = created_portfolio["id"]
+    created_mindfolio = r.json()
+    test_mindfolio_id = created_mindfolio["id"]
 
     # Create snapshot
-    r = client.post(f"/api/portfolios/{test_portfolio_id}/analytics/eod/snapshot")
+    r = client.post(f"/api/mindfolios/{test_mindfolio_id}/analytics/eod/snapshot")
     assert r.status_code == 200
     js = r.json()
     assert js["status"] == "success"
@@ -52,7 +52,7 @@ def test_eod_workflow(client):
     assert "total" in snapshot
 
     # Retrieve EOD series
-    r = client.get(f"/api/portfolios/{test_portfolio_id}/analytics/eod")
+    r = client.get(f"/api/mindfolios/{test_mindfolio_id}/analytics/eod")
     assert r.status_code == 200
     js = r.json()
     assert "series" in js

@@ -1,6 +1,6 @@
 """
 Smart Rebalancing Service
-AI/ML-powered portfolio rebalancing recommendations with Smart DCA algorithms
+AI/ML-powered mindfolio rebalancing recommendations with Smart DCA algorithms
 """
 
 import logging
@@ -18,46 +18,46 @@ class SmartRebalancingService:
         self.logger = logger
         self.ml_models_loaded = False
 
-    async def analyze_portfolio_comprehensive(
-        self, portfolio_id: str
+    async def analyze_mindfolio_comprehensive(
+        self, mindfolio_id: str
     ) -> Dict[str, Any]:
         """
-        Comprehensive AI analysis of portfolio health and composition
+        Comprehensive AI analysis of mindfolio health and composition
         """
         try:
             self.logger.info(
-                f"Running comprehensive AI analysis for portfolio {portfolio_id}"
+                f"Running comprehensive AI analysis for mindfolio {mindfolio_id}"
             )
 
             # Simulate ML model loading
             await self._load_ml_models()
 
-            # Get current portfolio data
-            portfolio_data = await self._get_portfolio_data(portfolio_id)
+            # Get current mindfolio data
+            mindfolio_data = await self._get_mindfolio_data(mindfolio_id)
 
             # Run AI analysis modules
             analysis = {
-                "portfolio_health": await self._calculate_portfolio_health(
-                    portfolio_data
+                "mindfolio_health": await self._calculate_mindfolio_health(
+                    mindfolio_data
                 ),
                 "diversification_score": await self._calculate_diversification_score(
-                    portfolio_data
+                    mindfolio_data
                 ),
-                "risk_score": await self._calculate_risk_score(portfolio_data),
-                "leverage_ratio": await self._calculate_leverage_ratio(portfolio_data),
+                "risk_score": await self._calculate_risk_score(mindfolio_data),
+                "leverage_ratio": await self._calculate_leverage_ratio(mindfolio_data),
                 "concentration_risk": await self._assess_concentration_risk(
-                    portfolio_data
+                    mindfolio_data
                 ),
                 "sector_allocation": await self._analyze_sector_allocation(
-                    portfolio_data
+                    mindfolio_data
                 ),
-                "ai_insights": await self._generate_ai_insights(portfolio_data),
+                "ai_insights": await self._generate_ai_insights(mindfolio_data),
                 "timestamp": datetime.now().isoformat(),
             }
 
             return {
                 "status": "success",
-                "portfolio_id": portfolio_id,
+                "mindfolio_id": mindfolio_id,
                 "analysis": analysis,
             }
 
@@ -65,52 +65,52 @@ class SmartRebalancingService:
             self.logger.error(f"Error in comprehensive analysis: {str(e)}")
             return {
                 "status": "error",
-                "message": f"Failed to analyze portfolio: {str(e)}",
+                "message": f"Failed to analyze mindfolio: {str(e)}",
             }
 
     async def generate_rebalancing_recommendations(
-        self, portfolio_id: str
+        self, mindfolio_id: str
     ) -> Dict[str, Any]:
         """
         Generate AI-powered rebalancing recommendations
         """
         try:
             self.logger.info(
-                f"Generating rebalancing recommendations for portfolio {portfolio_id}"
+                f"Generating rebalancing recommendations for mindfolio {mindfolio_id}"
             )
 
-            # Get portfolio analysis
-            portfolio_data = await self._get_portfolio_data(portfolio_id)
+            # Get mindfolio analysis
+            mindfolio_data = await self._get_mindfolio_data(mindfolio_id)
             market_conditions = await self._get_market_conditions()
 
             # Generate different types of recommendations
             recommendations = []
 
-            # Portfolio rebalancing recommendations
+            # Mindfolio rebalancing recommendations
             rebalance_recs = await self._generate_rebalance_recommendations(
-                portfolio_data, market_conditions
+                mindfolio_data, market_conditions
             )
             recommendations.extend(rebalance_recs)
 
             # Options management recommendations
-            options_recs = await self._generate_options_recommendations(portfolio_data)
+            options_recs = await self._generate_options_recommendations(mindfolio_data)
             recommendations.extend(options_recs)
 
             # Position sizing recommendations
             sizing_recs = await self._generate_position_sizing_recommendations(
-                portfolio_data
+                mindfolio_data
             )
             recommendations.extend(sizing_recs)
 
             # Smart DCA recommendations
             dca_recs = await self._generate_smart_dca_recommendations(
-                portfolio_data, market_conditions
+                mindfolio_data, market_conditions
             )
             recommendations.extend(dca_recs)
 
             return {
                 "status": "success",
-                "portfolio_id": portfolio_id,
+                "mindfolio_id": mindfolio_id,
                 "recommendations": recommendations,
                 "total_recommendations": len(recommendations),
                 "generated_at": datetime.now().isoformat(),
@@ -124,14 +124,14 @@ class SmartRebalancingService:
             }
 
     async def analyze_smart_dca_opportunities(
-        self, portfolio_id: str
+        self, mindfolio_id: str
     ) -> Dict[str, Any]:
         """
         Analyze Smart DCA opportunities using bottom-finding algorithms
         """
         try:
             self.logger.info(
-                f"Analyzing Smart DCA opportunities for portfolio {portfolio_id}"
+                f"Analyzing Smart DCA opportunities for mindfolio {mindfolio_id}"
             )
 
             # Get market data and conditions
@@ -158,7 +158,7 @@ class SmartRebalancingService:
 
             return {
                 "status": "success",
-                "portfolio_id": portfolio_id,
+                "mindfolio_id": mindfolio_id,
                 "dca_analysis": dca_analysis,
             }
 
@@ -169,37 +169,37 @@ class SmartRebalancingService:
                 "message": f"Failed to analyze DCA opportunities: {str(e)}",
             }
 
-    async def analyze_risk_management(self, portfolio_id: str) -> Dict[str, Any]:
+    async def analyze_risk_management(self, mindfolio_id: str) -> Dict[str, Any]:
         """
         Comprehensive risk analysis with ML-powered insights
         """
         try:
-            self.logger.info(f"Analyzing risk management for portfolio {portfolio_id}")
+            self.logger.info(f"Analyzing risk management for mindfolio {mindfolio_id}")
 
-            portfolio_data = await self._get_portfolio_data(portfolio_id)
+            mindfolio_data = await self._get_mindfolio_data(mindfolio_id)
 
             # Calculate various risk metrics
             risk_analysis = {
-                "overall_risk": await self._calculate_overall_risk(portfolio_data),
-                "beta": await self._calculate_portfolio_beta(portfolio_data),
-                "var_95": await self._calculate_var_95(portfolio_data),
-                "max_drawdown": await self._calculate_max_drawdown(portfolio_data),
+                "overall_risk": await self._calculate_overall_risk(mindfolio_data),
+                "beta": await self._calculate_mindfolio_beta(mindfolio_data),
+                "var_95": await self._calculate_var_95(mindfolio_data),
+                "max_drawdown": await self._calculate_max_drawdown(mindfolio_data),
                 "correlation_sp500": await self._calculate_sp500_correlation(
-                    portfolio_data
+                    mindfolio_data
                 ),
-                "volatility": await self._calculate_portfolio_volatility(
-                    portfolio_data
+                "volatility": await self._calculate_mindfolio_volatility(
+                    mindfolio_data
                 ),
-                "sharpe_ratio": await self._calculate_sharpe_ratio(portfolio_data),
-                "risk_factors": await self._identify_risk_factors(portfolio_data),
+                "sharpe_ratio": await self._calculate_sharpe_ratio(mindfolio_data),
+                "risk_factors": await self._identify_risk_factors(mindfolio_data),
                 "risk_mitigation_suggestions": await self._generate_risk_mitigation(
-                    portfolio_data
+                    mindfolio_data
                 ),
             }
 
             return {
                 "status": "success",
-                "portfolio_id": portfolio_id,
+                "mindfolio_id": mindfolio_id,
                 "risk_analysis": risk_analysis,
             }
 
@@ -295,10 +295,10 @@ class SmartRebalancingService:
             await asyncio.sleep(0.1)  # Simulate loading time
             self.ml_models_loaded = True
 
-    async def _get_portfolio_data(self, portfolio_id: str) -> Dict[str, Any]:
-        """Get portfolio data for analysis"""
-        # Mock portfolio data
-        portfolios = {
+    async def _get_mindfolio_data(self, mindfolio_id: str) -> Dict[str, Any]:
+        """Get mindfolio data for analysis"""
+        # Mock mindfolio data
+        mindfolios = {
             "htech-15t": {
                 "total_value": 139902.60,
                 "cash": 100000.00,
@@ -341,7 +341,7 @@ class SmartRebalancingService:
                 ],
             }
         }
-        return portfolios.get(portfolio_id, portfolios["htech-15t"])
+        return mindfolios.get(mindfolio_id, mindfolios["htech-15t"])
 
     async def _get_market_conditions(self) -> Dict[str, Any]:
         """Get current market conditions"""
@@ -355,29 +355,29 @@ class SmartRebalancingService:
             ],
         }
 
-    async def _calculate_portfolio_health(self, portfolio_data: Dict) -> float:
-        """Calculate overall portfolio health score (1-10)"""
+    async def _calculate_mindfolio_health(self, mindfolio_data: Dict) -> float:
+        """Calculate overall mindfolio health score (1-10)"""
         return round((6.5 + secrets.randbelow(int((9.0 - 6.5) * 1000)) / 1000), 1)
 
-    async def _calculate_diversification_score(self, portfolio_data: Dict) -> float:
+    async def _calculate_diversification_score(self, mindfolio_data: Dict) -> float:
         """Calculate diversification score"""
         return round((5.5 + secrets.randbelow(int((8.5 - 5.5) * 1000)) / 1000), 1)
 
-    async def _calculate_risk_score(self, portfolio_data: Dict) -> float:
+    async def _calculate_risk_score(self, mindfolio_data: Dict) -> float:
         """Calculate risk score"""
         return round((6.0 + secrets.randbelow(int((9.0 - 6.0) * 1000)) / 1000), 1)
 
-    async def _calculate_leverage_ratio(self, portfolio_data: Dict) -> float:
+    async def _calculate_leverage_ratio(self, mindfolio_data: Dict) -> float:
         """Calculate leverage ratio"""
         return round((1.1 + secrets.randbelow(int((1.8 - 1.1) * 1000)) / 1000), 2)
 
-    async def _assess_concentration_risk(self, portfolio_data: Dict) -> str:
+    async def _assess_concentration_risk(self, mindfolio_data: Dict) -> str:
         """Assess concentration risk level"""
         return ["LOW", "MEDIUM", "HIGH"][
             secrets.randbelow(len(["LOW", "MEDIUM", "HIGH"]))
         ]
 
-    async def _analyze_sector_allocation(self, portfolio_data: Dict) -> Dict[str, int]:
+    async def _analyze_sector_allocation(self, mindfolio_data: Dict) -> Dict[str, int]:
         """Analyze sector allocation"""
         return {
             "Technology": 45,
@@ -387,7 +387,7 @@ class SmartRebalancingService:
             "Energy": 10,
         }
 
-    async def _generate_ai_insights(self, portfolio_data: Dict) -> List[str]:
+    async def _generate_ai_insights(self, mindfolio_data: Dict) -> List[str]:
         """Generate AI insights"""
         return [
             "Technology sector concentration above optimal threshold",
@@ -396,7 +396,7 @@ class SmartRebalancingService:
         ]
 
     async def _generate_rebalance_recommendations(
-        self, portfolio_data: Dict, market_conditions: Dict
+        self, mindfolio_data: Dict, market_conditions: Dict
     ) -> List[Dict]:
         """Generate rebalancing recommendations"""
         return [
@@ -413,7 +413,7 @@ class SmartRebalancingService:
         ]
 
     async def _generate_options_recommendations(
-        self, portfolio_data: Dict
+        self, mindfolio_data: Dict
     ) -> List[Dict]:
         """Generate options management recommendations"""
         return [
@@ -431,7 +431,7 @@ class SmartRebalancingService:
         ]
 
     async def _generate_position_sizing_recommendations(
-        self, portfolio_data: Dict
+        self, mindfolio_data: Dict
     ) -> List[Dict]:
         """Generate position sizing recommendations"""
         return [
@@ -442,14 +442,14 @@ class SmartRebalancingService:
                 "symbol": "AAPL",
                 "current_weight": 18,
                 "target_weight": 12,
-                "reason": "Position size exceeds optimal portfolio weight",
+                "reason": "Position size exceeds optimal mindfolio weight",
                 "impact": "Improves risk-adjusted returns",
                 "confidence": 0.71,
             }
         ]
 
     async def _generate_smart_dca_recommendations(
-        self, portfolio_data: Dict, market_conditions: Dict
+        self, mindfolio_data: Dict, market_conditions: Dict
     ) -> List[Dict]:
         """Generate Smart DCA recommendations"""
         return [
@@ -521,37 +521,37 @@ class SmartRebalancingService:
         """Calculate market timing score"""
         return round((0.6 + secrets.randbelow(int((0.85 - 0.6) * 1000)) / 1000), 2)
 
-    async def _calculate_overall_risk(self, portfolio_data: Dict) -> str:
-        """Calculate overall portfolio risk"""
+    async def _calculate_overall_risk(self, mindfolio_data: Dict) -> str:
+        """Calculate overall mindfolio risk"""
         return ["LOW", "MODERATE", "MODERATE-HIGH", "HIGH"][
             secrets.randbelow(len(["LOW", "MODERATE", "MODERATE-HIGH", "HIGH"]))
         ]
 
-    async def _calculate_portfolio_beta(self, portfolio_data: Dict) -> float:
-        """Calculate portfolio beta"""
+    async def _calculate_mindfolio_beta(self, mindfolio_data: Dict) -> float:
+        """Calculate mindfolio beta"""
         return round((1.2 + secrets.randbelow(int((1.6 - 1.2) * 1000)) / 1000), 2)
 
-    async def _calculate_var_95(self, portfolio_data: Dict) -> float:
+    async def _calculate_var_95(self, mindfolio_data: Dict) -> float:
         """Calculate 95% Value at Risk"""
         return round((-0.05 + secrets.randbelow(int((-0.12 - -0.05) * 1000)) / 1000), 3)
 
-    async def _calculate_max_drawdown(self, portfolio_data: Dict) -> float:
+    async def _calculate_max_drawdown(self, mindfolio_data: Dict) -> float:
         """Calculate maximum drawdown"""
         return round((-0.10 + secrets.randbelow(int((-0.20 - -0.10) * 1000)) / 1000), 3)
 
-    async def _calculate_sp500_correlation(self, portfolio_data: Dict) -> float:
+    async def _calculate_sp500_correlation(self, mindfolio_data: Dict) -> float:
         """Calculate correlation with S&P 500"""
         return round((0.7 + secrets.randbelow(int((0.9 - 0.7) * 1000)) / 1000), 2)
 
-    async def _calculate_portfolio_volatility(self, portfolio_data: Dict) -> float:
-        """Calculate portfolio volatility"""
+    async def _calculate_mindfolio_volatility(self, mindfolio_data: Dict) -> float:
+        """Calculate mindfolio volatility"""
         return round((0.18 + secrets.randbelow(int((0.28 - 0.18) * 1000)) / 1000), 3)
 
-    async def _calculate_sharpe_ratio(self, portfolio_data: Dict) -> float:
+    async def _calculate_sharpe_ratio(self, mindfolio_data: Dict) -> float:
         """Calculate Sharpe ratio"""
         return round((1.0 + secrets.randbelow(int((1.5 - 1.0) * 1000)) / 1000), 2)
 
-    async def _identify_risk_factors(self, portfolio_data: Dict) -> List[Dict]:
+    async def _identify_risk_factors(self, mindfolio_data: Dict) -> List[Dict]:
         """Identify key risk factors"""
         return [
             {
@@ -567,11 +567,11 @@ class SmartRebalancingService:
             {
                 "factor": "Market Beta",
                 "level": "HIGH",
-                "impact": "Portfolio moves 45% more than market",
+                "impact": "Mindfolio moves 45% more than market",
             },
         ]
 
-    async def _generate_risk_mitigation(self, portfolio_data: Dict) -> List[str]:
+    async def _generate_risk_mitigation(self, mindfolio_data: Dict) -> List[str]:
         """Generate risk mitigation suggestions"""
         return [
             "Diversify into defensive sectors (utilities, consumer staples)",

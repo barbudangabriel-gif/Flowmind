@@ -20,7 +20,7 @@ https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestatio
 - Trade
 
 **Purpose:**
-Development environment for FlowMind Analytics - an options trading platform integrating with TradeStation API for market data and portfolio management. This URL is our GitHub Codespaces development endpoint.
+Development environment for FlowMind Analytics - an options trading platform integrating with TradeStation API for market data and mindfolio management. This URL is our GitHub Codespaces development endpoint.
 
 Please confirm when the redirect URI has been added.
 

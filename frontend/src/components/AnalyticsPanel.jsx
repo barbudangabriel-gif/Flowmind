@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { portfolioAPI } from '../lib/portfolioAPI';
+import { mindfolioAPI } from '../lib/mindfolioAPI';
 import EquityChart from './EquityChart';
 import EODChart from './EODChart';
 import { drawdown, utilization, fmtPct, last } from '../lib/metrics';
@@ -34,7 +34,7 @@ const calculateUtilization = (currentEquity, startValue) => {
  return Math.round(((currentEquity - startValue) / startValue) * 10000) / 100;
 };
 
-export default function AnalyticsPanel({ portfolioId }) {
+export default function AnalyticsPanel({ mindfolioId }) {
  const [totalEquity, setTotalEquity] = useState([]);
  const [buckets, setBuckets] = useState([]);
  const [bucketSeries, setBucketSeries] = useState({});
@@ -50,13 +50,13 @@ export default function AnalyticsPanel({ portfolioId }) {
 
  // Load EOD data when tab changes to EOD
  useEffect(() => {
- if (activeTab !== 'eod' || !portfolioId) return;
+ if (activeTab !== 'eod' || !mindfolioId) return;
  
  const loadEOD = async () => {
  setEodLoading(true);
  setEodErr(null);
  try {
- const response = await portfolioAPI.eod(portfolioId);
+ const response = await mindfolioAPI.eod(mindfolioId);
  setEod(response.series || []);
  } catch (error) {
  console.error('Failed to load EOD data:', error);
@@ -67,18 +67,18 @@ export default function AnalyticsPanel({ portfolioId }) {
  };
  
  loadEOD();
- }, [portfolioId, activeTab]);
+ }, [mindfolioId, activeTab]);
 
  // Snapshot Now function
  const snapNow = async () => {
- if (!portfolioId || snapBusy) return;
+ if (!mindfolioId || snapBusy) return;
  
  setSnapBusy(true);
  setEodErr(null);
  try {
- await portfolioAPI.eodSnapshot(portfolioId);
+ await mindfolioAPI.eodSnapshot(mindfolioId);
  // Refresh EOD data after snapshot
- const response = await portfolioAPI.eod(portfolioId);
+ const response = await mindfolioAPI.eod(mindfolioId);
  setEod(response.series || []);
  } catch (error) {
  console.error('Snapshot failed:', error);
@@ -89,13 +89,13 @@ export default function AnalyticsPanel({ portfolioId }) {
  };
 
  useEffect(() => {
- if (!portfolioId) return;
+ if (!mindfolioId) return;
 
  const loadAnalytics = async () => {
  setLoading(true);
  try {
- // Load total portfolio equity
- const totalData = await portfolioAPI.equity(portfolioId, { start: 0 });
+ // Load total mindfolio equity
+ const totalData = await mindfolioAPI.equity(mindfolioId, { start: 0 });
  console.log('Total equity data:', totalData);
  
  let equityCurve = [];
@@ -115,12 +115,12 @@ export default function AnalyticsPanel({ portfolioId }) {
  
  setTotalEquity(equityCurve);
  
- // Calculate portfolio-level analytics
- const portfolioMetrics = calculateDrawdownMetrics(equityCurve);
+ // Calculate mindfolio-level analytics
+ const mindfolioMetrics = calculateDrawdownMetrics(equityCurve);
  const currentEquity = equityCurve.length > 0 ? equityCurve[equityCurve.length - 1].equity : 0;
  
  // Load buckets
- const bucketsResponse = await portfolioAPI.listBuckets(portfolioId);
+ const bucketsResponse = await mindfolioAPI.listBuckets(mindfolioId);
  const bucketsList = bucketsResponse.buckets || bucketsResponse || [];
  setBuckets(bucketsList);
 
@@ -130,7 +130,7 @@ export default function AnalyticsPanel({ portfolioId }) {
  
  for (const bucket of bucketsList) {
  try {
- const bucketEquity = await portfolioAPI.equity(portfolioId, { 
+ const bucketEquity = await mindfolioAPI.equity(mindfolioId, { 
  bucketId: bucket.id, 
  start: bucket.start_value 
  });
@@ -172,8 +172,8 @@ export default function AnalyticsPanel({ portfolioId }) {
  
  setBucketSeries(bucketData);
  setAnalytics({
- portfolio: {
- ...portfolioMetrics,
+ mindfolio: {
+ ...mindfolioMetrics,
  currentEquity
  },
  buckets: bucketAnalytics
@@ -187,7 +187,7 @@ export default function AnalyticsPanel({ portfolioId }) {
  };
 
  loadAnalytics();
- }, [portfolioId]);
+ }, [mindfolioId]);
 
  if (loading) {
  return (
@@ -251,11 +251,11 @@ export default function AnalyticsPanel({ portfolioId }) {
  {activeTab === 'equity' && (
  <div>
  <div className="flex items-center justify-between mb-4">
- <h3 className="font-medium text-3xl">Portfolio Total — Equity (realized)</h3>
+ <h3 className="font-medium text-3xl">Mindfolio Total — Equity (realized)</h3>
  <div className="flex items-center gap-4">
  <button
  onClick={() => {
- const url = `${import.meta.env.REACT_APP_BACKEND_URL || '/api'}/portfolios/${portfolioId}/analytics/equity.csv`;
+ const url = `${import.meta.env.REACT_APP_BACKEND_URL || '/api'}/mindfolios/${mindfolioId}/analytics/equity.csv`;
  window.open(url, '_blank');
  }}
  className="px-3 py-1 text-lg bg-blue-600 text-[rgb(252, 251, 255)] rounded hover:bg-blue-700 transition-colors"
@@ -264,13 +264,13 @@ export default function AnalyticsPanel({ portfolioId }) {
  </button>
  <div className="flex gap-4 text-xl">
  <div className="text-gray-600">
- Current DD: <span className="font-mono text-red-600">{analytics.portfolio?.currentDD || 0}%</span>
+ Current DD: <span className="font-mono text-red-600">{analytics.mindfolio?.currentDD || 0}%</span>
  </div>
  <div className="text-gray-600">
- Max DD: <span className="font-mono text-red-700">{analytics.portfolio?.maxDD || 0}%</span>
+ Max DD: <span className="font-mono text-red-700">{analytics.mindfolio?.maxDD || 0}%</span>
  </div>
  <div className="text-gray-600">
- Equity: <span className="font-mono text-blue-600">${(analytics.portfolio?.currentEquity || 0).toLocaleString()}</span>
+ Equity: <span className="font-mono text-blue-600">${(analytics.mindfolio?.currentEquity || 0).toLocaleString()}</span>
  </div>
  </div>
  </div>

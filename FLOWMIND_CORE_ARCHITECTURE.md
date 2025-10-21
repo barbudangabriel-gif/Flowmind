@@ -12,13 +12,13 @@
  ├── Scanner
  └── Top Picks
 
-💼 PORTFOLIOS
+💼 MINDFOLIOS
 ├── View All Mindfolio
 ├── Create New Mindfolio
 └── [Each Mindfolio Detail Page]
  ├── Overview / Positions / Transactions
- ├── Smart Rebalancing (per-portfolio module)
- └── Mindfolio Charts (per-portfolio analytics)
+ ├── Smart Rebalancing (per-mindfolio module)
+ └── Mindfolio Charts (per-mindfolio analytics)
 
  OPTIONS ANALYTICS (All options functionality)
 ├── 🔨 Options Builder (manual construction + 54+ strategy library)
@@ -84,7 +84,7 @@
 **Important:** These are the ONLY 2 trading modules. Everything else is either:
 - A tool (Builder, Optimizer)
 - Market data (Flow, Dark Pool, Congress)
-- A per-portfolio feature (Charts, Rebalancing)
+- A per-mindfolio feature (Charts, Rebalancing)
 
 ---
 
@@ -139,13 +139,13 @@
 
 ---
 
-## 💼 PER-PORTFOLIO MODULES
+## 💼 PER-MINDFOLIO MODULES
 
-These modules exist **inside each portfolio**, not at the global level:
+These modules exist **inside each mindfolio**, not at the global level:
 
 ### 1. Mindfolio Charts (Analytics Module)
-- **Location:** Inside portfolio detail view (tab or section)
-- **Backend:** `backend/portfolio_charts_service.py`
+- **Location:** Inside mindfolio detail view (tab or section)
+- **Backend:** `backend/mindfolio_charts_service.py`
 - **Features:**
  - P&L over time
  - Greek exposure charts
@@ -154,7 +154,7 @@ These modules exist **inside each portfolio**, not at the global level:
  - Drawdown analysis
 
 ### 2. Smart Rebalancing (Optimization Module)
-- **Location:** Inside portfolio detail view
+- **Location:** Inside mindfolio detail view
 - **Backend:** `backend/smart_rebalancing_service.py`
 - **Features:**
  - AI-driven allocation suggestions
@@ -174,7 +174,7 @@ These modules exist **inside each portfolio**, not at the global level:
  - Import CSV
  - Realized/Unrealized P&L
 
-**Key Point:** Charts and Rebalancing are NOT global. Each portfolio instance has its own.
+**Key Point:** Charts and Rebalancing are NOT global. Each mindfolio instance has its own.
 
 ---
 
@@ -244,17 +244,17 @@ These modules exist **inside each portfolio**, not at the global level:
  **DON'T:**
 - Create "Stock Trading Module"
 - Mix stock analysis with options
-- Add portfolio features here
+- Add mindfolio features here
 
 ### 2. **Mindfolio Pillar**
  **DO:**
-- Enhance portfolio CRUD
+- Enhance mindfolio CRUD
 - Add features to Charts or Rebalancing modules
 - Improve transaction import
-- Add new per-portfolio analytics
+- Add new per-mindfolio analytics
 
  **DON'T:**
-- Create global portfolio analytics (it's per-portfolio)
+- Create global mindfolio analytics (it's per-mindfolio)
 - Mix trading strategies here
 - Create "Mindfolio Trading Module"
 
@@ -279,7 +279,7 @@ These modules exist **inside each portfolio**, not at the global level:
 ### 5. **Adding New Features**
 Before coding, ask:
 - Is this a stock feature? → Enhance Investment Scoring
-- Is this a portfolio feature? → Add to Mindfolio detail or per-portfolio modules
+- Is this a mindfolio feature? → Add to Mindfolio detail or per-mindfolio modules
 - Is this an options feature? → Add under Options Analytics
 - Is this a new trading system? → **STOP. Review with team. Do we really need a 3rd module?**
 
@@ -313,7 +313,7 @@ Before coding, ask:
 2. System: Suggests TSLA 0.28 delta put @ 35 DTE, premium $450
 3. User: Approves → saved to Mindfolio Manager
 4. Market: Price drops, user gets assigned 100 shares
-5. System: Detects assignment in portfolio
+5. System: Detects assignment in mindfolio
 6. Module: Auto-switches to Covered Calls mode
 7. System: Suggests 0.25 delta call @ 30 DTE, premium $300
 8. User: Sells call → income cycle continues
@@ -352,7 +352,7 @@ Before coding, ask:
 
 **The 3 Pillars are sacred:**
 1. Stocks (Investment Scoring)
-2. Mindfolio (Manager + per-portfolio modules)
+2. Mindfolio (Manager + per-mindfolio modules)
 3. Options Analytics (Builder, Optimizer, 2 trading modules, market data)
 
 **When in doubt:**
@@ -363,7 +363,7 @@ Before coding, ask:
 **Remember:**
 - Only 2 trading modules exist (IV Service, Sell Puts)
 - 54+ strategies are templates, not modules
-- Charts and Rebalancing are per-portfolio, not global
+- Charts and Rebalancing are per-mindfolio, not global
 - Routes are flexible (pages, tabs, query params - decide per-feature)
 
 **This document is the single source of truth for FlowMind architecture.**

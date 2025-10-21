@@ -51,7 +51,7 @@ const groups = [
  ],
  },
  {
- title: 'Portfolios',
+ title: 'Mindfolios',
  variants: [
  { name: 'Briefcase', Icon: Briefcase },
  { name: 'PieChart', Icon: PieChart },

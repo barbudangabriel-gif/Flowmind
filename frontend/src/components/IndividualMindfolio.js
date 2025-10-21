@@ -1,0 +1,387 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+ ChevronDown,
+ AlertTriangle,
+ X,
+ Eye,
+ BarChart3,
+ FileText,
+ Brain,
+ PieChart as PieChartIcon,
+ Target,
+ DollarSign
+} from 'lucide-react';
+import ContextMenu from './ContextMenu';
+import useMindfolioManagement from '../hooks/useMindfolioManagement';
+
+const IndividualMindfolio = () => {
+ const navigate = useNavigate();
+ const { mindfolioId } = useParams();
+ const [activeTab, setActiveTab] = useState('holdings');
+ const [loading, setLoading] = useState(false);
+
+ // Context menu state
+ const [contextMenu, setContextMenu] = useState({ isVisible: false, position: { x: 0, y: 0 }, selectedPosition: null });
+
+ // Mindfolio management hook
+ const { mindfolios, availableMindfolios, fetchMindfolioPositions, fetchAvailableMindfolios, movePosition, clearError } = useMindfolioManagement();
+
+ // Current mindfolio data
+ const [currentMindfolio, setCurrentMindfolio] = useState(null);
+ const [positions, setPositions] = useState([]);
+ const [cashBalance, setCashBalance] = useState(0);
+ const [expandedTickers, setExpandedTickers] = useState({});
+ const [error, setError] = useState(null);
+
+ const getChangeColor = (change) => (change >= 0 ? 'text-green-400' : 'text-red-400');
+
+ // Persistence for expanded tickers per-mindfolio
+ useEffect(() => {
+ const key = `expandedTickers:${mindfolioId}`;
+ const saved = localStorage.getItem(key);
+ if (saved) {
+ try { setExpandedTickers(JSON.parse(saved) || {}); } catch { setExpandedTickers({}); }
+ } else { setExpandedTickers({}); }
+ }, [mindfolioId]);
+ useEffect(() => {
+ const key = `expandedTickers:${mindfolioId}`;
+ try { localStorage.setItem(key, JSON.stringify(expandedTickers || {})); } catch {}
+ }, [expandedTickers, mindfolioId]);
+
+ // Load data (force LIVE for TradeStation Main)
+ useEffect(() => {
+ const isTradeStation = mindfolioId === 'tradestation-main';
+
+ const loadRealTradeStationData = async () => {
+ try {
+ setLoading(true);
+ // Accounts
+ const accountsResp = await Promise.race([
+ fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts`),
+ new Promise((_, rej) => setTimeout(() => rej(new Error('Accounts timeout')), 12000))
+ ]);
+ const accountsData = await accountsResp.json();
+ const accounts = accountsData.accounts || accountsData;
+ let mainAccount = null;
+ if (Array.isArray(accounts)) mainAccount = accounts.find((acc) => acc.Type === 'Margin') || accounts[0];
+ else if (accounts && typeof accounts === 'object') mainAccount = accounts;
+ if (!mainAccount || !mainAccount.AccountID) throw new Error('No TradeStation accounts found');
+
+ // Positions
+ const positionsResp = await Promise.race([
+ fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/positions`),
+ new Promise((_, rej) => setTimeout(() => rej(new Error('Positions timeout')), 15000))
+ ]);
+ if (!positionsResp.ok) throw new Error(`Positions request failed: ${positionsResp.status}`);
+ const positionsData = await positionsResp.json();
+
+ // Balances
+ try {
+ const balancesResp = await Promise.race([
+ fetch(`${process.env.REACT_APP_BACKEND_URL}/api/tradestation/accounts/${mainAccount.AccountID}/balances`),
+ new Promise((_, rej) => setTimeout(() => rej(new Error('Balances timeout')), 10000))
+ ]);
+ const balancesData = await balancesResp.json();
+ const cashAvailable = balancesData?.balances?.Balances?.[0]?.CashBalance || balancesData?.balances?.CashBalance || 0;
+ setCashBalance(parseFloat(cashAvailable) || 0);
+ } catch { setCashBalance(0); }
+
+ // Transform positions
+ const transformed = (positionsData.positions || positionsData.data || positionsData || []).map((pos) => {
+ const rawSymbol = (pos.symbol || '').trim();
+ const asset = (pos.asset_type || '').toUpperCase();
+ let isStock = asset.includes('EQ') || asset.includes('STOCK');
+ let isOption = asset.includes('OP') || asset.includes('OPTION');
+ let baseSymbol = (rawSymbol.split(' ')[0] || rawSymbol).split('_')[0];
+ const symbolTail = rawSymbol.replace(baseSymbol, '').replace(/^[ _]/, '');
+ const pattern = /^(\d{6})([CP])([0-9]+(?:\.[0-9]+)?)$/i;
+ let optionMatch = null;
+ if (!isOption && symbolTail) {
+ optionMatch = symbolTail.match(pattern); if (optionMatch) { isOption = true; isStock = false; }
+ }
+ let option_type = pos.option_type, strike_price = pos.strike_price, expiration_date = pos.expiration_date;
+ if (isOption && (!option_type || !strike_price || !expiration_date)) {
+ try {
+ if (!optionMatch) { const parts = rawSymbol.split(' '); if (parts.length > 1) optionMatch = parts[1].match(pattern); }
+ if (optionMatch) {
+ const [, yymmdd, cp, strikeStr] = optionMatch; const yy = parseInt(yymmdd.slice(0,2),10); const mm = yymmdd.slice(2,4); const dd = yymmdd.slice(4,6);
+ const fullYear = yy >= 70 ? 1900 + yy : 2000 + yy; expiration_date = `${fullYear}-${mm}-${dd}`; option_type = cp.toUpperCase()==='P' ? 'PUT' : 'CALL'; strike_price = parseFloat(strikeStr);
+ }
+ } catch {}
+ }
+ const position_type = isStock ? 'stock' : (isOption ? 'option' : 'stock');
+ const symbolField = position_type === 'option' ? baseSymbol : rawSymbol;
+ const price = pos.mark_price || pos.current_price || pos.last_price || pos.market_price || pos.price || 0;
+ const mv = pos.market_value || Math.abs((pos.quantity || 0) * price);
+ return {
+ id: `ts-${rawSymbol}-${Math.random()}`,
+ symbol: symbolField,
+ quantity: pos.quantity || 0,
+ avg_cost: pos.average_price || 0,
+ current_price: price,
+ market_value: mv,
+ unrealized_pnl: pos.unrealized_pnl || 0,
+ unrealized_pnl_percent: pos.unrealized_pnl_percent || 0,
+ mindfolio_id: 'tradestation-main',
+ position_type,
+ metadata: { asset_type: pos.asset_type, option_type, strike_price, expiration_date, contract_symbol: rawSymbol, source: 'tradestation_direct_api' }
+ };
+ });
+
+ const totalValue = transformed.reduce((s, p) => s + (p.market_value || 0), 0);
+ const totalPnl = transformed.reduce((s, p) => s + (p.unrealized_pnl || 0), 0);
+ setPositions(transformed);
+ setCurrentMindfolio({ id: 'tradestation-main', name: 'TradeStation Main', total_value: totalValue, total_pnl: totalPnl, positions_count: transformed.length, description: `Live TradeStation Account ${mainAccount.AccountID}` });
+ await fetchAvailableMindfolios('tradestation-main');
+ } catch (e) {
+ setError(e.message);
+ setPositions([]);
+ await fetchAvailableMindfolios('tradestation-main');
+ } finally { setLoading(false); }
+ };
+
+ const loadOtherMindfolioData = async () => {
+ try {
+ setLoading(true);
+ const mindfolio = mindfolios.find((p) => p.id === mindfolioId) || null;
+ setCurrentMindfolio(mindfolio);
+ const fetched = await fetchMindfolioPositions(mindfolioId);
+ await fetchAvailableMindfolios(mindfolioId);
+ const transformed = (fetched || []).map((pos) => ({
+ id: pos.id || `${pos.symbol}-${Math.random()}`,
+ symbol: pos.symbol,
+ quantity: pos.quantity || 0,
+ avg_cost: pos.avg_cost ?? pos.average_price ?? 0,
+ current_price: pos.current_price ?? pos.mark_price ?? 0,
+ market_value: pos.market_value ?? Math.abs((pos.quantity || 0) * (pos.current_price ?? pos.mark_price ?? 0)),
+ unrealized_pnl: pos.unrealized_pnl ?? 0,
+ unrealized_pnl_percent: pos.unrealized_pnl_percent ?? 0,
+ mindfolio_id: mindfolioId,
+ position_type: pos.position_type || pos.type || 'stock',
+ metadata: { ...(pos.metadata || {}), source: pos.metadata?.source || 'mindfolio_management_service' }
+ }));
+ const totalValue = transformed.reduce((s, p) => s + (p.market_value || 0), 0);
+ const totalPnl = transformed.reduce((s, p) => s + (p.unrealized_pnl || 0), 0);
+ setPositions(transformed);
+ setCurrentMindfolio((prev) => ({ id: mindfolioId, name: mindfolio?.name || mindfolioId, total_value: totalValue, total_pnl: totalPnl, positions_count: transformed.length, description: mindfolio?.description || '' }));
+ } catch (e) { setError(e.message); setPositions([]); } finally { setLoading(false); }
+ };
+
+ if (isTradeStation) loadRealTradeStationData();
+ else if (mindfolioId && mindfolios.length > 0) loadOtherMindfolioData();
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [mindfolioId]);
+
+ // Context menu handlers
+ const handleContextMenu = (event, position) => { event.preventDefault(); setContextMenu({ isVisible: true, position: { x: event.clientX, y: event.clientY }, selectedPosition: position }); };
+ const closeContextMenu = () => { setContextMenu({ isVisible: false, position: { x: 0, y: 0 }, selectedPosition: null }); };
+ const handleMovePosition = async (positionId, toMindfolioId, mindfolioName) => {
+ try { const result = await movePosition(positionId, toMindfolioId); if (result.success) { alert(`Position moved successfully to ${mindfolioName}`); await fetchMindfolioPositions(mindfolioId); } else { throw new Error(result.error || 'Failed to move position'); } } catch (err) { alert(`Error moving position: ${err.message}`); }
+ };
+
+ const displayMindfolio = currentMindfolio || { id: mindfolioId, name: mindfolioId === 'tradestation-main' ? 'TradeStation Main' : (mindfolios.find((p) => p.id === mindfolioId)?.name || 'Mindfolio'), total_value: 0, total_pnl: 0, positions_count: 0 };
+ const changePercent = displayMindfolio.total_value > 0 ? (displayMindfolio.total_pnl / (displayMindfolio.total_value - displayMindfolio.total_pnl)) * 100 : 0;
+
+ // Group positions
+ const groupedPositions = React.useMemo(() => {
+ if (!positions || positions.length === 0) return {};
+ const getBaseSymbol = (p) => {
+ if (p.metadata?.underlying_symbol) return (p.metadata.underlying_symbol || '').toUpperCase();
+ const raw = (p.symbol || '').trim();
+ const first = (raw.split(' ')[0] || raw).split('_')[0];
+ return (first || raw).toUpperCase();
+ };
+ const groups = {};
+ positions.forEach((pos) => {
+ const key = pos.position_type === 'option' ? getBaseSymbol(pos) : (pos.symbol || '').toUpperCase();
+ if (!groups[key]) groups[key] = [];
+ groups[key].push(pos);
+ });
+ Object.keys(groups).forEach((symbol) => {
+ const arr = groups[symbol];
+ arr.sort((a, b) => (a.position_type === 'stock' && b.position_type !== 'stock' ? -1 : a.position_type !== 'stock' && b.position_type === 'stock' ? 1 : 0));
+ const totalValue = arr.reduce((s, p) => s + (p.market_value || 0), 0);
+ const totalPnl = arr.reduce((s, p) => s + (p.unrealized_pnl || 0), 0);
+ const totalQty = arr.reduce((s, p) => s + Math.abs(p.quantity || 0), 0);
+ const accountPercent = displayMindfolio?.total_value > 0 ? (totalValue / displayMindfolio.total_value) * 100 : 0;
+ const stock = arr.find((p) => p.position_type === 'stock');
+ const currentPrice = stock ? stock.current_price : arr.reduce((s, p) => s + (p.current_price || 0), 0) / arr.length;
+ groups[symbol]._summary = { symbol, totalValue, totalPnL: totalPnl, totalQuantity: totalQty, accountPercent, currentPrice, positionCount: arr.length, hasStock: arr.some((p) => p.position_type === 'stock'), hasOptions: arr.some((p) => p.position_type === 'option') };
+ });
+ return groups;
+ }, [positions, displayMindfolio?.total_value]);
+
+ const toggleTicker = (symbol) => {
+ setExpandedTickers((prev) => {
+ const next = { ...(prev || {}) };
+ next[symbol] = !next[symbol];
+ return next;
+ });
+ };
+ const expandAll = () => setExpandedTickers(new Set(Object.keys(groupedPositions)));
+ const collapseAll = () => setExpandedTickers(new Set());
+
+ return (
+ <div className="min-h-screen bg-slate-900">
+ <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+ <div className="flex items-center justify-between">
+ <h1 className="text-2xl font-medium text-[rgb(252, 251, 255)] flex items-center">Mindfolio {displayMindfolio.name}</h1>
+ </div>
+ <div className="flex items-center mt-2">
+ <Eye className="text-[rgb(252, 251, 255)] mr-2" size={16} />
+ <span className="text-3xl font-medium text-[rgb(252, 251, 255)]">${((displayMindfolio?.total_value || 0) + cashBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+ <span className="text-xl text-blue-200 ml-2">(Total Account Value)</span>
+ <span className={`ml-4 text-3xl font-medium ${displayMindfolio.total_pnl >= 0 ? 'text-green-300' : 'text-red-300'}`}>{displayMindfolio.total_pnl >= 0 ? '+' : ''}${Math.abs(displayMindfolio.total_pnl).toFixed(2)} ({changePercent >= 0 ? '+' : ''}{changePercent.toFixed(2)}%)</span>
+ </div>
+ <div className="flex items-center mt-4 space-x-3">
+ <button onClick={() => navigate(`/mindfolios/${mindfolioId}/charts`)} className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-[rgb(252, 251, 255)] rounded-lg hover:bg-blue-700 transition-colors">
+ <PieChartIcon size={16} />
+ <span>Charts</span>
+ </button>
+ <button onClick={() => navigate(`/mindfolios/${mindfolioId}/rebalancing`)} className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-[rgb(252, 251, 255)] rounded-lg hover:bg-purple-700 transition-colors">
+ <Brain size={16} />
+ <span>AI Rebalancing</span>
+ </button>
+ </div>
+ </div>
+
+ <div className="border-b border-slate-700 bg-slate-800">
+ <div className="flex space-x-8 px-6">
+ {[{ id: 'summary', label: 'Summary' }, { id: 'health-score', label: 'Health Score' }, { id: 'ratings', label: 'Ratings' }, { id: 'holdings', label: 'Holdings' }, { id: 'dividends', label: 'Dividends' }, { id: 'add-edit-views', label: '+ Add / Edit Views', hasArrow: true }].map((tab) => (
+ <button key={tab.id} onClick={() => (tab.id === 'add-edit-views' ? navigate(`/mindfolios/${mindfolioId}/add-edit-views`) : setActiveTab(tab.id))} className={`py-4 px-2 border-b-2 font-medium text-xl flex items-center ${activeTab === tab.id ? 'border-blue-400 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-600'}`}>{tab.label}{tab.hasArrow && <span className="ml-1 text-red-400">→</span>}</button>
+ ))}
+ </div>
+ </div>
+
+ <div className="p-6 bg-slate-900">
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+ <div className="bg-slate-800 rounded-lg p-6 border border-slate-600">
+ <div className="flex items-center justify-between"><div><p className="text-xl font-medium text-slate-300">Stock Positions</p><p className="text-2xl font-medium text-[rgb(252, 251, 255)]">{positions.filter((p) => p.position_type === 'stock').length}</p><p className="text-xl text-slate-400">${positions.filter((p)=>p.position_type==='stock').reduce((s,p)=>s+(p.market_value||0),0).toLocaleString()}</p></div><div className="p-3 bg-blue-600 rounded-full"><BarChart3 className="h-6 w-6 text-[rgb(252, 251, 255)]" /></div></div>
+ </div>
+ <div className="bg-slate-800 rounded-lg p-6 border border-slate-600">
+ <div className="flex items-center justify-between"><div><p className="text-xl font-medium text-slate-300">Options Positions</p><p className="text-2xl font-medium text-[rgb(252, 251, 255)]">{positions.filter((p) => p.position_type === 'option').length}</p><p className="text-xl text-slate-400">${positions.filter((p)=>p.position_type==='option').reduce((s,p)=>s+(p.market_value||0),0).toLocaleString()}</p></div><div className="p-3 bg-purple-600 rounded-full"><Target className="h-6 w-6 text-[rgb(252, 251, 255)]" /></div></div>
+ </div>
+ <div className="bg-slate-800 rounded-lg p-6 border border-slate-600">
+ <div className="flex items-center justify-between"><div><p className="text-xl font-medium text-slate-300">Cash Balance</p><p className="text-2xl font-medium text-[rgb(252, 251, 255)]">${cashBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p><p className="text-xl text-slate-400">Available Cash</p></div><div className="p-3 bg-green-600 rounded-full"><DollarSign className="h-6 w-6 text-[rgb(252, 251, 255)]" /></div></div>
+ </div>
+ </div>
+
+ <div className="overflow-x-auto">
+ <div className="flex items-center justify-between mb-3">
+ {loading ? (<div className="flex items-center py-2"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div><span className="ml-2 text-slate-300">Loading positions...</span></div>) : (<div />)}
+ {positions.length > 0 && (<div className="flex gap-2"><button onClick={() => setExpandedTickers(Object.keys(groupedPositions).reduce((acc, s) => ({...acc, [s]: true}), {}))} className="px-3 py-1 bg-slate-700 text-slate-200 rounded hover:bg-slate-600">Expand All</button><button onClick={() => setExpandedTickers({})} className="px-3 py-1 bg-slate-700 text-slate-200 rounded hover:bg-slate-600">Collapse All</button></div>)}
+ </div>
+
+ {error && (<div className="bg-red-900 border border-red-700 rounded-lg p-4 mb-4 text-red-300">Error: {error}<button onClick={clearError} className="ml-2 text-red-400 hover:text-red-200">Dismiss</button></div>)}
+ {!loading && positions.length === 0 && !error && (<div className="text-center py-8 text-slate-400">No positions found in this mindfolio.</div>)}
+
+ {!loading && positions.length > 0 && (
+ <table className="w-full text-xl bg-slate-800 rounded-lg">
+ <thead>
+ <tr className="border-b border-slate-700">
+ <th className="text-left py-3 px-2 font-medium text-slate-300">Symbol</th>
+ <th className="text-right py-3 px-2 font-medium text-slate-300">Quantity</th>
+ <th className="text-right py-3 px-2 font-medium text-slate-300">Avg Cost</th>
+ <th className="text-right py-3 px-2 font-medium text-slate-300">Current Price</th>
+ <th className="text-right py-3 px-2 font-medium text-slate-300">Market Value</th>
+ <th className="text-right py-3 px-2 font-medium text-slate-300">% din Cont</th>
+ <th className="text-right py-3 px-2 font-medium text-slate-300">Unrealized P&amp;L</th>
+ <th className="text-right py-3 px-2 font-medium text-slate-300">P&amp;L %</th>
+ <th className="text-center py-3 px-2 font-medium text-slate-300">Type</th>
+ </tr>
+ </thead>
+ <tbody>
+ {Object.keys(groupedPositions).sort().map((symbol) => {
+ const arr = groupedPositions[symbol]; const summary = arr._summary; const isExpanded = !!expandedTickers[symbol];
+ return (
+ <React.Fragment key={symbol}>
+ <tr className="border-b border-slate-600 bg-slate-800 hover:bg-slate-700 cursor-pointer" onClick={() => toggleTicker(symbol)} title={`Click to ${isExpanded ? 'collapse' : 'expand'} ${symbol} positions`}>
+ <td className="py-4 px-2">
+ <button
+ type="button"
+ aria-expanded={isExpanded}
+ onClick={(e) => { e.stopPropagation(); toggleTicker(symbol); }}
+ onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); toggleTicker(symbol); } }}
+ className="w-full text-left flex items-center focus:outline-none cursor-pointer"
+ >
+ <ChevronDown className={`w-4 h-4 text-slate-400 mr-2 transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`} />
+ <span className="text-blue-300 font-medium text-3xl">{symbol}</span>
+ <div className="ml-3 flex gap-1">
+ {summary.hasStock && (
+ <span className="px-1 py-0.5 rounded text-lg bg-blue-600 text-[rgb(252, 251, 255)]">S</span>
+ )}
+ {summary.hasOptions && (
+ <span className="px-1 py-0.5 rounded text-lg bg-purple-600 text-[rgb(252, 251, 255)]">O</span>
+ )}
+ </div>
+ </button>
+ </td>
+ <td className="text-right py-4 px-2 font-medium text-slate-200">{summary.totalQuantity.toLocaleString()}</td>
+ <td className="text-right py-4 px-2 text-slate-400">-</td>
+ <td className="text-right py-4 px-2 font-medium text-slate-200">${summary.currentPrice.toFixed(2)}</td>
+ <td className="text-right py-4 px-2 font-medium text-[rgb(252, 251, 255)]">${summary.totalValue.toFixed(2)}</td>
+ <td className="text-right py-4 px-2 font-medium text-blue-300">{summary.accountPercent.toFixed(2)}%</td>
+ <td className={`text-right py-4 px-2 font-medium ${getChangeColor(summary.totalPnL)}`}>{summary.totalPnL >= 0 ? '+' : ''}${summary.totalPnL.toFixed(2)}</td>
+ <td className="text-right py-4 px-2 text-slate-400">-</td>
+ <td className="text-center py-4 px-2"><span className="px-2 py-1 rounded text-lg font-medium bg-slate-600 text-[rgb(252, 251, 255)]">{summary.positionCount} POS</span></td>
+ </tr>
+ {isExpanded && (
+ <tr>
+ <td colSpan="9" className="p-0">
+ <div className="bg-slate-900 border-l-4 border-blue-400"><table className="w-full"><tbody>
+ {arr.map((p) => {
+ const pnlPercent = p.unrealized_pnl_percent || 0;
+ const accountPercent = displayMindfolio?.total_value > 0 ? (p.market_value / displayMindfolio.total_value) * 100 : 0;
+ return (
+ <tr key={p.id} className="border-b border-slate-700 hover:bg-slate-700 cursor-context-menu" onContextMenu={(e) => handleContextMenu(e, p)}>
+ <td className="py-3 px-6"><div className="flex items-center"><span className="text-slate-400 text-xl mr-2">├──</span><span className="text-slate-300 font-medium">{p.position_type === 'stock' ? ' Stock' : ' Option'}</span>{p.position_type === 'option' && (<div className="text-lg text-slate-400 ml-2">{p.metadata?.option_type} ${p.metadata?.strike_price} {p.metadata?.expiration_date}</div>)}</div></td>
+ <td className="text-right py-3 px-2 text-slate-200">{p.quantity}</td>
+ <td className="text-right py-3 px-2 text-slate-200">${p.avg_cost.toFixed(2)}</td>
+ <td className="text-right py-3 px-2 text-slate-200">${p.current_price.toFixed(2)}</td>
+ <td className="text-right py-3 px-2 text-slate-200">${p.market_value.toFixed(2)}</td>
+ <td className="text-right py-3 px-2 text-blue-400">{accountPercent.toFixed(2)}%</td>
+ <td className={`text-right py-3 px-2 ${getChangeColor(p.unrealized_pnl)}`}>{p.unrealized_pnl >= 0 ? '+' : ''}${p.unrealized_pnl.toFixed(2)}</td>
+ <td className={`text-right py-3 px-2 ${getChangeColor(pnlPercent)}`}>{pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(2)}%</td>
+ <td className="text-center py-3 px-2"><span className={`px-2 py-1 rounded text-lg font-medium ${p.position_type === 'stock' ? 'bg-blue-600 text-[rgb(252, 251, 255)]' : 'bg-purple-600 text-[rgb(252, 251, 255)]'}`}>{p.position_type.toUpperCase()}</span></td>
+ </tr>
+ );
+ })}
+ </tbody></table></div>
+ </td>
+ </tr>
+ )}
+ </React.Fragment>
+ );
+ })}
+ <tr className="border-t-2 border-slate-600 bg-slate-700">
+ <td className="py-3 px-2 font-medium text-slate-200">TOTAL MINDFOLIO</td>
+ <td className="text-right py-3 px-2 font-medium text-slate-200">{positions.reduce((sum, pos) => sum + Math.abs(pos.quantity || 0), 0).toLocaleString()}</td>
+ <td className="text-right py-3 px-2 text-slate-400">-</td>
+ <td className="text-right py-3 px-2 text-slate-400">-</td>
+ <td className="text-right py-3 px-2 font-medium text-[rgb(252, 251, 255)]">${positions.reduce((sum, pos) => sum + (pos.market_value || 0), 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+ <td className="text-right py-3 px-2 font-medium text-blue-300">100.00%</td>
+ <td className={`text-right py-3 px-2 font-medium ${getChangeColor(positions.reduce((s, p) => s + (p.unrealized_pnl || 0), 0))}`}>{positions.reduce((s, p) => s + (p.unrealized_pnl || 0), 0) >= 0 ? '+' : ''}{positions.reduce((s, p) => s + (p.unrealized_pnl || 0), 0).toFixed(2)}</td>
+ <td className={`text-right py-3 px-2 font-medium ${getChangeColor(displayMindfolio.total_pnl || 0)}`}>{displayMindfolio?.total_value > 0 ? `${(((displayMindfolio.total_pnl || 0) / (displayMindfolio.total_value - (displayMindfolio.total_pnl || 0))) * 100).toFixed(2)}%` : '0.00%'}</td>
+ <td className="text-center py-3 px-2"><span className="px-2 py-1 rounded text-lg font-medium bg-slate-600 text-[rgb(252, 251, 255)]">{Object.keys(groupedPositions).length} SYMBOLS</span></td>
+ </tr>
+ </tbody>
+ </table>
+ )}
+ </div>
+
+ {/* News/Transcripts Section (placeholder) */}
+ <div className="mt-6 space-y-4">
+ {[{ symbol: 'MCHP', title: 'Microchip Technology Incorporated (MCHP) Presents at KeyBanc Technology Leadership Forum Conference Transcript', source: 'SA Transcripts', date: 'Thu, Aug 14' }, { symbol: 'SWKS', title: 'Skyworks Solutions, Inc. (SWKS) KeyBanc Technology Leadership Forum Conference (Transcript)', source: 'SA Transcripts', date: 'Tue, Aug 12' }].map((item, index) => (
+ <div key={index} className="flex items-start space-x-4 p-4 hover:bg-gray-50 rounded-lg cursor-pointer"><div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center"><FileText className="text-gray-500" size={16} /></div><div className="flex-1"><h3 className="font-medium text-gray-900 hover:text-blue-600">{item.title}</h3><div className="flex items-center mt-1 space-x-2 text-xl text-gray-500"><span className="text-blue-600 font-medium">{item.symbol}</span><span>•</span><span>{item.source}</span><span>•</span><span>{item.date}</span><span>•</span><span>📄</span></div></div></div>
+ ))}
+ </div>
+ </div>
+
+ {/* Context Menu */}
+ <ContextMenu isVisible={contextMenu.isVisible} position={contextMenu.position} selectedPosition={contextMenu.selectedPosition} availableMindfolios={availableMindfolios} onClose={closeContextMenu} onMovePosition={handleMovePosition} />
+ </div>
+ );
+};
+
+export default IndividualMindfolio;

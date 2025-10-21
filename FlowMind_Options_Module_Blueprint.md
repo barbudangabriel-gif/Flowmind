@@ -10,7 +10,7 @@ FlowMind Options Module
 ├── Strategy Builder (54+ Strategies - toate ca OptionStrat)
 ├── Options Calculator (Interactive P&L Charts cu Plotly.js) 
 ├── Options Flow Monitor (UW Integration Real-time)
-├── Portfolio Tracker (Paper Trading System)
+├── Mindfolio Tracker (Paper Trading System)
 ├── AI Optimization (TradeStation + UW Agents)
 └── Live Trading Integration (FINAL PHASE)
 ```
@@ -117,7 +117,7 @@ Future: AI agents + Live TradeStation execution
 - [ ] **Flow-Based Alerts** - Unusual activity notifications pentru strategies
 
 ### ** 3.3 Paper Trading System**
-- [ ] **Virtual Portfolio** - Track paper positions cu realistic fills
+- [ ] **Virtual Mindfolio** - Track paper positions cu realistic fills
 - [ ] **P&L Tracking** - Strategy performance over time cu time decay
 - [ ] **Greeks Evolution** - Historical Greeks tracking pentru education
 - [ ] **Performance Analytics** - Win/loss ratios, ROI metrics, Sharpe ratios
@@ -180,7 +180,7 @@ Future: AI agents + Live TradeStation execution
 ### ** 6.1 AI Recommendation Agents** *(FINAL PHASE)*
 - [ ] **Options Strategy Agent** - AI strategy recommendations based on market conditions
 - [ ] **Market Condition Agent** - Environment analysis pentru strategy selection
-- [ ] **Risk Management Agent** - Position sizing guidance și portfolio protection
+- [ ] **Risk Management Agent** - Position sizing guidance și mindfolio protection
 - [ ] **Flow Analysis Agent** - UW data interpretation pentru strategy timing
 - [ ] **Earnings Strategy Agent** - Event-driven strategy recommendations
 
@@ -192,8 +192,8 @@ Future: AI agents + Live TradeStation execution
 - [ ] **Position Management** - Live P&L tracking și Greeks monitoring
 
 ### ** 6.3 Advanced AI Features** *(FINAL PHASE)*
-- [ ] **Portfolio Optimization** - AI position recommendations pentru risk management
-- [ ] **Risk Hedging Suggestions** - Portfolio protection strategies
+- [ ] **Mindfolio Optimization** - AI position recommendations pentru risk management
+- [ ] **Risk Hedging Suggestions** - Mindfolio protection strategies
 - [ ] **Volatility Trading** - IV-based strategy recommendations 
 - [ ] **Flow-Following Strategies** - Smart money mimicking algorithms
 - [ ] **Auto-Adjustment Alerts** - Position management signals based on market changes
@@ -230,7 +230,7 @@ Future: AI agents + Live TradeStation execution
 
 ### **Should-Have (Version 1.0):**
 1. **Unusual Whales Integration** - Flow data și analysis
-2. **Paper Trading** - Virtual portfolio tracking
+2. **Paper Trading** - Virtual mindfolio tracking
 3. **Educational Content** - Strategy explanations
 4. **Advanced Charts** - Greeks și time decay visualization
 
@@ -243,7 +243,7 @@ Future: AI agents + Live TradeStation execution
 ### **Future (Version 3.0):**
 1. **Live Trading** - TradeStation execution
 2. **AI Agents** - Full automation capabilities
-3. **Advanced Risk Management** - Portfolio optimization
+3. **Advanced Risk Management** - Mindfolio optimization
 4. **Institutional Features** - Advanced analytics și reporting
 
 ---
@@ -283,7 +283,7 @@ Future: AI agents + Live TradeStation execution
 │ ├── integrations/
 │ │ ├── tradestation/ # TS options data
 │ │ └── unusual_whales/ # UW flow integration
-│ └── paper_trading/ # Virtual portfolio
+│ └── paper_trading/ # Virtual mindfolio
 ├── frontend/
 │ ├── components/
 │ │ ├── OptionsModule.js # Main options interface

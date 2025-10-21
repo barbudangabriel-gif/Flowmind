@@ -32,7 +32,7 @@ def test_db(test_db_path):
     # DDL minimal – păstrează sincron cu aplicația
     conn.executescript(
         """
-        CREATE TABLE IF NOT EXISTS portfolios (
+        CREATE TABLE IF NOT EXISTS mindfolios (
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL,
           cash_balance REAL NOT NULL DEFAULT 50000.0,
@@ -55,7 +55,7 @@ def test_db(test_db_path):
         );
         CREATE TABLE IF NOT EXISTS eod_snapshots (
           id TEXT PRIMARY KEY,
-          portfolio_id TEXT NOT NULL,
+          mindfolio_id TEXT NOT NULL,
           date TEXT NOT NULL,
           realized REAL NOT NULL,
           unrealized REAL NOT NULL,
@@ -64,13 +64,13 @@ def test_db(test_db_path):
           positions_count INTEGER,
           timestamp TEXT,
           timezone TEXT DEFAULT 'Europe/Bucharest',
-          UNIQUE(portfolio_id, date)
+          UNIQUE(mindfolio_id, date)
         );
         """
     )
     # Seed minimal
     conn.execute(
-        "INSERT INTO portfolios(id, name) VALUES('pf_test123', 'Test Portfolio')"
+        "INSERT INTO mindfolios(id, name) VALUES('pf_test123', 'Test Mindfolio')"
     )
     # mark current pentru TSLA
     conn.execute(

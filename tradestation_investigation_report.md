@@ -1,4 +1,4 @@
-🚨 CRITICAL INVESTIGATION RESULTS: TradeStation Portfolio Data Discrepancy
+🚨 CRITICAL INVESTIGATION RESULTS: TradeStation Mindfolio Data Discrepancy
 ===========================================================================
 
 ## INVESTIGATION SUMMARY
@@ -23,8 +23,8 @@
  - Multiple ETHU options
  - **TOTAL POSITIONS**: 84 (19 stocks, 65 options)
 
-### 2. 🚨 PORTFOLIO MANAGEMENT SERVICE (MOCK DATA)
-- **Endpoint**: `/api/portfolio-management/portfolios/tradestation-main/positions`
+### 2. 🚨 MINDFOLIO MANAGEMENT SERVICE (MOCK DATA)
+- **Endpoint**: `/api/mindfolio-management/mindfolios/tradestation-main/positions`
 - **Status**: USING MOCK DATA INSTEAD OF REAL TRADESTATION DATA
 - **Critical Evidence**:
  - **ALL POSITIONS MARKED AS**: `"source": "mock_fallback"`
@@ -35,26 +35,26 @@
  - SPY, DIA, IWM, VTI, MSFT, META, NVDA, NFLX, etc.
  - **TOTAL POSITIONS**: 84 (mix of stocks and options)
 
-### 3. PORTFOLIO VALUE DISCREPANCY
+### 3. MINDFOLIO VALUE DISCREPANCY
 - **TradeStation Direct API**: $969,473.90 (REAL VALUE)
-- **Portfolio Management Service**: $790,173.50 (MOCK VALUE)
+- **Mindfolio Management Service**: $790,173.50 (MOCK VALUE)
 - **DIFFERENCE**: $179,300.40 (18.5% discrepancy)
-- **USER SEES**: $790,174 (matches Portfolio Management Service mock data)
+- **USER SEES**: $790,174 (matches Mindfolio Management Service mock data)
 
 ## ROOT CAUSE ANALYSIS
 
 ### CRITICAL PROBLEM IDENTIFIED:
-The Portfolio Management Service is **NOT** using real TradeStation data despite being authenticated. Instead, it's falling back to comprehensive mock data that includes:
+The Mindfolio Management Service is **NOT** using real TradeStation data despite being authenticated. Instead, it's falling back to comprehensive mock data that includes:
 
 1. **Mock Stock Positions**: AMZN, QQQ, GOOGL, SPY, DIA, IWM, VTI, MSFT, AAPL, NVDA, META, TSLA, NFLX, ARKK, JPM, PG, JNJ, KO
 2. **Mock Options Positions**: Various TSLA, SPY, AMZN, GOOGL, QQQ, NFLX, MSFT, META, NVDA, AAPL options
-3. **Mock Portfolio Values**: Total value $790,173.50, P&L -$3,365.00 (-0.42%)
+3. **Mock Mindfolio Values**: Total value $790,173.50, P&L -$3,365.00 (-0.42%)
 
 ### EVIDENCE OF MOCK DATA:
 - Every position has `"metadata": {"source": "mock_fallback"}`
-- User-reported "fake" symbols (AMZN, QQQ, GOOGL) are present in Portfolio Management but NOT in TradeStation Direct API
-- Real user positions (CRM, NVO, ETHU options) are NOT present in Portfolio Management Service
-- Portfolio values don't match between services
+- User-reported "fake" symbols (AMZN, QQQ, GOOGL) are present in Mindfolio Management but NOT in TradeStation Direct API
+- Real user positions (CRM, NVO, ETHU options) are NOT present in Mindfolio Management Service
+- Mindfolio values don't match between services
 
 ## USER VALIDATION
 
@@ -68,7 +68,7 @@ The Portfolio Management Service is **NOT** using real TradeStation data despite
 - TSLA options (multiple) - Different options shown to user
 - ETHU options - NOT shown to user
 
-**User Sees** (from Portfolio Management Service):
+**User Sees** (from Mindfolio Management Service):
 - AMZN (30 shares) - FAKE POSITION
 - QQQ (200 shares) - FAKE POSITION
 - GOOGL (25 shares) - FAKE POSITION
@@ -83,16 +83,16 @@ The Portfolio Management Service is **NOT** using real TradeStation data despite
 4. Account access (11775499)
 
 ### WHAT'S BROKEN:
-1. Portfolio Management Service TradeStation integration
+1. Mindfolio Management Service TradeStation integration
 2. Data source routing (using mock instead of real)
 3. Frontend displays mock data to user
-4. Portfolio value calculations
+4. Mindfolio value calculations
 
 ## IMMEDIATE ACTION REQUIRED
 
 ### 🚨 CRITICAL FIXES NEEDED:
 
-1. **Fix Portfolio Management Service Integration**:
+1. **Fix Mindfolio Management Service Integration**:
  - Remove mock_fallback data usage
  - Implement proper TradeStation API integration
  - Use real positions from `/api/tradestation/accounts/{account_id}/positions`
@@ -109,19 +109,19 @@ The Portfolio Management Service is **NOT** using real TradeStation data despite
 
 4. **Testing**:
  - Add automated tests to detect mock vs real data
- - Implement portfolio value validation
+ - Implement mindfolio value validation
  - Add data consistency checks
 
 ## IMPACT ASSESSMENT
 
 - **SEVERITY**: CRITICAL
-- **USER IMPACT**: High - User sees completely wrong portfolio
+- **USER IMPACT**: High - User sees completely wrong mindfolio
 - **DATA INTEGRITY**: Compromised - Mock data instead of real positions
 - **TRUST IMPACT**: High - User cannot trust displayed information
 - **FINANCIAL RISK**: High - Wrong position information could lead to bad decisions
 
 ## CONCLUSION
 
-The user's complaint is **100% VALID**. The Portfolio Management Service is serving mock data instead of real TradeStation positions, causing a $179,300 portfolio value discrepancy and showing completely fake positions to the user.
+The user's complaint is **100% VALID**. The Mindfolio Management Service is serving mock data instead of real TradeStation positions, causing a $179,300 mindfolio value discrepancy and showing completely fake positions to the user.
 
-**RECOMMENDATION**: Immediately fix the Portfolio Management Service to use real TradeStation data and disable mock fallback when authenticated.
+**RECOMMENDATION**: Immediately fix the Mindfolio Management Service to use real TradeStation data and disable mock fallback when authenticated.

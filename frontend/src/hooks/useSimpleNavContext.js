@@ -6,7 +6,7 @@ export function useSimpleNavContext() {
  role: "user",
  flags: { TS_LIVE: false, ORDERS_LIVE: false },
  metrics: { ivOnline: true, verifiedRatio: 0.31 },
- portfolios: [
+ mindfolios: [
  { id: "ts-main", name: "TS Main", nav: 969473 },
  { id: "long-term", name: "Long Term", nav: 45000 },
  { id: "medium-term", name: "Medium Term", nav: 23000 },

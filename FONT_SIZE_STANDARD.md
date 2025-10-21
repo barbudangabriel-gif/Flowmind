@@ -62,7 +62,7 @@ text-sm (Details)
 ### Dashboard Card
 ```jsx
 <div className="card">
-  <div className="text-sm font-medium">Total Portfolio Value</div>
+  <div className="text-sm font-medium">Total Mindfolio Value</div>
   <div className="text-3xl font-semibold text-green-400">$125,000.50</div>
   <div className="text-sm font-medium text-gray-400">+2,450.25 (1.96%)</div>
 </div>

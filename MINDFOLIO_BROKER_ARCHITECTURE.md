@@ -34,12 +34,12 @@ Mindfolio Manager (Root)
 
 ## 📊 Data Model Changes
 
-### Backend: Portfolio Model Extension
+### Backend: Mindfolio Model Extension
 
 **File:** `backend/mindfolio.py`  
 **Current Model (lines 82-89):**
 ```python
-class Portfolio(BaseModel):
+class Mindfolio(BaseModel):
     id: str
     name: str
     cash_balance: float
@@ -52,7 +52,7 @@ class Portfolio(BaseModel):
 
 **NEW Model (with broker fields):**
 ```python
-class Portfolio(BaseModel):
+class Mindfolio(BaseModel):
     id: str
     name: str
     
@@ -75,10 +75,10 @@ class Portfolio(BaseModel):
     updated_at: str
 ```
 
-### Backend: PortfolioCreate Model Extension
+### Backend: MindfolioCreate Model Extension
 
 ```python
-class PortfolioCreate(BaseModel):
+class MindfolioCreate(BaseModel):
     name: str
     
     # NEW: Required broker fields
@@ -113,18 +113,18 @@ class PortfolioCreate(BaseModel):
 
 **GET /api/mindfolio** - Add query params for filtering:
 ```python
-@router.get("", response_model=List[Portfolio])
-async def list_portfolios(
+@router.get("", response_model=List[Mindfolio])
+async def list_mindfolios(
     broker: Optional[str] = None,  # Filter by broker
     environment: Optional[str] = None,  # Filter by SIM/LIVE
     account_type: Optional[str] = None,  # Filter by account type
     status: Optional[str] = None  # Existing filter
 ):
-    """List portfolios with optional filtering by broker/env/type"""
-    all_portfolios = await pf_list()
+    """List mindfolios with optional filtering by broker/env/type"""
+    all_mindfolios = await pf_list()
     
     # Apply filters
-    filtered = all_portfolios
+    filtered = all_mindfolios
     if broker:
         filtered = [p for p in filtered if p.broker == broker]
     if environment:
@@ -175,7 +175,7 @@ export default function MindfolioList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white mb-2">Mindfolio Manager</h1>
-          <p className="text-gray-400">Multi-broker portfolio management</p>
+          <p className="text-gray-400">Multi-broker mindfolio management</p>
         </div>
         <Link 
           to="/mindfolio/new" 
@@ -286,7 +286,7 @@ export default function MindfolioList() {
         {filteredItems.map(p => (
           <MindfolioCard 
             key={p.id} 
-            portfolio={p} 
+            mindfolio={p} 
             broker={activeBroker}
             environment={activeEnvironment}
           />
@@ -300,7 +300,7 @@ export default function MindfolioList() {
 ### Mindfolio Card - With Broker Context
 
 ```jsx
-function MindfolioCard({ portfolio, broker, environment }) {
+function MindfolioCard({ mindfolio, broker, environment }) {
   // Color scheme per broker
   const brokerColors = {
     TradeStation: {
@@ -326,14 +326,14 @@ function MindfolioCard({ portfolio, broker, environment }) {
   
   return (
     <Link 
-      to={`/mindfolio/${portfolio.id}`}
+      to={`/mindfolio/${mindfolio.id}`}
       className="group bg-slate-800/50 border border-slate-700 rounded-xl p-6 hover:bg-slate-800 transition"
     >
       {/* Header with Broker Badge */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="text-base font-bold text-white mb-1">
-            {portfolio.name}
+            {mindfolio.name}
           </div>
           <div className="flex items-center gap-2 text-xs">
             <span className={`px-2 py-1 rounded ${colors.bg} ${colors.text} ${colors.border} border`}>
@@ -343,23 +343,23 @@ function MindfolioCard({ portfolio, broker, environment }) {
               {environment}
             </span>
             <span className="px-2 py-1 rounded bg-gray-500/20 text-gray-400 border border-gray-500/30">
-              {portfolio.account_type}
+              {mindfolio.account_type}
             </span>
           </div>
         </div>
         <div className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-          portfolio.status === 'ACTIVE' 
+          mindfolio.status === 'ACTIVE' 
             ? 'bg-green-500/20 text-green-400 border-green-500/30'
             : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
         }`}>
-          {portfolio.status}
+          {mindfolio.status}
         </div>
       </div>
       
       {/* Account ID (if exists) */}
-      {portfolio.account_id && (
+      {mindfolio.account_id && (
         <div className="text-xs text-gray-500 mb-3">
-          Account: {portfolio.account_id}
+          Account: {mindfolio.account_id}
         </div>
       )}
       
@@ -369,20 +369,20 @@ function MindfolioCard({ portfolio, broker, environment }) {
         <div className={`text-lg font-bold ${
           environment === 'SIM' ? 'text-blue-400' : 'text-green-400'
         }`}>
-          ${portfolio.cash_balance.toLocaleString()}
+          ${mindfolio.cash_balance.toLocaleString()}
         </div>
       </div>
       
       {/* ROI Badge (if has starting_balance) */}
-      {portfolio.starting_balance && (
+      {mindfolio.starting_balance && (
         <div className="bg-slate-900/50 rounded-lg p-4 mb-4">
           <div className="text-sm text-gray-400 mb-1">ROI</div>
           <div className={`text-lg font-bold ${
-            ((portfolio.cash_balance - portfolio.starting_balance) / portfolio.starting_balance) > 0
+            ((mindfolio.cash_balance - mindfolio.starting_balance) / mindfolio.starting_balance) > 0
               ? 'text-green-400'
               : 'text-red-400'
           }`}>
-            {(((portfolio.cash_balance - portfolio.starting_balance) / portfolio.starting_balance) * 100).toFixed(2)}%
+            {(((mindfolio.cash_balance - mindfolio.starting_balance) / mindfolio.starting_balance) * 100).toFixed(2)}%
           </div>
         </div>
       )}
@@ -390,11 +390,11 @@ function MindfolioCard({ portfolio, broker, environment }) {
       {/* Modules */}
       <div className="space-y-2">
         <div className="text-sm text-gray-400 font-semibold">
-          Modules ({portfolio.modules?.length || 0})
+          Modules ({mindfolio.modules?.length || 0})
         </div>
-        {portfolio.modules && portfolio.modules.length > 0 ? (
+        {mindfolio.modules && mindfolio.modules.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {portfolio.modules.map((m, idx) => (
+            {mindfolio.modules.map((m, idx) => (
               <div 
                 key={idx}
                 className={`px-2 py-1 text-xs rounded border ${colors.bg} ${colors.text} ${colors.border}`}
@@ -438,7 +438,7 @@ export default function MindfolioCreate() {
         {/* Name */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            Portfolio Name
+            Mindfolio Name
           </label>
           <input
             type="text"
@@ -684,7 +684,7 @@ export default function MindfolioCreate() {
       <button 
         onClick={(e) => { 
           e.preventDefault(); 
-          handleReset(portfolio.id); 
+          handleReset(mindfolio.id); 
         }}
         className="p-2 bg-blue-500/20 hover:bg-blue-500/30 rounded text-blue-400"
         title="Reset to Starting Balance"
@@ -697,10 +697,10 @@ export default function MindfolioCreate() {
     <button 
       onClick={(e) => { 
         e.preventDefault(); 
-        handleTogglePause(portfolio.id); 
+        handleTogglePause(mindfolio.id); 
       }}
       className="p-2 bg-yellow-500/20 hover:bg-yellow-500/30 rounded text-yellow-400"
-      title={portfolio.status === 'ACTIVE' ? 'Pause' : 'Resume'}
+      title={mindfolio.status === 'ACTIVE' ? 'Pause' : 'Resume'}
     >
       <PauseIcon className="w-4 h-4" />
     </button>
@@ -710,9 +710,9 @@ export default function MindfolioCreate() {
       onClick={(e) => { 
         e.preventDefault(); 
         if (environment === 'LIVE') {
-          setShowLiveDeleteModal(portfolio.id);
+          setShowLiveDeleteModal(mindfolio.id);
         } else {
-          handleDelete(portfolio.id);
+          handleDelete(mindfolio.id);
         }
       }}
       className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded text-red-400"
@@ -724,7 +724,7 @@ export default function MindfolioCreate() {
 </div>
 
 {/* LIVE Delete Confirmation Modal */}
-{showLiveDeleteModal === portfolio.id && (
+{showLiveDeleteModal === mindfolio.id && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div className="bg-slate-800 border border-red-500 rounded-lg p-6 max-w-md">
       <h3 className="text-lg font-bold text-red-400 mb-3">
@@ -734,12 +734,12 @@ export default function MindfolioCreate() {
         You are about to delete a LIVE trading account. This action cannot be undone.
       </p>
       <p className="text-sm text-gray-400 mb-6">
-        Account: <span className="text-white font-mono">{portfolio.account_id || portfolio.id}</span>
+        Account: <span className="text-white font-mono">{mindfolio.account_id || mindfolio.id}</span>
       </p>
       <div className="flex gap-3">
         <button
           onClick={() => {
-            handleDelete(portfolio.id);
+            handleDelete(mindfolio.id);
             setShowLiveDeleteModal(null);
           }}
           className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold"
@@ -765,10 +765,10 @@ export default function MindfolioCreate() {
 ### Phase 0: Foundation (CRITICAL - Do First)
 
 1. **Backend Model Extension**
-   - ✅ Add broker, environment, account_type, account_id fields to Portfolio model
-   - ✅ Add validators to PortfolioCreate
-   - ✅ Update create_portfolio() to save new fields
-   - ✅ Add filtering to list_portfolios() endpoint
+   - ✅ Add broker, environment, account_type, account_id fields to Mindfolio model
+   - ✅ Add validators to MindfolioCreate
+   - ✅ Update create_mindfolio() to save new fields
+   - ✅ Add filtering to list_mindfolios() endpoint
 
 2. **Test Backend with curl**
    ```bash
@@ -878,7 +878,7 @@ export default function MindfolioCreate() {
 
 - **Migration:** Existing mindfolios need default values: `broker='TradeStation', environment='SIM', account_type='Equity'`
 - **Sidebar:** Update nav.simple.js to show broker/env counts in mindfolio dropdown
-- **Detail Page:** Add broker info to header (breadcrumb: Manager → TradeStation → SIM → Portfolio Name)
+- **Detail Page:** Add broker info to header (breadcrumb: Manager → TradeStation → SIM → Mindfolio Name)
 - **API:** Consider `/api/mindfolio/brokers` endpoint to list available brokers
 - **Future:** Add broker-specific features (TS OAuth, TastyTrade API integration)
 

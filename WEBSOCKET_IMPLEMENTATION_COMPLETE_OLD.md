@@ -426,7 +426,7 @@ POST /api/stream/reconnect
 2. Alert system (push notifications for high-value trades)
 3. Advanced filtering (Greeks, IV rank, etc.)
 4. Export functionality (CSV, JSON)
-5. Real-time portfolio impact calculation
+5. Real-time mindfolio impact calculation
 
 ---
 

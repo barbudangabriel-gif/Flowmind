@@ -172,26 +172,26 @@ DISPLAY (Headers, values - REDUSE UN NIVEL):
 | 184, 201, 245 | `text-[13px] font-medium` | Various labels | Perfect | DONE |
 | 211 | `text-9xl` | Empty state emoji | **KEEP** (if user requested) | VERIFY |
 | 214 | `text-4xl` | Empty state text | 🔵 Păstrează | 🔵 HEADER |
-| 273 | `text-4xl` | Portfolio name | 🔵 Păstrează | 🔵 HEADER |
+| 273 | `text-4xl` | Mindfolio name | 🔵 Păstrează | 🔵 HEADER |
 | 276, 280, 287, 295, 301, 308, 313 | `text-[13px] font-medium` | Card labels | Perfect | DONE |
 | 288 | `text-5xl` | Cash balance | 🔵 Păstrează | 🔵 VALUE |
 
 ---
 
-#### **PortfoliosList.jsx** ( DONE - Identical to MindfolioList)
+#### **MindfoliosList.jsx** ( DONE - Identical to MindfolioList)
 
 Structură identică cu MindfolioList.jsx - toate modificările aplicate.
 
 ---
 
-#### **PortfolioDetail.jsx** ( COMPLETE)
+#### **MindfolioDetail.jsx** ( COMPLETE)
 
 | Linie | Mărime Actuală | Utilizare | Acțiune | Status |
 |-------|----------------|-----------|---------|--------|
 | 63 | `text-[13px] font-medium` | Error message | Perfect | DONE |
 | 74 | `text-[13px] font-medium` | Loading message | Perfect | DONE |
 | 77-82 | **tabs array** | Tab icons | Removed all emojis | DONE |
-| 99 | `text-5xl` | Portfolio name | 🔵 Păstrează | 🔵 HEADER |
+| 99 | `text-5xl` | Mindfolio name | 🔵 Păstrează | 🔵 HEADER |
 | 101, 110, 120, 129, 135, 143 | `text-[13px] font-medium` | Various UI elements | Perfect | DONE |
 | 104 | `text-3xl` | Cash balance display | 🔵 Păstrează | 🔵 VALUE |
 | 156, 168, 180, 192 | `text-[13px] leading-[20.8px]` | Stat labels | Perfect | DONE |
@@ -284,7 +284,7 @@ Structură identică cu MindfolioList.jsx - toate modificările aplicate.
 - Line 321: Removed emoji 
 - Line 338: Removed emoji 🔌
 
-#### ~~2. PortfolioDetail.jsx~~ DONE
+#### ~~2. MindfolioDetail.jsx~~ DONE
 - Lines 77-82: Removed emojis from tabs array (, )
 - Line 237: Removed tab icon display
 - Line 266: Removed section icon
@@ -309,8 +309,8 @@ Structură identică cu MindfolioList.jsx - toate modificările aplicate.
 - App.js (toate liniile)
 - BuilderPage.jsx (complet)
 - MindfolioList.jsx (complet)
-- PortfoliosList.jsx (complet)
-- PortfolioDetail.jsx (majoritatea)
+- MindfoliosList.jsx (complet)
+- MindfolioDetail.jsx (majoritatea)
 - InstitutionalPage.jsx (majoritatea)
 - LiveFlowPage.jsx (complet)
 - LiveLitTradesFeed.jsx (complet)
@@ -351,14 +351,14 @@ Structură identică cu MindfolioList.jsx - toate modificările aplicate.
 
 **Fișiere modificate în ultima sesiune (9px update):**
 1. AccountBalancePage.jsx - 25 replacements (13px → 9px)
-2. PortfolioDetail.jsx - 35 replacements (13px → 9px)
+2. MindfolioDetail.jsx - 35 replacements (13px → 9px)
 3. BuilderPage.jsx - 8 replacements (13px → 9px)
 4. LiveFlowPage.jsx - 6 replacements (13px → 9px)
 5. LiveLitTradesFeed.jsx - 15 replacements (13px → 9px)
 6. LiveOffLitTradesFeed.jsx - 19 replacements (13px → 9px)
 7. InstitutionalPage.jsx - 12 replacements (13px → 9px)
 8. MindfolioList.jsx - 15 replacements (13px → 9px)
-9. PortfoliosList.jsx - 15 replacements (13px → 9px)
+9. MindfoliosList.jsx - 15 replacements (13px → 9px)
 10. App.js - 3 replacements (13px → 9px)
 
 **Total:** 153 replacements across 10 files

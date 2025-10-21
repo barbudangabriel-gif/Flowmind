@@ -10,9 +10,9 @@ Sincronizare perfectă între elementele din Sidebar și paginile existente.
 2. **FlowPage.jsx** → Options Flow Monitor
 3. **LiveFlowPage.jsx** → Live Flow (real-time)
 4. **OptimizePage.jsx** → Strategy Optimizer
-5. **PortfoliosList.jsx** → Portfolio Manager
-6. **PortfolioDetail.jsx** → Portfolio Details
-7. **PortfolioCreate.jsx** → Create Portfolio
+5. **MindfoliosList.jsx** → Mindfolio Manager
+6. **MindfolioDetail.jsx** → Mindfolio Details
+7. **MindfolioCreate.jsx** → Create Mindfolio
 
 ### 📦 Pagini în Archive (6)
 - ChartHeadlessPage.js
@@ -54,7 +54,7 @@ const menuItems = [
 - [ ] Scanner page → create new sau remove from sidebar?
 - [ ] Analytics → restore din archive sau remove?
 - [ ] Chart pages → restore sau keep archived?
-- [ ] Worflow ideal: Dashboard → Builder → Flow → Portfolio
+- [ ] Worflow ideal: Dashboard → Builder → Flow → Mindfolio
 
 ### 4. Acțiuni Concrete
 1. Audit complet: `grep -r "Route path" App.js` vs Sidebar items

@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { pfClient } from '../services/portfolioClient';
+import { pfClient } from '../services/mindfolioClient';
 
-export default function TransactionsTable({ portfolioId, symbolFilter = null }) {
+export default function TransactionsTable({ mindfolioId, symbolFilter = null }) {
  const [transactions, setTransactions] = useState([]);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState(null);
  const [sortConfig, setSortConfig] = useState({ key: 'datetime', direction: 'desc' });
 
  const loadTransactions = async () => {
- if (!portfolioId) return;
+ if (!mindfolioId) return;
  
  setLoading(true);
  setError(null);
  
  try {
- const data = await pfClient.getTransactions(portfolioId, symbolFilter);
+ const data = await pfClient.getTransactions(mindfolioId, symbolFilter);
  setTransactions(data);
  } catch (e) {
  setError(e.message);
@@ -25,7 +25,7 @@ export default function TransactionsTable({ portfolioId, symbolFilter = null }) 
 
  useEffect(() => {
  loadTransactions();
- }, [portfolioId, symbolFilter]);
+ }, [mindfolioId, symbolFilter]);
 
  const handleSort = (key) => {
  let direction = 'asc';

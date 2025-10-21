@@ -13,7 +13,7 @@
 
 ### 3. Testează Popover
 **Caută iconița cu dot verde** (indicator că are submeniu):
-- Probabil: **Wallet icon** (Portfolio) sau **TrendingUp** (Options)
+- Probabil: **Wallet icon** (Mindfolio) sau **TrendingUp** (Options)
 
 **Click pe iconița cu dot verde:**
 - Ar trebui să apară un popover la dreapta (slide-in animation)
@@ -24,16 +24,16 @@
 Popover ar trebui să arate:
 ```
 ┌─────────────────────┐
-│ PORTFOLIO │ (header)
+│ MINDFOLIO │ (header)
 ├─────────────────────┤
-│ List Portfolios │
-│ ➕ Create Portfolio │
+│ List Mindfolios │
+│ ➕ Create Mindfolio │
 │ Analytics │
 └─────────────────────┘
 ```
 
 ### 5. Click pe Link din Popover
-- Click pe oricare link (ex: "List Portfolios")
+- Click pe oricare link (ex: "List Mindfolios")
 - Ar trebui să navigheze la pagină
 - Console log: ` Closing popover`
 - Popover dispare
@@ -51,7 +51,7 @@ Popover ar trebui să arate:
 
 ### La deschidere:
 ```
-🔘 Popover toggle: Portfolio Current: null New: Options-0
+🔘 Popover toggle: Mindfolio Current: null New: Options-0
  Click outside handler attached for: Options-0
 ```
 

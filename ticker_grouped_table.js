@@ -2,7 +2,7 @@
 // Each ticker gets a dropdown if it has multiple positions
 
 const renderTickerGroupedTable = () => {
-  const filteredPositions = filterPositionsByAsset(portfolioData.positions);
+  const filteredPositions = filterPositionsByAsset(mindfolioData.positions);
   const groupedByTicker = groupPositionsByTicker(filteredPositions);
   
   const rows = [];

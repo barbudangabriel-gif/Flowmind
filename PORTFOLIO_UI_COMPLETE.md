@@ -1,9 +1,9 @@
-# FlowMind Portfolio UI - Complete Guide
+# FlowMind Mindfolio UI - Complete Guide
 
 ## Overview
 
 FlowMind oferă un UI complet pentru management portofoliu cu:
-- Multi-portfolio support
+- Multi-mindfolio support
 - TradeStation live integration
 - Real-time P&L tracking
 - Transaction history
@@ -17,37 +17,37 @@ FlowMind oferă un UI complet pentru management portofoliu cu:
 ### Sidebar Menu
 ```
  Account
- └── 💼 Portfolios (expandable)
- ├── Portfolio 1
- ├── Portfolio 2
- └── + Create Portfolio
+ └── 💼 Mindfolios (expandable)
+ ├── Mindfolio 1
+ ├── Mindfolio 2
+ └── + Create Mindfolio
 ```
 
-**Location:** `/portfolios`
+**Location:** `/mindfolios`
 **Icon:** Briefcase (💼)
-**Dynamic:** Shows all user portfolios + "Create" button
+**Dynamic:** Shows all user mindfolios + "Create" button
 
 ## Pages & Components
 
-### 1. **Portfolios List** (`/portfolios`)
-**File:** `frontend/src/pages/PortfoliosList.jsx`
+### 1. **Mindfolios List** (`/mindfolios`)
+**File:** `frontend/src/pages/MindfoliosList.jsx`
 
 **Features:**
 - Grid layout (responsive: 1 col mobile, 2 tablet, 3 desktop)
-- Portfolio cards showing:
+- Mindfolio cards showing:
  - Name
  - NAV (Net Asset Value)
  - Status (ACTIVE/PAUSED/CLOSED)
  - Module allocations
-- "+ Create Portfolio" button (top-right)
+- "+ Create Mindfolio" button (top-right)
 - Empty state with call-to-action
 
-**API Call:** `GET /api/portfolios`
+**API Call:** `GET /api/mindfolios`
 
 **UI Elements:**
 ```jsx
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
- <Link to={`/portfolios/${id}`}>
+ <Link to={`/mindfolios/${id}`}>
  <div className="border rounded-xl p-4 hover:bg-gray-50">
  <h3>{name}</h3>
  <div>NAV: ${cash_balance}</div>
@@ -60,13 +60,13 @@ FlowMind oferă un UI complet pentru management portofoliu cu:
 
 ---
 
-### 2. **Portfolio Detail** (`/portfolios/:id`)
-**File:** `frontend/src/pages/PortfolioDetail.jsx`
+### 2. **Mindfolio Detail** (`/mindfolios/:id`)
+**File:** `frontend/src/pages/MindfolioDetail.jsx`
 
 **Layout:**
 ```
 ┌─────────────────────────────────────────┐
-│ Header: Portfolio Name + NAV + Status │
+│ Header: Mindfolio Name + NAV + Status │
 ├─────────────────────────────────────────┤
 │ Stats Cards (4-column grid): │
 │ [Realized P&L] [Total Trades] [Open] │
@@ -83,7 +83,7 @@ FlowMind oferă un UI complet pentru management portofoliu cu:
 **Tabs:**
 
 #### Tab 1: Overview 
-- Portfolio summary
+- Mindfolio summary
 - Recent transactions (last 10)
 - Quick actions:
  - Add/Remove funds
@@ -148,8 +148,8 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 
 ---
 
-### 3. **Create Portfolio** (`/portfolios/new`)
-**File:** `frontend/src/pages/PortfolioCreate.jsx`
+### 3. **Create Mindfolio** (`/mindfolios/new`)
+**File:** `frontend/src/pages/MindfolioCreate.jsx`
 
 **Form Fields:**
 1. **Name** (required)
@@ -182,12 +182,12 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 1. Enter name → 2. Set balance → 3. Add modules → 4. Review → 5. Create
 ```
 
-**API Call:** `POST /api/portfolios`
+**API Call:** `POST /api/mindfolios`
 
 ---
 
-### 4. **TradeStation Live Portfolio**
-**Component:** `TradeStationMainPortfolio.js`
+### 4. **TradeStation Live Mindfolio**
+**Component:** `TradeStationMainMindfolio.js`
 
 **Features:**
 - Multi-account aggregation
@@ -217,7 +217,7 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 ```
 
 **API Calls:**
-- `GET /api/portfolios/positions-ts` (every 30s)
+- `GET /api/mindfolios/positions-ts` (every 30s)
 - `GET /api/auth/tradestation/status` (every 5min)
 
 ---
@@ -308,7 +308,7 @@ datetime,symbol,side,qty,price,fee,notes,account_id
 **Props:**
 ```typescript
 interface PositionsTableProps {
- portfolioId: string;
+ mindfolioId: string;
  positions: Position[];
  onRefresh: () => void;
 }
@@ -328,7 +328,7 @@ interface PositionsTableProps {
 **Props:**
 ```typescript
 interface TransactionsTableProps {
- portfolioId: string;
+ mindfolioId: string;
  transactions: Transaction[];
  filters?: {
  symbol?: string;
@@ -413,23 +413,23 @@ interface TransactionsTableProps {
 
 ## Data Flow
 
-### Loading Portfolio Data
+### Loading Mindfolio Data
 
 ```javascript
-// 1. Load portfolio details
-const portfolio = await pfClient.get(portfolioId);
+// 1. Load mindfolio details
+const mindfolio = await pfClient.get(mindfolioId);
 
 // 2. Load statistics in parallel
-const stats = await pfClient.stats(portfolioId);
+const stats = await pfClient.stats(mindfolioId);
 
 // 3. Load positions (optional, for Positions tab)
-const positions = await pfClient.positions(portfolioId);
+const positions = await pfClient.positions(mindfolioId);
 
 // 4. Load transactions (optional, for Transactions tab)
-const transactions = await pfClient.transactions(portfolioId);
+const transactions = await pfClient.transactions(mindfolioId);
 
 // 5. Combine and display
-setState({ portfolio, stats, positions, transactions });
+setState({ mindfolio, stats, positions, transactions });
 ```
 
 ### Real-time Updates (TradeStation)
@@ -438,7 +438,7 @@ setState({ portfolio, stats, positions, transactions });
 // Poll TradeStation positions every 30s
 useEffect(() => {
  const fetchTSPositions = async () => {
- const data = await fetch('/api/portfolios/positions-ts');
+ const data = await fetch('/api/mindfolios/positions-ts');
  setPositions(data.positions_grid);
  };
  
@@ -457,7 +457,7 @@ useEffect(() => {
 
 **Step 1: Get Auth URL**
 ```javascript
-const { auth_url, state } = await fetch('/api/portfolios/ts/auth-url');
+const { auth_url, state } = await fetch('/api/mindfolios/ts/auth-url');
 window.location.href = auth_url; // Redirect to TradeStation
 ```
 
@@ -468,7 +468,7 @@ const params = new URLSearchParams(window.location.search);
 const code = params.get('code');
 const state = params.get('state');
 
-await fetch('/api/portfolios/ts/callback', {
+await fetch('/api/mindfolios/ts/callback', {
  method: 'POST',
  body: JSON.stringify({ code, state })
 });
@@ -484,21 +484,21 @@ Backend auto-refreshes tokens 60s before expiry.
 
 ## User Flows
 
-### Flow 1: Create First Portfolio
+### Flow 1: Create First Mindfolio
 
-1. User lands on `/portfolios` (empty state)
-2. Clicks "+ Create Portfolio"
+1. User lands on `/mindfolios` (empty state)
+2. Clicks "+ Create Mindfolio"
 3. Enters name: "My Trading Account"
 4. Sets balance: $50,000
 5. (Optional) Adds module allocation
-6. Clicks "Create Portfolio"
-7. Redirected to `/portfolios/:id`
+6. Clicks "Create Mindfolio"
+7. Redirected to `/mindfolios/:id`
 
 ---
 
 ### Flow 2: Import CSV Transactions
 
-1. User opens portfolio detail (`/portfolios/:id`)
+1. User opens mindfolio detail (`/mindfolios/:id`)
 2. Clicks "Import CSV" tab
 3. Drags CSV file into dropzone
 4. System validates format
@@ -525,7 +525,7 @@ Backend auto-refreshes tokens 60s before expiry.
 
 ### Flow 4: View P&L
 
-1. User opens portfolio detail
+1. User opens mindfolio detail
 2. Clicks "Positions & P&L" tab
 3. Table loads with current positions
 4. System fetches live prices (if TS connected)
@@ -588,13 +588,13 @@ For large transaction lists (1000+), implement virtual scrolling via `react-wind
 ## 🧪 Testing Checklist
 
 ### Unit Tests
-- [ ] Portfolio list rendering
+- [ ] Mindfolio list rendering
 - [ ] Transaction form validation
 - [ ] FIFO calculation logic
 - [ ] CSV parser
 
 ### Integration Tests
-- [ ] Create portfolio flow
+- [ ] Create mindfolio flow
 - [ ] Import CSV flow
 - [ ] TradeStation OAuth flow
 - [ ] Real-time position updates
@@ -609,12 +609,12 @@ For large transaction lists (1000+), implement virtual scrolling via `react-wind
 ## 🔮 Future Enhancements
 
 ### Phase 1 (Q1 2026)
-- [ ] Portfolio comparison view
+- [ ] Mindfolio comparison view
 - [ ] Benchmark overlay (SPY, QQQ)
 - [ ] Mobile app (React Native)
 
 ### Phase 2 (Q2 2026)
-- [ ] Social features (share portfolio performance)
+- [ ] Social features (share mindfolio performance)
 - [ ] Alerts & notifications
 - [ ] Tax reporting (Form 8949 export)
 
@@ -630,23 +630,23 @@ For large transaction lists (1000+), implement virtual scrolling via `react-wind
 ```
 frontend/src/
 ├── pages/
-│ ├── PortfoliosList.jsx # Main list view
-│ ├── PortfolioDetail.jsx # Detail page with tabs
-│ └── PortfolioCreate.jsx # Creation form
+│ ├── MindfoliosList.jsx # Main list view
+│ ├── MindfolioDetail.jsx # Detail page with tabs
+│ └── MindfolioCreate.jsx # Creation form
 ├── components/
 │ ├── PositionsTable.jsx # Positions grid
 │ ├── TransactionsTable.jsx # Transaction history
 │ ├── CSVImport.jsx # CSV import UI
 │ ├── AnalyticsPanel.jsx # Charts & analytics
 │ ├── BucketForm.jsx # Bucket management
-│ ├── TradeStationMainPortfolio.js # TS integration
-│ └── AllPortfolios.js # Portfolio overview
+│ ├── TradeStationMainMindfolio.js # TS integration
+│ └── AllMindfolios.js # Mindfolio overview
 ├── services/
-│ └── portfolioClient.js # API client
+│ └── mindfolioClient.js # API client
 ├── hooks/
-│ └── usePortfolioManagement.js # Custom hooks
+│ └── useMindfolioManagement.js # Custom hooks
 └── lib/
- ├── portfolioAPI.js # API helpers
+ ├── mindfolioAPI.js # API helpers
  └── nav.simple.js # Navigation structure
 ```
 
@@ -656,7 +656,7 @@ frontend/src/
 
 ### Adding a New Tab
 
-1. **Define tab in PortfolioDetail.jsx:**
+1. **Define tab in MindfolioDetail.jsx:**
 ```javascript
 const tabs = [
  // ...existing tabs
@@ -667,14 +667,14 @@ const tabs = [
 2. **Add tab content:**
 ```javascript
 {activeTab === 'new-feature' && (
- <NewFeatureComponent portfolioId={id} />
+ <NewFeatureComponent mindfolioId={id} />
 )}
 ```
 
 3. **Create component:**
 ```javascript
 // components/NewFeatureComponent.jsx
-export default function NewFeatureComponent({ portfolioId }) {
+export default function NewFeatureComponent({ mindfolioId }) {
  // Component logic
  return <div>New Feature Content</div>;
 }
@@ -682,8 +682,8 @@ export default function NewFeatureComponent({ portfolioId }) {
 
 ### Adding a New API Endpoint
 
-1. **Backend:** Add route in `backend/portfolios.py`
-2. **Frontend:** Add method in `services/portfolioClient.js`
+1. **Backend:** Add route in `backend/mindfolios.py`
+2. **Frontend:** Add method in `services/mindfolioClient.js`
 3. **Use in component:** Call the new API method
 
 ---

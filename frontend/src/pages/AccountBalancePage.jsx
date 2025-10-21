@@ -161,10 +161,10 @@ const AccountBalancePage = () => {
                 <div className="flex items-center justify-between mb-2">
                     <h1 className="text-[20px] text-white">Account Balance</h1>
                     <Link 
-                        to="/portfolios" 
+                        to="/mindfolios" 
                         className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors border border-gray-700"
                     >
-                        View Portfolios →
+                        View Mindfolios →
                     </Link>
                 </div>
                 <p className="text-[14px] text-gray-400">View your TradeStation account balances and positions</p>

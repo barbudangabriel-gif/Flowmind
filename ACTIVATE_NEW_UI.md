@@ -52,8 +52,8 @@ location.reload();
 
 2. **Account**
  - Account Balance
- - Portfolios (dinamic din context)
- - Create Portfolio
+ - Mindfolios (dinamic din context)
+ - Create Mindfolio
 
 3. **Stocks**
  - Investment Scoring
@@ -121,7 +121,7 @@ const ctx = {
  verifiedRatio: number,
  ...
  },
- portfolios: [
+ mindfolios: [
  { id, name, nav: number }
  ]
 }

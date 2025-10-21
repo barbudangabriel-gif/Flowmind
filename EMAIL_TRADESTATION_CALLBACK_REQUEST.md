@@ -31,7 +31,7 @@ SCOPES REQUIRED (if not already configured):
 - Trade (optional)
 
 REASON FOR REQUEST:
-This redirect URI is for our development environment hosted on GitHub Codespaces. We are developing an options analytics platform that integrates with TradeStation's API for market data and portfolio management.
+This redirect URI is for our development environment hosted on GitHub Codespaces. We are developing an options analytics platform that integrates with TradeStation's API for market data and mindfolio management.
 
 Please confirm once the redirect URI has been added to our application.
 
@@ -58,7 +58,7 @@ Web Application (OAuth 2.0 Authorization Code Flow)
 FlowMind Analytics is an options trading analytics platform that provides:
 - Real-time options chain data
 - Options strategy builder (spreads, condors, butterflies)
-- Portfolio management with FIFO position tracking
+- Mindfolio management with FIFO position tracking
 - Options flow analysis and market intelligence
 - Paper trading and strategy backtesting
 

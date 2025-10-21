@@ -1,11 +1,11 @@
-// Simplified table implementation for Live Portfolio
+// Simplified table implementation for Live Mindfolio
 // Every position gets a dropdown with simple expand/collapse functionality
 
-const SimplePortfolioTable = () => {
+const SimpleMindfolioTable = () => {
   return (
     <tbody className={`${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`} style={{ minHeight: '600px' }}>
       {(() => {
-        const filteredPositions = filterPositionsByAsset(portfolioData.positions);
+        const filteredPositions = filterPositionsByAsset(mindfolioData.positions);
         
         return filteredPositions.map((position, index) => {
           const positionKey = `pos-${index}`;
