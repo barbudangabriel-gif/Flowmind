@@ -1,0 +1,8 @@
+[
+  {
+    "name": "Greeks",
+    "base_url": "https://api.unusualwhales.com/api",
+    "path": "/stock/TSLA/greeks",
+    "full_url": "https://api.unusualwhales.com/api/stock/TSLA/greeks"
+  }
+]

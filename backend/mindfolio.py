@@ -83,9 +83,22 @@ class ImportCSV(BaseModel):
 class Portfolio(BaseModel):
     id: str
     name: str
+    
+    # Broker account information (NEW)
+    broker: str = "TradeStation"  # "TradeStation" | "TastyTrade"
+    environment: str = "SIM"  # "SIM" | "LIVE"
+    account_type: str = "Equity"  # "Equity" | "Futures" | "Crypto"
+    account_id: Optional[str] = None  # Broker's account number (optional)
+    
+    # Financial data
     cash_balance: float
+    starting_balance: float = 10000.0  # Track initial balance for ROI calculation
     status: str = "ACTIVE"  # ACTIVE, PAUSED, CLOSED
+    
+    # Configuration
     modules: List[ModuleAllocation] = []
+    
+    # Metadata
     created_at: str
     updated_at: str
 
@@ -422,6 +435,7 @@ async def create_portfolio(body: PortfolioCreate):
         id=f"mf_{str(uuid.uuid4()).replace('-', '')[:12]}",  # Changed prefix to 'mf' for mindfolio
         name=body.name,
         cash_balance=body.starting_balance,
+        starting_balance=body.starting_balance,  # Save initial balance for ROI tracking
         modules=body.modules,
         created_at=datetime.utcnow().isoformat(),
         updated_at=datetime.utcnow().isoformat(),

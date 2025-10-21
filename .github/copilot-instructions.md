@@ -1,148 +1,145 @@
-
+https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestation/callback
 ## FlowMind AI Agent Quick Reference
 
 ### Project Overview
-FlowMind is an options analytics platform (FastAPI backend, React frontend, MongoDB/Redis storage) for strategy building, real-time flow, and portfolio management. All code is dark-theme only.
+FlowMind is an options analytics platform (FastAPI backend, React 19 frontend, Redis/MongoDB storage) for building options strategies, monitoring real-time flow, and managing portfolios with FIFO-based P&L tracking.
 
-### Architecture
-- **Backend:** FastAPI (`backend/`), modular routers (`routers/`), business logic in `services/`, integrations in `integrations/`, AI in `*_agent.py`.
-- **Frontend:** React (monolith `App.js`), feature pages in `pages/`, state in `stores/` (Zustand), API hooks in `api/`.
-- **Data:** Redis (primary, fallback to in-memory), MongoDB (portfolios), SQLite (alt).
-- **External APIs:** TradeStation (OAuth, options/spot), Unusual Whales (flow/news/congress, rate-limited, fallback to demo).
+### Architecture Overview
+- **Backend:** FastAPI (`backend/server.py`), routers in `backend/routers/` and `backend/app/routers/`, services in `backend/services/`, AI agents as `*_agent.py`
+- **Frontend:** React 19 monolith (`frontend/src/App.js`), feature pages in `pages/`, Zustand stores in `stores/`, craco for build config
+- **Storage:** Redis (primary cache with TTL-based keys), fallback to in-memory `AsyncTTLDict`, MongoDB (portfolios), SQLite (alternative)
+- **External APIs:** TradeStation (OAuth, options chains, spot prices), Unusual Whales (flow/news/congress with rate limiting and demo fallback)
 
-### Key Patterns & Conventions
-- **STRICT: Dark theme only:** All UI uses hardcoded Tailwind dark classes (see `DARK_THEME_ONLY_VALIDATION.md`). NO theme toggles, NO light mode, ONLY dark theme.
-- **CRITICAL: Favicon Configuration (Oct 19, 2025 - INCOMPLETE/PROBLEM UNRESOLVED):**
-  - **PROBLEM:** User reports seeing "double text" in browser tab favicon area
-  - **WHAT USER WANTS:** Only the logo PNG (which contains brain + "FlowMind Analytics" text in the image itself)
-  - **WHAT USER SEES:** Logo image PLUS additional duplicate text "FlowMind Analytics" appearing separately
-  - **ATTEMPTS MADE:**
-    1. Removed `<title>FlowMind Analytics</title>` from index.html
-    2. Removed `<meta name="description">` from index.html
-    3. Deleted `frontend/public/favicon.ico` file
-    4. Set `<link rel="icon">` to point only to `flowmind_analytics_horizontal.png`
-  - **STATUS:** Issue NOT resolved - user still sees duplicate text after cache clear and hard refresh
-  - **CURRENT STATE:** `frontend/public/index.html` line 5 has only PNG favicon, no title tag, no description
-  - **UNKNOWN SOURCE:** The duplicate text is coming from an unidentified location - not from index.html, not from favicon.ico
-  - **TODO:** Future AI agents must investigate other possible sources (manifest.json, dynamic title setting, browser behavior, service worker, etc.)
-  - **RULE:** DO NOT add back `<title>` tag, `<meta description>`, or `favicon.ico` - these were intentionally removed
-- **CRITICAL: Python 3.12 Indent Compliance (Oct 19, 2025 - COMPLETE):**
-  - **STATUS:** ✅ 100% COMPLETE - All 12 critical files fixed (5,314 lines)
-  - **VERIFIED:** 127/127 backend Python files pass validation
-  - **PREVENTION SYSTEM:** 3-layer defense implemented
-    1. **Editor Setup:** VS Code `detectIndentation: false` + format on save
-    2. **Pre-commit Hooks:** Black, Ruff, check-ast (blocks invalid commits)
-    3. **CI/CD:** Automated validation in pipeline
-  - **MANDATORY:** All new code MUST use 4-space indentation
-  - **RULE:** NEVER disable pre-commit hooks or use `--no-verify`
-  - **DOCUMENTATION:** See `INDENTATION_PREVENTION_GUIDE.md` for complete prevention strategy
-  - **WHEN WRITING PYTHON CODE:**
-    - Always use 4-space indentation (NEVER 1-space, 2-space, or tabs)
-    - Pre-commit hooks will auto-format with Black
-    - If manual edits needed: Use replace_string_in_file with proper 4-space indent
-    - Verify with: `python -m py_compile <file>` after changes
-  - **FILES FIXED (Oct 18-19, 2025):**
-    - technical_analysis_agent.py (2,201 lines) - LARGEST FILE
-    - backend/services/*.py (11 files, 3,113 lines total)
-    - All commits in PR #4 (chore/build-only-checks-clean branch)
-  - **LESSON LEARNED:** Automated tools (black, autopep8) cannot fix invalid syntax
-  - **METHOD USED:** Manual fix via replace_string_in_file (100% manual per user requirement)
-- **CRITICAL: ZERO EMOJI/ICONS POLICY - NEVER SHOW EMOJI IN UI:** 
-  - **ABSOLUTELY FORBIDDEN** to add emojis, icons, or visual decorations in ANY user-facing UI/code
-  - **DO NOT display emoji in responses** - Owner does not want to see emoji anywhere
-  - Entire codebase is emoji-free (11,176 emoji removed on Oct 16, 2025)
-  - This includes: 💰 💵 📊 ⚡ 🔌 📭 📦 📋 📤 🔍 🟢 🟡 🔴 and ALL other emoji
-  - Violations will be rejected in code review
-  - See `EMOJI_ELIMINATION_COMPLETE.md` for enforcement details
-  - **When communicating with owner: Use plain text only, NO emoji in messages**
-- **CRITICAL: NEVER use localhost links or Simple Browser**:
-  - **DO NOT** attempt to open localhost URLs for user (http://localhost:3000, etc.)
-  - **DO NOT** use `open_simple_browser` tool - it does not work in this environment
-  - **Instead**: Provide direct file paths or instruct user to open files manually in their browser
-  - User cannot access localhost links from AI responses
-- **CRITICAL: Sidebar Section Completion Marking System:**
-  - **Purpose:** Visual indicator system to track completed/finalized sidebar sections
-  - **When section is FULLY COMPLETE and requires NO further changes:**
-    - Mark section header with CYAN color: `text-cyan-400`
-    - Apply to section title in `frontend/src/lib/nav.simple.js`
-    - Example: `title: "Options Data"` gets cyan when all subsections finalized
-  - **Default state:** Sections remain default color `text-[#94a3b8]` until explicitly marked complete
-  - **Completion criteria:** All items working, all routes implemented, all subsections organized
-  - **Benefits:** Quick visual scan to see what's done vs. needs work, prevents re-editing completed sections
-  - **Implementation:** In SidebarSimple.jsx section header, add conditional: `${sec.isComplete ? 'text-cyan-400' : 'text-[#94a3b8]'}`
-  - **Tracking:** Maintain list in this file of completed sections with completion date
-  - **Example workflow:** 
-    1. Build section fully (all routes, components, logic)
-    2. Test all functionality
-    3. Mark `isComplete: true` in nav config
-    4. Section header turns cyan
-    5. Do not modify unless critical bug
-- **STRICT: Typography standard (DIFFERENTIATED):**
-  - **Pages (content):** 9px/14.4px/500 (font-medium) - `text-[9px] leading-[14.4px] font-medium`
-  - **Sidebar (navigation):** 13px/20.8px/500 (font-medium) - `text-[13px] leading-[20.8px] font-medium`
-  - **Font family:** `Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial`
-  - **Section headers:** font-semibold (600 weight)
-  - **Text color:** rgb(252, 251, 255)
-- **API:** All endpoints under `/api`. Use `APIRouter` with tags. Health: `/health`, `/healthz`, `/readyz`, `/api/health/redis`.
-- **Request Validation:** Use Pydantic models from `backend/models/requests.py` (15+ models with custom validators).
-- **Caching:** Use `backend/services/cache_decorators.py` for endpoint caching. Redis fallback via `redis_fallback.py` (`FM_FORCE_FALLBACK=1`).
-- **WebSocket Streaming:** Real-time data via `backend/integrations/uw_websocket_client.py` with REST fallback.
-- **Testing:** Root `*_test.py` files run integration tests against real backend. Use `TEST_MODE=1` for in-memory cache. Pytest for unit tests in `backend/tests/`.
-- **Security:** Use `secrets` module (not `random`) for demo data generation. CWE-330 compliance enforced.
-- **Emoji/Icons Policy (CRITICAL):**
-  - **FORBIDDEN:** Never add emoji, icons, or decorative symbols without owner approval
-  - **Rationale:** Professional UI, consistent branding, accessibility
-  - **Enforcement:** CI/CD pipeline checks for emoji in code (see `.gitlab-ci.yml`)
-  - **Exceptions:** Only documentation files that describe emoji removal process
-  - **History:** 11,176 emoji removed across 529 files on October 16, 2025
-- **Naming:**
-  - Services: `*_service.py` (e.g. `unusual_whales_service.py`)
-  - Routers: `routers/*.py` (feature-based)
-  - Agents: `*_agent.py` (AI/ML)
-  - Tests: `*_test.py` (integration), `test_*.py` (unit)
-- **Frontend API:** Use `REACT_APP_BACKEND_URL` env var, never hardcode URLs.
-- **Portfolio logic:** FIFO position calc in `backend/portfolios.py` (see docstring for algorithm).
+### Critical Architectural Patterns
+
+#### 1. Redis Fallback System (`backend/redis_fallback.py`)
+**The "why":** Zero-downtime caching - application continues if Redis fails or is unavailable
+```python
+# Three operational modes:
+# 1. TEST_MODE=1 → Shared AsyncTTLDict instance (for consistent test state)
+# 2. FM_FORCE_FALLBACK=1 → Force in-memory (dev/test)
+# 3. Normal → Try Redis, fallback to in-memory on connection failure
+
+await get_kv()  # Returns Redis client OR AsyncTTLDict
+```
+**Used everywhere:** All caching (`bt_cache_integration.py`, `portfolios.py`, `iv_service/`), never direct Redis imports
+
+#### 2. FIFO Position Tracking (`backend/portfolios.py`)
+**The "why":** Tax-compliant realized P&L calculation for options/stock positions
+```python
+# Algorithm: BUY adds to lots queue, SELL consumes from front (First-In-First-Out)
+# Realized P&L = (sell_price - buy_price) * qty per consumed lot
+# Example: BUY 100@250 + BUY 50@260 → SELL 120@270 consumes 100@250 + 20@260
+# Result: Realized $2,200, Remaining: 30@260
+```
+**Key functions:** `calculate_positions()`, `get_portfolio_transactions()` - positions computed from transactions, not stored
+
+#### 3. Dark Theme Enforcement (`DARK_THEME_ONLY_VALIDATION.md`)
+**The "why":** Consistent UX, no light mode support (removed toggle to simplify codebase)
+```javascript
+// frontend/src/App.js - ThemeProvider always returns isDarkMode: true
+useEffect(() => { document.documentElement.classList.add('dark'); }, []);
+```
+**Rule:** All Tailwind classes must be dark variants (`bg-slate-800`, `text-white`) - no conditional `isDarkMode ?` ternaries
+
+#### 4. Integration Test Pattern (Root `*_test.py` files)
+**The "why":** Verify real API behavior against deployed backend, not mocks
+```python
+# Pattern used in backend_test.py, options_backend_test.py, etc:
+BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "http://localhost:8000")
+response = requests.post(f"{BACKEND_URL}/api/builder/price", json=payload)
+# Tests verify real responses, data structures, and error handling
+```
+**NOT for unit tests** - those go in `backend/tests/` using pytest with fixtures
 
 ### Developer Workflows
-- **Backend:**
-  - Run: `cd backend && python -m uvicorn app.main:app --reload --port 8000`
-  - Test: `pytest -q --maxfail=1 --disable-warnings`
-  - Lint: `ruff check . && mypy . --ignore-missing-imports && bandit -ll -r . && pip-audit --strict`
-- **Frontend:**
-  - Run: `cd frontend && npm start`
-  - Lint: `npm run lint`
-  - Build: `npm run build`
-- **Full stack:** `docker-compose up` (backend:8000, redis:6379)
-- **CI:** See `.gitlab-ci.yml` for strict gates (no high-severity allowed).
 
-### Integration & Data Flow
-- **Options chain:** `/api/options/chain?symbol=...` (TradeStation, fallback demo)
-- **Flow summary:** `/api/flow/summary` (Unusual Whales, fallback demo)
-- **Builder pricing:** `/api/builder/price` (multi-leg, Greeks, quality)
-- **Portfolio:** `/api/portfolios` (MongoDB, Redis, FIFO logic)
-- **Caching:** TTL-based, keys like `chain:{symbol}:{expiry}`
+#### Backend Development
+```bash
+cd backend
+python -m uvicorn server:app --reload --port 8000  # Main server entry
+# Alternative: python -m uvicorn app.main:app --reload --port 8000
+
+# Quality gates (matches CI/CD):
+pytest -q --maxfail=1 --disable-warnings
+ruff check . && ruff format --check
+mypy . --ignore-missing-imports
+bandit -ll -r . -x tests  # Security scan, low-level or higher
+pip-audit --strict  # Dependency vulnerabilities
+```
+
+#### Frontend Development
+```bash
+cd frontend
+npm start  # Uses craco (configured in craco.config.js)
+
+# Quality gates:
+npm run lint  # ESLint
+npm run build  # Production build
+npm audit --audit-level=high  # Only fail on high/critical
+```
+
+#### Docker Compose (Full Stack)
+```bash
+docker-compose up  # Backend on :8000, Redis on :6379
+# Backend uses: python -m uvicorn server:app --reload (not app.main:app)
+```
+
+### Naming Conventions (Discoverable via File Patterns)
+- **Services:** `*_service.py` (e.g., `unusual_whales_service.py`, `portfolio_service.py`)
+- **Routers:** `backend/routers/*.py` (feature routers) OR `backend/app/routers/*.py` (OAuth, auth)
+- **AI Agents:** `*_agent.py` (e.g., `investment_scoring_agent.py`, `technical_analysis_agent.py`)
+- **Integration Tests:** Root `*_test.py` (e.g., `backend_test.py`, `builder_backend_test.py`)
+- **Unit Tests:** `backend/tests/test_*.py` (pytest convention)
+
+### Critical Environment Variables
+```bash
+# Backend (backend/.env)
+REDIS_URL=redis://localhost:6379/0  # Optional (has fallback)
+FM_FORCE_FALLBACK=1                 # Force in-memory cache (dev/test)
+FM_REDIS_REQUIRED=1                 # Fail fast if Redis unavailable
+TEST_MODE=1                         # Shared in-memory instance for tests
+MONGO_URL=mongodb://...             # Required for portfolio persistence
+TS_CLIENT_ID/TS_CLIENT_SECRET/TS_REDIRECT_URI  # TradeStation OAuth
+UW_API_TOKEN or UNUSUAL_WHALES_API_KEY         # Unusual Whales API
+
+# Frontend (frontend/.env.local)
+REACT_APP_BACKEND_URL=http://localhost:8000  # API base URL (never hardcode!)
+```
+
+### API Router Organization
+**Two mounting patterns exist** (historical reasons):
+1. `backend/routers/*.py` - Mounted with `/api` prefix in `server.py`
+2. `backend/app/routers/*.py` - Mounted with `/api` prefix or pre-configured prefix
+
+**Router registration in `server.py`:**
+```python
+app.include_router(options_router, prefix="/api")  # backend/routers/options.py
+app.include_router(ts_auth_router, prefix="/api")  # backend/app/routers/tradestation_auth.py
+app.include_router(geopolitical_router)            # Already has /api/geopolitical prefix
+```
 
 ### Common Pitfalls
-- **CRITICAL: Always use dark theme classes (no toggles, no light mode, ONLY dark)**
-- **CRITICAL: Never add icons/emojis unless explicitly requested by user**
-- Redis may fallback to in-memory; always check `FM_FORCE_FALLBACK`
-- TradeStation tokens expire; refresh logic in `tradestation_auth.py`
-- Unusual Whales API is rate-limited; fallback to demo on error
-- All integration tests use real backend, not mocks
+1. **Redis confusion:** Always use `from redis_fallback import get_kv`, never direct Redis imports
+2. **Dark theme violations:** Never use `isDarkMode ?` ternaries or light Tailwind classes (`bg-white`, `text-gray-800`)
+3. **URL hardcoding:** Frontend must use `process.env.REACT_APP_BACKEND_URL`, not `http://localhost:8000`
+4. **TradeStation token expiry:** 60-day refresh cycle, handled in `tradestation_auth.py` or `app/routers/tradestation_auth.py`
+5. **Unusual Whales rate limits:** 1.0s delay between requests (`rate_limit_delay`), always implement demo fallback
+6. **Test mode:** Integration tests need real backend, unit tests use `TEST_MODE=1` for shared cache
+7. **FIFO integrity:** Never modify positions directly - always add transactions and recompute via `calculate_positions()`
 
-### Key Files
-- `backend/services/builder_engine.py` (strategy engine)
-- `backend/services/quality.py` (spread scoring)
-- `backend/redis_fallback.py` (cache logic)
-- `backend/portfolios.py` (FIFO positions)
-- `backend/models/requests.py` (Pydantic validation models)
-- `backend/integrations/uw_websocket_client.py` (WebSocket streaming)
-- `backend/performance_health_test.py` (load testing suite)
-- `frontend/src/pages/BuilderPage.jsx` (main builder UI)
-- `DARK_THEME_ONLY_VALIDATION.md`, `PLATFORM_GUIDE.md`, `FlowMind_Options_Module_Blueprint.md` (docs)
+### Key Files for Understanding Architecture
+- `backend/server.py` (961 lines) - Main FastAPI app, router mounting, service initialization
+- `backend/redis_fallback.py` (98 lines) - Cache abstraction, fallback logic, singleton pattern
+- `backend/portfolios.py` (1133 lines) - FIFO algorithm, position calculation, transaction tracking
+- `backend/services/builder_engine.py` - Options strategy engine (54+ strategies, Greeks)
+- `backend/services/quality.py` - Spread quality scoring (liquidity, spread width, risk metrics)
+- `frontend/src/App.js` (250 lines) - React app entry, dark theme provider, routing
+- `DARK_THEME_ONLY_VALIDATION.md` - Dark theme migration details and validation results
+- `DEVELOPMENT_GUIDELINES.md` - Romanian workflow rules (iterative, feedback-driven)
 
 ---
-For more, see architecture diagrams and endpoint examples in this file, or reference the above docs. When in doubt, prefer existing patterns and check for fallback/demo logic in all integrations.
+**When in doubt:** Check `redis_fallback.py` for cache patterns, `portfolios.py` for FIFO logic, `server.py` for router organization, and root `*_test.py` files for integration test examples.
 
 ### MongoDB Collections
 
@@ -310,12 +307,49 @@ CREATE INDEX idx_tx_datetime ON transactions(datetime);
 # Robust token management with refresh logic
 # Environment: TS_CLIENT_ID, TS_CLIENT_SECRET, TS_REDIRECT_URI
 # Modes: SIMULATION (sim-api.tradestation.com) vs LIVE (api.tradestation.com)
+
+# OAuth Callback endpoints:
+# Primary: /api/oauth/tradestation/callback (app/routers/oauth.py)
+# Legacy: /api/ts/callback (app/routers/tradestation_auth.py)
+
+# IMPORTANT: Callback URLs must be configured in TradeStation Developer Portal
+# SIMULATOR: HTTP allowed (e.g., http://localhost:8000/api/oauth/tradestation/callback)
+# LIVE: HTTPS required (e.g., https://flowmind.com/api/oauth/tradestation/callback)
 ```
 
 **Unusual Whales Service** (`backend/unusual_whales_service.py`):
-- Rate limiting: 1.0s delay between requests (`self.rate_limit_delay`)
-- Endpoints: `/api/flow/summary`, `/api/flow/live`, `/api/flow/historical`
-- Error handling: Returns mock data on API failures (graceful degradation)
+- **Plan:** API - Advanced ($375/month) - Token: `5809ee6a-bcb6-48ce-a16d-9f3bd634fd50`
+- **Auth:** `Authorization: Bearer {token}` header (NOT query param)
+- **Base URL:** `https://api.unusualwhales.com/api`
+- **Rate limiting:** 1.0s delay between requests (graceful degradation)
+
+**VERIFIED Working Endpoints** (October 21, 2025):
+```python
+# Options Chain (500+ contracts with volume, OI, IV, premiums)
+GET /stock/{ticker}/option-contracts
+# Use case: Replace TradeStation options chain
+
+# Gamma Exposure (345+ GEX records with gamma/charm/vanna)
+GET /stock/{ticker}/spot-exposures
+# Use case: Direct GEX data - no calculation needed
+
+# Stock Info (company metadata, earnings, sector)
+GET /stock/{ticker}/info
+
+# Market Alerts (real-time tide events, premium flows)
+GET /alerts
+# Filter by noti_type: "market_tide"
+
+# Greeks (Delta, Gamma, Theta, Vega)
+GET /stock/{ticker}/greeks
+```
+
+**Endpoints that DON'T work** (404 errors - likely Enterprise-only):
+- ❌ `/api/flow-alerts` → Use `/alerts` instead
+- ❌ `/api/stock/{ticker}/last-state` → Use `/option-contracts` for pricing
+- ❌ `/api/market/tide` → Use `/alerts?noti_type=market_tide` instead
+
+**Critical:** See `UW_API_ADVANCED_PLAN_WORKING_ENDPOINTS.md` for complete documentation
 
 ### 3. Testing Philosophy
 
@@ -328,59 +362,7 @@ CREATE INDEX idx_tx_datetime ON transactions(datetime);
 - In-memory fallback mode: Set `TEST_MODE=1` env var for shared `AsyncTTLDict` instance
 - Redis cache tests: `test_backtest_cache.py` uses shared `_test_kv_instance`
 
-### 4. Environment Configuration
-
-**Critical Env Vars**:
-```bash
-# Backend (backend/.env)
-MONGO_URL=mongodb://...                    # Required for portfolio/monitor storage
-TS_CLIENT_ID=...                          # TradeStation OAuth
-TS_CLIENT_SECRET=...
-TS_REDIRECT_URI=...
-UW_API_TOKEN=... or UNUSUAL_WHALES_API_KEY=...  # Unusual Whales
-REDIS_URL=redis://localhost:6379/0        # Optional with fallback
-FM_FORCE_FALLBACK=1                       # Force in-memory cache
-FM_REDIS_REQUIRED=1                       # Fail if Redis unavailable
-
-# Frontend (frontend/.env.local)
-REACT_APP_BACKEND_URL=http://localhost:8000  # API base URL
-```
-
-### 5. Caching Strategy
-
-**Redis Fallback Pattern** (`backend/redis_fallback.py`):
-```python
-async def get_kv():
-    if os.getenv("FM_FORCE_FALLBACK") == "1":
-        return AsyncTTLDict()  # In-memory store
-    # Try Redis, fallback to in-memory if connection fails
-```
-Used in: Backtest cache (`bt_cache_integration.py`), IV service (`iv_service/ts_client.py`)
-
-## 🛠️ Development Workflows
-
-### Running Locally
-
-**Backend**:
-```bash
-cd backend
-python -m uvicorn app.main:app --reload --port 8000
-# Or: python -m uvicorn server:app --reload --port 8000
-```
-
-**Frontend**:
-```bash
-cd frontend
-npm start  # Uses craco for extended config
-# Or: yarn start
-```
-
-**Docker Compose** (full stack):
-```bash
-docker-compose up  # Backend on :8000, Redis on :6379
-```
-
-### Quality Gates (CI/CD)
+### 4. Quality Gates & Pre-commit
 
 **GitLab CI Pipeline** (`.gitlab-ci.yml`):
 - **Frontend**: ESLint, build, `npm audit --audit-level=high`
@@ -388,19 +370,14 @@ docker-compose up  # Backend on :8000, Redis on :6379
 - **SAST**: GitLab security templates (dependency scanning, container scanning)
 - **Strictness**: Zero tolerance on high-severity issues (`SEC_MAX_CRITICAL=0`)
 
-**Local Pre-commit** (`.pre-commit-config.yaml`):
+**Local Pre-commit Hooks**:
 ```bash
 cd backend && pre-commit install
 cd frontend && npx husky install
-```
 
-### Testing Commands
-
-**Backend**:
-```bash
-cd backend
-pytest -q --maxfail=1 --disable-warnings          # Unit tests
-ruff check . && mypy . --ignore-missing-imports  # Linting + types
+# Run manually:
+cd backend && pre-commit run --all-files
+cd frontend && npm run lint
 bandit -ll -r . && pip-audit --strict            # Security
 ```
 
@@ -417,7 +394,6 @@ npm audit --audit-level=high                     # Dependency audit
 python backend_test.py           # Full backend API test suite
 python options_backend_test.py   # Options-specific tests
 python tradestation_integration_test.py  # TradeStation OAuth flow
-python performance_health_test.py        # Load testing & health endpoints
 ```
 
 ## 🎨 Code Conventions
@@ -446,22 +422,6 @@ raise HTTPException(status_code=400, detail="Descriptive error message")
 - **React hooks** for local state
 - **SWR** (`swr` package) for data fetching with caching
 
-### Naming Patterns
-
-- **Services**: `*_service.py` (e.g., `unusual_whales_service.py`, `portfolio_service.py`)
-- **Agents**: `*_agent.py` (AI/ML components: `investment_scoring_agent.py`)
-- **Routers**: `routers/*.py` (feature-based: `options.py`, `flow.py`, `builder.py`)
-- **Tests**: `*_test.py` (root-level integration), `test_*.py` (backend/tests/ unit)
-
-## 🚨 Common Pitfalls
-
-1. **API URL confusion**: Frontend uses `REACT_APP_BACKEND_URL` env var, not hardcoded URLs
-2. **Redis dependency**: Always handle Redis connection failures gracefully via `redis_fallback.py`
-3. **TradeStation token expiry**: Refresh tokens automatically in `tradestation_auth.py` (60-day expiry)
-4. **Unusual Whales rate limits**: Respect `rate_limit_delay` in `UnusualWhalesService`
-5. **Options chain data format**: TradeStation returns nested `expirations` array, handle empty chains
-6. **Test mode conflicts**: Use `TEST_MODE=1` for shared cache instance in tests
-
 ## 📚 Key Files to Reference
 
 - **Architecture docs**: `FlowMind_Options_Module_Blueprint.md`, `PLATFORM_GUIDE.md`
@@ -473,12 +433,9 @@ raise HTTPException(status_code=400, detail="Descriptive error message")
 
 1. **Backend API changes**: Update corresponding integration test in `*_test.py`
 2. **New dependencies**: Update `requirements.txt` (backend) or `package.json` (frontend), run audits
-3. **External API integration**: Add client in `integrations/`, follow `uw_websocket_client.py` pattern
+3. **External API integration**: Add client in `integrations/`, follow `ts_client.py` pattern
 4. **New routes**: Add router in `routers/`, mount in `server.py`, add health check
 5. **Frontend features**: Follow page-based organization (`pages/`), use existing API patterns
-6. **Request models**: Add Pydantic models to `backend/models/requests.py` with validators
-7. **Streaming features**: Use WebSocket with REST fallback pattern from `uw_websocket_client.py`
-8. **Security**: Replace any `random` usage with `secrets` module for demo data generation
 
 ## � API Endpoints Reference
 
@@ -758,20 +715,8 @@ MongoDB-backed, includes positions and performance tracking.
 **GET /health** - Basic health check
 **GET /healthz** - Kubernetes-style health
 **GET /readyz** - Readiness probe (checks dependencies)
-**GET /api/health/redis** - Redis cache health monitoring
-```json
-Response:
-{
-  "status": "healthy",
-  "cache_mode": "Redis",
-  "connection": "connected",
-  "keys_count": 125,
-  "memory_usage": "2.4MB",
-  "response_time_ms": 1.5
-}
-```
 
-## 💡 Pro Tips
+## �💡 Pro Tips
 
 - **Debugging API calls**: Check `backend/server.py` startup logs for integration client status
 - **Mock data fallback**: Most services gracefully return demo data on API failures
@@ -779,57 +724,3 @@ Response:
 - **Options pricing**: Black-Scholes implementation in `backend/services/bs.py` (if exists) or strategy engine
 - **Chart issues**: Frontend BuilderPage debounces pricing at 500ms, increase if API slow
 - **Testing endpoints**: All integration tests in root `*_test.py` files use `REACT_APP_BACKEND_URL` env var
-- **WebSocket streaming**: Real-time feeds with automatic REST fallback on connection issues
-- **Request validation**: Use Pydantic models from `backend/models/requests.py` for type safety
-- **Health monitoring**: Use `/api/health/redis` for production monitoring and capacity planning
-- **Security**: Always use `secrets` module for demo data, never `random` (CWE-330 compliance)
-
----
-
-## 📚 MANDATORY READING FOR AI AGENTS
-
-### Code Quality & Prevention System
-**ALWAYS consult these files when working with Python code:**
-
-1. **INDENTATION_PREVENTION_GUIDE.md** - Complete indentation prevention strategy
-   - 3-layer defense system (Editor + Pre-commit + CI/CD)
-   - Setup instructions for development environment
-   - Red flags and early detection methods
-   - Team onboarding guidelines
-   - **USE THIS** when: Writing Python code, setting up environment, onboarding developers
-
-2. **PYTHON312_INDENT_PROJECT_COMPLETE.md** - Project completion report
-   - Full history of the 12-file manual fix (5,314 lines)
-   - Lessons learned from fixing IndentationError
-   - Verification methods and success metrics
-   - **USE THIS** when: Understanding the compliance project, reviewing what was fixed
-
-3. **FINAL_CODE_SCAN_REPORT.md** - Current validation status
-   - Latest scan results (127/127 files passing)
-   - Production readiness checklist
-   - Non-critical warnings tracking
-   - **USE THIS** when: Verifying code quality, preparing for deployment
-
-4. **QUICK_REFERENCE.md** - Developer quick reference
-   - Quick fixes for common issues
-   - Essential commands
-   - Emergency procedures
-   - **USE THIS** when: Need quick answers, troubleshooting
-
-### Critical Rules for Python Development
-- ✅ **ALWAYS** use 4-space indentation (never 1, 2, or tabs)
-- ✅ **ALWAYS** verify with `python -m py_compile` after editing
-- ✅ **ALWAYS** let pre-commit hooks run (never use `--no-verify`)
-- ✅ **ALWAYS** format with Black before committing
-- ❌ **NEVER** disable `detectIndentation: false` in VS Code
-- ❌ **NEVER** mix tabs and spaces
-- ❌ **NEVER** use automated indent fixers on files with syntax errors
-
-### When Writing Python Code
-1. Check `INDENTATION_PREVENTION_GUIDE.md` for proper setup
-2. Use 4-space indentation (enforced by editor + pre-commit)
-3. If manual edits: Use replace_string_in_file with proper indent
-4. Verify: `python -m py_compile <file>`
-5. Let pre-commit hooks auto-format with Black
-
-**Remember:** Prevention > Fixing. 1 hour setup > 10 hours fixing!

@@ -61,6 +61,7 @@ export default function MindfolioDetailNew() {
  id: id,
  name: 'Demo Portfolio',
  cash_balance: 50000,
+ starting_balance: 10000, // Add starting balance for ROI calculation
  status: 'ACTIVE',
  modules: [{ module: 'IV_SERVICE', budget: 10000, autotrade: false }],
  positions: [],
@@ -71,6 +72,11 @@ export default function MindfolioDetailNew() {
  setLoading(false);
  }
  };
+
+ // Calculate ROI percentage
+ const roiPct = mindfolio && mindfolio.starting_balance 
+ ? (((mindfolio.cash_balance - mindfolio.starting_balance) / mindfolio.starting_balance) * 100).toFixed(2)
+ : 0;
 
  const loadChartData = async () => {
  // Mock data - replace with real API call

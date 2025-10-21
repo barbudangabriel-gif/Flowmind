@@ -1,0 +1,16 @@
+{
+  "working_endpoints": [
+    "/stock/TSLA/greeks",
+    "/stock/TSLA/option-contracts",
+    "/stock/TSLA/spot-exposures",
+    "/stock/TSLA/info"
+  ],
+  "endpoints_with_data": [
+    "/stock/TSLA/greeks",
+    "/stock/TSLA/option-contracts",
+    "/stock/TSLA/spot-exposures",
+    "/stock/TSLA/info"
+  ],
+  "base_url": "https://api.unusualwhales.com/api",
+  "auth": "Bearer token in Authorization header"
+}

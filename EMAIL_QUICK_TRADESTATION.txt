@@ -1,0 +1,29 @@
+Subject: Add Redirect URI to TradeStation SIMULATOR App (Client ID: XEs0URG1rMrGDUFRKVhlDaclvQKq8Qpj)
+
+Hello TradeStation Developer Support,
+
+I need to add a new Redirect URI to my existing SIMULATOR application for development testing.
+
+**Application Details:**
+- Client ID: XEs0URG1rMrGDUFRKVhlDaclvQKq8Qpj
+- Client Secret: NsAIybzKV6GbYGqQZwF0cHypdXfwiDYL5-EY4nRXEbIy748Zp-FdeuDXJIu6Jhwk
+- Environment: SIMULATOR
+
+**Please add this Redirect URI:**
+https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestation/callback
+
+**Current Scopes (if not already enabled, please add):**
+- openid
+- offline_access
+- MarketData
+- ReadAccount
+- Trade
+
+**Purpose:**
+Development environment for FlowMind Analytics - an options trading platform integrating with TradeStation API for market data and portfolio management. This URL is our GitHub Codespaces development endpoint.
+
+Please confirm when the redirect URI has been added.
+
+Thank you,
+Gabriel Barbuda
+FlowMind Analytics

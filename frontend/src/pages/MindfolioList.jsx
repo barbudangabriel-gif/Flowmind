@@ -135,21 +135,21 @@ export default function MindfolioList() {
  {/* Header */}
  <div className="flex items-center justify-between">
  <div>
- <h1 className="text-xl font-bold text-white mb-2">Portfolios</h1>
- <p className="text-gray-400">Manage your trading portfolios and track performance</p>
+ <h1 className="text-xl font-bold text-white mb-2">Mindfolio Manager</h1>
+ <p className="text-gray-400">Manage your trading mindfolios and track performance</p>
  </div>
  <Link 
  to="/mindfolio/new" 
  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all hover:scale-105 shadow-lg"
  >
- + Create Portfolio
+ + Create Mindfolio
  </Link>
  </div>
 
  {/* Stats Cards */}
  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
- <div className="text-sm text-gray-400 mb-1">Total Portfolios</div>
+ <div className="text-sm text-gray-400 mb-1">Total Mindfolios</div>
  <div className="text-xl font-bold text-white">{totalPortfolios}</div>
  </div>
  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
@@ -190,9 +190,9 @@ export default function MindfolioList() {
  className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
  >
  <option value="ALL">All Status</option>
- <option value="ACTIVE"> Active Only</option>
- <option value="PAUSED">⏸️ Paused Only</option>
- <option value="CLOSED"> Closed Only</option>
+ <option value="ACTIVE">Active Only</option>
+ <option value="PAUSED">Paused Only</option>
+ <option value="CLOSED">Closed Only</option>
  </select>
  </div>
 
@@ -203,10 +203,10 @@ export default function MindfolioList() {
  onChange={(e) => setSortBy(e.target.value)}
  className="w-full bg-gray-900 border border-gray-700 text-white rounded-lg px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
  >
- <option value="name"> Sort by Name</option>
+ <option value="name">Sort by Name</option>
  <option value="balance">Sort by Balance</option>
- <option value="created"> Sort by Date</option>
- <option value="status"> Sort by Status</option>
+ <option value="created">Sort by Date</option>
+ <option value="status">Sort by Status</option>
  </select>
  </div>
  </div>
@@ -232,7 +232,7 @@ export default function MindfolioList() {
  }}
  className="ml-2 text-xs text-gray-400 hover:text-white transition-colors"
  >
- ✕ Clear all
+ Clear all
  </button>
  </div>
  )}
@@ -240,15 +240,12 @@ export default function MindfolioList() {
  
  {filteredAndSortedItems.length === 0 ? (
  <div className="text-center py-16 bg-slate-800/30 border border-slate-700 rounded-lg">
- <div className="text-xl mb-4">
- {items.length === 0 ? "" : ""}
- </div>
  <div className="text-base text-gray-300 mb-2">
- {items.length === 0 ? "No portfolios yet" : "No portfolios match your filters"}
+ {items.length === 0 ? "No mindfolios yet" : "No mindfolios match your filters"}
  </div>
  <div className="text-gray-500 mb-6">
  {items.length === 0 
- ? "Create your first portfolio to start tracking your trades"
+ ? "Create your first mindfolio to start tracking your trades"
  : "Try adjusting your search or filter criteria"
  }
  </div>
@@ -257,7 +254,7 @@ export default function MindfolioList() {
  to="/mindfolio/new"
  className="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all hover:scale-105"
  >
- Create Your First Portfolio
+ Create Your First Mindfolio
  </Link>
  ) : (
  <button
@@ -276,7 +273,7 @@ export default function MindfolioList() {
  {/* Results count */}
  <div className="flex items-center justify-between text-sm text-gray-400">
  <span>
- Showing {filteredAndSortedItems.length} of {totalPortfolios} portfolio{totalPortfolios !== 1 ? 's' : ''}
+ Showing {filteredAndSortedItems.length} of {totalPortfolios} mindfolio{totalPortfolios !== 1 ? 's' : ''}
  </span>
  <span>
  Sorted by: <span className="text-blue-400 font-semibold">

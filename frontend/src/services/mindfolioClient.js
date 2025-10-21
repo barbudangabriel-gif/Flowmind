@@ -32,21 +32,28 @@ async function j(path, init = {}) {
 
 export const mfClient = {
  // Portfolio operations
- list: () => j(`/api/mindfolios`),
- get: (pid) => j(`/api/mindfolios/${pid}`),
- create: (body) => j(`/api/mindfolios`, { 
+ list: () => j(`/api/mindfolio`),
+ get: (pid) => j(`/api/mindfolio/${pid}`),
+ create: (body) => j(`/api/mindfolio`, { 
  method: "POST", 
  body: JSON.stringify(body) 
  }),
- patch: (pid, body) => j(`/api/mindfolios/${pid}`, {
+ patch: (pid, body) => j(`/api/mindfolio/${pid}`, {
  method: "PATCH",
  body: JSON.stringify(body)
  }),
- funds: (pid, delta) => j(`/api/mindfolios/${pid}/funds`, { 
+ update: (pid, body) => j(`/api/mindfolio/${pid}`, {
+ method: "PATCH",
+ body: JSON.stringify(body)
+ }),
+ delete: (pid) => j(`/api/mindfolio/${pid}`, {
+ method: "DELETE"
+ }),
+ funds: (pid, delta) => j(`/api/mindfolio/${pid}/funds`, { 
  method: "POST", 
  body: JSON.stringify({ delta }) 
  }),
- allocate: (pid, module, alloc) => j(`/api/mindfolios/${pid}/allocate`, { 
+ allocate: (pid, module, alloc) => j(`/api/mindfolio/${pid}/allocate`, { 
  method: "POST", 
  body: JSON.stringify({ module, alloc }) 
  }),

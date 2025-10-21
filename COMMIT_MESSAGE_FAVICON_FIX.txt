@@ -1,0 +1,24 @@
+fix: rezolvat favicon double text în browser tab
+
+Problema: 
+- Tab-ul browser-ului afișa: [icon] + "FlowMind Analytics" (text duplicat)
+- Logo-ul PNG deja conține textul "FlowMind Analytics" în imagine
+
+Cauză:
+- Tag-ul <title>FlowMind Analytics</title> în index.html genera textul separat
+- Browser-ul combina: icon + title text = duplicat vizual
+
+Soluție:
+- Eliminat complet <title> tag din frontend/public/index.html
+- Adăugat <link rel="icon"> către flowmind_icon_256.png
+- Rezultat: doar icon-ul FlowMind apare în tab (fără text)
+
+Modificări:
+- frontend/public/index.html: eliminat <title>, adăugat favicon link
+- .github/copilot-instructions.md: marcat Known Issue ca REZOLVAT
+- FAVICON_FIX_OCT_19_2025.md: documentație completă despre fix
+
+Status: REZOLVAT ✅
+Pentru verificare: Hard refresh browser (Ctrl+Shift+R) sau restart frontend
+
+Referințe: #favicon #ui-fix #browser-tab

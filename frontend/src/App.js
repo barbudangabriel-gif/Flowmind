@@ -15,6 +15,7 @@ import MindfolioList from './pages/MindfolioList';
 import MindfolioDetail from './pages/MindfolioDetail';
 import MindfolioDetailNew from './pages/MindfolioDetailNew';
 import MindfolioCreate from './pages/MindfolioCreate';
+import MindfolioPage from './pages/MindfolioPage';
 import AccountBalancePage from './pages/AccountBalancePage';
 import TradeStationLogin from './pages/TradeStationLogin';
 import MarketMoversPage from './pages/MarketMoversPage';
@@ -229,6 +230,7 @@ function App() {
  <Route path="/tradestation/login" element={<TradeStationLogin />} />
  <Route path="/mindfolio" element={<MindfolioList />} />
  <Route path="/mindfolio/new" element={<MindfolioCreate />} />
+ <Route path="/mindfolio/page/:id" element={<MindfolioPage />} />
  <Route path="/mindfolio/:id/old" element={<MindfolioDetail />} />
                 <Route path="/mindfolio/:id" element={<MindfolioDetailNew />} />
                 <Route path="/logos" element={<LogosPage />} />

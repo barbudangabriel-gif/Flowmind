@@ -17,13 +17,17 @@ export default function MindfolioCreate() {
  setErr("");
  
  try {
+ console.log('Creating mindfolio with:', { name: name.trim(), starting_balance: Number(balance), modules: [] });
  const portfolio = await mfClient.create({
  name: name.trim(),
  starting_balance: Number(balance),
  modules: []
  });
- navigate(`/mindfolio/${portfolio.id}`);
+ console.log('Created portfolio:', portfolio);
+ // Navigate to mindfolio list instead of detail page
+ navigate('/mindfolio');
  } catch (ex) {
+ console.error('Creation error:', ex);
  setErr(String(ex));
  } finally {
  setCreating(false);
@@ -39,12 +43,12 @@ export default function MindfolioCreate() {
  to="/mindfolio" 
  className="text-blue-400 hover:text-blue-300 transition-colors font-semibold"
  >
- ← Back to Portfolios
+ ← Back to Mindfolios
  </Link>
  </div>
- <h1 className="text-3xl font-bold text-white mb-2">Create New Portfolio</h1>
+ <h1 className="text-3xl font-bold text-white mb-2">Create New Mindfolio</h1>
  <p className="text-gray-400">
- Set up a new portfolio to track your trading strategies and performance
+ Set up a new mindfolio to track your trading strategies and performance
  </p>
  </div>
 
