@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { pfClient } from '../services/mindfolioClient';
+import { mfClient } from '../services/mindfolioClient';
 
 export default function PositionsTable({ mindfolioId }) {
  const [positions, setPositions] = useState([]);
@@ -15,8 +15,8 @@ export default function PositionsTable({ mindfolioId }) {
  
  try {
  const [positionsData, pnlData] = await Promise.all([
- pfClient.getPositions(mindfolioId),
- pfClient.getRealizedPnL(mindfolioId)
+ mfClient.getPositions(mindfolioId),
+ mfClient.getRealizedPnL(mindfolioId)
  ]);
  
  setPositions(positionsData);

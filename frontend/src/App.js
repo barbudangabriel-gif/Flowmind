@@ -8,7 +8,8 @@ import SidebarSimple from './components/SidebarSimple';
 import { mfClient } from './services/mindfolioClient';
 import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
-import BuilderPage from './pages/BuilderPage';
+import StrategyLibraryPage from './pages/StrategyLibraryPage';
+import BuilderV2Page from './pages/BuilderV2Page';
 import SimulatorPage from './pages/SimulatorPage';
 import FlowPage from './pages/FlowPage';
 import MindfolioList from './pages/MindfolioList';
@@ -24,6 +25,7 @@ import DarkPoolPage from './pages/DarkPoolPage';
 import InstitutionalPage from './pages/InstitutionalPage';
 import LogosPage from './pages/LogosPage';
 import ScreensaverSettings from './pages/ScreensaverSettings';
+import CardTestPage from './pages/CardTestPage';
 
 function ComingSoonPage() {
  const location = window.location.pathname;
@@ -39,7 +41,7 @@ function ComingSoonPage() {
 }
 
 // Inactivity monitor component
-function InactivityMonitor({ timeout = 5 * 60 * 1000 }) {
+function InactivityMonitor({ timeout = 0 }) {
  const navigate = useNavigate();
  const location = useLocation();
  const [currentTimeout, setCurrentTimeout] = useState(timeout);
@@ -64,8 +66,8 @@ function InactivityMonitor({ timeout = 5 * 60 * 1000 }) {
  }, []);
  
     useEffect(() => {
-      // Don't redirect if already on homepage
-      if (location.pathname === '/') return;
+      // Don't redirect if already on homepage or test pages
+      if (location.pathname === '/' || location.pathname === '/card-test' || location.pathname.startsWith('/builder')) return;
       
       // Don't set timer if timeout is 0 (disabled)
       if (currentTimeout === 0) return;
@@ -160,7 +162,7 @@ function App() {
  <WebSocketProvider>
  <BrowserRouter>
  {/* Inactivity monitor - returns to homepage after 5 minutes of inactivity */}
- <InactivityMonitor timeout={5 * 60 * 1000} />
+ {/* DISABLED FOR TESTING: <InactivityMonitor timeout={5 * 60 * 1000} /> */}
  
  <div className="flex h-screen bg-[#0a0e1a]">
  {/* Sidebar with toggle button */}
@@ -213,10 +215,11 @@ function App() {
  {/* Main Content */}
  <main className="flex-1 overflow-y-auto bg-[#0f1419]">
  <Routes>
- <Route path="/" element={<HomePage />} />
+                <Route path="/" element={<HomePage />} />
  <Route path="/dashboard" element={<Dashboard />} />
- <Route path="/builder" element={<BuilderPage />} />
- <Route path="/builder/:strategySlug" element={<BuilderPage />} />
+ <Route path="/builder" element={<BuilderV2Page />} />
+ <Route path="/strategies" element={<StrategyLibraryPage />} />
+ <Route path="/card-test" element={<CardTestPage />} />
  <Route path="/flow" element={<FlowPage />} />
  <Route path="/flow/live" element={<FlowPage />} />
  <Route path="/dark-pool" element={<DarkPoolPage />} />

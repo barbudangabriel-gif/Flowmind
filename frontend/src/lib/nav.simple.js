@@ -75,7 +75,7 @@ export function buildNav(ctx) {
  { 
  label: "Builder", 
  to: "/builder", 
- icon: "Hammer"
+ icon: "Sparkles"
  },
 	{
 	 label: "Simulator",

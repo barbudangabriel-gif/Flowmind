@@ -198,6 +198,16 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+
+        {/* DEV TEST BUTTON */}
+        <div className="mt-12 flex justify-center">
+          <Link 
+            to="/card-test"
+            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors"
+          >
+            🧪 Card Test Page (Dev)
+          </Link>
+        </div>
       </div>
     </div>
   );

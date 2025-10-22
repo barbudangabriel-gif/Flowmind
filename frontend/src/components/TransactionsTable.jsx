@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { pfClient } from '../services/mindfolioClient';
+import { mfClient } from '../services/mindfolioClient';
 
 export default function TransactionsTable({ mindfolioId, symbolFilter = null }) {
  const [transactions, setTransactions] = useState([]);
@@ -14,7 +14,7 @@ export default function TransactionsTable({ mindfolioId, symbolFilter = null }) 
  setError(null);
  
  try {
- const data = await pfClient.getTransactions(mindfolioId, symbolFilter);
+ const data = await mfClient.getTransactions(mindfolioId, symbolFilter);
  setTransactions(data);
  } catch (e) {
  setError(e.message);
