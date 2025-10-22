@@ -1,6 +1,50 @@
 https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestation/callback
 ## FlowMind AI Agent Quick Reference
 
+### 🚨 CRITICAL RULE: Structure Agreement BEFORE Implementation (October 22, 2025)
+
+**⚠️ MANDATORY: NEVER start implementation without structure approval!**
+
+**📐 Structure Agreement Protocol (ALWAYS FIRST):**
+Before writing ANY code for UI components, pages, or features:
+
+1. **📋 Clarify Requirements:**
+   - Ask user: "What sections/tabs/components do you need?"
+   - Ask user: "What content goes in each section?"
+   - Document: Write down the agreed structure (tab → content mapping)
+
+2. **🎨 Propose Navigation Structure:**
+   - Show user: "Tab X will contain: [list content]"
+   - Show user: "Tab Y will contain: [list content]"
+   - Get confirmation: "Is this structure correct? (da/nu)"
+
+3. **✅ Get Explicit Approval:**
+   - WAIT for user to confirm: "da" or "correct" or "yes"
+   - If "nu" or unclear: Ask again until structure is clear
+   - Document approved structure in comment at top of file
+
+4. **🚫 NO Implementation Without Approval:**
+   - DO NOT write component code until structure agreed
+   - DO NOT assume content placement
+   - DO NOT mix content from different sections
+
+**Example (BuilderV2Page Oct 22, 2025 lesson learned):**
+```
+❌ WRONG: Implement tabs, put all UI in main return, user finds wrong content in tabs
+✅ CORRECT: 
+  1. Agent: "Tab Build → BuilderPage (table), Tab Optimize → Ticker+Direction+Carousel, Tab Strategy → Library, Tab Flow → FlowPage. Correct?"
+  2. User: "da"
+  3. Agent: Implements exact structure as agreed
+  4. Result: Zero restructuring needed, user happy
+```
+
+**Why This Rule Exists:**
+- BuilderV2Page required 228-line deletion + restructuring because structure not agreed first
+- User frustrated: "ce dreaq cauta buildul asta aici?" (what's the builder doing here?)
+- 2+ hours wasted on restructuring vs 5 minutes clarifying structure upfront
+
+---
+
 ### 🚨 CRITICAL RULE: Task Tracker Workflow (October 21, 2025)
 
 **ALL development work MUST use the centralized task tracker:**
