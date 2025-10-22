@@ -4,9 +4,6 @@
 import React, { useState, useEffect } from 'react';
 import { Hammer, Target, BookOpen, TrendingUp, TrendingDown, ChevronDown, Search, RefreshCw, ArrowUp, ArrowDown, Minus, ArrowUpDown, ArrowUpCircle, ArrowDownCircle, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
 import StrategyCard from '../components/StrategyCard';
-import StrategyLibraryPage from './StrategyLibraryPage';
-import BuilderPage from './BuilderPage';
-import FlowPage from './FlowPage';
 
 // Custom slider styles
 const sliderStyles = `
@@ -127,8 +124,8 @@ export default function BuilderV2Page() {
   const directionConfig = [
     { id: 'very-bearish', label: 'Very Bearish', icon: TrendingDown, color: 'text-rose-500' },
     { id: 'bearish', label: 'Bearish', icon: ArrowDown, color: 'text-red-400' },
-    { id: 'neutral', label: 'Neutral', icon: Minus, color: 'text-slate-400' },
     { id: 'directional', label: 'Directional', icon: ArrowUpDown, color: 'text-cyan-400' },
+    { id: 'neutral', label: 'Neutral', icon: Minus, color: 'text-slate-400' },
     { id: 'bullish', label: 'Bullish', icon: ArrowUp, color: 'text-green-400' },
     { id: 'very-bullish', label: 'Very Bullish', icon: TrendingUp, color: 'text-emerald-400' },
   ];
@@ -208,7 +205,7 @@ export default function BuilderV2Page() {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 rounded-lg text-white hover:text-white text-sm font-medium transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700/50 rounded-lg text-white hover:text-white text-sm font-semibold transition-all disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               Refresh
@@ -411,17 +408,17 @@ export default function BuilderV2Page() {
  */
 function BuilderTab() {
   return (
-    /**
- * BuilderTab - Strategy construction tool
- */
-function BuilderTab() {
-  return <BuilderPage />;
-}
-
-/**
- * OptimizeTab - Strategy recommendations
- */
-
+    <div className="max-w-7xl mx-auto">
+      <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg p-8 text-center">
+        <h2 className="text-2xl font-semibold text-white mb-4">Strategy Builder</h2>
+        <p className="text-slate-400 mb-6">
+          Build custom options strategies with live pricing and Greeks analysis
+        </p>
+        <div className="text-sm text-slate-600">
+          TODO: Import BuilderPage content here
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -503,23 +500,145 @@ function OptimizeTab({ symbol, selectedDirection }) {
  */
 function StrategyTab() {
   return (
-    /**
- * StrategyTab - Strategy library with 69 strategies
- */
-function StrategyTab() {
-  return <StrategyLibraryPage />;
+    <div className="max-w-7xl mx-auto">
+      <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg p-8 text-center">
+        <h2 className="text-2xl font-semibold text-white mb-4">Strategy Library</h2>
+        <p className="text-slate-400 mb-6">
+          Browse 69 options strategies across all experience levels
+        </p>
+        <div className="text-sm text-slate-600">
+          TODO: Import StrategyLibraryPage content here
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /**
  * FlowTab - Options flow data with 6 sub-views
  */
+function FlowTab() {
+  const [selectedFlow, setSelectedFlow] = useState('summary');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const flowOptions = [
+    { id: 'summary', label: 'Flow Summary' },
+    { id: 'live', label: 'Live Flow' },
+    { id: 'historical', label: 'Historical Flow' },
+    { id: 'news', label: 'News Flow' },
+    { id: 'congress', label: 'Congress Flow' },
+    { id: 'insiders', label: 'Insiders Flow' },
+  ];
+
+  const selectedOption = flowOptions.find(opt => opt.id === selectedFlow);
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Flow Type Dropdown */}
+      <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg p-4">
+        <div className="relative">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-full md:w-64 flex items-center justify-between px-4 py-2.5 bg-slate-900/50 border border-slate-700/50 rounded-lg text-white hover:border-cyan-500/50 transition-all"
+          >
+            <span className="font-semibold">{selectedOption.label}</span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Dropdown Menu */}
+          {isDropdownOpen && (
+            <div className="absolute top-full left-0 mt-2 w-full md:w-64 bg-slate-800 border border-slate-700/50 rounded-lg shadow-xl z-10 overflow-hidden">
+              {flowOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => {
+                    setSelectedFlow(option.id);
+                    setIsDropdownOpen(false);
+                  }}
+                  className={`w-full px-4 py-2.5 text-left transition-all ${
+                    selectedFlow === option.id
+                      ? 'bg-cyan-500/20 text-cyan-400'
+                      : 'text-slate-300 hover:bg-slate-700/50'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Flow Content */}
+      <div className="bg-slate-800/30 border border-slate-700/30 rounded-lg p-8">
+        {selectedFlow === 'summary' && <FlowSummaryView />}
+        {selectedFlow === 'live' && <LiveFlowView />}
+        {selectedFlow === 'historical' && <HistoricalFlowView />}
+        {selectedFlow === 'news' && <NewsFlowView />}
+        {selectedFlow === 'congress' && <CongressFlowView />}
+        {selectedFlow === 'insiders' && <InsidersFlowView />}
+      </div>
+    </div>
   );
 }
 
-/**
- * FlowTab - Options flow data
- */
-function FlowTab() {
-  return <FlowPage />;
+// Flow sub-views
+function FlowSummaryView() {
+  return (
+    <div className="text-center">
+      <h3 className="text-xl font-semibold text-white mb-4">Flow Summary</h3>
+      <p className="text-slate-400">Aggregated options flow data for the day</p>
+      <div className="text-sm text-slate-600 mt-4">TODO: Import FlowPage summary content</div>
+    </div>
+  );
+}
+
+function LiveFlowView() {
+  return (
+    <div className="text-center">
+      <h3 className="text-xl font-semibold text-white mb-4">Live Flow</h3>
+      <p className="text-slate-400">Real-time options flow updates</p>
+      <div className="text-sm text-slate-600 mt-4">TODO: Import FlowPage live content</div>
+    </div>
+  );
+}
+
+function HistoricalFlowView() {
+  return (
+    <div className="text-center">
+      <h3 className="text-xl font-semibold text-white mb-4">Historical Flow</h3>
+      <p className="text-slate-400">Past options flow data and trends</p>
+      <div className="text-sm text-slate-600 mt-4">TODO: Import FlowPage historical content</div>
+    </div>
+  );
+}
+
+function NewsFlowView() {
+  return (
+    <div className="text-center">
+      <h3 className="text-xl font-semibold text-white mb-4">News Flow</h3>
+      <p className="text-slate-400">Market news affecting options activity</p>
+      <div className="text-sm text-slate-600 mt-4">TODO: Import FlowPage news content</div>
+    </div>
+  );
+}
+
+function CongressFlowView() {
+  return (
+    <div className="text-center">
+      <h3 className="text-xl font-semibold text-white mb-4">Congress Flow</h3>
+      <p className="text-slate-400">Congressional trading activity</p>
+      <div className="text-sm text-slate-600 mt-4">TODO: Import FlowPage congress content</div>
+    </div>
+  );
+}
+
+function InsidersFlowView() {
+  return (
+    <div className="text-center">
+      <h3 className="text-xl font-semibold text-white mb-4">Insiders Flow</h3>
+      <p className="text-slate-400">Corporate insider trading activity</p>
+      <div className="text-sm text-slate-600 mt-4">TODO: Import FlowPage insiders content</div>
+    </div>
+  );
 }
