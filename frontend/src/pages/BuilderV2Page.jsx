@@ -64,7 +64,7 @@ const sliderStyles = `
  * - Flow: Options flow data with 6 sub-views
  */
 export default function BuilderV2Page() {
-  const [activeTab, setActiveTab] = useState('optimize');
+  const [activeTab, setActiveTab] = useState('builder');
   const [symbol, setSymbol] = useState('TSLA');
   const [price, setPrice] = useState(217.26);
   const [change, setChange] = useState(2.34);
@@ -75,6 +75,8 @@ export default function BuilderV2Page() {
   const [budget, setBudget] = useState('');
   const [selectedExpiryIndex, setSelectedExpiryIndex] = useState(0);
   const [sliderPosition, setSliderPosition] = useState(5); // 0-10 scale
+  
+  console.log('BuilderV2Page rendering, activeTab:', activeTab);
   
   // Calculate Max Return and Max Chance based on slider position
   // Position 0 = Max Chance (0% return, 100% chance)
@@ -151,7 +153,10 @@ export default function BuilderV2Page() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    console.log('Switching to tab:', tab.id);
+                    setActiveTab(tab.id);
+                  }}
                   className={`flex items-center gap-2 px-8 py-5 text-base font-semibold transition-all border-b-2 hover:bg-transparent ${
                     activeTab === tab.id
                       ? 'border-cyan-500 text-cyan-400'
@@ -167,6 +172,103 @@ export default function BuilderV2Page() {
         </div>
       </div>
 
+      {/* Tab Content */}
+      <div className="p-8">
+        {console.log('Current activeTab:', activeTab)}
+        {activeTab === 'builder' && <BuilderTab />}
+        {activeTab === 'optimize' && <OptimizeTab 
+          symbol={symbol} 
+          setSymbol={setSymbol}
+          price={price}
+          change={change}
+          changePercent={changePercent}
+          isRefreshing={isRefreshing}
+          handleRefresh={handleRefresh}
+          selectedDirection={selectedDirection}
+          setSelectedDirection={setSelectedDirection}
+          directionConfig={directionConfig}
+          expirationDates={expirationDates}
+          selectedExpiryIndex={selectedExpiryIndex}
+          setSelectedExpiryIndex={setSelectedExpiryIndex}
+          targetPrice={targetPrice}
+          setTargetPrice={setTargetPrice}
+          budget={budget}
+          setBudget={setBudget}
+          sliderPosition={sliderPosition}
+          setSliderPosition={setSliderPosition}
+          maxReturn={maxReturn}
+          maxChance={maxChance}
+          groupedDates={groupedDates}
+          growthPercent={growthPercent}
+        />}
+        {activeTab === 'strategy' && <StrategyTab />}
+        {activeTab === 'flow' && <FlowTab />}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * BuilderTab - Strategy construction tool
+ */
+function BuilderTab() {
+  return <BuilderPage />;
+}
+
+/**
+ * OptimizeTab - Strategy recommendations
+ */
+
+/**
+ * OptimizeTab - AI-suggested strategies with full UI controls
+ */
+function OptimizeTab({ 
+  symbol, setSymbol, price, change, changePercent, isRefreshing, handleRefresh,
+  selectedDirection, setSelectedDirection, directionConfig, expirationDates,
+  selectedExpiryIndex, setSelectedExpiryIndex, targetPrice, setTargetPrice,
+  budget, setBudget, sliderPosition, setSliderPosition, maxReturn, maxChance,
+  groupedDates, growthPercent
+}) {
+  const mockStrategies = [
+    { 
+      name: 'Bull Call Spread',
+      legs: [
+        { side: 'BUY', kind: 'CALL', strike: '195', qty: 1 },
+        { side: 'SELL', kind: 'CALL', strike: '210', qty: 1 }
+      ],
+      returnPercent: 85,
+      chancePercent: 65,
+      profit: 1500,
+      risk: 500,
+      collateral: 0
+    },
+    {
+      name: 'Long Call',
+      legs: [{ side: 'BUY', kind: 'CALL', strike: '195', qty: 1 }],
+      returnPercent: 120,
+      chancePercent: 45,
+      profit: 3000,
+      risk: 2500,
+      collateral: 0
+    },
+    {
+      name: 'Iron Condor',
+      legs: [
+        { side: 'SELL', kind: 'PUT', strike: '185', qty: 1 },
+        { side: 'BUY', kind: 'PUT', strike: '180', qty: 1 },
+        { side: 'SELL', kind: 'CALL', strike: '215', qty: 1 },
+        { side: 'BUY', kind: 'CALL', strike: '220', qty: 1 }
+      ],
+      returnPercent: 25,
+      chancePercent: 70,
+      profit: 750,
+      risk: 3000,
+      collateral: 0
+    },
+  ];
+
+  return (
+    <div>
       {/* Ticker Header Bar */}
       <div className="border-b border-slate-700/30 bg-slate-900/40 backdrop-blur-sm">
         <div className="px-8 py-4 flex justify-center">
@@ -270,7 +372,7 @@ export default function BuilderV2Page() {
                   value={targetPrice}
                   onChange={(e) => setTargetPrice(parseFloat(e.target.value) || 0)}
                   className="w-24 px-3 py-1.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm font-semibold focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-                  step="0.007"
+                  step="0.01"
                 />
                 <span className={`text-sm font-semibold ${growthPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   ({growthPercent >= 0 ? '+' : ''}{growthPercent}%)
@@ -289,7 +391,7 @@ export default function BuilderV2Page() {
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
                     placeholder="Budget..."
-                    step="0.7"
+                    step="100"
                     className="w-24 pl-7 pr-3 py-1.5 bg-slate-800/50 border border-slate-700/50 rounded-lg text-white text-sm font-semibold placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
                   />
                 </div>
@@ -395,126 +497,43 @@ export default function BuilderV2Page() {
         </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="p-8">
-        {activeTab === 'builder' && <BuilderTab />}
-        {activeTab === 'optimize' && <OptimizeTab symbol={symbol} selectedDirection={selectedDirection} />}
-        {activeTab === 'strategy' && <StrategyTab />}
-        {activeTab === 'flow' && <FlowTab />}
+      {/* Suggested Strategies */}
+      <div className="max-w-7xl mx-auto space-y-6 mt-8">
+        {/* Suggested Strategies */}
+        {symbol && selectedDirection && (
+          <div>
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Recommended Strategies for <span className="text-cyan-400">{symbol}</span>
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mockStrategies.map((strategy, idx) => (
+                <StrategyCard
+                  key={idx}
+                  strategy={strategy}
+                  onClick={() => console.log(`Open ${strategy.name} in Builder`)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {(!symbol || !selectedDirection) && (
+          <div className="text-center py-16 bg-slate-800/20 border border-slate-700/30 rounded-lg">
+            <div className="text-slate-400 text-lg mb-2">Select a direction to see strategies</div>
+            <p className="text-slate-600 text-sm">Choose a market direction above to view recommended strategies</p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 /**
- * BuilderTab - Strategy construction tool
- */
-function BuilderTab() {
-  return (
-    /**
- * BuilderTab - Strategy construction tool
- */
-function BuilderTab() {
-  return <BuilderPage />;
-}
-
-/**
- * OptimizeTab - Strategy recommendations
- */
-
-  );
-}
-
-/**
- * OptimizeTab - AI-suggested strategies for a ticker
- */
-function OptimizeTab({ symbol, selectedDirection }) {
-  const mockStrategies = [
-    { 
-      name: 'Bull Call Spread',
-      legs: [
-        { side: 'BUY', kind: 'CALL', strike: '195', qty: 1 },
-        { side: 'SELL', kind: 'CALL', strike: '210', qty: 1 }
-      ],
-      returnPercent: 85,
-      chancePercent: 65,
-      profit: 1500,
-      risk: 500,
-      collateral: 0
-    },
-    {
-      name: 'Long Call',
-      legs: [{ side: 'BUY', kind: 'CALL', strike: '195', qty: 1 }],
-      returnPercent: 120,
-      chancePercent: 45,
-      profit: 3000,
-      risk: 2500,
-      collateral: 0
-    },
-    {
-      name: 'Iron Condor',
-      legs: [
-        { side: 'SELL', kind: 'PUT', strike: '185', qty: 1 },
-        { side: 'BUY', kind: 'PUT', strike: '180', qty: 1 },
-        { side: 'SELL', kind: 'CALL', strike: '215', qty: 1 },
-        { side: 'BUY', kind: 'CALL', strike: '220', qty: 1 }
-      ],
-      returnPercent: 25,
-      chancePercent: 70,
-      profit: 750,
-      risk: 3000,
-      collateral: 0
-    },
-  ];
-
-  return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      {/* Suggested Strategies */}
-      {symbol && selectedDirection && (
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-4">
-            Recommended Strategies for <span className="text-cyan-400">{symbol}</span>
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {mockStrategies.map((strategy, idx) => (
-              <StrategyCard
-                key={idx}
-                strategy={strategy}
-                onClick={() => console.log(`Open ${strategy.name} in Builder`)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {(!symbol || !selectedDirection) && (
-        <div className="text-center py-16 bg-slate-800/20 border border-slate-700/30 rounded-lg">
-          <div className="text-slate-400 text-lg mb-2">Select a direction to see strategies</div>
-          <p className="text-slate-600 text-sm">Choose a market direction above to view recommended strategies</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
- * StrategyTab - Library of 69 strategies
- */
-function StrategyTab() {
-  return (
-    /**
  * StrategyTab - Strategy library with 69 strategies
  */
 function StrategyTab() {
   return <StrategyLibraryPage />;
-}
-
-/**
- * FlowTab - Options flow data with 6 sub-views
- */
-
-  );
 }
 
 /**
