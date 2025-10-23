@@ -21,8 +21,11 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
     Handle OAuth callback from TradeStation
     """
     try:
+        # Log all received parameters for debugging
+        log.info(f"OAuth callback received - code: {'present' if code else 'missing'}, state: {state}, error: {error}")
+        
         # Import token saving function
-        from ..services.tradestation import save_tokens
+        from ..services.tradestation import exchange_code, set_token
 
         # Check for errors
         if error:
@@ -44,65 +47,38 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
         if not code:
             raise HTTPException(400, "Authorization code missing")
 
-        # Exchange code for token
-        client_id = os.getenv("TS_CLIENT_ID")
-        client_secret = os.getenv("TS_CLIENT_SECRET")
+        # Exchange code for token using the service
         redirect_uri = os.getenv("TS_REDIRECT_URI")
 
-        if not client_id or not client_secret:
-            raise HTTPException(500, "OAuth credentials not configured")
+        if not redirect_uri:
+            raise HTTPException(500, "OAuth redirect URI not configured")
 
-        ts_mode = os.getenv("TS_MODE", "SIMULATION")
-        if ts_mode == "LIVE":
-            token_url = "https://signin.tradestation.com/oauth/token"
-        else:
-            token_url = "https://sim-signin.tradestation.com/oauth/token"
+        log.info(f"Exchanging authorization code for access token")
 
-        # Request token
-        token_data = {
-            "grant_type": "authorization_code",
-            "code": code,
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "redirect_uri": redirect_uri,
-        }
+        try:
+            # Use the exchange_code function from tradestation service
+            token = await exchange_code(code, redirect_uri)
 
-        log.info(f"Exchanging authorization code for access token (mode: {ts_mode})")
+            # Save tokens
+            user_id = "default"  # Default user for now
+            set_token(user_id, token)
 
-        response = requests.post(token_url, data=token_data, timeout=10)
-
-        if response.status_code != 200:
-            log.error(
-                f"Token exchange failed: {response.status_code} - {response.text}"
-            )
+            log.info(f" OAuth flow completed successfully for user {user_id}")
+        except Exception as token_error:
+            log.error(f"Token exchange failed: {str(token_error)}")
             return HTMLResponse(
                 content=f"""
             <html>
             <head><title>Token Exchange Failed</title></head>
             <body style="background:#0a0e1a;color:white;font-family:Arial;text-align:center;padding-top:100px;">
             <h1 style="color:#ef4444;"> Token Exchange Failed</h1>
-            <p>Status: {response.status_code}</p>
-            <pre style="color:#6b7280;font-size:12px;">{response.text[:200]}</pre>
+            <p>Error: {str(token_error)}</p>
             <a href="/account/balance" style="color:#3b82f6;">← Back to Account Balance</a>
             </body>
             </html>
             """,
                 status_code=500,
             )
-
-        token_response = response.json()
-
-        # Save tokens
-        user_id = "default"  # Default user for now
-
-        await save_tokens(
-            user_id,
-            token_response["access_token"],
-            token_response.get("refresh_token"),
-            token_response.get("expires_in", 1200),
-        )
-
-        log.info(f" OAuth flow completed successfully for user {user_id}")
 
         # Success page with auto-redirect
         return HTMLResponse(
