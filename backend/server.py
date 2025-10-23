@@ -72,6 +72,15 @@ except ImportError:
     OAUTH_ROUTER_AVAILABLE = False
     logger.warning("OAuth callback router not available")
 
+# NEW: TradeStation Data Endpoints (accounts, balances, positions)
+try:
+    from app.routers.tradestation import router as ts_data_router
+
+    TS_DATA_ROUTER_AVAILABLE = True
+except ImportError:
+    TS_DATA_ROUTER_AVAILABLE = False
+    logger.warning("TradeStation data router not available")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
@@ -569,6 +578,14 @@ if OAUTH_ROUTER_AVAILABLE:
     app.include_router(oauth_router, prefix="/api")
     logger.info(" OAuth callback router mounted at /api/oauth/tradestation/callback")
 else:
+    logger.warning(" OAuth callback router not available")
+
+# NEW: Mount TradeStation data endpoints (accounts, balances, positions)
+if TS_DATA_ROUTER_AVAILABLE:
+    app.include_router(ts_data_router, prefix="/api")
+    logger.info(" TradeStation data router mounted at /api/tradestation/*")
+else:
+    logger.warning(" TradeStation data router not available")
     logger.warning(" OAuth callback router not available")
 
 

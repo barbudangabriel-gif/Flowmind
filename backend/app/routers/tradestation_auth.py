@@ -46,7 +46,7 @@ async def ts_callback(
     # Exemplu: asociază tokenul la user-ul curent.
     # Dacă n-ai auth propriu, folosește un user_id dummy pentru MVP:
     user_id = "demo"
-    set_token(user_id, tok)
+    await set_token(user_id, tok)
 
     return JSONResponse(
         {
@@ -61,7 +61,7 @@ async def ts_callback(
 @router.get("/status")
 async def ts_status(user_id: str = "demo"):
     """Get current authentication status."""
-    token = get_cached_token(user_id)
+    token = await get_cached_token(user_id)
     if not token:
         return JSONResponse({"authenticated": False, "user_id": user_id})
 

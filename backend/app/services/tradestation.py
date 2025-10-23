@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 import time
@@ -29,7 +30,12 @@ TS_SCOPE = os.getenv("TS_SCOPE", "openid offline_access")
 HTTP_TIMEOUT = float(os.getenv("TS_HTTP_TIMEOUT", "15"))
 REFRESH_SKEW = int(os.getenv("TS_REFRESH_SKEW", "60"))  # secunde
 
-# === Mem-cache simplu per user_id ===
+# === Persistent storage with Redis fallback ===
+from redis_fallback import get_kv
+
+TOKEN_TTL = 60 * 60 * 24 * 60  # 60 days (max refresh token lifetime)
+
+# === Mem-cache simplu per user_id (legacy fallback) ===
 _TOKENS: Dict[
     str, Dict
 ] = {}  # user_id -> token dict {access_token, refresh_token, expires_at}
@@ -53,6 +59,7 @@ def auth_url(redirect_uri: str, state: str) -> str:
     params = {
         "response_type": "code",
         "client_id": TS_CLIENT_ID,
+        "audience": "https://api.tradestation.com",  # REQUIRED per docs
         "redirect_uri": redirect_uri,
         "scope": TS_SCOPE,
         "state": state,
@@ -123,17 +130,42 @@ async def refresh_tokens(refresh_token: str) -> Dict:
         return tok
 
 
-def set_token(user_id: str, token: Dict) -> None:
+async def set_token(user_id: str, token: Dict) -> None:
+    """Save token to persistent storage (Redis/fallback) + memory cache."""
     _TOKENS[user_id] = token
+    # Persist to Redis/fallback
+    try:
+        kv = await get_kv()
+        cache_key = f"ts_token:{user_id}"
+        token_json = json.dumps(token)
+        await kv.set(cache_key, token_json, ex=TOKEN_TTL)
+        log.info(f"Token saved to persistent storage for user {user_id}")
+    except Exception as e:
+        log.warning(f"Failed to persist token to cache: {e}")
 
 
-def get_cached_token(user_id: str) -> Optional[Dict]:
+async def get_cached_token(user_id: str) -> Optional[Dict]:
+    """Get token from memory cache or persistent storage."""
+    # Try memory first
     tok = _TOKENS.get(user_id)
-    if not tok:
-        return None
-    if tok.get("expires_at", 0) <= _now():
-        return None
-    return tok
+    if tok and tok.get("expires_at", 0) > _now():
+        return tok
+    
+    # Try persistent storage
+    try:
+        kv = await get_kv()
+        cache_key = f"ts_token:{user_id}"
+        token_json = await kv.get(cache_key)
+        if token_json:
+            tok = json.loads(token_json)
+            if tok.get("expires_at", 0) > _now():
+                _TOKENS[user_id] = tok  # Restore to memory
+                log.info(f"Token restored from persistent storage for user {user_id}")
+                return tok
+    except Exception as e:
+        log.warning(f"Failed to load token from cache: {e}")
+    
+    return None
 
 
 async def get_valid_token(user_id: str) -> Optional[Dict]:
@@ -141,7 +173,7 @@ async def get_valid_token(user_id: str) -> Optional[Dict]:
     Dă-ți un access_token valid din cache; dacă e expirat încearcă refresh în mod sigur (cu lock).
     Returnează dict token sau None dacă nu avem nimic.
     """
-    tok = get_cached_token(user_id)
+    tok = await get_cached_token(user_id)
     if tok:
         return tok
 
@@ -149,7 +181,7 @@ async def get_valid_token(user_id: str) -> Optional[Dict]:
     lock = _ensure_lock(user_id)
     async with lock:
         # alt task poate să fi făcut deja refresh
-        tok = get_cached_token(user_id)
+        tok = await get_cached_token(user_id)
         if tok:
             return tok
 
@@ -159,7 +191,7 @@ async def get_valid_token(user_id: str) -> Optional[Dict]:
 
         try:
             new_tok = await refresh_tokens(current["refresh_token"])
-            set_token(user_id, new_tok)
+            await set_token(user_id, new_tok)
             return new_tok
         except Exception as e:
             log.exception("refresh error: %s", e)
@@ -198,7 +230,7 @@ async def call_ts_api(
             if token.get("refresh_token"):
                 try:
                     new_tok = await refresh_tokens(token["refresh_token"])
-                    set_token(user_id, new_tok)
+                    await set_token(user_id, new_tok)
                     headers["Authorization"] = bearer(new_tok)
                     r = await client.request(
                         method.upper(), url, params=params, json=json, headers=headers

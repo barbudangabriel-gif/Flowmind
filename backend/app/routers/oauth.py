@@ -61,7 +61,7 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
 
             # Save tokens
             user_id = "default"  # Default user for now
-            set_token(user_id, token)
+            await set_token(user_id, token)
 
             log.info(f" OAuth flow completed successfully for user {user_id}")
         except Exception as token_error:
@@ -81,13 +81,14 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
             )
 
         # Success page with auto-redirect
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
         return HTMLResponse(
-            content="""
+            content=f"""
         <html>
         <head>
         <title>Authentication Successful</title>
         <style>
-        body {
+        body {{
             background: #0a0e1a;
             color: white;
             font-family: Arial, sans-serif;
@@ -96,20 +97,20 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
             justify-content: center;
             height: 100vh;
             margin: 0;
-        }
-        .container {
+        }}
+        .container {{
             text-align: center;
             padding: 40px;
             background: #1a1f2e;
             border-radius: 12px;
             border: 1px solid #2a3f5f;
             max-width: 500px;
-        }
-        .success { font-size: 64px; margin-bottom: 20px; }
-        h1 { color: #10b981; margin-bottom: 10px; }
-        p { color: #9ca3af; margin-bottom: 20px; }
-        .countdown { color: #3b82f6; font-weight: bold; }
-        .btn {
+        }}
+        .success {{ font-size: 64px; margin-bottom: 20px; }}
+        h1 {{ color: #10b981; margin-bottom: 10px; }}
+        p {{ color: #9ca3af; margin-bottom: 20px; }}
+        .countdown {{ color: #3b82f6; font-weight: bold; }}
+        .btn {{
             background: #3b82f6;
             color: white;
             padding: 12px 24px;
@@ -118,27 +119,27 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
             display: inline-block;
             transition: background 0.3s;
             margin-top: 10px;
-        }
-        .btn:hover { background: #2563eb; }
+        }}
+        .btn:hover {{ background: #2563eb; }}
         </style>
         <script>
         let countdown = 3;
         const countdownEl = document.getElementById('countdown');
 
-        const interval = setInterval(() => {
+        const interval = setInterval(() => {{
             countdown--;
             if (countdownEl) countdownEl.textContent = countdown;
 
-            if (countdown <= 0) {
+            if (countdown <= 0) {{
                 clearInterval(interval);
                 window.location.href = '{frontend_url}';
-            }
-        }, 1000);
+            }}
+        }}, 1000);
         </script>
         </head>
         <body>
         <div class="container">
-        <div class="success"></div>
+        <div class="success">✅</div>
         <h1>Authentication Successful!</h1>
         <p>Your TradeStation account has been connected.</p>
         <p style="font-size: 14px; color: #6b7280;">
@@ -149,7 +150,7 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
         </body>
         </html>
         """
-        ).format(frontend_url=os.getenv("FRONTEND_URL", "http://localhost:3000"))
+        )
 
     except HTTPException:
         raise

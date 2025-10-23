@@ -28,7 +28,7 @@ async def get_bearer_token(user_id: str = Depends(get_user_id)) -> str:
 
 async def get_user_token_info(user_id: str = Depends(get_user_id)) -> Dict[str, Any]:
     """Get token info without refreshing."""
-    token = get_cached_token(user_id)
+    token = await get_cached_token(user_id)
     if not token:
         return {"authenticated": False, "expires_in": 0}
 

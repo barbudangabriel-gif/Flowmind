@@ -1,998 +1,427 @@
-https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestation/callback
-## FlowMind AI Agent Quick Reference
+# FlowMind AI Agent Instructions
 
-### 🚨 CRITICAL RULE: Structure Agreement BEFORE Implementation (October 22, 2025)
-
-**⚠️ MANDATORY: NEVER start implementation without structure approval!**
-
-**📐 Structure Agreement Protocol (ALWAYS FIRST):**
-Before writing ANY code for UI components, pages, or features:
-
-1. **📋 Clarify Requirements:**
-   - Ask user: "What sections/tabs/components do you need?"
-   - Ask user: "What content goes in each section?"
-   - Document: Write down the agreed structure (tab → content mapping)
-
-2. **🎨 Propose Navigation Structure:**
-   - Show user: "Tab X will contain: [list content]"
-   - Show user: "Tab Y will contain: [list content]"
-   - Get confirmation: "Is this structure correct? (da/nu)"
-
-3. **✅ Get Explicit Approval:**
-   - WAIT for user to confirm: "da" or "correct" or "yes"
-   - If "nu" or unclear: Ask again until structure is clear
-   - Document approved structure in comment at top of file
-
-4. **🚫 NO Implementation Without Approval:**
-   - DO NOT write component code until structure agreed
-   - DO NOT assume content placement
-   - DO NOT mix content from different sections
-
-**Example (BuilderV2Page Oct 22, 2025 lesson learned):**
-```
-❌ WRONG: Implement tabs, put all UI in main return, user finds wrong content in tabs
-✅ CORRECT: 
-  1. Agent: "Tab Build → BuilderPage (table), Tab Optimize → Ticker+Direction+Carousel, Tab Strategy → Library, Tab Flow → FlowPage. Correct?"
-  2. User: "da"
-  3. Agent: Implements exact structure as agreed
-  4. Result: Zero restructuring needed, user happy
-```
-
-**Why This Rule Exists:**
-- BuilderV2Page required 228-line deletion + restructuring because structure not agreed first
-- User frustrated: "ce dreaq cauta buildul asta aici?" (what's the builder doing here?)
-- 2+ hours wasted on restructuring vs 5 minutes clarifying structure upfront
+**Project:** Options analytics platform with FastAPI backend, React 19 frontend  
+**Last Updated:** October 23, 2025
 
 ---
 
-### 🚨 CRITICAL RULE: Task Tracker Workflow (October 21, 2025)
-
-**ALL development work MUST use the centralized task tracker:**
-
-📋 **Primary Task File:** `PROJECT_TASKS.md` (Single source of truth)
-- Contains: Active tasks, Backlog, Completed, Architecture improvements, Bugs, Documentation roadmap
-- Structure: 6-month project roadmap with priorities, timelines, dependencies, success criteria
-- Update frequency: After every task completion, bug fix, or new requirement
-
-**🔥 NEW SESSION PROTOCOL (MANDATORY):**
-At the START of EVERY new session, agent MUST:
-1. 📋 **Read `PROJECT_TASKS.md`** - Get all active/backlog tasks
-2. 📊 **Display formatted task list** to user with:
-   - Priority indicators (🔴 CRITICAL / 🟡 HIGH / 🟢 MEDIUM / ⚪ LOW)
-   - Status (🚀 Active / 📋 Backlog / ✅ Completed)
-   - Time estimates (hours/days)
-   - Task file references (if any)
-3. ⏸️ **WAIT for user decision** - Let user choose which task to work on
-4. ✅ **Track progress** - Update PROJECT_TASKS.md checkboxes as work progresses
-
-**Format for Task List Display:**
-```
-📋 Available Tasks (from PROJECT_TASKS.md):
-
-🔴 CRITICAL (Start ASAP):
-1. Multi-Broker Architecture - Mindfolio Manager
-   ⏱️ Time: 2-3 days | 📄 File: MINDFOLIO_BROKER_ARCHITECTURE.md
-   Status: 🚀 Active | Phase 0: Foundation (Day 1)
-
-🟡 HIGH (Important):
-2. GEX Enhancement Phase 1 - Pre-calculated Data Integration
-   ⏱️ Time: Weeks 1-2 | 📄 File: GEX_ENHANCEMENT_TASK.md
-   Status: 📋 Backlog | 5 phases defined
-
-🟢 MEDIUM (Can wait):
-3. [Task name]
-   [Details...]
-
-Which task would you like to work on? (Reply with number or description)
-```
-
-**Workflow Rules:**
-1. ✅ **BEFORE starting ANY work:** Check `PROJECT_TASKS.md` for task definition
-2. ✅ **If task doesn't exist:** Add it to Active Tasks or Backlog section with priority/timeline/dependencies
-3. ✅ **While working:** Update checkboxes [ ] as subtasks complete
-4. ✅ **After completion:** Move to Completed section with date + summary
-5. ✅ **For bugs:** Add to Bug Fixes section with priority (Critical/High/Medium/Low)
-6. ❌ **NEVER work on undocumented tasks** - always add to tracker first
-7. 🆕 **NEW SESSION START:** Always display task list and wait for user choice
-
-**Task Reference Files:**
-- `PROJECT_TASKS.md` - Main tracker (462 lines, comprehensive roadmap)
-- `GEX_ENHANCEMENT_TASK.md` - Detailed GEX implementation (544 lines, 5 phases)
-- `MINDFOLIO_BROKER_ARCHITECTURE.md` - Multi-broker architecture (890 lines, 3-day plan)
-
-**Example Task Flow:**
-```
-User: "Implement X feature"
-Agent: 1. Check PROJECT_TASKS.md if X is documented
-        2. If not → Add to Active/Backlog with details
-        3. Commit task addition to git
-        4. Start implementation with task reference
-        5. Update checkboxes as work progresses
-        6. Move to Completed when done + commit
-```
-
-**Current Active Tasks (Priority Order):**
-1. 🏦 Multi-Broker Architecture (CRITICAL - 3 days) - `MINDFOLIO_BROKER_ARCHITECTURE.md`
-2. 🎯 GEX Enhancement Phase 1 (HIGH - Weeks 1-2) - `GEX_ENHANCEMENT_TASK.md`
+## 📋 Table of Contents
+1. [Session Start Protocol](#session-start-protocol)
+2. [Architecture Patterns](#architecture-patterns)
+3. [Developer Workflows](#developer-workflows)
+4. [External APIs](#external-apis)
+5. [Common Pitfalls](#common-pitfalls)
+6. [Key Files](#key-files)
 
 ---
 
-### � RECENT UPDATE: BuilderV2 UI Polish Sprint (October 22, 2025)
+## Session Start Protocol
 
-**BuilderV2Page Final State (644 lines):**
-- ✅ All backgrounds removed from tab navigation and direction buttons
-- ✅ Direction buttons: Circular border design (w-16 h-16) with colored borders matching icon colors
-- ✅ All text changed to `text-white` for consistent luminosity
-- ✅ Tab buttons: Clean design with hover:bg-transparent, larger size (px-8 py-5, text-base)
-- ✅ Carousel and Slider: Both at 50% width (w-1/2), properly aligned
-- ✅ Direction button text: text-base font-semibold text-white
-- ✅ Icons enlarged: w-8 h-8 inside w-16 h-16 circular borders
-- ✅ Mock expiration dates: 13 dates spanning Oct 2025 - Feb 2026
+### MANDATORY: Every New Session
+1. **Read `PROJECT_TASKS.md`** - Get active/backlog tasks
+2. **Display task list** - Show priorities, status, time estimates
+3. **Wait for user** - Let user choose which task to work on
+4. **Track progress** - Update checkboxes as work progresses
 
-**Key Design Decisions:**
-- Border-only circles for direction buttons (no background unless active)
-- Active state: cyan background + border, white icon
-- Inactive state: colored border + colored icon, transparent background
-- All labels, headers, and text: text-white (max luminosity)
-- Carousel width matches slider width for visual consistency
+### MANDATORY: Before UI Implementation
+1. **Clarify requirements** - Ask about sections/tabs/components needed
+2. **Propose structure** - Show what goes where
+3. **Wait for confirmation** - Get explicit "da"/"yes"
+4. **Document structure** - Add comment at top of file
+5. **Never implement without approval** - Lesson learned: BuilderV2Page (Oct 22) required 228-line deletion due to no upfront agreement
 
-**File Status:** No compilation errors, ready for backend integration
-
----
-
-### �🎉 RECENT COMPLETION: Quality Sprint (October 21, 2025)
-
-**Achievement: ZERO ERRORS (645 → 0, -100% reduction)**
-
-**Breaking Change Implemented:**
-- Module: `bt_emergent.py` → `bt_diagnostics.py`
-- API Endpoints: `/_emergent/*` → `/_diagnostics/*`
-- Frontend Route: `/ops/emergent` → `/ops/diagnostics`
-- Status: All backend/frontend/tests updated
-
-**Ruff Configuration (`backend/pyproject.toml`):**
-```toml
-[tool.ruff.lint]
-select = ["E4", "E7", "E9", "F"]  # Critical errors only
-[tool.ruff.lint.per-file-ignores]
-"server.py" = ["E402"]  # Router imports after app config (documented pattern)
-```
-
-**Key Fixes Applied:**
-- ✅ Eliminated 4 duplicate function definitions (F811)
-- ✅ Renamed 10 ambiguous variables (E741: l→leg, l→level)
-- ✅ Configured E402 suppression for FastAPI architectural pattern
-- ✅ Archived broken test file (1-space indentation unfixable)
-
-**Validation:**
-```bash
-cd backend && ruff check .  # Result: All checks passed!
-python3 -m compileall -q .  # Result: All files compile
-```
-
-**Documentation:** See `QUALITY_SPRINT_COMPLETE_OCT21.md` for complete journey details.
+### Development Style (Romanian workflow)
+- **Concis + vizual**: Arată implementarea, nu doar explica
+- **Iterativ**: Livrează mic → verifică → ajustează
+- **Transparent**: Raportează probleme imediat
+- **Feedback-driven**: Corectează după fiecare ciclu
+- **Autonom**: Mergi înainte fără confirmări inutile
 
 ---
 
-### Project Overview
-FlowMind is an options analytics platform (FastAPI backend, React 19 frontend, Redis/MongoDB storage) for building options strategies, monitoring real-time flow, and managing mindfolios with FIFO-based P&L tracking.
+## Architecture Patterns
 
-### Architecture Overview
-- **Backend:** FastAPI (`backend/server.py`), routers in `backend/routers/` and `backend/app/routers/`, services in `backend/services/`, AI agents as `*_agent.py`
-- **Frontend:** React 19 monolith (`frontend/src/App.js`), feature pages in `pages/`, Zustand stores in `stores/`, craco for build config
-- **Storage:** Redis (primary cache with TTL-based keys), fallback to in-memory `AsyncTTLDict`, MongoDB (mindfolios), SQLite (alternative)
-- **External APIs:** TradeStation (OAuth, options chains, spot prices), Unusual Whales (flow/news/congress with rate limiting and demo fallback)
+### Project Structure
+- **Backend:** FastAPI (`backend/server.py`), routers in `backend/routers/` + `backend/app/routers/`
+- **Frontend:** React 19 (`frontend/src/App.js`), pages in `pages/`, Zustand stores, Craco build
+- **Storage:** Redis primary (TTL cache), fallback to in-memory, MongoDB for mindfolios
+- **External APIs:** TradeStation (OAuth, options chains), Unusual Whales (flow, 17 verified endpoints)
 
-### Critical Architectural Patterns
-
-#### 1. Redis Fallback System (`backend/redis_fallback.py`)
-**The "why":** Zero-downtime caching - application continues if Redis fails or is unavailable
+### 1. Redis Fallback System (`backend/redis_fallback.py`)
+Zero-downtime caching - app continues if Redis unavailable.
 ```python
-# Three operational modes:
-# 1. TEST_MODE=1 → Shared AsyncTTLDict instance (for consistent test state)
-# 2. FM_FORCE_FALLBACK=1 → Force in-memory (dev/test)
-# 3. Normal → Try Redis, fallback to in-memory on connection failure
+# Three modes:
+# TEST_MODE=1 → Shared AsyncTTLDict (test consistency)
+# FM_FORCE_FALLBACK=1 → Force in-memory (dev)
+# Normal → Try Redis, fallback to in-memory on failure
 
-await get_kv()  # Returns Redis client OR AsyncTTLDict
+await get_kv()  # Returns Redis OR AsyncTTLDict
 ```
-**Used everywhere:** All caching (`bt_cache_integration.py`, `mindfolios.py`, `iv_service/`), never direct Redis imports
+**CRITICAL:** Always use `from redis_fallback import get_kv`, NEVER import Redis directly.
 
-#### 2. FIFO Position Tracking (`backend/mindfolios.py`)
-**The "why":** Tax-compliant realized P&L calculation for options/stock positions
+### 2. FIFO Position Tracking (`backend/mindfolios.py`)
+Tax-compliant realized P&L for options/stock positions.
 ```python
-# Algorithm: BUY adds to lots queue, SELL consumes from front (First-In-First-Out)
-# Realized P&L = (sell_price - buy_price) * qty per consumed lot
-# Example: BUY 100@250 + BUY 50@260 → SELL 120@270 consumes 100@250 + 20@260
-# Result: Realized $2,200, Remaining: 30@260
+# BUY adds to lots queue, SELL consumes from front (First-In-First-Out)
+# Example: BUY 100@250 + BUY 50@260 → SELL 120@270
+# Consumes: 100@250 + 20@260 → Realized $2,200, Remaining 30@260
 ```
-**Key functions:** `calculate_positions()`, `get_mindfolio_transactions()` - positions computed from transactions, not stored
+**Functions:** `calculate_positions()`, `get_mindfolio_transactions()`  
+**NEVER modify positions directly** - always add transactions and recompute.
 
-#### 3. Dark Theme Enforcement (`DARK_THEME_ONLY_VALIDATION.md`)
-**The "why":** Consistent UX, no light mode support (removed toggle to simplify codebase)
+### 3. Dark Theme Enforcement
+No light mode support (removed to simplify codebase).
 ```javascript
-// frontend/src/App.js - ThemeProvider always returns isDarkMode: true
+// frontend/src/App.js - ThemeProvider always isDarkMode: true
 useEffect(() => { document.documentElement.classList.add('dark'); }, []);
 ```
-**Rule:** All Tailwind classes must be dark variants (`bg-slate-800`, `text-white`) - no conditional `isDarkMode ?` ternaries
+**Rule:** All Tailwind classes MUST be dark variants (`bg-slate-800`, `text-white`)  
+**NEVER use:** `isDarkMode ?` ternaries or light classes (`bg-white`, `text-gray-800`)
 
-#### 4. Integration Test Pattern (Root `*_test.py` files)
-**The "why":** Verify real API behavior against deployed backend, not mocks
+### 4. Python 3.12 Indentation Rules
+**CRITICAL:** Project recently fixed 5,314 lines across 12 files for Python 3.12 compliance.
+- **Standard:** 4-space indentation (enforced by Black, Ruff)
+- **VS Code:** Must have `"editor.detectIndentation": false` (configured in `.vscode/settings.json`)
+- **Pre-commit:** Black + Ruff hooks block non-compliant commits
+- **Never use:** 1-space, 2-space, or tabs
+
+### 5. Unusual Whales API Integration
+**CRITICAL ANTI-HALLUCINATION GUARD:** AI models frequently generate fake UW endpoints!
+
+#### ✅ VERIFIED ENDPOINTS (17 total - Oct 21, 2025)
+
+**Stock Options Data (5 endpoints):**
 ```python
-# Pattern used in backend_test.py, options_backend_test.py, etc:
-BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "http://localhost:8000")
-response = requests.post(f"{BACKEND_URL}/api/builder/price", json=payload)
-# Tests verify real responses, data structures, and error handling
+GET /stock/{ticker}/option-contracts   # 500+ contracts with IV, OI, volume
+GET /stock/{ticker}/spot-exposures     # 300-410 GEX records (PRE-CALCULATED!)
+GET /stock/{ticker}/greeks             # Delta, Gamma, Theta, Vega
+GET /stock/{ticker}/options-volume     # Volume metrics, call/put ratios
+GET /stock/{ticker}/info               # Company metadata, sector, earnings
 ```
-**NOT for unit tests** - those go in `backend/tests/` using pytest with fixtures
 
-### Developer Workflows
+**Market Screening & Alerts (2 endpoints):**
+```python
+GET /screener/stocks?limit=10          # Unified GEX+IV+Greeks (POWERFUL!)
+GET /alerts?noti_type=market_tide      # Real-time market tide events
+```
 
-#### Backend Development
+**Insider Trading (5 endpoints):**
+```python
+GET /insider/trades                    # All insider trades
+GET /insider/{ticker}                  # Ticker-specific insider activity
+GET /insider/recent                    # Recent insider trades
+GET /insider/buys                      # Insider buys only
+GET /insider/sells                     # Insider sells only
+```
+
+**Dark Pool (2 endpoints):**
+```python
+GET /darkpool/{ticker}                 # 500 dark pool trades per ticker!
+GET /darkpool/recent                   # Recent dark pool activity
+```
+
+**Earnings (3 endpoints):**
+```python
+GET /earnings/{ticker}                 # Earnings history
+GET /earnings/today                    # Today's earnings
+GET /earnings/week                     # This week's earnings
+```
+
+#### ❌ HALLUCINATED ENDPOINTS (DO NOT USE - 404 errors)
+```python
+❌ /api/flow-alerts, /api/market/tide, /api/options-flow
+❌ /api/market/overview, /api/congress/trades
+❌ /api/stock/{ticker}/last-state, /api/stock/{ticker}/ohlc
+```
+
+#### Implementation Details
+- **Service:** `backend/unusual_whales_service_clean.py` (17 methods implemented)
+- **Documentation:** `UW_API_FINAL_17_ENDPOINTS.md` (complete reference with examples)
+- **Auth:** `Authorization: Bearer {token}` header (NOT query param)
+- **Rate limit:** 1.0s delay between requests
+- **Discovery:** 150+ endpoint variations tested, 8 tickers validated
+
+---
+
+## External APIs
+
+### TradeStation OAuth & API Integration
+**COMPLETE WORKING SOLUTION (Oct 23, 2025)**
+
+#### Configuration (.env)
+```bash
+# OAuth Credentials
+TS_CLIENT_ID=XEs0URG1rMrGDUFRKVhlDaclvQKq8Qpj
+TS_CLIENT_SECRET=NsAIybzKV6GbYGqQZwF0cHypdXfwiDYL5-EY4nRXEbIy748Zp-FdeuDXJIu6Jhwk
+TS_REDIRECT_URI=https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestation/callback
+
+# CRITICAL: Both variables required for mode switching
+TS_MODE=LIVE
+TRADESTATION_MODE=LIVE  # app/routers/tradestation.py checks this!
+
+# API URLs (LIVE mode)
+TS_BASE_URL=https://api.tradestation.com
+TS_AUTH_URL=https://signin.tradestation.com/authorize
+TS_TOKEN_URL=https://signin.tradestation.com/oauth/token
+
+# Scopes (verified working)
+TS_SCOPE=openid offline_access MarketData ReadAccount Trade OptionSpreads Matrix
+
+# Token settings
+TS_HTTP_TIMEOUT=15
+TS_REFRESH_SKEW=60
+```
+
+#### CRITICAL: OAuth Requirements
+1. **`audience` parameter REQUIRED** - Without this, API returns 401
+   ```python
+   # backend/app/services/tradestation.py - auth_url()
+   params = {
+       "response_type": "code",
+       "client_id": TS_CLIENT_ID,
+       "audience": "https://api.tradestation.com",  # MUST INCLUDE!
+       "redirect_uri": redirect_uri,
+       "scope": TS_SCOPE,
+       "state": state,
+   }
+   ```
+
+2. **Async token persistence** - Tokens stored in Redis/fallback cache
+   ```python
+   # All token functions are async:
+   await set_token(user_id, token)
+   token = await get_cached_token(user_id)
+   token = await get_valid_token(user_id)  # Auto-refreshes if needed
+   ```
+
+3. **Mode switching** - `TRADESTATION_MODE` controls API base URL
+   ```python
+   # backend/app/routers/tradestation.py
+   TS_MODE = os.getenv("TRADESTATION_MODE", "SIMULATION")
+   if TS_MODE == "LIVE":
+       TS_API_BASE = "https://api.tradestation.com/v3"
+   else:
+       TS_API_BASE = "https://sim-api.tradestation.com/v3"
+   ```
+
+#### OAuth Flow (LIVE mode)
+1. User visits: `https://{codespace}/api/ts/login`
+2. Redirects to TradeStation with `audience=https://api.tradestation.com`
+3. User authenticates + 2FA
+4. Callback: `https://{codespace}/api/oauth/tradestation/callback?code=...`
+5. Token exchange + save to Redis
+6. Success page displays (3s auto-redirect)
+
+#### Verified Working Endpoints
+```bash
+# Accounts (returns LIVE or SIM based on TRADESTATION_MODE)
+GET /api/tradestation/accounts
+Response: {"Accounts": [{"AccountID": "11775499", "AccountType": "Margin", ...}]}
+
+# Balances
+GET /api/tradestation/accounts/{account_id}/balances
+Response: {"Balances": [{"CashBalance": "...", "BuyingPower": "...", ...}]}
+
+# Positions (real-time P&L)
+GET /api/tradestation/accounts/{account_id}/positions
+Response: {"Positions": [{"Symbol": "TSLA", "Quantity": 100, "UnrealizedProfitLoss": "11281.97", ...}]}
+```
+
+#### Authentication Header
+All endpoints require: `X-User-ID: default` (or custom user_id)
+```bash
+curl -H "X-User-ID: default" http://localhost:8000/api/tradestation/accounts
+```
+
+#### SIMULATOR vs LIVE Mode
+**DNS BLOCK:** `sim-signin.tradestation.com` is BLOCKED on Codespaces/some networks
+- **SIMULATOR:** Returns accounts with "SIM" prefix (SIM2765178M, SIM2765179F)
+- **LIVE:** Returns real account IDs (11775499, 210MJP11)
+- **Switch:** Change both `TS_MODE` and `TRADESTATION_MODE` + restart backend
+
+#### Router Mounting
+```python
+# backend/server.py
+from app.routers.tradestation import router as ts_data_router
+app.include_router(ts_data_router, prefix="/api")  # Mounts /api/tradestation/*
+```
+
+#### Token Persistence Implementation
+- **Storage:** Redis (primary) → AsyncTTLDict (fallback)
+- **TTL:** 60 days (max refresh token lifetime)
+- **Cache key:** `ts_token:{user_id}`
+- **Survives:** Backend restarts (if Redis available)
+
+#### Common Errors & Fixes
+| Error | Cause | Fix |
+|-------|-------|-----|
+| 401 Unauthorized | Missing `audience` param | Add to auth_url() |
+| DNS_PROBE_FINISHED_NXDOMAIN | sim-signin.tradestation.com blocked | Use LIVE mode |
+| "Not authenticated" | TRADESTATION_MODE != TS_MODE | Set both variables |
+| Token lost on restart | Not using async persistence | Await set_token/get_cached_token |
+| Returns SIM accounts in LIVE | TRADESTATION_MODE=SIMULATION | Set to LIVE + restart |
+
+---
+
+## Common Pitfalls
+
+1. **Redis confusion:** Always `from redis_fallback import get_kv`, never direct Redis imports
+2. **Dark theme violations:** Never use `isDarkMode ?` ternaries or light classes
+3. **URL hardcoding:** Frontend must use `process.env.REACT_APP_BACKEND_URL`
+4. **UW API hallucinations:** Only use 17 verified endpoints in `unusual_whales_service_clean.py`
+5. **Indentation:** Must be 4-space (Python 3.12 strict enforcement)
+6. **FIFO integrity:** Never modify positions - always add transactions and recompute
+7. **TradeStation OAuth:** 
+   - Missing `audience` parameter causes 401 errors
+   - Must set BOTH `TS_MODE` and `TRADESTATION_MODE`
+   - SIMULATOR domain blocked on Codespaces - use LIVE mode
+   - Token functions must be awaited (async)
+
+---
+
+## Backend Development
 ```bash
 cd backend
-python -m uvicorn server:app --reload --port 8000  # Main server entry
-# Alternative: python -m uvicorn app.main:app --reload --port 8000
+python -m uvicorn server:app --reload --port 8000
 
-# Quality gates (matches CI/CD):
+# Quality gates (CI/CD compliance):
 pytest -q --maxfail=1 --disable-warnings
 ruff check . && ruff format --check
 mypy . --ignore-missing-imports
-bandit -ll -r . -x tests  # Security scan, low-level or higher
-pip-audit --strict  # Dependency vulnerabilities
+bandit -ll -r . -x tests
+pip-audit --strict
 ```
 
-#### Frontend Development
+### Frontend Development
 ```bash
 cd frontend
-npm start  # Uses craco (configured in craco.config.js)
+npm start  # Uses Craco (craco.config.js)
 
 # Quality gates:
-npm run lint  # ESLint
-npm run build  # Production build
-npm audit --audit-level=high  # Only fail on high/critical
+npm run lint
+npm run build
+npm audit --audit-level=high
 ```
 
-#### Docker Compose (Full Stack)
+### Docker Compose
 ```bash
-docker-compose up  # Backend on :8000, Redis on :6379
-# Backend uses: python -m uvicorn server:app --reload (not app.main:app)
+docker-compose up  # Backend :8000, Redis :6379
+# Uses: python -m uvicorn server:app --reload (not app.main:app)
 ```
 
-### Naming Conventions (Discoverable via File Patterns)
-- **Services:** `*_service.py` (e.g., `unusual_whales_service.py`, `mindfolio_service.py`)
-- **Routers:** `backend/routers/*.py` (feature routers) OR `backend/app/routers/*.py` (OAuth, auth)
-- **AI Agents:** `*_agent.py` (e.g., `investment_scoring_agent.py`, `technical_analysis_agent.py`)
-- **Integration Tests:** Root `*_test.py` (e.g., `backend_test.py`, `builder_backend_test.py`)
-- **Unit Tests:** `backend/tests/test_*.py` (pytest convention)
-
-### Critical Environment Variables
+### Integration Tests
+Root-level `*_test.py` files test against deployed backend:
 ```bash
-# Backend (backend/.env)
-REDIS_URL=redis://localhost:6379/0  # Optional (has fallback)
-FM_FORCE_FALLBACK=1                 # Force in-memory cache (dev/test)
-FM_REDIS_REQUIRED=1                 # Fail fast if Redis unavailable
-TEST_MODE=1                         # Shared in-memory instance for tests
-MONGO_URL=mongodb://...             # Required for mindfolio persistence
-TS_CLIENT_ID/TS_CLIENT_SECRET/TS_REDIRECT_URI  # TradeStation OAuth
-UW_API_TOKEN or UNUSUAL_WHALES_API_KEY         # Unusual Whales API
-
-# Frontend (frontend/.env.local)
-REACT_APP_BACKEND_URL=http://localhost:8000  # API base URL (never hardcode!)
+python backend_test.py
+python options_backend_test.py
+python tradestation_integration_test.py
 ```
-
-### API Router Organization
-**Two mounting patterns exist** (historical reasons):
-1. `backend/routers/*.py` - Mounted with `/api` prefix in `server.py`
-2. `backend/app/routers/*.py` - Mounted with `/api` prefix or pre-configured prefix
-
-**Router registration in `server.py`:**
-```python
-app.include_router(options_router, prefix="/api")  # backend/routers/options.py
-app.include_router(ts_auth_router, prefix="/api")  # backend/app/routers/tradestation_auth.py
-app.include_router(geopolitical_router)            # Already has /api/geopolitical prefix
-```
-
-### Common Pitfalls
-1. **Redis confusion:** Always use `from redis_fallback import get_kv`, never direct Redis imports
-2. **Dark theme violations:** Never use `isDarkMode ?` ternaries or light Tailwind classes (`bg-white`, `text-gray-800`)
-3. **URL hardcoding:** Frontend must use `process.env.REACT_APP_BACKEND_URL`, not `http://localhost:8000`
-4. **TradeStation token expiry:** 60-day refresh cycle, handled in `tradestation_auth.py` or `app/routers/tradestation_auth.py`
-5. **⚠️ UW API HALLUCINATIONS:** ONLY use the 17 verified endpoints in `unusual_whales_service_clean.py` - AI assistants frequently generate fake endpoints that return 404
-6. **Unusual Whales rate limits:** 1.0s delay between requests (`rate_limit_delay`), always implement demo fallback
-7. **Test mode:** Integration tests need real backend, unit tests use `TEST_MODE=1` for shared cache
-8. **FIFO integrity:** Never modify positions directly - always add transactions and recompute via `calculate_positions()`
-
-### Historical Context - UW API Discovery (Oct 21, 2025)
-**FINAL VERIFIED COUNT: 17 UNIQUE ENDPOINT PATTERNS** (not 12, not 30+)
-
-**Discovery Timeline:**
-- Initial implementation: 12 verified endpoints found through systematic testing
-- User challenge: "mai sunt si altele" (there are more) - **user was correct!**
-- Extended testing: 150+ endpoint variations tested across multiple categories
-- **Final discovery: 17 unique patterns** (5 NEW endpoints found)
-- **Key insight:** 8 patterns work with ANY ticker → thousands of possible combinations
-
-**The 17 Working Endpoint Patterns:**
-1. **Stock Data (5)**: info, greeks, option-contracts (500), spot-exposures (300-410 GEX 🔥), options-volume
-2. **Screeners (1)**: screener/stocks (unified GEX+IV+Greeks ⭐)
-3. **Alerts (1)**: alerts (market tide events 🔥)
-4. **Insider (5)**: trades, {ticker}, recent, **buys (NEW)**, **sells (NEW)**
-5. **Dark Pool (2)**: {ticker} (500 trades 🔥⭐), recent
-6. **Earnings (3)**: {ticker}, **today (NEW)**, **week (NEW)**
-
-**Major Discoveries:**
-- **Dark pool data:** 500 trades per ticker with price, volume, premium, market center
-- **Pre-calculated GEX:** 300-410 records per ticker (no calculation needed!)
-- **Screener API:** Unified metrics (GEX, IV, Greeks, volume) in single endpoint
-- **Parameter support:** 9 endpoints support query params (limit, date, order_by, noti_type, symbol)
-- **Ticker patterns:** 8 endpoints work with ANY ticker (TSLA, AAPL, SPY, NVDA, etc.)
-
-**Testing Methodology:**
-- 150+ endpoint variations tested systematically
-- Cross-validated with 8 different tickers (TSLA, AAPL, SPY, NVDA, MSFT, GOOGL, AMZN, META)
-- 18 parameter combinations verified
-- Real data volumes confirmed (SPY Greeks: 135 records, AAPL earnings: 115 records)
-
-**Critical Lesson:** Always verify API endpoints through exhaustive testing. User intuition was correct about more endpoints existing. The true count is 17 unique patterns, but with ticker combinations = thousands of possible endpoints.
-
-**Implementation:** `backend/unusual_whales_service_clean.py` with ALL 17 methods implemented
-**Documentation:** `UW_API_FINAL_17_ENDPOINTS.md` (complete 18KB reference with examples)
-
-### Key Files for Understanding Architecture
-- `backend/server.py` (961 lines) - Main FastAPI app, router mounting, service initialization
-- `backend/redis_fallback.py` (98 lines) - Cache abstraction, fallback logic, singleton pattern
-- `backend/mindfolios.py` (1133 lines) - FIFO algorithm, position calculation, transaction tracking
-- `backend/services/builder_engine.py` - Options strategy engine (54+ strategies, Greeks)
-- `backend/services/quality.py` - Spread quality scoring (liquidity, spread width, risk metrics)
-- `backend/unusual_whales_service_clean.py` - UW API service with ALL 17 verified endpoints
-- `frontend/src/App.js` (250 lines) - React app entry, dark theme provider, routing
-- `DARK_THEME_ONLY_VALIDATION.md` - Dark theme migration details and validation results
-- `DEVELOPMENT_GUIDELINES.md` - Romanian workflow rules (iterative, feedback-driven)
-- `UW_API_FINAL_17_ENDPOINTS.md` - Complete UW API reference (18KB, all 17 patterns with examples)
-- `UW_API_DISCOVERY_COMPLETE.md` - Discovery task summary (150+ tests, final results)
+**Pattern:** `BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "http://localhost:8000")`
 
 ---
-**When in doubt:** Check `redis_fallback.py` for cache patterns, `mindfolios.py` for FIFO logic, `server.py` for router organization, `unusual_whales_service_clean.py` for UW API patterns, and root `*_test.py` files for integration test examples.
 
-### MongoDB Collections
+## Naming Conventions
 
-**Note**: FlowMind uses **Redis** for primary storage with optional MongoDB for persistence. Schema defined in `backend/mindfolios.py`.
+- **Services:** `*_service.py` (e.g., `unusual_whales_service.py`)
+- **Routers:** `backend/routers/*.py` OR `backend/app/routers/*.py`
+- **AI Agents:** `*_agent.py` (e.g., `investment_scoring_agent.py`)
+- **Integration Tests:** Root `*_test.py` (e.g., `backend_test.py`)
+- **Unit Tests:** `backend/tests/test_*.py`
 
-#### Mindfolio Model
-```python
-{
-  "id": "uuid-string",
-  "name": "My Trading Mindfolio",
-  "cash_balance": 10000.0,
-  "status": "ACTIVE",  # ACTIVE, PAUSED, CLOSED
-  "modules": [
-    {
-      "module": "IV_SERVICE",
-      "budget": 5000.0,
-      "max_risk_per_trade": 500.0,
-      "daily_loss_limit": 1000.0,
-      "autotrade": false
-    }
-  ],
-  "created_at": "2025-10-13T14:30:00Z",
-  "updated_at": "2025-10-13T14:30:00Z"
-}
-```
+---
 
-#### Transaction Model (FIFO-based)
-```python
-{
-  "id": "uuid-string",
-  "mindfolio_id": "mindfolio-uuid",
-  "account_id": "optional-account-id",
-  "datetime": "2025-10-13T14:30:00Z",
-  "symbol": "TSLA",
-  "side": "BUY",  # BUY or SELL
-  "qty": 100.0,
-  "price": 250.50,
-  "fee": 1.0,
-  "currency": "USD",
-  "notes": "Opening position",
-  "created_at": "2025-10-13T14:30:00Z"
-}
-```
+## Critical Environment Variables
 
-#### Position Model (Computed from Transactions)
-```python
-{
-  "symbol": "TSLA",
-  "qty": 100.0,
-  "cost_basis": 25051.0,  # Total cost including fees
-  "avg_cost": 250.51,     # cost_basis / qty
-  "unrealized_pnl": 125.0,  # Requires market price
-  "market_value": 25175.0   # Requires market price
-}
-```
-
-### Redis Key Patterns
-
-FlowMind uses Redis with TTL-based caching and fallback to in-memory storage:
-
-```python
-# Mindfolio data
-pf:{mindfolio_id}                    # Mindfolio object
-pf:list                              # List of all mindfolio IDs
-pf:{mindfolio_id}:stats              # Mindfolio statistics
-pf:{mindfolio_id}:transactions       # List of transaction IDs
-pf:{mindfolio_id}:positions          # Current positions
-
-# Transactions
-tx:{transaction_id}                  # Transaction object
-
-# Cache keys (from redis_fallback.py)
-flow:summary:{limit}                 # Flow summary (TTL: 60s)
-bt:{strategy_hash}                   # Backtest results (TTL: 300s)
-chain:{symbol}:{expiry}              # Options chain (TTL: 60s)
-```
-
-### SQLite Schema (Alternative Storage)
-
-For deployments without Redis, FlowMind supports SQLite (`backend/database.py`):
-
-```sql
--- Core tables
-CREATE TABLE mindfolios (
-  id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  base_currency TEXT DEFAULT 'USD',
-  created_at TEXT DEFAULT (datetime('now'))
-);
-
-CREATE TABLE accounts (
-  id INTEGER PRIMARY KEY,
-  mindfolio_id INTEGER NOT NULL,
-  name TEXT NOT NULL,
-  broker TEXT,
-  currency TEXT DEFAULT 'USD',
-  FOREIGN KEY (mindfolio_id) REFERENCES mindfolios(id)
-);
-
-CREATE TABLE transactions (
-  id INTEGER PRIMARY KEY,
-  account_id INTEGER NOT NULL,
-  datetime TEXT NOT NULL,
-  symbol TEXT NOT NULL,
-  side TEXT CHECK (side IN ('BUY','SELL')),
-  qty REAL NOT NULL,
-  price REAL NOT NULL,
-  fee REAL DEFAULT 0,
-  currency TEXT DEFAULT 'USD',
-  notes TEXT,
-  FOREIGN KEY (account_id) REFERENCES accounts(id)
-);
-
--- Indexes for performance
-CREATE INDEX idx_tx_account ON transactions(account_id);
-CREATE INDEX idx_tx_symbol ON transactions(symbol);
-CREATE INDEX idx_tx_datetime ON transactions(datetime);
-```
-
-### FIFO Position Calculation
-
-**Critical Algorithm** (`backend/mindfolios.py`):
-```python
-# Positions calculated from transactions using FIFO (First-In-First-Out)
-# BUY: Add to lots queue
-# SELL: Consume lots from front of queue
-# Realized P&L = (sell_price - buy_price) * qty per consumed lot
-```
-
-**Example Flow**:
-1. BUY 100 TSLA @ $250 → Lot: [100 @ $250]
-2. BUY 50 TSLA @ $260 → Lots: [100 @ $250, 50 @ $260]
-3. SELL 120 TSLA @ $270 → Consume 100 @ $250 + 20 @ $260
-4. Realized P&L: (270-250)*100 + (270-260)*20 = $2200
-5. Remaining: [30 @ $260]
-
-### Storage Strategy
-
-- **Development**: Redis with `FM_FORCE_FALLBACK=1` → In-memory `AsyncTTLDict`
-- **Testing**: `TEST_MODE=1` → Shared in-memory instance
-- **Production**: Redis cluster with MongoDB backup for audit trail
-- **Failover**: Automatic fallback to in-memory if Redis unavailable
-
-## �🔑 Critical Developer Knowledge
-
-### 1. Options Strategy Engine
-
-**Builder System** (`backend/services/builder_engine.py`):
-- Supports 54+ options strategies (calls, puts, spreads, condors, butterflies, iron condors)
-- Multi-leg position construction with Greeks calculation (Delta, Gamma, Theta, Vega)
-- Pricing endpoint: `POST /api/builder/price` accepts legs array with strike/expiration/type
-- Quality scoring: `backend/services/quality.py` evaluates spread quality, risk metrics
-
-**Frontend Builder** (`frontend/src/pages/BuilderPage.jsx`):
-- Debounced pricing updates (500ms) to avoid API spam
-- Interactive P&L charts via Plotly.js
-- Strike rail visualization component (StrikeRailPro)
-- Historical backtesting via `POST /api/builder/historical`
-
-### 2. External API Integration Patterns
-
-**TradeStation OAuth Flow**:
-```python
-# backend/tradestation_auth.py or app/routers/tradestation_auth.py
-# Robust token management with refresh logic
-# Environment: TS_CLIENT_ID, TS_CLIENT_SECRET, TS_REDIRECT_URI
-# Modes: SIMULATION (sim-api.tradestation.com) vs LIVE (api.tradestation.com)
-
-# OAuth Callback endpoints:
-# Primary: /api/oauth/tradestation/callback (app/routers/oauth.py)
-# Legacy: /api/ts/callback (app/routers/tradestation_auth.py)
-
-# IMPORTANT: Callback URLs must be configured in TradeStation Developer Portal
-# SIMULATOR: HTTP allowed (e.g., http://localhost:8000/api/oauth/tradestation/callback)
-# LIVE: HTTPS required (e.g., https://flowmind.com/api/oauth/tradestation/callback)
-```
-
-**Unusual Whales Service** (`backend/unusual_whales_service.py`):
-- **Plan:** API - Advanced ($375/month) - Token: `5809ee6a-bcb6-48ce-a16d-9f3bd634fd50`
-- **Auth:** `Authorization: Bearer {token}` header (NOT query param)
-- **Base URL:** `https://api.unusualwhales.com/api`
-- **Rate limiting:** 1.0s delay between requests (graceful degradation)
-
-⚠️ **CRITICAL: AI HALLUCINATION PROBLEM** ⚠️
-Many UW API endpoints found online are **AI-generated hallucinations** that don't exist!
-**ONLY use the 12 verified endpoints below** - everything else returns 404.
-
-**✅ VERIFIED Working Endpoints** (12 total, tested Oct 21, 2025):
-```python
-# 1. Options Chain (500+ contracts with volume, OI, IV, premiums, sweep volume)
-GET /stock/{ticker}/option-contracts
-# Use: Replace TradeStation options chain, spread builder, unusual activity
-
-# 2. Gamma Exposure (345+ GEX records with pre-calculated gamma/charm/vanna)
-GET /stock/{ticker}/spot-exposures
-# Use: Direct GEX data - NO calculation needed, GEX charts
-
-# 3. Stock Info (company metadata, earnings, sector, market cap)
-GET /stock/{ticker}/info
-# Use: Stock screening, earnings calendar, sector analysis
-
-# 4. Market Alerts (real-time tide events, premium flows)
-GET /alerts
-# Filter by noti_type: "market_tide"
-# Use: Market sentiment, flow alerts, unusual activity
-
-# 5. Greeks (Delta, Gamma, Theta, Vega - currently empty but accessible)
-GET /stock/{ticker}/greeks
-# Use: Mindfolio Greeks, risk management
-
-# 6. Options Volume (volume metrics, call/put ratios)
-GET /stock/{ticker}/options-volume
-# Use: Volume analysis, unusual activity detection
-
-# 7. Stock Screener (comprehensive stock metrics with GEX, IV, Greeks)
-GET /screener/stocks?limit=10
-# Use: Stock discovery, GEX-based filtering, IV analysis
-
-# 8. All Insider Trades
-GET /insider/trades
-# Use: Market-wide insider activity monitoring
-
-# 9. Ticker-Specific Insider Trades
-GET /insider/{ticker}
-# Use: Company-specific insider sentiment
-
-# 10. Recent Insider Trades
-GET /insider/recent
-# Use: Real-time insider activity feed
-
-# 11. Ticker-Specific Dark Pool (500 trades per ticker!)
-GET /darkpool/{ticker}
-# Use: Dark pool flow analysis, institutional tracking
-
-# 12. Recent Dark Pool Trades
-GET /darkpool/recent
-# Use: Market-wide dark pool monitoring
-```
-
-**❌ HALLUCINATED Endpoints (DO NOT USE - confirmed 404s):**
-```python
-# These were suggested by AI but DON'T EXIST:
-❌ /api/flow-alerts                → Use /alerts instead
-❌ /api/stock/{ticker}/last-state  → Use /option-contracts instead
-❌ /api/stock/{ticker}/ohlc        → Not available on Advanced plan
-❌ /api/market/tide                → Use /alerts?noti_type=market_tide
-❌ /api/stock/{ticker}/quote       → Use /stock/{ticker}/info
-❌ /api/options-flow               → NEVER existed
-❌ /api/market/overview            → NEVER existed
-❌ /api/stock/{ticker}/gamma-exposure → Use /spot-exposures
-❌ /api/congress/trades            → Not available
-❌ /api/stock/{ticker}/darkpool    → Use /darkpool/{ticker}
-```
-
-**Implementation Pattern:**
-```python
-# CORRECT (verified working):
-response = await uw_service.get_option_contracts("TSLA")  # ✅ Returns 500+ contracts
-response = await uw_service.get_spot_exposures("TSLA")    # ✅ Returns 345+ GEX records
-response = await uw_service.get_darkpool_ticker("TSLA")   # ✅ Returns 500 darkpool trades
-response = await uw_service.get_screener_stocks(limit=10) # ✅ Returns stocks with GEX/IV
-
-# WRONG (hallucinated endpoints):
-response = await uw_service.get_flow_alerts("TSLA")  # ❌ 404 error
-response = await uw_service.get_market_overview()    # ❌ 404 error
-```
-
-**Reference:** See `UW_API_COMPLETE_DOCUMENTATION.md` for complete documentation with all 12 endpoints and examples.  
-**Clean implementation:** See `backend/unusual_whales_service_clean.py` (hallucination-free version with all 12 methods)
-
-### 3. Testing Philosophy
-
-**Root-level test files** (`*_test.py`): Integration tests against deployed backend
-- Pattern: `BACKEND_URL = os.getenv("REACT_APP_BACKEND_URL", "https://...")`
-- Tests verify **real API responses**, not mocks
-- Common test flow: Make request → Verify status → Check structure → Validate data
-
-**Backend unit tests** (`backend/tests/`): Pytest-based with fixtures
-- In-memory fallback mode: Set `TEST_MODE=1` env var for shared `AsyncTTLDict` instance
-- Redis cache tests: `test_backtest_cache.py` uses shared `_test_kv_instance`
-
-### 4. Quality Gates & Pre-commit
-
-**GitLab CI Pipeline** (`.gitlab-ci.yml`):
-- **Frontend**: ESLint, build, `npm audit --audit-level=high`
-- **Backend**: ruff (lint), mypy (types), bandit (security), pip-audit, pytest
-- **SAST**: GitLab security templates (dependency scanning, container scanning)
-- **Strictness**: Zero tolerance on high-severity issues (`SEC_MAX_CRITICAL=0`)
-
-**Local Pre-commit Hooks**:
 ```bash
-cd backend && pre-commit install
-cd frontend && npx husky install
+# Backend (backend/.env)
+REDIS_URL=redis://localhost:6379/0
+FM_FORCE_FALLBACK=1              # Force in-memory cache
+FM_REDIS_REQUIRED=1              # Fail if Redis unavailable
+TEST_MODE=1                      # Shared in-memory for tests
+MONGO_URL=mongodb://...
+TS_CLIENT_ID/TS_CLIENT_SECRET/TS_REDIRECT_URI
+UW_API_TOKEN or UNUSUAL_WHALES_API_KEY
 
-# Run manually:
-cd backend && pre-commit run --all-files
-cd frontend && npm run lint
-bandit -ll -r . && pip-audit --strict            # Security
+# Frontend (frontend/.env.local)
+REACT_APP_BACKEND_URL=http://localhost:8000  # NEVER hardcode!
 ```
 
-**Frontend**:
-```bash
-cd frontend
-npm run lint                                      # ESLint
-npm run build                                     # Production build
-npm audit --audit-level=high                     # Dependency audit
-```
+---
 
-**Integration Tests** (from root):
-```bash
-python backend_test.py           # Full backend API test suite
-python options_backend_test.py   # Options-specific tests
-python tradestation_integration_test.py  # TradeStation OAuth flow
-```
+## Common Pitfalls
 
-## 🎨 Code Conventions
+1. **Redis confusion:** Always `from redis_fallback import get_kv`, never direct Redis imports
+2. **Dark theme violations:** Never use `isDarkMode ?` ternaries or light classes
+3. **URL hardcoding:** Frontend must use `process.env.REACT_APP_BACKEND_URL`
+4. **UW API hallucinations:** Only use 17 verified endpoints in `unusual_whales_service_clean.py`
+5. **Indentation:** Must be 4-space (Python 3.12 strict enforcement)
+6. **FIFO integrity:** Never modify positions - always add transactions and recompute
+7. **TradeStation OAuth:** 60-day refresh cycle, callback URLs must match portal config
 
-### API Response Structure
+---
 
-**Standard Success**:
-```json
-{"status": "success", "data": {...}}
-```
+## Key Files Reference
 
-**Error Handling**:
-```python
-raise HTTPException(status_code=400, detail="Descriptive error message")
-```
+**Architecture:**
+- `backend/server.py` (972 lines) - Main FastAPI app, router mounting
+- `backend/redis_fallback.py` (96 lines) - Cache abstraction, fallback logic
+- `backend/mindfolios.py` (1133 lines) - FIFO algorithm, position tracking
+- `frontend/src/App.js` (250 lines) - React entry, dark theme, routing
 
-### Router Organization
+**Services:**
+- `backend/services/builder_engine.py` - 54+ strategies, Greeks
+- `backend/services/quality.py` - Spread quality scoring
+- `backend/unusual_whales_service_clean.py` - 17 verified UW endpoints
 
-- Use `APIRouter` with prefix and tags: `router = APIRouter(prefix="/api/options", tags=["options"])`
-- Mount routers in `server.py` with `/api` prefix
-- Health checks at top-level: `/health`, `/healthz`, `/readyz`
+**Documentation:**
+- `PROJECT_TASKS.md` - Task tracker (1537 lines, 6-month roadmap)
+- `DEVELOPMENT_GUIDELINES.md` - Romanian workflow rules
+- `UW_API_FINAL_17_ENDPOINTS.md` - Complete UW API reference
+- `PYTHON312_INDENT_PROJECT_COMPLETE.md` - Indentation fix history
+- `DARK_THEME_ONLY_VALIDATION.md` - Dark theme migration details
 
-### Frontend State Management
+**CI/CD:**
+- `.gitlab-ci.yml` (475 lines) - Security gates, SAST, dependency scanning
+- `backend/pyproject.toml` - Ruff config (E4/E7/E9/F errors only)
+- `backend/.pre-commit-config.yaml` - Pre-commit hooks
 
-- **Zustand stores** (`frontend/src/stores/`): Global state (user, mindfolios)
-- **React hooks** for local state
-- **SWR** (`swr` package) for data fetching with caching
+---
 
-## 📚 Key Files to Reference
+## API Endpoints Quick Reference
 
-- **Architecture docs**: `FlowMind_Options_Module_Blueprint.md`, `PLATFORM_GUIDE.md`
-- **Security/CI**: `ENTERPRISE_SECURITY_GATES.md`, `QUALITY_GATES.md`, `.gitlab-ci.yml`
-- **API documentation**: `TRADESTATION_SETUP_GUIDE.md`, `UW_API_PRO_TIER_DOCUMENTATION.md`
-- **Development guidelines**: `DEVELOPMENT_GUIDELINES.md` (Romanian - iterative workflow rules)
+### Builder (`/api/builder`)
+- `POST /price` - Calculate strategy pricing & Greeks
+- `POST /historical` - Backtest strategy over time
 
-## 🔄 When Making Changes
+### Options (`/api/options`)
+- `GET /chain?symbol=TSLA&expiry=2025-11-15` - Options chain
+- `GET /expirations?symbol=TSLA` - Available expirations
+- `GET /gex?symbol=TSLA&dte=30` - Gamma Exposure
+- `GET /spot/{symbol}` - Current stock price
 
-1. **Backend API changes**: Update corresponding integration test in `*_test.py`
-2. **New dependencies**: Update `requirements.txt` (backend) or `package.json` (frontend), run audits
-3. **External API integration**: Add client in `integrations/`, follow `ts_client.py` pattern
-4. **New routes**: Add router in `routers/`, mount in `server.py`, add health check
-5. **Frontend features**: Follow page-based organization (`pages/`), use existing API patterns
+### Flow (`/api/flow`)
+- `GET /summary?limit=24&minPremium=25000` - Flow summary
+- `GET /live?symbol=TSLA` - Real-time flow
+- `GET /historical?symbol=TSLA&days=7` - Historical flow
 
-## � API Endpoints Reference
+### Mindfolio (`/api/mindfolios`)
+- `GET /` - List all mindfolios
+- `POST /` - Create mindfolio
+- `GET /{id}` - Get details
+- `PATCH /{id}` - Update
+- `DELETE /{id}` - Delete
 
-### Builder Endpoints (`/api/builder`)
+---
 
-**POST /api/builder/price** - Calculate strategy pricing & Greeks
-```json
-Request:
-{
-  "symbol": "TSLA",
-  "expiry": "2025-02-21",
-  "legs": [
-    {"type": "CALL", "strike": 250, "side": "BUY", "qty": 1}
-  ],
-  "spot": 250.0,
-  "iv_mult": 1.0,
-  "range_pct": 0.15,
-  "dte": 30
-}
+## When Making Changes
 
-Response:
-{
-  "maxProfit": 5000.0,
-  "maxLoss": -250.0,
-  "breakevens": [252.5],
-  "greeks": {
-    "delta": 0.55,
-    "gamma": 0.03,
-    "theta": -0.15,
-    "vega": 0.25
-  },
-  "pnlData": [[240, -250], [250, 0], [260, 750], ...],
-  "quality": {
-    "score": 75,
-    "buckets": {"spread": 0.1, "liquidity": 0.8},
-    "flags": ["tight_spread", "good_liquidity"]
-  }
-}
-```
+1. **Backend API:** Update integration test in root `*_test.py`
+2. **Dependencies:** Update `requirements.txt`/`package.json`, run audits
+3. **External API:** Add client in `integrations/`, follow `ts_client.py` pattern
+4. **New routes:** Add router in `routers/`, mount in `server.py`
+5. **Frontend features:** Follow page-based organization in `pages/`
+6. **Tasks:** Update `PROJECT_TASKS.md` checkboxes
 
-**POST /api/builder/historical** - Backtest strategy over time
-```json
-Request:
-{
-  "legs": [{"type": "CALL", "strike": 250, "side": "BUY", "qty": 1}],
-  "symbol": "TSLA",
-  "daysBack": 365
-}
+---
 
-Response:
-{
-  "dates": ["2024-10-13", "2024-10-14", ...],
-  "pnl": [125.50, 150.75, ...],
-  "spot_prices": [248.5, 252.0, ...]
-}
-```
-
-### Options Endpoints (`/api/options`)
-
-**GET /api/options/chain?symbol=TSLA&expiry=2025-11-15** - Options chain data
-```json
-Response:
-{
-  "symbol": "TSLA",
-  "spot": 250.5,
-  "expirations": ["2025-11-15", "2025-11-22", ...],
-  "strikes": [
-    {
-      "strike": 250,
-      "calls": {"bid": 5.20, "ask": 5.40, "mid": 5.30, "iv": 0.42, "oi": 2500, "volume": 850},
-      "puts": {"bid": 4.80, "ask": 5.00, "mid": 4.90, "iv": 0.45, "oi": 3200, "volume": 650}
-    },
-    ...
-  ]
-}
-```
-- Fallback to demo data if TradeStation unavailable
-- Use `dev=1` query param to force demo mode
-- Demo data: 13 strikes (ATM ±6 × $5 steps)
-
-**GET /api/options/expirations?symbol=TSLA** - Available expiration dates
-```json
-Response:
-{
-  "expirations": [
-    "2025-10-20",
-    "2025-10-27",
-    "2025-11-03",
-    ...
-  ]
-}
-```
-
-**GET /api/options/gex?symbol=TSLA&dte=30** - Gamma Exposure calculation
-```json
-Response:
-{
-  "symbol": "TSLA",
-  "total_gex": 125000000,
-  "call_gex": 85000000,
-  "put_gex": 40000000,
-  "strikes": [
-    {"strike": 240, "gex": 5000000, "oi": 15000},
-    {"strike": 250, "gex": 25000000, "oi": 35000},
-    ...
-  ],
-  "zero_gamma_level": 248.5
-}
-```
-- Alternative: Use `expiry=2025-11-15` instead of `dte`
-
-**GET /api/options/spot/TSLA** - Current stock price
-```json
-Response:
-{
-  "symbol": "TSLA",
-  "price": 250.75,
-  "timestamp": "2025-10-13T14:30:00Z",
-  "source": "TradeStation"
-}
-```
-
-**GET /api/options/provider/status** - Check data provider health
-```json
-Response:
-{
-  "provider": "TradeStation",
-  "status": "connected",
-  "mode": "live",
-  "last_update": "2025-10-13T14:30:00Z"
-}
-```
-
-### Flow Endpoints (`/api/flow`)
-
-**GET /api/flow/summary?limit=24&minPremium=25000** - Options flow summary
-```json
-Response:
-{
-  "timestamp": "2025-10-13T14:30:00Z",
-  "items": [
-    {
-      "symbol": "TSLA",
-      "bull_premium": 450000,
-      "bear_premium": 280000,
-      "net_premium": 170000,
-      "trades": 15,
-      "sweeps_pct": 0.42,
-      "blocks_pct": 0.18
-    },
-    ...
-  ],
-  "source": "UnusualWhales"
-}
-```
-- Default `limit=24`, `minPremium=25000`
-- Graceful fallback to demo data if UW API fails
-
-**GET /api/flow/live?symbol=TSLA&minPremium=25000** - Live options flow
-```json
-Response:
-{
-  "symbol": "TSLA",
-  "rows": [
-    {
-      "timestamp": "2025-10-13T14:28:45Z",
-      "strike": 250,
-      "expiry": "2025-11-15",
-      "kind": "CALL",
-      "side": "BUY",
-      "quantity": 500,
-      "price": 5.30,
-      "premium": 265000,
-      "is_sweep": true,
-      "builder_link": "/builder?symbol=TSLA&strike=250&expiry=2025-11-15&type=call"
-    },
-    ...
-  ]
-}
-```
-- Real-time if `UW_LIVE=1` env var set
-- Includes deep-links to Builder for one-click strategy creation
-- Falls back to demo data for testing
-
-**GET /api/flow/historical?symbol=TSLA&days=7** - Historical flow data
-```json
-Response:
-{
-  "symbol": "TSLA",
-  "start_date": "2025-10-06",
-  "end_date": "2025-10-13",
-  "daily_summary": [
-    {
-      "date": "2025-10-13",
-      "total_premium": 5250000,
-      "bull_premium": 3200000,
-      "bear_premium": 2050000,
-      "trade_count": 142
-    },
-    ...
-  ]
-}
-```
-- Use `days=7` for lookback or `start`/`end` (ISO format)
-
-**GET /api/flow/news?symbol=TSLA** - Market news
-**GET /api/flow/congress?symbol=TSLA** - Congress trades
-**GET /api/flow/insiders?symbol=TSLA** - Insider activity
-```json
-Response (news example):
-{
-  "symbol": "TSLA",
-  "items": [
-    {
-      "timestamp": "2025-10-13T12:00:00Z",
-      "headline": "Tesla Q3 Earnings Beat Estimates",
-      "source": "Bloomberg",
-      "sentiment": "positive",
-      "url": "https://..."
-    },
-    ...
-  ]
-}
-```
-- All use Unusual Whales API
-- Optional `symbol` filter (omit for all symbols)
-
-### Optimize Endpoints (`/api/optimize`)
-
-**GET /api/optimize/suggest?symbol=TSLA&sentiment=bullish&dte=30** - Strategy recommendations
-```
-Params:
-- symbol: Stock ticker
-- sentiment: bullish/bearish/neutral
-- target_price: Optional price target
-- budget: Max capital (USD)
-- dte: Days to expiration
-- risk_bias: 0 (balanced), negative (conservative), positive (aggressive)
-```
-```json
-Response:
-{
-  "symbol": "TSLA",
-  "current_price": 250.5,
-  "sentiment": "bullish",
-  "recommendations": [
-    {
-      "strategy_name": "Bull Call Spread",
-      "strategy_id": "bull-call-spread",
-      "legs": [
-        {"type": "CALL", "strike": 250, "side": "BUY", "qty": 1},
-        {"type": "CALL", "strike": 270, "side": "SELL", "qty": 1}
-      ],
-      "expected_return": 0.45,
-      "max_risk": 500,
-      "max_profit": 1500,
-      "probability_profit": 0.62,
-      "capital_required": 500
-    },
-    ...
-  ]
-}
-```
-
-### Mindfolio Endpoints (`/api/mindfolios`)
-
-**GET /api/mindfolios** - List all mindfolios
-**POST /api/mindfolios** - Create mindfolio
-**GET /api/mindfolios/{id}** - Get mindfolio details
-**PATCH /api/mindfolios/{id}** - Update mindfolio
-**DELETE /api/mindfolios/{id}** - Delete mindfolio
-
-MongoDB-backed, includes positions and performance tracking.
-
-### Health Endpoints
-
-**GET /health** - Basic health check
-**GET /healthz** - Kubernetes-style health
-**GET /readyz** - Readiness probe (checks dependencies)
-
-## �💡 Pro Tips
-
-- **Debugging API calls**: Check `backend/server.py` startup logs for integration client status
-- **Mock data fallback**: Most services gracefully return demo data on API failures
-- **Performance**: Use Redis for production, in-memory for dev/test (via `FM_FORCE_FALLBACK`)
-- **Options pricing**: Black-Scholes implementation in `backend/services/bs.py` (if exists) or strategy engine
-- **Chart issues**: Frontend BuilderPage debounces pricing at 500ms, increase if API slow
-- **Testing endpoints**: All integration tests in root `*_test.py` files use `REACT_APP_BACKEND_URL` env var
+**When in doubt:** Check `redis_fallback.py` for cache patterns, `mindfolios.py` for FIFO logic, `server.py` for router organization, `unusual_whales_service_clean.py` for UW API patterns.
