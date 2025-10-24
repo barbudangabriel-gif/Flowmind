@@ -1,17 +1,19 @@
 # FlowMind AI Agent Instructions
 
 **Project:** Options analytics platform with FastAPI backend, React 19 frontend  
-**Last Updated:** October 23, 2025
+**Last Updated:** October 24, 2025
 
 ---
 
 ## 📋 Table of Contents
 1. [Session Start Protocol](#session-start-protocol)
 2. [Architecture Patterns](#architecture-patterns)
-3. [Developer Workflows](#developer-workflows)
-4. [External APIs](#external-apis)
-5. [Common Pitfalls](#common-pitfalls)
-6. [Key Files](#key-files)
+3. [BuilderV2 Page - Build Tab](#builderv2-page---build-tab)
+4. [Strategy Engine Proposal](#strategy-engine-proposal)
+5. [Developer Workflows](#developer-workflows)
+6. [External APIs](#external-apis)
+7. [Common Pitfalls](#common-pitfalls)
+8. [Key Files](#key-files)
 
 ---
 
@@ -143,10 +145,160 @@ GET /earnings/week                     # This week's earnings
 
 ---
 
+## BuilderV2 Page - Build Tab
+
+### Overview (Oct 24, 2025)
+**Status:** ✅ Complete interactive P&L chart with optimized layout  
+**File:** `frontend/src/pages/BuilderV2Page.jsx` (1538 lines)  
+**Purpose:** Unified builder interface with Build/Optimize/Strategy/Flow tabs
+
+### Build Tab - Interactive P&L Chart
+Full-width SVG chart (1000x400px responsive) for Long Call strategy visualization.
+
+**Chart Specifications:**
+- **Dimensions:** viewBox="0 0 1000 400", preserveAspectRatio="none"
+- **Price Range:** $100-$330 (230 points, extended loss zone)
+- **P&L Range:** -$5,000 to $12,000 (smoother profit angle)
+- **Padding:** { top: 20, right: 1, bottom: 40, left: 70 }
+- **Colors:** Profit (cyan #06b6d4), Loss (red #dc2626), gradients 0.85 opacity
+
+**Features:**
+✅ Real-time mouse tracking with coordinate transformation  
+✅ Tooltip follows P&L curve with dynamic positioning  
+✅ Price label at top margin, P&L value with colored dot on curve  
+✅ Vertical white line tracking mouse X position  
+✅ Current price line (white dashed), breakeven line (cyan), chance line (orange)  
+✅ Compact metrics row (Net Debit, Max Loss/Profit, Chance, Breakeven)
+
+**Chart Optimization Techniques (Learned from Oct 24 session):**
+1. **Extend loss zone:** Reduce xMin (140 → 100) to push profit curve right
+2. **Smooth profit angle:** Increase yMax (7000 → 12000) for gentler slope
+3. **Maximize width:** Reduce padding.right (10 → 1px) for 99% fill
+4. **Raise chart area:** Reduce padding.bottom (60 → 40px) to separate from X-axis
+5. **Tooltip positioning:** Use percentage-based calc: `(viewBoxX / 1000) * 100%`
+
+**Interactive Tooltip Implementation:**
+```javascript
+// Mouse tracking with viewBox coordinate transformation
+onMouseMove={(e) => {
+  const rect = svg.getBoundingClientRect();
+  const viewBoxX = (e.clientX - rect.left) * (1000 / rect.width);
+  const price = xMin + ((viewBoxX - padding.left) / chartWidth) * xRange;
+  const pnl = price < strike ? -premium : (price - strike) * 100 - premium;
+  setTooltip({ show: true, x: e.clientX, y: e.clientY, viewBoxX, price, pnl });
+}}
+
+// Tooltip follows curve (not fixed top/bottom)
+<div style={{
+  left: `${(viewBoxX / 1000) * 100}%`,
+  top: `${(scaleY(pnl) / 400) * 100}%`,
+  transform: 'translate(10px, -50%)'
+}}>
+```
+
+**Next Steps (Pending Implementation):**
+- [ ] Layer system: Table, Graph, P/L, Greeks tabs with button switching
+- [ ] Strategy Card → Build Tab integration (state transfer)
+- [ ] Backend connection for live TradeStation options data
+- [ ] Dynamic strategy switching (currently hardcoded Long Call)
+- [ ] Universal Strategy Engine (see Strategy Engine Proposal section)
+
+---
+
+## Strategy Engine Proposal
+
+### Problem: Manual Approach = 34,500 Lines
+Building 69 strategies manually would require:
+- 69 strategies × 500 lines each = **34,500 lines of code**
+- Separate components for StrategyCard (360x180) and Build Tab (1000x400)
+- Duplicate P&L logic, chart rendering, Greeks calculations
+- Maintenance nightmare (color change = update 69 files)
+
+**User quote:** "cum crezi ca vom reusi noi sa facem cardurile pentru toate 69 de strategii si functionalitatea de open in builder sa vina in builder cu alte dimensiuni? una cate una ca imbatranim?"
+
+### Solution: Generative System = 2,550 Lines (93% reduction)
+
+**Architecture:**
+```
+strategies.json (1500 lines)
+    ↓ defines 69 strategies declaratively
+StrategyEngine.js (500 lines)
+    ↓ universal P&L calculator + Greeks
+StrategyChart.jsx (400 lines)
+    ↓ single component, card OR full size
+UniversalStrategyCard.jsx (150 lines)
+    ↓ reusable wrapper with "Open in Builder"
+```
+
+**Key Components:**
+
+1. **strategies.json** - Declarative config
+```json
+{
+  "long_call": {
+    "name": "Long Call",
+    "legs": [{ "type": "call", "action": "buy", "quantity": 1 }],
+    "pnl_formula": {
+      "below_strike": "-premium",
+      "above_strike": "(price - strike) * 100 - premium"
+    },
+    "breakeven": "strike + (premium / 100)",
+    "max_profit": "unlimited",
+    "max_loss": "premium"
+  }
+}
+```
+
+2. **StrategyEngine.js** - Universal calculator
+```javascript
+class StrategyEngine {
+  generatePnLCurve(priceMin, priceMax, step = 1) {
+    // Parse formula from config, calculate P&L for each price
+  }
+  calculateGreeks(currentPrice, volatility, daysToExpiry) {
+    // Black-Scholes for each leg, sum results
+  }
+  calculateBreakeven() {
+    // Evaluate breakeven formula with variable substitution
+  }
+}
+```
+
+3. **StrategyChart.jsx** - Size-responsive component
+```javascript
+<StrategyChart 
+  strategyId="long_call"
+  size="card"     // 360x180 for Optimize tab
+  size="full"     // 1000x400 for Build tab
+/>
+```
+
+**Benefits:**
+✅ Add new strategy: 30 lines JSON (not 500 lines React)  
+✅ Color change: Update once, all 69 strategies inherit  
+✅ Backend reusable: Same engine for API calculations  
+✅ Consistent visuals: Same gradients, tooltips, animations
+
+**Implementation Plan:** 4 phases, 4 weeks (vs. 6 months manual)  
+**Full details:** See `STRATEGY_ENGINE_PROPOSAL.md`
+
+---
+
 ## External APIs
 
+### Unusual Whales API Integration
+**Status:** ✅ 17 verified endpoints operational (Oct 21, 2025)  
+**Service:** `backend/unusual_whales_service_clean.py`
+
+**Flow Data Integration:**
+- **Options Flow:** Used in BuilderV2 Flow tab for real-time flow monitoring
+- **Dark Pool:** 500 trades per ticker for institutional activity tracking
+- **Insider Trading:** 5 endpoints for corporate insider buys/sells
+- **Market Screening:** Unified GEX+IV+Greeks for strategy discovery
+
 ### TradeStation OAuth & API Integration
-**COMPLETE WORKING SOLUTION (Oct 23, 2025)**
+**✅ COMPLETE WORKING SOLUTION (Oct 23-24, 2025)**  
+**Status:** Connected and operational in LIVE mode with real accounts
 
 #### Configuration (.env)
 ```bash
@@ -225,7 +377,19 @@ Response: {"Balances": [{"CashBalance": "...", "BuyingPower": "...", ...}]}
 # Positions (real-time P&L)
 GET /api/tradestation/accounts/{account_id}/positions
 Response: {"Positions": [{"Symbol": "TSLA", "Quantity": 100, "UnrealizedProfitLoss": "11281.97", ...}]}
+
+# Options Chain (NEW - Oct 24, 2025)
+GET /api/tradestation/options/chains/{symbol}?strikeCount=10
+Response: {"Expirations": [...], "Strikes": [...], "Calls": [...], "Puts": [...]}
 ```
+
+#### Connection Status (Oct 24, 2025)
+✅ **OAuth Flow:** Fully functional with 2FA authentication  
+✅ **Token Persistence:** Survives backend restarts via Redis cache  
+✅ **Live Accounts:** Connected to real TradeStation accounts (11775499, 210MJP11)  
+✅ **Options Data:** Access to real-time options chains, strikes, premiums  
+✅ **Real-time Positions:** Live P&L tracking for stocks and options  
+✅ **Account Balances:** Cash balance, buying power, equity values
 
 #### Authentication Header
 All endpoints require: `X-User-ID: default` (or custom user_id)
