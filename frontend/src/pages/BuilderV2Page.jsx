@@ -31,8 +31,10 @@
  * - Same P&L curve, colors, axes, but scaled up
  */
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Hammer, Target, BookOpen, TrendingUp, TrendingDown, ChevronDown, Search, RefreshCw, ArrowUp, ArrowDown, Minus, ArrowUpDown, ArrowUpCircle, ArrowDownCircle, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import StrategyCard from '../components/StrategyCard';
+import StrategyChart from '../components/StrategyChart';
 import StrategyLibraryPage from './StrategyLibraryPage';
 import BuilderPage from './BuilderPage';
 import FlowPage from './FlowPage';
@@ -43,6 +45,7 @@ import LiveFlow from './Flow/LiveFlow';
 import LiveLitTradesFeed from './LiveLitTradesFeed';
 import LiveOffLitTradesFeed from './LiveOffLitTradesFeed';
 import { FiltersPanel } from '../components/FiltersPanel';
+import StrategyEngine from '../services/StrategyEngine';
 
 // Custom slider styles
 const sliderStyles = `
@@ -116,7 +119,9 @@ const sliderStyles = `
  * - Flow: Options flow data with 6 sub-views
  */
 export default function BuilderV2Page() {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('builder');
+  const [layerTab, setLayerTab] = useState('graph'); // table, graph view in Build tab
   const [symbol, setSymbol] = useState('TSLA');
   const [price, setPrice] = useState(217.26);
   const [change, setChange] = useState(2.34);
@@ -127,6 +132,21 @@ export default function BuilderV2Page() {
   const [budget, setBudget] = useState('');
   const [selectedExpiryIndex, setSelectedExpiryIndex] = useState(0);
   const [sliderPosition, setSliderPosition] = useState(5); // 0-10 scale
+  const [selectedStrategy, setSelectedStrategy] = useState(null); // For strategy transfer from Optimize tab
+  
+  // Receive strategy from navigation state (from UniversalStrategyCardTestPage)
+  useEffect(() => {
+    if (location.state?.selectedStrategy) {
+      console.log('Received strategy from navigation:', location.state.selectedStrategy);
+      setSelectedStrategy(location.state.selectedStrategy);
+      if (location.state.openBuildTab) {
+        setActiveTab('builder');
+      }
+      if (location.state.openGraphView) {
+        setLayerTab('graph');
+      }
+    }
+  }, [location.state]);
   
   console.log('BuilderV2Page rendering, activeTab:', activeTab);
   
@@ -227,7 +247,7 @@ export default function BuilderV2Page() {
       {/* Tab Content */}
       <div className="p-8">
         {console.log('Current activeTab:', activeTab)}
-        {activeTab === 'builder' && <BuilderTab />}
+        {activeTab === 'builder' && <BuilderTab selectedStrategy={selectedStrategy} />}
         {activeTab === 'optimize' && <OptimizeTab 
           symbol={symbol} 
           setSymbol={setSymbol}
@@ -261,18 +281,288 @@ export default function BuilderV2Page() {
 }
 
 /**
+ * OptionsTable - Profit/Loss Grid Component
+ * Shows profit/loss percentages across 23 strikes and 21 expiration dates
+ * Values calculated dynamically based on range and IV using Black-Scholes
+ */
+function OptionsTable({ rangeValue, ivValue, currentPrice, strike, premium, displayMode }) {
+  // Strike prices (23 values calculated from current price and range)
+  const numStrikes = 23;
+  const strikes = Array.from({ length: numStrikes }, (_, i) => {
+    const minPrice = currentPrice * (1 - rangeValue / 100);
+    const maxPrice = currentPrice * (1 + rangeValue / 100);
+    const step = (maxPrice - minPrice) / (numStrikes - 1);
+    return Math.round(minPrice + i * step);
+  }).reverse(); // Reverse: highest price at top, lowest at bottom
+  
+  // Expiration dates (21 dates - mock data for visual only)
+  const dates = [
+    { month: "Oct", day: 24, dte: 0 },
+    { month: "Oct", day: 31, dte: 7 },
+    { month: "Nov", day: 7, dte: 14 },
+    { month: "Nov", day: 14, dte: 21 },
+    { month: "Nov", day: 21, dte: 28 },
+    { month: "Dec", day: 5, dte: 42 },
+    { month: "Dec", day: 12, dte: 49 },
+    { month: "Dec", day: 19, dte: 56 },
+    { month: "Dec", day: 26, dte: 63 },
+    { month: "Jan", day: 2, dte: 70 },
+    { month: "Jan", day: 9, dte: 77 },
+    { month: "Jan", day: 16, dte: 84 },
+    { month: "Jan", day: 23, dte: 91 },
+    { month: "Jan", day: 30, dte: 98 },
+    { month: "Feb", day: 6, dte: 105 },
+    { month: "Feb", day: 13, dte: 112 },
+    { month: "Feb", day: 20, dte: 119 },
+    { month: "Feb", day: 27, dte: 126 },
+    { month: "Mar", day: 6, dte: 133 },
+    { month: "Mar", day: 13, dte: 140 },
+    { month: "Dec", day: 18, dte: 420 }
+  ];
+
+  // Black-Scholes helper functions
+  const normalCDF = (x) => {
+    // Approximation of cumulative normal distribution
+    const t = 1 / (1 + 0.2316419 * Math.abs(x));
+    const d = 0.3989423 * Math.exp(-x * x / 2);
+    const prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    return x > 0 ? 1 - prob : prob;
+  };
+
+  const blackScholesCall = (S, K, tau, r, sigma, q = 0) => {
+    if (tau <= 0) {
+      // At expiration
+      return Math.max(S - K, 0);
+    }
+    
+    const d1 = (Math.log(S / K) + (r - q + 0.5 * sigma * sigma) * tau) / (sigma * Math.sqrt(tau));
+    const d2 = d1 - sigma * Math.sqrt(tau);
+    
+    const callPrice = S * Math.exp(-q * tau) * normalCDF(d1) - K * Math.exp(-r * tau) * normalCDF(d2);
+    return callPrice;
+  };
+
+  // Calculate P&L for each cell
+  const calculatePnL = (stockPrice, dte) => {
+    const tau = dte / 365; // Convert DTE to years
+    const r = 0.05; // Risk-free rate (5%)
+    const sigma = ivValue / 100; // Convert IV% to decimal
+    const K = 220; // Strike price (fixed)
+    
+    // Calculate theoretical option price
+    const optionPrice = blackScholesCall(stockPrice, K, tau, r, sigma);
+    
+    // Contract value (1 contract = 100 shares)
+    const contractValue = 100 * optionPrice;
+    
+    // Initial cost (premium per share * 100)
+    const initialCost = 100 * 37.075; // Cost per contract
+    
+    // P&L in dollars
+    const pnlDollar = contractValue - initialCost;
+    
+    // P&L as % of initial cost
+    const pnlPercent = (pnlDollar / initialCost) * 100;
+    
+    // % of Max Risk (for Long Call, max risk = initial cost)
+    const maxRiskPercent = pnlPercent; // Same as pnlPercent, capped at -100%
+    
+    return {
+      pnlDollar,
+      pnlPercent,
+      contractValue,
+      maxRiskPercent: Math.max(maxRiskPercent, -100) // Cap at -100%
+    };
+  };
+
+  // Generate profit/loss data dynamically
+  const profitLossData = {};
+  strikes.forEach(strikePrice => {
+    profitLossData[strikePrice] = dates.map(date => calculatePnL(strikePrice, date.dte));
+  });
+
+  // Extract values based on display mode
+  const getDisplayValue = (cellData) => {
+    switch(displayMode) {
+      case 'pnl_dollar': return cellData.pnlDollar;
+      case 'pnl_percent': return cellData.pnlPercent;
+      case 'contract_value': return cellData.contractValue / 100; // Per share, not per contract
+      case 'max_risk_percent': return cellData.maxRiskPercent;
+      default: return cellData.pnlPercent;
+    }
+  };
+
+  // Find min/max for normalization across entire grid (based on display mode)
+  const allValues = Object.values(profitLossData).flat().map(cellData => getDisplayValue(cellData));
+  const minValue = Math.min(...allValues);
+  const maxValue = Math.max(...allValues);
+  
+  // Heatmap color function - diverging red → neutral → cyan
+  const getCellColor = (value) => {
+    // Normalize value to [-1, 1] range
+    let normalized;
+    if (value >= 0) {
+      // Profit: map [0, maxValue] to [0, 1]
+      normalized = maxValue > 0 ? value / maxValue : 0;
+    } else {
+      // Loss: map [minValue, 0] to [-1, 0]
+      normalized = minValue < 0 ? value / Math.abs(minValue) : 0;
+    }
+    
+    // Clamp to [-1, 1]
+    normalized = Math.max(-1, Math.min(1, normalized));
+    
+    if (normalized > 0) {
+      // Profit: cyan gradient (0 → +1)
+      const intensity = normalized;
+      if (intensity >= 0.9) return "bg-cyan-400 text-gray-900";
+      if (intensity >= 0.7) return "bg-cyan-500/90 text-white";
+      if (intensity >= 0.5) return "bg-cyan-500/70 text-white";
+      if (intensity >= 0.3) return "bg-cyan-600/50 text-white";
+      if (intensity >= 0.1) return "bg-cyan-700/30 text-white";
+      return "bg-cyan-800/20 text-gray-300";
+    } else if (normalized < 0) {
+      // Loss: red gradient (-1 → 0)
+      const intensity = Math.abs(normalized);
+      if (intensity >= 0.9) return "bg-red-500 text-white";
+      if (intensity >= 0.7) return "bg-red-600/90 text-white";
+      if (intensity >= 0.5) return "bg-red-600/70 text-white";
+      if (intensity >= 0.3) return "bg-red-700/50 text-white";
+      if (intensity >= 0.1) return "bg-red-800/30 text-white";
+      return "bg-red-900/20 text-gray-300";
+    } else {
+      // Neutral: near zero
+      return "bg-gray-700/30 text-gray-300";
+    }
+  };
+
+  return (
+    <div className="w-full max-w-[1400px] mx-auto mb-6">
+      {/* Profit/Loss Table */}
+      <div className="rounded-lg border border-gray-700 shadow-2xl shadow-black/50 bg-gray-900/50">
+        <table className="w-full text-xs -my-0.5">
+          <thead>
+            {/* Row 1: Months */}
+            <tr className="bg-gray-800">
+              <th rowSpan="2" className="sticky left-0 z-20 bg-gray-800 px-1 py-0 text-left font-semibold text-white border-r border-gray-700 leading-tight">
+              </th>
+              <th rowSpan="2" className="sticky left-[50px] z-20 bg-gray-800 px-0.5 py-0 text-center font-semibold text-white border-r border-gray-700 leading-tight">
+                %
+              </th>
+              {/* Group dates by month */}
+              <th colSpan="2" className="px-0.5 py-0 text-center font-semibold text-gray-300 border-r border-gray-700 leading-tight">Oct</th>
+              <th colSpan="3" className="px-0.5 py-0 text-center font-semibold text-gray-300 border-r border-gray-700 leading-tight">Nov</th>
+              <th colSpan="4" className="px-0.5 py-0 text-center font-semibold text-gray-300 border-r border-gray-700 leading-tight">Dec</th>
+              <th colSpan="5" className="px-0.5 py-0 text-center font-semibold text-gray-300 border-r border-gray-700 leading-tight">Jan</th>
+              <th colSpan="4" className="px-0.5 py-0 text-center font-semibold text-gray-300 border-r border-gray-700 leading-tight">Feb</th>
+              <th colSpan="2" className="px-0.5 py-0 text-center font-semibold text-gray-300 border-r border-gray-700 leading-tight">Mar</th>
+              <th colSpan="1" className="px-0.5 py-0 text-center font-semibold text-gray-300 leading-tight">Dec</th>
+            </tr>
+            {/* Row 2: Days */}
+            <tr className="bg-gray-800 border-b border-gray-700">
+              {dates.map((date, idx) => (
+                <th key={idx} className="px-0.5 py-0 text-center font-semibold text-gray-400 whitespace-nowrap leading-tight">
+                  {date.day}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {(() => {
+              // Find the strike closest to 220 (once, outside the map)
+              const closestStrike = strikes.reduce((prev, curr) => 
+                Math.abs(curr - 220) < Math.abs(prev - 220) ? curr : prev
+              );
+              
+              return strikes.map((strike, strikeIdx) => {
+                const isStrikeLine = strike === closestStrike;
+                return (
+                  <tr key={strike} className={`border-t border-gray-700 hover:bg-gray-800/30 transition-colors ${isStrikeLine ? 'border-b border-dashed border-white' : ''}`}>
+                  <td className="sticky left-0 z-10 px-1 py-0 text-left font-bold text-white border-r border-gray-700 leading-tight">
+                    ${strike}
+                  </td>
+                  <td className="sticky left-[50px] z-10 px-0.5 py-0 text-center font-bold text-gray-400 border-r border-gray-700 leading-tight">
+                    {(() => {
+                      const maxValue = Math.max(...profitLossData[strike].map(cellData => getDisplayValue(cellData)));
+                      
+                      if (displayMode === 'pnl_dollar') {
+                        const roundedMax = Math.round(maxValue);
+                        return roundedMax > 0 ? `+$${roundedMax}` : `-$${Math.abs(roundedMax)}`;
+                      } else if (displayMode === 'contract_value') {
+                        return `$${maxValue.toFixed(2)}`;
+                      } else {
+                        const roundedMax = Math.round(maxValue);
+                        return roundedMax > 0 ? `+${roundedMax}%` : `${roundedMax}%`;
+                      }
+                    })()}
+                  </td>
+                  {profitLossData[strike]?.map((cellData, dateIdx) => {
+                    const value = getDisplayValue(cellData);
+                    let displayText;
+                    
+                    if (displayMode === 'pnl_dollar') {
+                      const roundedValue = Math.round(value);
+                      displayText = roundedValue > 0 ? `+$${roundedValue}` : `-$${Math.abs(roundedValue)}`;
+                    } else if (displayMode === 'contract_value') {
+                      displayText = `$${value.toFixed(2)}`;
+                    } else {
+                      const roundedValue = Math.round(value);
+                      displayText = roundedValue > 0 ? `+${roundedValue}%` : `${roundedValue}%`;
+                    }
+                    
+                    return (
+                      <td
+                        key={dateIdx}
+                        className={`px-0.5 py-0 text-center font-semibold leading-tight ${getCellColor(value)}`}
+                      >
+                        {displayText}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+              });
+            })()}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/**
  * BuilderTab - Options Trading Builder
  * Full strategy construction interface with strike selection, expiration timeline, P&L chart
  */
-function BuilderTab() {
+function BuilderTab({ selectedStrategy }) {
   const [selectedDate, setSelectedDate] = useState("18");
   const [rangeValue, setRangeValue] = useState(37);
   const [ivValue, setIvValue] = useState(34.8);
-  const [symbol] = useState("AMZN");
-  const [currentPrice] = useState(221.09);
+  const [dteValue, setDteValue] = useState(420); // Start at expiration (420 DTE)
+  const [layerTab, setLayerTab] = useState('graph'); // table, graph, pnl_dollar, pnl_percent, contract_value, max_risk
+  const [displayMode, setDisplayMode] = useState('pnl_percent'); // 'pnl_dollar', 'pnl_percent', 'contract_value', 'max_risk_percent'
+  
+  // Use selectedStrategy data if available, otherwise default to AMZN Long Call
+  const strategyData = selectedStrategy || {
+    strategyId: 'long_call',
+    strategyName: 'Long Call',
+    currentPrice: 221.09,
+    strikes: { strike: 220 },
+    premiums: { premium: 3787.50 },
+    volatility: 0.348,
+    daysToExpiry: 420
+  };
+  
+  const [symbol] = useState(selectedStrategy?.symbol || "AMZN");
+  const [currentPrice] = useState(strategyData.currentPrice);
   const [priceChange] = useState(3.14);
   const [priceChangePercent] = useState(1.44);
   const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, price: 0, pnl: 0 });
+
+  // Initialize StrategyEngine with selected strategy
+  const engine = new StrategyEngine(strategyData.strategyId, strategyData.currentPrice);
+  engine.initialize({ strikes: strategyData.strikes, premiums: strategyData.premiums });
+  const metrics = engine.getMetrics();
 
   const months = [
     { name: "Oct", dates: ["24", "31"] },
@@ -301,7 +591,7 @@ function BuilderTab() {
       <div className="w-[52%] mx-auto mb-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold">Long Call</h1>
+            <h1 className="text-2xl font-semibold">{strategyData.strategyName}</h1>
             <button className="text-gray-400 hover:text-gray-300">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -405,24 +695,40 @@ function BuilderTab() {
           </button>
           <div className="flex-1 grid grid-cols-5 gap-3">
             <div className="text-center">
-              <div className="text-[10px] text-gray-400 mb-0.5">NET DEBIT:</div>
-              <div className="text-sm font-semibold text-white">-$3,787.50</div>
+              <div className="text-[10px] text-gray-400 mb-0.5">NET COST:</div>
+              <div className="text-sm font-semibold text-white">
+                {typeof metrics.maxLoss === 'number' ? `-$${metrics.maxLoss.toFixed(2)}` : '-'}
+              </div>
             </div>
             <div className="text-center">
               <div className="text-[10px] text-gray-400 mb-0.5">MAX LOSS:</div>
-              <div className="text-sm font-semibold text-white">-$3,787.50</div>
+              <div className="text-sm font-semibold text-white">
+                {metrics.maxLoss === 'unlimited' ? 'Unlimited' : 
+                 typeof metrics.maxLoss === 'number' ? `-$${metrics.maxLoss.toFixed(2)}` : 
+                 metrics.maxLoss}
+              </div>
             </div>
             <div className="text-center">
               <div className="text-[10px] text-gray-400 mb-0.5">MAX PROFIT:</div>
-              <div className="text-sm font-semibold text-white">Infinite</div>
+              <div className="text-sm font-semibold text-white">
+                {metrics.maxProfit === 'unlimited' ? 'Unlimited' : 
+                 typeof metrics.maxProfit === 'number' ? `$${metrics.maxProfit.toFixed(2)}` : 
+                 metrics.maxProfit}
+              </div>
             </div>
             <div className="text-center">
               <div className="text-[10px] text-gray-400 mb-0.5">CHANCE:</div>
-              <div className="text-sm font-semibold text-white">34%</div>
+              <div className="text-sm font-semibold text-white">
+                {metrics.chanceOfProfit ? `${metrics.chanceOfProfit.toFixed(0)}%` : '-'}
+              </div>
             </div>
             <div className="text-center">
               <div className="text-[10px] text-gray-400 mb-0.5">BREAKEVEN:</div>
-              <div className="text-sm font-semibold text-white">$257.68 (+17%)</div>
+              <div className="text-sm font-semibold text-white">
+                {Array.isArray(metrics.breakeven) && metrics.breakeven.length > 0 
+                  ? `$${metrics.breakeven[0].toFixed(2)}` 
+                  : '-'}
+              </div>
             </div>
           </div>
           <button className="text-gray-500 hover:text-gray-300 flex-shrink-0">
@@ -430,478 +736,558 @@ function BuilderTab() {
           </button>
         </div>
 
-        {/* Chart */}
-        <div className="relative h-[400px] bg-[#0d1230] rounded-lg mb-6">
-          <svg 
-            width="100%" 
-            height="400" 
-            viewBox="0 0 1000 400" 
-            className="w-full" 
-            preserveAspectRatio="none"
-            onMouseMove={(e) => {
-              const svg = e.currentTarget;
-              const rect = svg.getBoundingClientRect();
-              const x = e.clientX - rect.left;
-              const y = e.clientY - rect.top;
-              
-              // Scale to viewBox coordinates
-              const scaleXFactor = 1000 / rect.width;
-              const scaleYFactor = 400 / rect.height;
-              const viewBoxX = x * scaleXFactor;
-              const viewBoxY = y * scaleYFactor;
-              
-              // Chart bounds
-              const padding = { top: 20, right: 10, bottom: 60, left: 70 };
-              const xMin = 140, xMax = 302, yMin = -4000, yMax = 7000;
-              
-              // Check if inside chart area
-              if (viewBoxX >= padding.left && viewBoxX <= 1000 - padding.right && 
-                  viewBoxY >= padding.top && viewBoxY <= 400 - padding.bottom) {
+        {/* Chart / Table Toggle */}
+        {layerTab === 'graph' ? (
+          <div className="relative h-[400px] bg-[#0d1230] rounded-lg mb-6">
+            <svg 
+              width="100%" 
+              height="400" 
+              viewBox="0 0 1000 400" 
+              className="w-full" 
+              preserveAspectRatio="none"
+              onMouseMove={(e) => {
+                const svg = e.currentTarget;
+                const rect = svg.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
                 
-                // Calculate price from X position
-                const price = xMin + ((viewBoxX - padding.left) / (1000 - padding.left - padding.right)) * (xMax - xMin);
+                // Scale to viewBox coordinates
+                const scaleXFactor = 1000 / rect.width;
+                const scaleYFactor = 400 / rect.height;
+                const viewBoxX = x * scaleXFactor;
+                const viewBoxY = y * scaleYFactor;
                 
-                // Calculate P&L for Long Call
-                const strikePrice = 220;
-                const premium = 3787.50;
-                let pnl;
-                if (price < strikePrice) {
-                  pnl = -premium;
+                // Chart bounds
+                const padding = { top: 20, right: 10, bottom: 60, left: 70 };
+                const xMin = 100, xMax = 330, yMin = -5000, yMax = 12000;
+                
+                // Check if inside chart area
+                if (viewBoxX >= padding.left && viewBoxX <= 1000 - padding.right && 
+                    viewBoxY >= padding.top && viewBoxY <= 400 - padding.bottom) {
+                  
+                  // Calculate price from X position
+                  const price = xMin + ((viewBoxX - padding.left) / (1000 - padding.left - padding.right)) * (xMax - xMin);
+                  
+                  // Calculate P&L using StrategyEngine
+                  const pnl = engine.calculatePnL(price);
+                  
+                  setTooltip({ 
+                    show: true, 
+                    x: e.clientX, 
+                    y: e.clientY, 
+                    viewBoxX: viewBoxX,
+                    price: price, 
+                    pnl: pnl 
+                  });
                 } else {
-                  pnl = (price - strikePrice) * 100 - premium;
+                  setTooltip({ show: false, x: 0, y: 0, viewBoxX: 0, price: 0, pnl: 0 });
                 }
-                
-                setTooltip({ 
-                  show: true, 
-                  x: e.clientX, 
-                  y: e.clientY, 
-                  viewBoxX: viewBoxX,
-                  price: price, 
-                  pnl: pnl 
-                });
-              } else {
-                setTooltip({ show: false, x: 0, y: 0, viewBoxX: 0, price: 0, pnl: 0 });
-              }
-            }}
-            onMouseLeave={() => setTooltip({ show: false, x: 0, y: 0, viewBoxX: 0, price: 0, pnl: 0 })}
-          >
-            {/* Gradient definitions */}
-            <defs>
-              <linearGradient id="redGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="rgba(220, 38, 38, 0)" stopOpacity="0" />
-                <stop offset="100%" stopColor="rgba(220, 38, 38, 0.85)" stopOpacity="1" />
-              </linearGradient>
-              <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="rgba(6, 182, 212, 0.85)" stopOpacity="1" />
-                <stop offset="100%" stopColor="rgba(6, 182, 212, 0)" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-
-            {(() => {
-              // Chart dimensions and padding
-              const width = 1000;
-              const height = 400;
-              const padding = { top: 20, right: 1, bottom: 40, left: 70 };
-              
-              // Y-axis range: -$5,000 to $12,000 (lowered zero line)
-              const yMin = -5000;
-              const yMax = 12000;
-              const yRange = yMax - yMin;
-              
-              // X-axis range: $100 to $330 (extended loss zone to push curve right)
-              const xMin = 100;
-              const xMax = 330;
-              const xRange = xMax - xMin;
-              
-              // Scale functions
-              const scaleX = (price) => {
-                return padding.left + ((price - xMin) / xRange) * (width - padding.left - padding.right);
-              };
-              
-              const scaleY = (pnl) => {
-                return height - padding.bottom - ((pnl - yMin) / yRange) * (height - padding.top - padding.bottom);
-              };
-              
-              // Generate P&L curve for Long Call
-              const generatePnL = () => {
-                const points = [];
-                const strikePrice = 220;
-                const premium = 3787.50;
-                
-                for (let price = xMin; price <= xMax; price += 2) {
-                  let pnl;
-                  if (price < strikePrice) {
-                    pnl = -premium;
-                  } else {
-                    pnl = (price - strikePrice) * 100 - premium;
-                  }
-                  points.push([price, pnl]);
-                }
-                return points;
-              };
-              
-              const data = generatePnL();
-              const zeroY = scaleY(0);
-              
-              // Split data into loss and profit segments
-              let lossPoints = [];
-              let profitPoints = [];
-              let intersectionPoint = null;
-              
-              for (let i = 0; i < data.length - 1; i++) {
-                if ((data[i][1] <= 0 && data[i + 1][1] > 0) || (data[i][1] > 0 && data[i + 1][1] <= 0)) {
-                  const x1 = data[i][0], y1 = data[i][1];
-                  const x2 = data[i + 1][0], y2 = data[i + 1][1];
-                  const t = -y1 / (y2 - y1);
-                  const xIntersect = x1 + t * (x2 - x1);
-                  intersectionPoint = [xIntersect, 0];
-                  lossPoints = data.slice(0, i + 1);
-                  lossPoints.push(intersectionPoint);
-                  profitPoints = [intersectionPoint, ...data.slice(i + 1)];
-                  break;
-                }
-              }
-              
-              if (!intersectionPoint) {
-                if (data[0][1] <= 0) lossPoints = data;
-                else profitPoints = data;
-              }
-              
-              // Build paths
-              const lossPath = lossPoints.map((point, i) => {
-                const x = scaleX(point[0]);
-                const y = scaleY(point[1]);
-                return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-              }).join(' ');
-              
-              const profitPath = profitPoints.map((point, i) => {
-                const x = scaleX(point[0]);
-                const y = scaleY(point[1]);
-                return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-              }).join(' ');
-              
-              // Y-axis labels
-              const yLabels = [-5000, -4000, -2000, 0, 2000, 4000, 6000, 8000, 10000, 12000];
-              
-              // X-axis labels (extended loss zone $100-$330)
-              const xLabels = [100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 330];
-              
-              return (
-                <>
-                  {/* Y-axis grid lines and labels */}
-                  {yLabels.map((value, i) => {
-                    const y = scaleY(value);
-                    return (
-                      <g key={`y-${i}`}>
-                        <line
-                          x1={padding.left}
-                          y1={y}
-                          x2={width - padding.right}
-                          y2={y}
-                          stroke="rgba(255, 255, 255, 0.12)"
-                          strokeWidth="1"
-                        />
-                        <line
-                          x1={padding.left - 5}
-                          y1={y}
-                          x2={padding.left}
-                          y2={y}
-                          stroke="rgba(255, 255, 255, 0.7)"
-                          strokeWidth="2"
-                        />
-                        <text
-                          x={padding.left - 10}
-                          y={y + 4}
-                          textAnchor="end"
-                          fill="rgba(255, 255, 255, 0.9)"
-                          fontSize="12"
-                          fontWeight="700"
-                        >
-                          ${value >= 0 ? value.toLocaleString() : value.toLocaleString()}
-                        </text>
-                      </g>
-                    );
-                  })}
-                  
-                  {/* Zero line */}
-                  <line
-                    x1={padding.left}
-                    y1={zeroY}
-                    x2={width - padding.right}
-                    y2={zeroY}
-                    stroke="rgba(255, 255, 255, 0.3)"
-                    strokeWidth="1.5"
-                  />
-                  
-                  {/* Current price line (white dashed) */}
-                  <line
-                    x1={scaleX(221.09)}
-                    y1={padding.top}
-                    x2={scaleX(221.09)}
-                    y2={height - padding.bottom}
-                    stroke="rgba(255, 255, 255, 0.5)"
-                    strokeWidth="1.5"
-                    strokeDasharray="4 4"
-                  />
-                  
-                  {/* Breakeven line (cyan) */}
-                  <line
-                    x1={scaleX(257.68)}
-                    y1={padding.top}
-                    x2={scaleX(257.68)}
-                    y2={height - padding.bottom}
-                    stroke="rgba(6, 182, 212, 0.6)"
-                    strokeWidth="1.5"
-                  />
-                  <text
-                    x={scaleX(257.68)}
-                    y={padding.top - 5}
-                    textAnchor="middle"
-                    fill="#06b6d4"
-                    fontSize="12"
-                    fontWeight="600"
-                  >
-                    $257.68
-                  </text>
-                  
-                  {/* Chance line (orange vertical) - positioned in profit zone */}
-                  {(() => {
-                    const chancePercent = 34; // From metrics
-                    const breakeven = 257.68;
-                    const maxPrice = 302;
-                    const chancePrice = breakeven + (maxPrice - breakeven) * (chancePercent / 100);
-                    
-                    return (
-                      <line
-                        x1={scaleX(chancePrice)}
-                        y1={padding.top}
-                        x2={scaleX(chancePrice)}
-                        y2={height - padding.bottom}
-                        stroke="rgba(251, 146, 60, 0.6)"
-                        strokeWidth="1.5"
-                      />
-                    );
-                  })()}
-                  
-                  {/* Loss line (red) and fill */}
-                  {lossPath && lossPoints.length > 0 && (
-                    <>
-                      <path
-                        d={lossPath}
-                        fill="none"
-                        stroke="#dc2626"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d={`${lossPath} L ${scaleX(lossPoints[lossPoints.length - 1][0])} ${zeroY} L ${scaleX(lossPoints[0][0])} ${zeroY} Z`}
-                        fill="url(#redGradient)"
-                      />
-                    </>
-                  )}
-                  
-                  {/* Profit line (cyan) and fill */}
-                  {profitPath && profitPoints.length > 0 && (
-                    <>
-                      <path
-                        d={profitPath}
-                        fill="none"
-                        stroke="#06b6d4"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d={`${profitPath} L ${scaleX(profitPoints[profitPoints.length - 1][0])} ${zeroY} L ${scaleX(profitPoints[0][0])} ${zeroY} Z`}
-                        fill="url(#cyanGradient)"
-                      />
-                    </>
-                  )}
-                  
-                  {/* Chart frame (axes) */}
-                  <line
-                    x1={padding.left}
-                    y1={height - padding.bottom}
-                    x2={width - padding.right}
-                    y2={height - padding.bottom}
-                    stroke="rgba(255, 255, 255, 0.25)"
-                    strokeWidth="2"
-                  />
-                  <line
-                    x1={padding.left}
-                    y1={padding.top}
-                    x2={padding.left}
-                    y2={height - padding.bottom}
-                    stroke="rgba(255, 255, 255, 0.25)"
-                    strokeWidth="2"
-                  />
-                  
-                  {/* X-axis labels and ticks */}
-                  {xLabels.map((value, i) => {
-                    const x = scaleX(value);
-                    return (
-                      <g key={`x-${i}`}>
-                        <line
-                          x1={x}
-                          y1={height - padding.bottom}
-                          x2={x}
-                          y2={height - padding.bottom + 5}
-                          stroke="rgba(255, 255, 255, 0.7)"
-                          strokeWidth="2"
-                        />
-                        <text
-                          x={x}
-                          y={height - padding.bottom + 20}
-                          textAnchor="middle"
-                          fill="rgba(255, 255, 255, 0.9)"
-                          fontSize="12"
-                          fontWeight="700"
-                        >
-                          ${value}
-                        </text>
-                      </g>
-                    );
-                  })}
-                  
-                  {/* Mouse tracking vertical line */}
-                  {tooltip.show && (
-                    <>
-                      <line
-                        x1={tooltip.viewBoxX}
-                        y1={padding.top}
-                        x2={tooltip.viewBoxX}
-                        y2={height - padding.bottom}
-                        stroke="rgba(255, 255, 255, 0.5)"
-                        strokeWidth="1.5"
-                      />
-                      
-                      {/* Price label at top */}
-                      <text
-                        x={tooltip.viewBoxX}
-                        y={padding.top - 5}
-                        textAnchor="middle"
-                        fill="white"
-                        fontSize="12"
-                        fontWeight="700"
-                        className="pointer-events-none"
-                      >
-                        ${tooltip.price.toFixed(2)}
-                      </text>
-                      
-                      {/* P&L dot on curve */}
-                      <circle
-                        cx={tooltip.viewBoxX}
-                        cy={(() => {
-                          // Calculate Y position on curve
-                          const yPos = height - padding.bottom - ((tooltip.pnl - yMin) / yRange) * (height - padding.top - padding.bottom);
-                          return yPos;
-                        })()}
-                        r="5"
-                        fill={tooltip.pnl >= 0 ? "#06b6d4" : "#dc2626"}
-                        stroke="white"
-                        strokeWidth="2"
-                      />
-                    </>
-                  )}
-                </>
-              );
-            })()}
-          </svg>
-          
-          {/* Tooltip for P&L following the curve */}
-          {tooltip.show && (
-            <div
-              className="absolute z-50 pointer-events-none"
-              style={{
-                left: `${((tooltip.viewBoxX) / 1000) * 100}%`,
-                top: (() => {
-                  const padding = { top: 20, right: 1, bottom: 40, left: 70 };
-                  const yMin = -5000, yMax = 12000, yRange = yMax - yMin;
-                  const height = 400;
-                  const yPos = height - padding.bottom - ((tooltip.pnl - yMin) / yRange) * (height - padding.top - padding.bottom);
-                  return `${(yPos / 400) * 100}%`;
-                })(),
-                transform: 'translate(10px, -50%)',
               }}
+              onMouseLeave={() => setTooltip({ show: false, x: 0, y: 0, viewBoxX: 0, price: 0, pnl: 0 })}
             >
-              <div className={`rounded-lg px-2 py-1 shadow-xl ${tooltip.pnl >= 0 ? 'bg-cyan-600' : 'bg-red-600'}`}>
-                <div className="text-white text-xs font-bold whitespace-nowrap">
-                  {tooltip.pnl >= 0 ? '+' : ''}${tooltip.pnl.toFixed(0)}
+              {/* Gradient definitions */}
+              <defs>
+                <linearGradient id="redGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(220, 38, 38, 0)" stopOpacity="0" />
+                  <stop offset="100%" stopColor="rgba(220, 38, 38, 0.85)" stopOpacity="1" />
+                </linearGradient>
+                <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(6, 182, 212, 0.85)" stopOpacity="1" />
+                  <stop offset="100%" stopColor="rgba(6, 182, 212, 0)" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+
+              {(() => {
+                // Chart dimensions and padding
+                const width = 1000;
+                const height = 400;
+                const padding = { top: 20, right: 1, bottom: 40, left: 70 };
+                
+                // Y-axis range: -$5,000 to $12,000
+                const yMin = -5000;
+                const yMax = 12000;
+                const yRange = yMax - yMin;
+                
+                // X-axis range: $100 to $330
+                const xMin = 100;
+                const xMax = 330;
+                const xRange = xMax - xMin;
+                
+                // Scale functions
+                const scaleX = (price) => {
+                  return padding.left + ((price - xMin) / xRange) * (width - padding.left - padding.right);
+                };
+                
+                const scaleY = (pnl) => {
+                  return height - padding.bottom - ((pnl - yMin) / yRange) * (height - padding.top - padding.bottom);
+                };
+                
+                // Generate P&L curve using StrategyEngine
+                const generatePnL = () => {
+                  const points = [];
+                  
+                  // Use StrategyEngine to generate P&L curve
+                  const pnlCurve = engine.generatePnLCurve(xMin, xMax, 2);
+                  
+                  // Convert to [price, pnl] pairs
+                  for (const point of pnlCurve) {
+                    points.push([point.price, point.pnl]);
+                  }
+                  
+                  return points;
+                };
+                
+                const data = generatePnL();
+                const zeroY = scaleY(0);
+                
+                // Split data into loss and profit segments
+                let lossPoints = [];
+                let profitPoints = [];
+                let intersectionPoint = null;
+                
+                for (let i = 0; i < data.length - 1; i++) {
+                  if ((data[i][1] <= 0 && data[i + 1][1] > 0) || (data[i][1] > 0 && data[i + 1][1] <= 0)) {
+                    const x1 = data[i][0], y1 = data[i][1];
+                    const x2 = data[i + 1][0], y2 = data[i + 1][1];
+                    const t = -y1 / (y2 - y1);
+                    const xIntersect = x1 + t * (x2 - x1);
+                    intersectionPoint = [xIntersect, 0];
+                    lossPoints = data.slice(0, i + 1);
+                    lossPoints.push(intersectionPoint);
+                    profitPoints = [intersectionPoint, ...data.slice(i + 1)];
+                    break;
+                  }
+                }
+                
+                if (!intersectionPoint) {
+                  if (data[0][1] <= 0) lossPoints = data;
+                  else profitPoints = data;
+                }
+                
+                // Build paths
+                const lossPath = lossPoints.map((point, i) => {
+                  const x = scaleX(point[0]);
+                  const y = scaleY(point[1]);
+                  return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                }).join(' ');
+                
+                const profitPath = profitPoints.map((point, i) => {
+                  const x = scaleX(point[0]);
+                  const y = scaleY(point[1]);
+                  return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+                }).join(' ');
+                
+                // Y-axis labels
+                const yLabels = [-5000, -4000, -2000, 0, 2000, 4000, 6000, 8000, 10000, 12000];
+                
+                // X-axis labels
+                const xLabels = [100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 330];
+                
+                return (
+                  <>
+                    {/* Y-axis grid lines and labels */}
+                    {yLabels.map((value, i) => {
+                      const y = scaleY(value);
+                      return (
+                        <g key={`y-${i}`}>
+                          <line
+                            x1={padding.left}
+                            y1={y}
+                            x2={width - padding.right}
+                            y2={y}
+                            stroke="rgba(255, 255, 255, 0.12)"
+                            strokeWidth="1"
+                          />
+                          <line
+                            x1={padding.left - 5}
+                            y1={y}
+                            x2={padding.left}
+                            y2={y}
+                            stroke="rgba(255, 255, 255, 0.7)"
+                            strokeWidth="2"
+                          />
+                          <text
+                            x={padding.left - 10}
+                            y={y + 4}
+                            textAnchor="end"
+                            fill="rgba(255, 255, 255, 0.9)"
+                            fontSize="12"
+                            fontWeight="700"
+                          >
+                            ${value >= 0 ? value.toLocaleString() : value.toLocaleString()}
+                          </text>
+                        </g>
+                      );
+                    })}
+                    
+                    {/* Zero line */}
+                    <line
+                      x1={padding.left}
+                      y1={zeroY}
+                      x2={width - padding.right}
+                      y2={zeroY}
+                      stroke="rgba(255, 255, 255, 0.3)"
+                      strokeWidth="1.5"
+                    />
+                    
+                    {/* Current price line (white dashed) */}
+                    <line
+                      x1={scaleX(currentPrice)}
+                      y1={padding.top}
+                      x2={scaleX(currentPrice)}
+                      y2={height - padding.bottom}
+                      stroke="rgba(255, 255, 255, 0.5)"
+                      strokeWidth="1.5"
+                      strokeDasharray="4 4"
+                    />
+                    
+                    {/* Breakeven line (cyan) - Only show if breakeven exists */}
+                    {Array.isArray(metrics.breakeven) && metrics.breakeven.length > 0 && (
+                      <>
+                        <line
+                          x1={scaleX(metrics.breakeven[0])}
+                          y1={padding.top}
+                          x2={scaleX(metrics.breakeven[0])}
+                          y2={height - padding.bottom}
+                          stroke="rgba(6, 182, 212, 0.6)"
+                          strokeWidth="1.5"
+                        />
+                        <text
+                          x={scaleX(metrics.breakeven[0])}
+                          y={padding.top - 5}
+                          textAnchor="middle"
+                          fill="#06b6d4"
+                          fontSize="12"
+                          fontWeight="600"
+                        >
+                          ${metrics.breakeven[0].toFixed(2)}
+                        </text>
+                      </>
+                    )}
+                    
+                    {/* Loss line (red) and fill */}
+                    {lossPath && lossPoints.length > 0 && (
+                      <>
+                        <path
+                          d={lossPath}
+                          fill="none"
+                          stroke="#dc2626"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d={`${lossPath} L ${scaleX(lossPoints[lossPoints.length - 1][0])} ${zeroY} L ${scaleX(lossPoints[0][0])} ${zeroY} Z`}
+                          fill="url(#redGradient)"
+                        />
+                      </>
+                    )}
+                    
+                    {/* Profit line (cyan) and fill */}
+                    {profitPath && profitPoints.length > 0 && (
+                      <>
+                        <path
+                          d={profitPath}
+                          fill="none"
+                          stroke="#06b6d4"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d={`${profitPath} L ${scaleX(profitPoints[profitPoints.length - 1][0])} ${zeroY} L ${scaleX(profitPoints[0][0])} ${zeroY} Z`}
+                          fill="url(#cyanGradient)"
+                        />
+                      </>
+                    )}
+                    
+                    {/* Chart frame (axes) */}
+                    <line
+                      x1={padding.left}
+                      y1={height - padding.bottom}
+                      x2={width - padding.right}
+                      y2={height - padding.bottom}
+                      stroke="rgba(255, 255, 255, 0.25)"
+                      strokeWidth="2"
+                    />
+                    <line
+                      x1={padding.left}
+                      y1={padding.top}
+                      x2={padding.left}
+                      y2={height - padding.bottom}
+                      stroke="rgba(255, 255, 255, 0.25)"
+                      strokeWidth="2"
+                    />
+                    
+                    {/* X-axis labels and ticks */}
+                    {xLabels.map((value, i) => {
+                      const x = scaleX(value);
+                      return (
+                        <g key={`x-${i}`}>
+                          <line
+                            x1={x}
+                            y1={height - padding.bottom}
+                            x2={x}
+                            y2={height - padding.bottom + 5}
+                            stroke="rgba(255, 255, 255, 0.7)"
+                            strokeWidth="2"
+                          />
+                          <text
+                            x={x}
+                            y={height - padding.bottom + 20}
+                            textAnchor="middle"
+                            fill="rgba(255, 255, 255, 0.9)"
+                            fontSize="12"
+                            fontWeight="700"
+                          >
+                            ${value}
+                          </text>
+                        </g>
+                      );
+                    })}
+                    
+                    {/* Mouse tracking vertical line */}
+                    {tooltip.show && (
+                      <>
+                        <line
+                          x1={tooltip.viewBoxX}
+                          y1={padding.top}
+                          x2={tooltip.viewBoxX}
+                          y2={height - padding.bottom}
+                          stroke="rgba(255, 255, 255, 0.5)"
+                          strokeWidth="1.5"
+                        />
+                        
+                        {/* Price label at top */}
+                        <text
+                          x={tooltip.viewBoxX}
+                          y={padding.top - 5}
+                          textAnchor="middle"
+                          fill="white"
+                          fontSize="12"
+                          fontWeight="700"
+                          className="pointer-events-none"
+                        >
+                          ${tooltip.price.toFixed(2)}
+                        </text>
+                        
+                        {/* P&L dot on curve */}
+                        <circle
+                          cx={tooltip.viewBoxX}
+                          cy={(() => {
+                            const yPos = height - padding.bottom - ((tooltip.pnl - yMin) / yRange) * (height - padding.top - padding.bottom);
+                            return yPos;
+                          })()}
+                          r="5"
+                          fill={tooltip.pnl >= 0 ? "#06b6d4" : "#dc2626"}
+                          stroke="white"
+                          strokeWidth="2"
+                        />
+                      </>
+                    )}
+                  </>
+                );
+              })()}
+            </svg>
+            
+            {/* Tooltip for P&L following the curve */}
+            {tooltip.show && (
+              <div
+                className="absolute z-50 pointer-events-none"
+                style={{
+                  left: `${((tooltip.viewBoxX) / 1000) * 100}%`,
+                  top: (() => {
+                    const padding = { top: 20, right: 1, bottom: 40, left: 70 };
+                    const yMin = -5000, yMax = 12000, yRange = yMax - yMin;
+                    const height = 400;
+                    const yPos = height - padding.bottom - ((tooltip.pnl - yMin) / yRange) * (height - padding.top - padding.bottom);
+                    return `${(yPos / 400) * 100}%`;
+                  })(),
+                  transform: 'translate(10px, -50%)',
+                }}
+              >
+                <div className={`rounded-lg px-2 py-1 shadow-xl ${tooltip.pnl >= 0 ? 'bg-cyan-600' : 'bg-red-600'}`}>
+                  <div className="text-white text-xs font-bold whitespace-nowrap">
+                    {tooltip.pnl >= 0 ? '+' : ''}${tooltip.pnl.toFixed(0)}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Date Display */}
-        <div className="flex items-center justify-between mb-4 text-sm">
-          <div>
-            <span className="font-semibold">DATE:</span> Fri Dec 18th 2026 11:00pm (1.2y)
+            )}
           </div>
-          <div className="text-gray-400">(At expiration)</div>
-        </div>
-
-        {/* Sliders */}
-        <div className="grid grid-cols-2 gap-8 mb-6">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-white">RANGE: ±{rangeValue}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={rangeValue}
-              onChange={(e) => setRangeValue(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-cyan-900/30 rounded-full appearance-none cursor-pointer slider-cyan"
-            />
+        ) : layerTab === 'table' ? (
+          <OptionsTable 
+            rangeValue={rangeValue}
+            ivValue={ivValue}
+            currentPrice={currentPrice}
+            strike={220}
+            premium={37.075}
+            displayMode={displayMode}
+          />
+        ) : (
+          <div className="text-center text-gray-400 py-8">
+            {layerTab === 'pnl_dollar' && 'P&L Dollar View (Coming Soon)'}
+            {layerTab === 'pnl_percent' && 'P&L Percent View (Coming Soon)'}
+            {layerTab === 'contract_value' && 'Contract Value View (Coming Soon)'}
+            {layerTab === 'max_risk' && 'Max Risk View (Coming Soon)'}
           </div>
-          <div>
+        )}
+
+        {/* Expiration Date Slider - Only show for Graph view */}
+        {layerTab === 'graph' && (
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-sm font-semibold text-white">IMPLIED VOLATILITY: {ivValue}%</span>
+              <span className="text-xs text-white font-bold">
+                {(() => {
+                  const today = new Date();
+                  const expDate = new Date(today);
+                  // dteValue directly = days from today
+                  // dteValue=420 → 420 days from now (expiration)
+                  // dteValue=0 → today
+                  expDate.setDate(expDate.getDate() + dteValue);
+                  const years = (dteValue / 365).toFixed(1);
+                  const dayName = expDate.toLocaleDateString('en-US', { weekday: 'short' });
+                  const monthName = expDate.toLocaleDateString('en-US', { month: 'short' });
+                  const day = expDate.getDate();
+                  const daySuffix = day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th';
+                  const year = expDate.getFullYear();
+                  return `${dayName} ${monthName} ${day}${daySuffix} ${year} 11:00pm (${years}y)`;
+                })()}
+              </span>
+              <span className="text-xs text-white font-bold">{dteValue === 420 ? '(At expiration)' : '(Before expiration)'}</span>
+            </div>
+            <div className="relative">
+              <input
+                type="range"
+                min="0"
+                max="420"
+                step="1"
+                value={dteValue}
+                onChange={(e) => setDteValue(parseInt(e.target.value))}
+                className="w-full cursor-pointer range-slider-cyan"
+                style={{
+                  background: `linear-gradient(to right, #374151 0%, #374151 ${(dteValue / 420) * 100}%, #06b6d4 ${(dteValue / 420) * 100}%, #06b6d4 100%)`
+                }}
+              />
+              <div className="flex justify-between mt-1 text-[10px] text-gray-500">
+                <span>0 DTE (Today)</span>
+                <span>100 DTE</span>
+                <span>200 DTE</span>
+                <span>300 DTE</span>
+                <span>420 DTE (Expiration)</span>
               </div>
             </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              step="0.1"
-              value={ivValue}
-              onChange={(e) => setIvValue(parseFloat(e.target.value))}
-              className="w-full h-1.5 bg-cyan-900/30 rounded-full appearance-none cursor-pointer slider-cyan"
-            />
           </div>
-        </div>
+        )}
+
+        {/* Spacer for Table view to match Graph view height */}
+        {layerTab === 'table' && (
+          <div className="mb-6"></div>
+        )}
+
+        {/* Sliders - Show for both Graph and Table views */}
+        {(layerTab === 'graph' || layerTab === 'table') && (
+          <div className="grid grid-cols-2 gap-8 mb-6">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-white">RANGE: ±{rangeValue}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={rangeValue}
+                onChange={(e) => setRangeValue(parseInt(e.target.value))}
+                className="range-slider-cyan w-full cursor-pointer"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm font-semibold text-white">IMPLIED VOLATILITY: {ivValue}%</span>
+                </div>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="0.1"
+                value={ivValue}
+                onChange={(e) => setIvValue(parseFloat(e.target.value))}
+                className="range-slider-cyan w-full cursor-pointer"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Bottom Tabs */}
         <div className="flex gap-1 border-t border-gray-700 pt-2">
-          <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-transparent border border-gray-600 text-white hover:bg-gray-800 rounded-lg transition-colors">
+          <button 
+            onClick={() => setLayerTab('table')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              layerTab === 'table'
+                ? 'bg-cyan-500 text-white'
+                : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
+            }`}
+          >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
             Table
           </button>
-          <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors">
+          <button 
+            onClick={() => setLayerTab('graph')}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              layerTab === 'graph'
+                ? 'bg-cyan-500 text-white'
+                : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
+            }`}
+          >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
             </svg>
             Graph
           </button>
-          <button className="flex-1 px-4 py-2 bg-transparent border border-gray-600 text-white hover:bg-gray-800 rounded-lg transition-colors">
+          <button 
+            onClick={() => setDisplayMode('pnl_dollar')}
+            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
+              displayMode === 'pnl_dollar'
+                ? 'bg-cyan-500 text-white'
+                : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
+            }`}
+          >
             Profit / Loss $
           </button>
-          <button className="flex-1 px-4 py-2 bg-transparent border border-gray-600 text-white hover:bg-gray-800 rounded-lg transition-colors">
+          <button 
+            onClick={() => setDisplayMode('pnl_percent')}
+            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
+              displayMode === 'pnl_percent'
+                ? 'bg-cyan-500 text-white'
+                : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
+            }`}
+          >
             Profit / Loss %
           </button>
-          <button className="flex-1 px-4 py-2 bg-transparent border border-gray-600 text-white hover:bg-gray-800 rounded-lg transition-colors">
+          <button 
+            onClick={() => setDisplayMode('contract_value')}
+            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
+              displayMode === 'contract_value'
+                ? 'bg-cyan-500 text-white'
+                : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
+            }`}
+          >
             Contract Value
           </button>
-          <button className="flex-1 px-4 py-2 bg-transparent border border-gray-600 text-white hover:bg-gray-800 rounded-lg transition-colors">
+          <button 
+            onClick={() => setDisplayMode('max_risk_percent')}
+            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
+              displayMode === 'max_risk_percent'
+                ? 'bg-cyan-500 text-white'
+                : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
+            }`}
+          >
             % of Max Risk
           </button>
           <button className="flex-1 px-4 py-2 bg-transparent border border-gray-600 text-white hover:bg-gray-800 rounded-lg transition-colors">

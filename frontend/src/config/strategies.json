@@ -1,0 +1,1314 @@
+{
+  "long_call": {
+    "id": "long_call",
+    "name": "Long Call",
+    "category": "bullish",
+    "complexity": "beginner",
+    "description": "Buy a call option",
+    "legs": [
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_offset": 0
+      }
+    ],
+    "pnl_formula": {
+      "type": "simple",
+      "below_strike": "-premium",
+      "above_strike": "(price - strike) * 100 - premium"
+    },
+    "breakeven": "strike + (premium / 100)",
+    "max_profit": "unlimited",
+    "max_loss": "premium",
+    "ideal_conditions": {
+      "market_view": "Strongly bullish",
+      "volatility": "Low to moderate",
+      "time_horizon": "Medium to long term"
+    }
+  },
+  "short_call": {
+    "id": "short_call",
+    "name": "Short Call",
+    "category": "bearish",
+    "complexity": "beginner",
+    "description": "Sell a call option",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_offset": 0
+      }
+    ],
+    "pnl_formula": {
+      "type": "simple",
+      "below_strike": "premium",
+      "above_strike": "premium - (price - strike) * 100premium"
+    },
+    "breakeven": "strike + (premium / 100)",
+    "max_profit": "premium",
+    "max_loss": "unlimited",
+    "ideal_conditions": {
+      "market_view": "Moderately bearish",
+      "volatility": "High",
+      "time_horizon": "Short term"
+    }
+  },
+  "long_put": {
+    "id": "long_put",
+    "name": "Long Put",
+    "category": "bearish",
+    "complexity": "beginner",
+    "description": "Buy a put option",
+    "legs": [
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_offset": 0
+      }
+    ],
+    "pnl_formula": {
+      "type": "simple",
+      "below_strike": "(strike - price) * 100 - premium",
+      "above_strike": "-premium"
+    },
+    "breakeven": "strike - (premium / 100)",
+    "max_profit": "premium",
+    "max_loss": "premium",
+    "ideal_conditions": {
+      "market_view": "Strongly bearish",
+      "volatility": "Low to moderate",
+      "time_horizon": "Medium to long term"
+    }
+  },
+  "short_put": {
+    "id": "short_put",
+    "name": "Short Put",
+    "category": "bullish",
+    "complexity": "beginner",
+    "description": "Sell a put option",
+    "legs": [
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_offset": 0
+      }
+    ],
+    "pnl_formula": {
+      "type": "simple",
+      "below_strike": "premium - (strike - price) * 100premium",
+      "above_strike": "premium"
+    },
+    "breakeven": "strike - (premium / 100)",
+    "max_profit": "unlimited",
+    "max_loss": "unlimited",
+    "ideal_conditions": {
+      "market_view": "Moderately bullish",
+      "volatility": "High",
+      "time_horizon": "Short term"
+    }
+  },
+  "bull_call_spread": {
+    "id": "bull_call_spread",
+    "name": "Bull Call Spread",
+    "category": "bull",
+    "complexity": "intermediate",
+    "description": "Limited risk bull spread with defined profit potential",
+    "legs": [
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "spread",
+      "description": "Net debit spread"
+    },
+    "breakeven": "lower_strike + net_debit / 100",
+    "max_profit": "(higher_strike - lower_strike) * 100 - net_debit",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Moderately bull",
+      "volatility": "Low to moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "bear_call_spread": {
+    "id": "bear_call_spread",
+    "name": "Bear Call Spread",
+    "category": "bear",
+    "complexity": "intermediate",
+    "description": "Limited risk bear spread with defined profit potential",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "spread",
+      "description": "Net credit spread"
+    },
+    "breakeven": "lower_strike + net_credit / 100",
+    "max_profit": "net_credit",
+    "max_loss": "(higher_strike - lower_strike) * 100 - net_credit",
+    "ideal_conditions": {
+      "market_view": "Moderately bear",
+      "volatility": "Low to moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "bull_put_spread": {
+    "id": "bull_put_spread",
+    "name": "Bull Put Spread",
+    "category": "bull",
+    "complexity": "intermediate",
+    "description": "Limited risk bull spread with defined profit potential",
+    "legs": [
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "spread",
+      "description": "Net debit spread"
+    },
+    "breakeven": "higher_strike - net_debit / 100",
+    "max_profit": "(higher_strike - lower_strike) * 100 - net_debit",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Moderately bull",
+      "volatility": "Low to moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "bear_put_spread": {
+    "id": "bear_put_spread",
+    "name": "Bear Put Spread",
+    "category": "bear",
+    "complexity": "intermediate",
+    "description": "Limited risk bear spread with defined profit potential",
+    "legs": [
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "spread",
+      "description": "Net credit spread"
+    },
+    "breakeven": "higher_strike - net_credit / 100",
+    "max_profit": "net_credit",
+    "max_loss": "(higher_strike - lower_strike) * 100 - net_credit",
+    "ideal_conditions": {
+      "market_view": "Moderately bear",
+      "volatility": "Low to moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "long_straddle": {
+    "id": "long_straddle",
+    "name": "Long Straddle",
+    "category": "neutral",
+    "complexity": "intermediate",
+    "description": "Buy ATM call and put for volatility play",
+    "legs": [
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "atm"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "atm"
+      }
+    ],
+    "pnl_formula": {
+      "type": "straddle",
+      "description": "Profit from large moves"
+    },
+    "breakeven": "atm_strike \u00b1 total_debit / 100",
+    "max_profit": "unlimited",
+    "max_loss": "total_debit",
+    "ideal_conditions": {
+      "market_view": "High volatility expected",
+      "volatility": "Low with expansion expected",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "short_straddle": {
+    "id": "short_straddle",
+    "name": "Short Straddle",
+    "category": "neutral",
+    "complexity": "intermediate",
+    "description": "Sell ATM call and put for range-bound profit",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "atm"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "atm"
+      }
+    ],
+    "pnl_formula": {
+      "type": "straddle",
+      "description": "Profit from staying near strike"
+    },
+    "breakeven": "atm_strike \u00b1 total_credit / 100",
+    "max_profit": "total_credit",
+    "max_loss": "unlimited",
+    "ideal_conditions": {
+      "market_view": "Range-bound",
+      "volatility": "High with contraction expected",
+      "time_horizon": "Short term"
+    }
+  },
+  "long_strangle": {
+    "id": "long_strangle",
+    "name": "Long Strangle",
+    "category": "neutral",
+    "complexity": "intermediate",
+    "description": "Buy OTM call and put for wider breakevens",
+    "legs": [
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower"
+      }
+    ],
+    "pnl_formula": {
+      "type": "strangle",
+      "description": "Profit from very large moves"
+    },
+    "breakeven": "lower_strike - total_debit / 100, higher_strike + total_debit / 100",
+    "max_profit": "unlimited",
+    "max_loss": "total_debit",
+    "ideal_conditions": {
+      "market_view": "Very high volatility expected",
+      "volatility": "Very low with explosion expected",
+      "time_horizon": "Short term"
+    }
+  },
+  "short_strangle": {
+    "id": "short_strangle",
+    "name": "Short Strangle",
+    "category": "neutral",
+    "complexity": "intermediate",
+    "description": "Sell OTM call and put for higher premium",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower"
+      }
+    ],
+    "pnl_formula": {
+      "type": "strangle",
+      "description": "Profit from staying between strikes"
+    },
+    "breakeven": "lower_strike - total_credit / 100, higher_strike + total_credit / 100",
+    "max_profit": "total_credit",
+    "max_loss": "unlimited",
+    "ideal_conditions": {
+      "market_view": "Range-bound",
+      "volatility": "Very high with crush expected",
+      "time_horizon": "Short term"
+    }
+  },
+  "long_call_butterfly": {
+    "id": "long_call_butterfly",
+    "name": "Long Call Butterfly",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Limited risk neutral strategy with 3 strikes",
+    "legs": [
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 2,
+        "strike_label": "middle"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "butterfly",
+      "description": "Max profit at middle strike"
+    },
+    "breakeven": "2 breakevens between strikes",
+    "max_profit": "(wing_width - net_debit)",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Range-bound around middle strike",
+      "volatility": "Moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "short_call_butterfly": {
+    "id": "short_call_butterfly",
+    "name": "Short Call Butterfly",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "High probability neutral strategy with 3 strikes",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 2,
+        "strike_label": "middle"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "butterfly",
+      "description": "Max profit at middle strike"
+    },
+    "breakeven": "2 breakevens between strikes",
+    "max_profit": "net_credit",
+    "max_loss": "wing_width - net_credit",
+    "ideal_conditions": {
+      "market_view": "Range-bound around middle strike",
+      "volatility": "High",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "long_put_butterfly": {
+    "id": "long_put_butterfly",
+    "name": "Long Put Butterfly",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Limited risk neutral strategy with 3 strikes",
+    "legs": [
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 2,
+        "strike_label": "middle"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "butterfly",
+      "description": "Max profit at middle strike"
+    },
+    "breakeven": "2 breakevens between strikes",
+    "max_profit": "(wing_width - net_debit)",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Range-bound around middle strike",
+      "volatility": "Moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "short_put_butterfly": {
+    "id": "short_put_butterfly",
+    "name": "Short Put Butterfly",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "High probability neutral strategy with 3 strikes",
+    "legs": [
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 2,
+        "strike_label": "middle"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "butterfly",
+      "description": "Max profit at middle strike"
+    },
+    "breakeven": "2 breakevens between strikes",
+    "max_profit": "net_credit",
+    "max_loss": "wing_width - net_credit",
+    "ideal_conditions": {
+      "market_view": "Range-bound around middle strike",
+      "volatility": "High",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "long_iron_call_butterfly": {
+    "id": "long_iron_call_butterfly",
+    "name": "Long Iron Call Butterfly",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Limited risk neutral strategy with 4 strikes",
+    "legs": [
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lowest"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower_middle"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher_middle"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "highest"
+      }
+    ],
+    "pnl_formula": {
+      "type": "butterfly",
+      "description": "Max profit at between middle strikes"
+    },
+    "breakeven": "2 breakevens between strikes",
+    "max_profit": "(wing_width - net_debit)",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Range-bound around middle strike",
+      "volatility": "Moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "short_iron_call_butterfly": {
+    "id": "short_iron_call_butterfly",
+    "name": "Short Iron Call Butterfly",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "High probability neutral strategy with 4 strikes",
+    "legs": [
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lowest"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower_middle"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher_middle"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "highest"
+      }
+    ],
+    "pnl_formula": {
+      "type": "butterfly",
+      "description": "Max profit at between middle strikes"
+    },
+    "breakeven": "2 breakevens between strikes",
+    "max_profit": "net_credit",
+    "max_loss": "wing_width - net_credit",
+    "ideal_conditions": {
+      "market_view": "Range-bound around middle strike",
+      "volatility": "High",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "long_call_condor": {
+    "id": "long_call_condor",
+    "name": "Long Call Condor",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Wider profit zone neutral strategy with 4 strikes",
+    "legs": [
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lowest"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower_middle"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher_middle"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "highest"
+      }
+    ],
+    "pnl_formula": {
+      "type": "condor",
+      "description": "Max profit between middle strikes"
+    },
+    "breakeven": "2 breakevens at wing edges",
+    "max_profit": "(body_width + wing_width - net_debit)",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Range-bound between middle strikes",
+      "volatility": "Moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "short_call_condor": {
+    "id": "short_call_condor",
+    "name": "Short Call Condor",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "High probability neutral strategy with 4 strikes",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lowest"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower_middle"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher_middle"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "highest"
+      }
+    ],
+    "pnl_formula": {
+      "type": "condor",
+      "description": "Max profit between middle strikes"
+    },
+    "breakeven": "2 breakevens at wing edges",
+    "max_profit": "net_credit",
+    "max_loss": "wing_width - net_credit",
+    "ideal_conditions": {
+      "market_view": "Range-bound between middle strikes",
+      "volatility": "High",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "long_put_condor": {
+    "id": "long_put_condor",
+    "name": "Long Put Condor",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Wider profit zone neutral strategy with 4 strikes",
+    "legs": [
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lowest"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower_middle"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher_middle"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "highest"
+      }
+    ],
+    "pnl_formula": {
+      "type": "condor",
+      "description": "Max profit between middle strikes"
+    },
+    "breakeven": "2 breakevens at wing edges",
+    "max_profit": "(body_width + wing_width - net_debit)",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Range-bound between middle strikes",
+      "volatility": "Moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "short_put_condor": {
+    "id": "short_put_condor",
+    "name": "Short Put Condor",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "High probability neutral strategy with 4 strikes",
+    "legs": [
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lowest"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower_middle"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher_middle"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "highest"
+      }
+    ],
+    "pnl_formula": {
+      "type": "condor",
+      "description": "Max profit between middle strikes"
+    },
+    "breakeven": "2 breakevens at wing edges",
+    "max_profit": "net_credit",
+    "max_loss": "wing_width - net_credit",
+    "ideal_conditions": {
+      "market_view": "Range-bound between middle strikes",
+      "volatility": "High",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "long_iron_call_condor": {
+    "id": "long_iron_call_condor",
+    "name": "Long Iron Call Condor",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Wider profit zone neutral strategy with 4 strikes",
+    "legs": [
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lowest"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower_middle"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher_middle"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "highest"
+      }
+    ],
+    "pnl_formula": {
+      "type": "condor",
+      "description": "Max profit between middle strikes"
+    },
+    "breakeven": "2 breakevens at wing edges",
+    "max_profit": "(body_width + wing_width - net_debit)",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Range-bound between middle strikes",
+      "volatility": "Moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "short_iron_call_condor": {
+    "id": "short_iron_call_condor",
+    "name": "Short Iron Call Condor",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "High probability neutral strategy with 4 strikes",
+    "legs": [
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lowest"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower_middle"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher_middle"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "highest"
+      }
+    ],
+    "pnl_formula": {
+      "type": "condor",
+      "description": "Max profit between middle strikes"
+    },
+    "breakeven": "2 breakevens at wing edges",
+    "max_profit": "net_credit",
+    "max_loss": "wing_width - net_credit",
+    "ideal_conditions": {
+      "market_view": "Range-bound between middle strikes",
+      "volatility": "High",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "call_calendar": {
+    "id": "call_calendar",
+    "name": "Call Calendar Spread",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Buy longer-dated call, sell shorter-dated call",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "near",
+        "expiration": "near"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "far",
+        "expiration": "far"
+      }
+    ],
+    "pnl_formula": {
+      "type": "calendar",
+      "description": "Profit from time decay differential"
+    },
+    "breakeven": "Complex - depends on vol and time",
+    "max_profit": "Far option value - net debit at near expiration",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Neutral around strike",
+      "volatility": "Low with expansion expected",
+      "time_horizon": "Medium term"
+    }
+  },
+  "call_diagonal": {
+    "id": "call_diagonal",
+    "name": "Call Diagonal Spread",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Buy longer-dated call, sell shorter-dated callat different strike",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "near_strike",
+        "expiration": "near"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "far_strike",
+        "expiration": "far"
+      }
+    ],
+    "pnl_formula": {
+      "type": "calendar",
+      "description": "Profit from time decay differential"
+    },
+    "breakeven": "Complex - depends on vol and time",
+    "max_profit": "Far option value - net debit at near expiration",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Neutral to slightly bullish/bearish",
+      "volatility": "Low with expansion expected",
+      "time_horizon": "Medium term"
+    }
+  },
+  "put_calendar": {
+    "id": "put_calendar",
+    "name": "Put Calendar Spread",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Buy longer-dated put, sell shorter-dated put",
+    "legs": [
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "near",
+        "expiration": "near"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "far",
+        "expiration": "far"
+      }
+    ],
+    "pnl_formula": {
+      "type": "calendar",
+      "description": "Profit from time decay differential"
+    },
+    "breakeven": "Complex - depends on vol and time",
+    "max_profit": "Far option value - net debit at near expiration",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Neutral around strike",
+      "volatility": "Low with expansion expected",
+      "time_horizon": "Medium term"
+    }
+  },
+  "put_diagonal": {
+    "id": "put_diagonal",
+    "name": "Put Diagonal Spread",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Buy longer-dated put, sell shorter-dated putat different strike",
+    "legs": [
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "near_strike",
+        "expiration": "near"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "far_strike",
+        "expiration": "far"
+      }
+    ],
+    "pnl_formula": {
+      "type": "calendar",
+      "description": "Profit from time decay differential"
+    },
+    "breakeven": "Complex - depends on vol and time",
+    "max_profit": "Far option value - net debit at near expiration",
+    "max_loss": "net_debit",
+    "ideal_conditions": {
+      "market_view": "Neutral to slightly bullish/bearish",
+      "volatility": "Low with expansion expected",
+      "time_horizon": "Medium term"
+    }
+  },
+  "synthetic_long": {
+    "id": "synthetic_long",
+    "name": "Synthetic Long Stock",
+    "category": "bullish",
+    "complexity": "intermediate",
+    "description": "Long call + short put = synthetic long stock position",
+    "legs": [
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "atm"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "atm"
+      }
+    ],
+    "pnl_formula": {
+      "type": "synthetic",
+      "description": "Mimics long stock"
+    },
+    "breakeven": "atm_strike + net_debit / 100",
+    "max_profit": "unlimited",
+    "max_loss": "strike_price + net_debit",
+    "ideal_conditions": {
+      "market_view": "Bullish",
+      "volatility": "Any",
+      "time_horizon": "Medium to long term"
+    }
+  },
+  "synthetic_short": {
+    "id": "synthetic_short",
+    "name": "Synthetic Short Stock",
+    "category": "bearish",
+    "complexity": "intermediate",
+    "description": "Short call + long put = synthetic short stock position",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "atm"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "atm"
+      }
+    ],
+    "pnl_formula": {
+      "type": "synthetic",
+      "description": "Mimics short stock"
+    },
+    "breakeven": "atm_strike - net_credit / 100",
+    "max_profit": "strike_price - net_debit",
+    "max_loss": "unlimited",
+    "ideal_conditions": {
+      "market_view": "Bearish",
+      "volatility": "Any",
+      "time_horizon": "Medium to long term"
+    }
+  },
+  "collar": {
+    "id": "collar",
+    "name": "Collar (Protective Collar)",
+    "category": "hedging",
+    "complexity": "intermediate",
+    "description": "Own stock + buy put + sell call for downside protection",
+    "legs": [
+      {
+        "type": "stock",
+        "action": "own",
+        "quantity": 100
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "collar",
+      "description": "Limited upside and downside"
+    },
+    "breakeven": "stock_cost + net_debit / 100",
+    "max_profit": "(higher_strike - stock_cost) * 100 - net_debit",
+    "max_loss": "(stock_cost - lower_strike) * 100 + net_debit",
+    "ideal_conditions": {
+      "market_view": "Neutral to slightly bullish with protection",
+      "volatility": "Any",
+      "time_horizon": "Medium term"
+    }
+  },
+  "protective_put": {
+    "id": "protective_put",
+    "name": "Protective Put (Married Put)",
+    "category": "hedging",
+    "complexity": "beginner",
+    "description": "Own stock + buy put for downside insurance",
+    "legs": [
+      {
+        "type": "stock",
+        "action": "own",
+        "quantity": 100
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "strike"
+      }
+    ],
+    "pnl_formula": {
+      "type": "protective",
+      "description": "Stock gains - put cost, protected below strike"
+    },
+    "breakeven": "stock_cost + put_premium / 100",
+    "max_profit": "unlimited",
+    "max_loss": "(stock_cost - strike) * 100 + put_premium",
+    "ideal_conditions": {
+      "market_view": "Bullish with protection",
+      "volatility": "Low to moderate",
+      "time_horizon": "Medium to long term"
+    }
+  },
+  "jade_lizard": {
+    "id": "jade_lizard",
+    "name": "Jade Lizard",
+    "category": "bullish",
+    "complexity": "advanced",
+    "description": "Short call spread + short put for high probability profit",
+    "legs": [
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "middle"
+      },
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "jade_lizard",
+      "description": "No upside risk if credit > call spread width"
+    },
+    "breakeven": "lower_strike - net_credit / 100",
+    "max_profit": "net_credit",
+    "max_loss": "(lower_strike - entry_price) * 100 - net_credit",
+    "ideal_conditions": {
+      "market_view": "Neutral to bullish",
+      "volatility": "High",
+      "time_horizon": "Short term"
+    }
+  },
+  "reverse_jade_lizard": {
+    "id": "reverse_jade_lizard",
+    "name": "Reverse Jade Lizard",
+    "category": "bearish",
+    "complexity": "advanced",
+    "description": "Short put spread + short call for bearish high probability",
+    "legs": [
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "higher"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 1,
+        "strike_label": "middle"
+      },
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower"
+      }
+    ],
+    "pnl_formula": {
+      "type": "reverse_jade_lizard",
+      "description": "No downside risk if structured properly"
+    },
+    "breakeven": "higher_strike + net_credit / 100",
+    "max_profit": "net_credit",
+    "max_loss": "(entry_price - higher_strike) * 100 - net_credit",
+    "ideal_conditions": {
+      "market_view": "Neutral to bearish",
+      "volatility": "High",
+      "time_horizon": "Short term"
+    }
+  },
+  "ratio_call_spread": {
+    "id": "ratio_call_spread",
+    "name": "Ratio Call Spread (1x2)",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Buy 1 call, sell 2 calls at higher strike",
+    "legs": [
+      {
+        "type": "call",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "lower"
+      },
+      {
+        "type": "call",
+        "action": "sell",
+        "quantity": 2,
+        "strike_label": "higher"
+      }
+    ],
+    "pnl_formula": {
+      "type": "ratio_spread",
+      "description": "Profit zone between strikes"
+    },
+    "breakeven": "lower_strike + net_debit / 100, higher_strike + max_profit / 100",
+    "max_profit": "(higher_strike - lower_strike) * 100 - net_debit",
+    "max_loss": "unlimited above upper breakeven",
+    "ideal_conditions": {
+      "market_view": "Moderately bullish",
+      "volatility": "Low to moderate",
+      "time_horizon": "Short to medium term"
+    }
+  },
+  "ratio_put_spread": {
+    "id": "ratio_put_spread",
+    "name": "Ratio Put Spread (1x2)",
+    "category": "neutral",
+    "complexity": "advanced",
+    "description": "Buy 1 put, sell 2 puts at lower strike",
+    "legs": [
+      {
+        "type": "put",
+        "action": "buy",
+        "quantity": 1,
+        "strike_label": "higher"
+      },
+      {
+        "type": "put",
+        "action": "sell",
+        "quantity": 2,
+        "strike_label": "lower"
+      }
+    ],
+    "pnl_formula": {
+      "type": "ratio_spread",
+      "description": "Profit zone between strikes"
+    },
+    "breakeven": "higher_strike - net_debit / 100, lower_strike - max_profit / 100",
+    "max_profit": "(higher_strike - lower_strike) * 100 - net_debit",
+    "max_loss": "unlimited below lower breakeven",
+    "ideal_conditions": {
+      "market_view": "Moderately bearish",
+      "volatility": "Low to moderate",
+      "time_horizon": "Short to medium term"
+    }
+  }
+}

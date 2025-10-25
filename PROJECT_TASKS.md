@@ -1,6 +1,6 @@
 # 📋 FlowMind Project Tasks & Roadmap
 
-**Last Updated:** October 22, 2025  
+**Last Updated:** October 24, 2025  
 **Repository:** github.com/barbudangabriel-gif/Flowmind  
 **Project Status:** Active Development
 
@@ -19,30 +19,83 @@
 
 ## 🚀 Active Tasks (In Progress)
 
-### 1. 🎨 BuilderV2 Page - 4-Tab Unified Interface (COMPLETED - HIGH PRIORITY)
-**Status:** ✅ COMPLETED - October 22, 2025  
+### 1. 🎨 BuilderV2 Page - Complete All 4 Tabs + "Open in Builder" Auto-Population (HIGH PRIORITY)
+**Status:** 🔄 IN PROGRESS - October 24, 2025  
 **Assignee:** AI Agent  
-**File:** `frontend/src/pages/BuilderV2Page.jsx` (545 lines)  
+**File:** `frontend/src/pages/BuilderV2Page.jsx`  
 **Route:** `/builder`
 
-**Completed Work:**
-- [x] **Tab Navigation:** Build, Optimize, Strategy, Flow tabs with clean dark theme UI
-- [x] **Build Tab:** Links to existing BuilderPage (strategy construction with table)
-- [x] **Optimize Tab:** Full UI implementation (261 lines)
-  - [x] Ticker header: Symbol search, price display, real-time indicator, refresh button
-  - [x] Direction filter: 6 circular border buttons (Very Bearish, Bearish, Neutral, Directional, Bullish, Very Bullish)
-  - [x] Target Price & Budget inputs with dynamic growth percentage calculation
-  - [x] Expiration carousel grouped by month (Oct 2025 - Feb 2026, 13 mock dates)
-  - [x] Slider with 10 positions (Max Return ← → Max Chance)
-  - [x] Mock strategy recommendations (Bull Call Spread, Long Call, Iron Condor)
-- [x] **Strategy Tab:** Links to StrategyLibraryPage (69+ strategies library)
-- [x] **Flow Tab:** Links to FlowPage (options flow data)
-- [x] **UI Polish:** All text white, circular colored borders for direction buttons, no backgrounds
-- [x] **Code Structure:** Moved 228 lines from main return to OptimizeTab, deleted duplicate functions
-- [x] **State Management:** 14 props correctly passed from BuilderV2Page to OptimizeTab
-- [x] **Testing:** Zero compilation errors, user confirmed functionality ("da, functioneaza")
+**Current Focus:**
+- [ ] **Build Tab Refinements:** 
+  - [x] Interactive P&L chart with probability distribution (mathematically correct risk-neutral)
+  - [x] Date slider (0-420 DTE) with smooth transitions
+  - [x] Probability overlay (blue curve) - terminal distribution at expiration T (FIXED)
+  - [ ] Additional visual polish and edge cases
+  - [ ] Layer system: Table, Graph, P/L, Greeks tabs
+  
+- [ ] **Optimize Tab:** Complete functionality
+  - [ ] Connect backend for strategy recommendations
+  - [ ] Real-time filtering by direction/expiration
+  - [ ] Strategy cards with live data
+  
+- [ ] **Strategy Tab:** Full implementation
+  - [ ] 69 strategy cards display
+  - [ ] Search/filter by strategy type
+  - [ ] "Open in Builder" button integration
+  
+- [ ] **Flow Tab:** Real-time flow data
+  - [ ] Unusual Whales API integration
+  - [ ] Live options flow display
+  - [ ] Filter by ticker/premium/sentiment
 
-**Next Steps (Backend Integration):**
+**Next Major Task:**
+- [ ] **"Open in Builder" Auto-Population System**
+  - [ ] Create universal strategy engine (avoid writing 69 separate implementations)
+  - [ ] Strategy → Build Tab state transfer (strikes, expiration, quantities)
+  - [ ] Dynamic chart rendering based on strategy type
+  - [ ] Scale from 360x180 (card) to 1000x400 (Build tab)
+  - [ ] Reference: See `STRATEGY_ENGINE_PROPOSAL.md` for architecture
+
+**Completed Work:**
+- [x] Build Tab: Complete options trading builder interface with P&L chart
+- [x] Probability mathematics: Risk-neutral lognormal distribution (see copilot-instructions.md)
+- [x] Black-Scholes option valuation with smooth date slider transitions
+- [x] Optimize Tab: Full UI implementation with direction filters and sliders
+- [x] **Strategy Tab:** Links to StrategyLibraryPage (69+ strategies library)
+- [x] **Flow Tab:** Complete implementation with 6 sub-pages
+  - [x] **Summary Page:** Bullish/Bearish columns with 36 flow pairs, FiltersPanel on right, Market Bias indicator (bulina)
+  - [x] **Live Flow Page:** Real-time flow table with 32+ trades, columns (Time, Symbol, Strategy, Expiration, Premium, Type), FiltersPanel
+  - [ ] **Historical Flow:** Under construction (placeholder)
+  - [ ] **News Flow:** Under construction (placeholder)
+  - [ ] **Congress Flow:** Under construction (placeholder)
+  - [ ] **Insider Flow:** Under construction (placeholder)
+- [x] **UI Polish:** 
+  - [x] All text white, gradients cyan-600/50 (bullish) and orange-600/50 (bearish)
+  - [x] Custom 6px scrollbar for columns and FiltersPanel
+  - [x] Tab navigation header with Market Bias indicator (gradient cyan-to-purple bulina)
+  - [x] Consistent fonts: text-base font-semibold for tabs, text-lg for flow data
+  - [x] Build tab uses custom slider styles (cyan thumb, 18px diameter)
+- [x] **Code Structure:** OptimizeTab separated, BuildTab fully replaced (deleted BuilderPage link)
+- [x] **State Management:** 14 props correctly passed from BuilderV2Page to OptimizeTab
+- [x] **Testing:** Zero compilation errors, Build tab displays complete options trading interface
+
+**Next Steps:**
+- [ ] Implement Historical Flow page (table structure TBD)
+- [ ] Implement News Flow page (layout TBD)
+- [ ] Implement Congress Flow page (congressional trades tracking)
+- [ ] Implement Insider Flow page (corporate insider trades)
+- [ ] Connect Market Bias indicator to real-time flow data (dynamic color based on bullish/bearish sentiment)
+- [ ] Backend integration for live flow data (WebSocket or polling)
+- [ ] Connect FiltersPanel to backend API for real filtering
+- [ ] Build Tab Backend Integration:
+  - [ ] Connect to options chain API for real strike prices
+  - [ ] Fetch real expiration dates from TradeStation
+  - [ ] Implement Greeks calculation for strategy metrics
+  - [ ] Add P&L calculation engine based on IV/Range sliders
+  - [ ] Connect strategy switching (Long Call → other strategies)
+  - [ ] Implement Add/Save/Positions functionality
+
+**Next Steps (Optimize Backend Integration):**
 - [ ] Connect symbol input to live price API (replace mock $250.75)
 - [ ] Fetch real expiration dates from TradeStation options chain API
 - [ ] Implement strategy calculation engine based on direction + slider position

@@ -1,19 +1,20 @@
 # FlowMind AI Agent Instructions
 
-**Project:** Options analytics platform with FastAPI backend, React 19 frontend  
-**Last Updated:** October 24, 2025
+**Project:** Options analytics platform with FastAPI backend, React 19 frontend
+**Last Updated:** October 25, 2025
 
 ---
 
 ## 📋 Table of Contents
-1. [Session Start Protocol](#session-start-protocol)
-2. [Architecture Patterns](#architecture-patterns)
-3. [BuilderV2 Page - Build Tab](#builderv2-page---build-tab)
-4. [Strategy Engine Proposal](#strategy-engine-proposal)
-5. [Developer Workflows](#developer-workflows)
-6. [External APIs](#external-apis)
-7. [Common Pitfalls](#common-pitfalls)
-8. [Key Files](#key-files)
+1. Session Start Protocol
+2. Architecture Patterns
+3. Frontend Component Structure
+4. BuilderV2 Page - Build Tab
+5. Strategy Engine Proposal
+6. Developer Workflows
+7. External APIs
+8. Common Pitfalls
+9. Key Files
 
 ---
 
@@ -30,7 +31,8 @@
 2. **Propose structure** - Show what goes where
 3. **Wait for confirmation** - Get explicit "da"/"yes"
 4. **Document structure** - Add comment at top of file
-5. **Never implement without approval** - Lesson learned: BuilderV2Page (Oct 22) required 228-line deletion due to no upfront agreement
+5. **Never implement without approval** - Lesson learned: BuilderV2Page (Oct 22)
+   required 228-line deletion due to no upfront agreement
 
 ### Development Style (Romanian workflow)
 - **Concis + vizual**: Arată implementarea, nu doar explica
@@ -52,23 +54,23 @@
 ### 1. Redis Fallback System (`backend/redis_fallback.py`)
 Zero-downtime caching - app continues if Redis unavailable.
 ```python
-# Three modes:
-# TEST_MODE=1 → Shared AsyncTTLDict (test consistency)
-# FM_FORCE_FALLBACK=1 → Force in-memory (dev)
-# Normal → Try Redis, fallback to in-memory on failure
+// Three modes:
+// TEST_MODE=1 → Shared AsyncTTLDict (test consistency)
+// FM_FORCE_FALLBACK=1 → Force in-memory (dev)
+// Normal → Try Redis, fallback to in-memory on failure
 
-await get_kv()  # Returns Redis OR AsyncTTLDict
+await get_kv()  // Returns Redis OR AsyncTTLDict
 ```
 **CRITICAL:** Always use `from redis_fallback import get_kv`, NEVER import Redis directly.
 
 ### 2. FIFO Position Tracking (`backend/mindfolios.py`)
 Tax-compliant realized P&L for options/stock positions.
 ```python
-# BUY adds to lots queue, SELL consumes from front (First-In-First-Out)
-# Example: BUY 100@250 + BUY 50@260 → SELL 120@270
-# Consumes: 100@250 + 20@260 → Realized $2,200, Remaining 30@260
+// BUY adds to lots queue, SELL consumes from front (First-In-First-Out)
+// Example: BUY 100@250 + BUY 50@260 → SELL 120@270
+// Consumes: 100@250 + 20@260 → Realized $2,200, Remaining 30@260
 ```
-**Functions:** `calculate_positions()`, `get_mindfolio_transactions()`  
+**Functions:** `calculate_positions()`, `get_mindfolio_transactions()`
 **NEVER modify positions directly** - always add transactions and recompute.
 
 ### 3. Dark Theme Enforcement
@@ -77,10 +79,87 @@ No light mode support (removed to simplify codebase).
 // frontend/src/App.js - ThemeProvider always isDarkMode: true
 useEffect(() => { document.documentElement.classList.add('dark'); }, []);
 ```
-**Rule:** All Tailwind classes MUST be dark variants (`bg-slate-800`, `text-white`)  
+**Rule:** All Tailwind classes MUST be dark variants (`bg-slate-800`, `text-white`)
 **NEVER use:** `isDarkMode ?` ternaries or light classes (`bg-white`, `text-gray-800`)
 
-### 4. Python 3.12 Indentation Rules
+---
+
+## Frontend Component Structure
+
+### Key Patterns
+FlowMind uses a **page-based architecture** with reusable components and test pages for validation.
+
+**Directory Structure:**
+```
+frontend/src/
+├── pages/                          // Full-page components (routed)
+│   ├── BuilderV2Page.jsx          // Main builder (Build/Optimize/Strategy/Flow tabs)
+│   ├── StrategyChartTestPage.jsx  // Test page for StrategyChart validation
+│   ├── MindfolioDetailNew.jsx     // Portfolio management
+│   ├── FlowPage.jsx, LiveFlowPage.jsx
+│   └── Dashboard.jsx, HomePage.jsx
+├── components/                     // Reusable components
+│   ├── StrategyChart.jsx          // Universal P&L chart (card OR full size)
+│   ├── StrategyPicker.jsx         // Strategy selection UI
+│   ├── BuilderChart.jsx           // Legacy builder chart
+│   └── optimize/                  // Optimize tab components
+│       ├── StrategyCard.jsx       // Strategy card (360x180)
+│       └── StrategyOptimizeCard.jsx
+├── hooks/                          // Custom React hooks
+│   ├── useWebSocket.js            // WebSocket connection management
+│   ├── useExpirations.js          // Fetch options expirations
+│   └── useOptionsSelling.js       // Options selling logic
+├── context/                        // React Context providers
+│   └── WebSocketContext.jsx       // Global WebSocket state
+└── api/                            // API client functions
+    └── flow.js                     // Flow data API calls
+```
+
+### Component Communication Patterns
+
+**1. Test Pages as Reference Implementations**
+```javascript
+// StrategyChartTestPage.jsx - ALWAYS check this first for working examples
+// Shows card + full sizes, multiple strategies (Bull Call, Bear Call, Long Call, Long Put)
+const params = {
+  strategyId: 'long_call',
+  currentPrice: 221.09,
+  strikes: { strike: 220 },
+  premiums: { premium: 3787.50 },
+  volatility: 0.348,
+  daysToExpiry: 420
+};
+<StrategyChart {...params} size="full" showProbability={false} />
+```
+
+**2. Backend URL Configuration**
+```javascript
+// ALWAYS use environment variable, NEVER hardcode
+const API = process.env.REACT_APP_BACKEND_URL || "";
+// Alternative patterns seen in codebase:
+const API = window.API_BASE || process.env.REACT_APP_BACKEND_URL || "";
+```
+
+**3. Size-Responsive Components**
+```javascript
+// StrategyChart.jsx supports two sizes:
+<StrategyChart size="card" />   // 360x180 (Optimize tab strategy cards)
+<StrategyChart size="full" />   // 1000x400 (Build tab full chart)
+```
+
+### Routing & Navigation
+```javascript
+// frontend/src/App.js - React Router v7
+<Route path="/builder" element={<BuilderV2Page />} />
+<Route path="/strategy-chart-test" element={<StrategyChartTestPage />} />
+<Route path="/mindfolio/:id" element={<MindfolioDetailNew />} />
+```
+
+---
+
+## Options Pricing Mathematics - CRITICAL IMPLEMENTATION
+
+### Python 3.12 Indentation Rules
 **CRITICAL:** Project recently fixed 5,314 lines across 12 files for Python 3.12 compliance.
 - **Standard:** 4-space indentation (enforced by Black, Ruff)
 - **VS Code:** Must have `"editor.detectIndentation": false` (configured in `.vscode/settings.json`)
@@ -94,39 +173,39 @@ useEffect(() => { document.documentElement.classList.add('dark'); }, []);
 
 **Stock Options Data (5 endpoints):**
 ```python
-GET /stock/{ticker}/option-contracts   # 500+ contracts with IV, OI, volume
-GET /stock/{ticker}/spot-exposures     # 300-410 GEX records (PRE-CALCULATED!)
-GET /stock/{ticker}/greeks             # Delta, Gamma, Theta, Vega
-GET /stock/{ticker}/options-volume     # Volume metrics, call/put ratios
-GET /stock/{ticker}/info               # Company metadata, sector, earnings
+GET /stock/{ticker}/option-contracts   // 500+ contracts with IV, OI, volume
+GET /stock/{ticker}/spot-exposures     // 300-410 GEX records (PRE-CALCULATED!)
+GET /stock/{ticker}/greeks             // Delta, Gamma, Theta, Vega
+GET /stock/{ticker}/options-volume     // Volume metrics, call/put ratios
+GET /stock/{ticker}/info               // Company metadata, sector, earnings
 ```
 
 **Market Screening & Alerts (2 endpoints):**
 ```python
-GET /screener/stocks?limit=10          # Unified GEX+IV+Greeks (POWERFUL!)
-GET /alerts?noti_type=market_tide      # Real-time market tide events
+GET /screener/stocks?limit=10          // Unified GEX+IV+Greeks (POWERFUL!)
+GET /alerts?noti_type=market_tide      // Real-time market tide events
 ```
 
 **Insider Trading (5 endpoints):**
 ```python
-GET /insider/trades                    # All insider trades
-GET /insider/{ticker}                  # Ticker-specific insider activity
-GET /insider/recent                    # Recent insider trades
-GET /insider/buys                      # Insider buys only
-GET /insider/sells                     # Insider sells only
+GET /insider/trades                    // All insider trades
+GET /insider/{ticker}                  // Ticker-specific insider activity
+GET /insider/recent                    // Recent insider trades
+GET /insider/buys                      // Insider buys only
+GET /insider/sells                     // Insider sells only
 ```
 
 **Dark Pool (2 endpoints):**
 ```python
-GET /darkpool/{ticker}                 # 500 dark pool trades per ticker!
-GET /darkpool/recent                   # Recent dark pool activity
+GET /darkpool/{ticker}                 // 500 dark pool trades per ticker!
+GET /darkpool/recent                   // Recent dark pool activity
 ```
 
 **Earnings (3 endpoints):**
 ```python
-GET /earnings/{ticker}                 # Earnings history
-GET /earnings/today                    # Today's earnings
-GET /earnings/week                     # This week's earnings
+GET /earnings/{ticker}                 // Earnings history
+GET /earnings/today                    // Today's earnings
+GET /earnings/week                     // This week's earnings
 ```
 
 #### ❌ HALLUCINATED ENDPOINTS (DO NOT USE - 404 errors)
@@ -145,11 +224,137 @@ GET /earnings/week                     # This week's earnings
 
 ---
 
+## Options Pricing Mathematics - CRITICAL IMPLEMENTATION
+
+### Risk-Neutral Probability Distribution (MANDATORY)
+
+**FlowMind uses mathematically correct risk-neutral pricing theory.**
+
+#### Terminal Distribution (Fixed at Expiration T)
+
+The probability overlay (blue curve) represents the **terminal distribution** at expiration T:
+
+```javascript
+// Risk-neutral lognormal PDF at expiration T (DOES NOT change with date slider)
+function lognormalPdfTerminal(S, S0, sigma, T, r=0, q=0) {
+  if (S <= 0 || T <= 0) return 0;
+  const mu = Math.log(S0) + (r - q - 0.5 * sigma * sigma) * T;
+  const variance = sigma * sigma * T;
+  const x = Math.log(S);
+  const exponent = -((x - mu) ** 2) / (2 * variance));
+  return (1 / (S * Math.sqrt(2 * Math.PI * variance))) * Math.exp(exponent);
+}
+```
+
+**Key Properties:**
+- **Mode (peak)**: `S_mode = S0 * exp((r - q - 1.5*σ²)*T)` - **NOT at strike!**
+- **Median**: `S_median = S0 * exp((r - q - 0.5*σ²)*T)`
+- **Distribution is FIXED** - does not change when moving date slider
+- Only the option value curve (green) changes with slider using `tau_remaining = T - t_selected`
+
+#### Breeden-Litzenberger Density Extraction (ADVANCED)
+
+When **live options chain data** is available, extract true risk-neutral density:
+
+```javascript
+// Extract RN density from option prices (captures real skew/smile)
+function extractRNDensityFromChain(optionsChain, F, T, r) {
+  // 1. Get forward price from put-call parity
+  // F ≈ K + (C - P) * exp(r*T) for ATM strike K
+
+  // 2. Interpolate C(K) across strikes (cubic spline or monotonic)
+  const interpolatedCalls = interpolateCallPrices(optionsChain);
+
+  // 3. Compute second derivative: f_T(K) = exp(r*T) * ∂²C/∂K²
+  const densityPoints = [];
+  for (let K of strikes) {
+    const d2C_dK2 = numericalSecondDerivative(interpolatedCalls, K);
+    const density = Math.exp(r * T) * d2C_dK2;
+    densityPoints.push([K, density]);
+  }
+
+  // 4. Normalize over strike range (truncate at tails)
+  const totalArea = trapezoidalIntegration(densityPoints);
+  return densityPoints.map(([K, f]) => [K, f / totalArea]);
+}
+```
+
+**When to use:**
+- ✅ **Breeden-Litzenberger**: When live options chain available (captures IV skew/smile)
+- ✅ **Lognormal fallback**: When no chain data or for smooth theoretical calculations
+- **FlowMind implementation**: Start with lognormal (stable, fast). Add Breeden-Litzenberger later when chain integration complete.
+
+#### Chance of Profit (PoP) Calculation
+
+For Long Call, probability of profit at expiration:
+
+```javascript
+// P(S_T ≥ breakeven) where breakeven = K + premium_per_share
+function probAboveTerminalPct(S0, X, sigma, T, r=0, q=0) {
+  const variance = sigma * Math.sqrt(T);
+  const d2 = (Math.log(S0 / X) + (r - q - 0.5 * sigma * sigma) * T) / variance;
+  return normCDF(d2) * 100; // Return percentage
+}
+
+// Breakeven price for Long Call
+const breakeven = strike + (premium / 100); // premium per share
+const chanceOfProfit = probAboveTerminalPct(S0, breakeven, sigma, T, r, q);
+```
+
+#### Black-Scholes Option Valuation
+
+```javascript
+function blackScholesCall(S, K, r, q, sigma, tau) {
+  if (tau <= 0) return Math.max(S - K, 0); // At expiration
+
+  const d1 = (Math.log(S/K) + (r - q + 0.5*sigma*sigma)*tau) / (sigma*Math.sqrt(tau));
+  const d2 = d1 - sigma*Math.sqrt(tau);
+
+  return S * Math.exp(-q*tau) * normCDF(d1) - K * Math.exp(-r*tau) * normCDF(d2);
+}
+
+// P&L calculation
+function pnlAtPrice(S, K, sigma, tauRemaining, premium, r=0, q=0) {
+  const optionValue = blackScholesCall(S, K, r, q, sigma, tauRemaining) * 100;
+  return optionValue - premium; // Per contract
+}
+```
+
+#### UI Implementation Guidelines
+
+**Date Slider Behavior:**
+- **Slider value** (0-420 DTE): Represents time FROM today
+- **Probability distribution**: Uses **fixed T** (total time to expiration) - never changes
+- **Option value curve**: Uses `tau_remaining = T - (sliderValue/365)` - changes smoothly
+- **At expiration** (slider at 420): Option value = payoff (intrinsic value only)
+- **At today** (slider at 0): Option value = full Black-Scholes with T
+
+**Visual Elements:**
+- **Blue curve**: Terminal probability distribution (fixed)
+- **Green curve**: Option value at selected date (dynamic)
+- **Orange dashed**: Payoff at expiration (reference, hidden when at expiration)
+- **White dashed**: Strike price (fixed vertical line)
+- **Cyan line**: Breakeven price
+
+**Sanity Checks (Example: AMZN)**
+```
+S0 = 224.21, K = 220, T ≈ 1.2y, σ ≈ 0.344, r ≈ q ≈ 0
+Expected results:
+- Premium per share: ~$39.33
+- Breakeven: ~$259.33
+- Chance of Profit: ~28-29%
+- Mode (peak of distribution): ~$181-182 (NOT at strike!)
+```
+
+**CRITICAL: Never "cosmetically" adjust distributions to look pretty. Use mathematically correct risk-neutral formulas.**
+
+---
+
 ## BuilderV2 Page - Build Tab
 
 ### Overview (Oct 24, 2025)
-**Status:** ✅ Complete interactive P&L chart with optimized layout  
-**File:** `frontend/src/pages/BuilderV2Page.jsx` (1538 lines)  
+**Status:** ✅ Complete interactive P&L chart with optimized layout
+**File:** `frontend/src/pages/BuilderV2Page.jsx` (1538 lines)
 **Purpose:** Unified builder interface with Build/Optimize/Strategy/Flow tabs
 
 ### Build Tab - Interactive P&L Chart
@@ -160,14 +365,14 @@ Full-width SVG chart (1000x400px responsive) for Long Call strategy visualizatio
 - **Price Range:** $100-$330 (230 points, extended loss zone)
 - **P&L Range:** -$5,000 to $12,000 (smoother profit angle)
 - **Padding:** { top: 20, right: 1, bottom: 40, left: 70 }
-- **Colors:** Profit (cyan #06b6d4), Loss (red #dc2626), gradients 0.85 opacity
+- **Colors:** Profit (cyan 06b6d4), Loss (red dc2626), gradients 0.85 opacity
 
 **Features:**
-✅ Real-time mouse tracking with coordinate transformation  
-✅ Tooltip follows P&L curve with dynamic positioning  
-✅ Price label at top margin, P&L value with colored dot on curve  
-✅ Vertical white line tracking mouse X position  
-✅ Current price line (white dashed), breakeven line (cyan), chance line (orange)  
+✅ Real-time mouse tracking with coordinate transformation
+✅ Tooltip follows P&L curve with dynamic positioning
+✅ Price label at top margin, P&L value with colored dot on curve
+✅ Vertical white line tracking mouse X position
+✅ Current price line (white dashed), breakeven line (cyan), chance line (orange)
 ✅ Compact metrics row (Net Debit, Max Loss/Profit, Chance, Breakeven)
 
 **Chart Optimization Techniques (Learned from Oct 24 session):**
@@ -266,7 +471,7 @@ class StrategyEngine {
 
 3. **StrategyChart.jsx** - Size-responsive component
 ```javascript
-<StrategyChart 
+<StrategyChart
   strategyId="long_call"
   size="card"     // 360x180 for Optimize tab
   size="full"     // 1000x400 for Build tab
@@ -274,12 +479,12 @@ class StrategyEngine {
 ```
 
 **Benefits:**
-✅ Add new strategy: 30 lines JSON (not 500 lines React)  
-✅ Color change: Update once, all 69 strategies inherit  
-✅ Backend reusable: Same engine for API calculations  
+✅ Add new strategy: 30 lines JSON (not 500 lines React)
+✅ Color change: Update once, all 69 strategies inherit
+✅ Backend reusable: Same engine for API calculations
 ✅ Consistent visuals: Same gradients, tooltips, animations
 
-**Implementation Plan:** 4 phases, 4 weeks (vs. 6 months manual)  
+**Implementation Plan:** 4 phases, 4 weeks (vs. 6 months manual)
 **Full details:** See `STRATEGY_ENGINE_PROPOSAL.md`
 
 ---
@@ -287,7 +492,7 @@ class StrategyEngine {
 ## External APIs
 
 ### Unusual Whales API Integration
-**Status:** ✅ 17 verified endpoints operational (Oct 21, 2025)  
+**Status:** ✅ 17 verified endpoints operational (Oct 21, 2025)
 **Service:** `backend/unusual_whales_service_clean.py`
 
 **Flow Data Integration:**
@@ -297,29 +502,29 @@ class StrategyEngine {
 - **Market Screening:** Unified GEX+IV+Greeks for strategy discovery
 
 ### TradeStation OAuth & API Integration
-**✅ COMPLETE WORKING SOLUTION (Oct 23-24, 2025)**  
+**✅ COMPLETE WORKING SOLUTION (Oct 23-24, 2025)**
 **Status:** Connected and operational in LIVE mode with real accounts
 
 #### Configuration (.env)
 ```bash
-# OAuth Credentials
+// OAuth Credentials
 TS_CLIENT_ID=XEs0URG1rMrGDUFRKVhlDaclvQKq8Qpj
 TS_CLIENT_SECRET=NsAIybzKV6GbYGqQZwF0cHypdXfwiDYL5-EY4nRXEbIy748Zp-FdeuDXJIu6Jhwk
 TS_REDIRECT_URI=https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestation/callback
 
-# CRITICAL: Both variables required for mode switching
+// CRITICAL: Both variables required for mode switching
 TS_MODE=LIVE
 TRADESTATION_MODE=LIVE  # app/routers/tradestation.py checks this!
 
-# API URLs (LIVE mode)
+// API URLs (LIVE mode)
 TS_BASE_URL=https://api.tradestation.com
 TS_AUTH_URL=https://signin.tradestation.com/authorize
 TS_TOKEN_URL=https://signin.tradestation.com/oauth/token
 
-# Scopes (verified working)
+// Scopes (verified working)
 TS_SCOPE=openid offline_access MarketData ReadAccount Trade OptionSpreads Matrix
 
-# Token settings
+// Token settings
 TS_HTTP_TIMEOUT=15
 TS_REFRESH_SKEW=60
 ```
@@ -327,11 +532,11 @@ TS_REFRESH_SKEW=60
 #### CRITICAL: OAuth Requirements
 1. **`audience` parameter REQUIRED** - Without this, API returns 401
    ```python
-   # backend/app/services/tradestation.py - auth_url()
+   // backend/app/services/tradestation.py - auth_url()
    params = {
        "response_type": "code",
        "client_id": TS_CLIENT_ID,
-       "audience": "https://api.tradestation.com",  # MUST INCLUDE!
+       "audience": "https://api.tradestation.com",  // MUST INCLUDE!
        "redirect_uri": redirect_uri,
        "scope": TS_SCOPE,
        "state": state,
@@ -340,15 +545,15 @@ TS_REFRESH_SKEW=60
 
 2. **Async token persistence** - Tokens stored in Redis/fallback cache
    ```python
-   # All token functions are async:
+   // All token functions are async:
    await set_token(user_id, token)
    token = await get_cached_token(user_id)
-   token = await get_valid_token(user_id)  # Auto-refreshes if needed
+   token = await get_valid_token(user_id)  // Auto-refreshes if needed
    ```
 
 3. **Mode switching** - `TRADESTATION_MODE` controls API base URL
    ```python
-   # backend/app/routers/tradestation.py
+   // backend/app/routers/tradestation.py
    TS_MODE = os.getenv("TRADESTATION_MODE", "SIMULATION")
    if TS_MODE == "LIVE":
        TS_API_BASE = "https://api.tradestation.com/v3"
@@ -366,29 +571,29 @@ TS_REFRESH_SKEW=60
 
 #### Verified Working Endpoints
 ```bash
-# Accounts (returns LIVE or SIM based on TRADESTATION_MODE)
+// Accounts (returns LIVE or SIM based on TRADESTATION_MODE)
 GET /api/tradestation/accounts
 Response: {"Accounts": [{"AccountID": "11775499", "AccountType": "Margin", ...}]}
 
-# Balances
+// Balances
 GET /api/tradestation/accounts/{account_id}/balances
 Response: {"Balances": [{"CashBalance": "...", "BuyingPower": "...", ...}]}
 
-# Positions (real-time P&L)
+// Positions (real-time P&L)
 GET /api/tradestation/accounts/{account_id}/positions
 Response: {"Positions": [{"Symbol": "TSLA", "Quantity": 100, "UnrealizedProfitLoss": "11281.97", ...}]}
 
-# Options Chain (NEW - Oct 24, 2025)
+// Options Chain (NEW - Oct 24, 2025)
 GET /api/tradestation/options/chains/{symbol}?strikeCount=10
 Response: {"Expirations": [...], "Strikes": [...], "Calls": [...], "Puts": [...]}
 ```
 
 #### Connection Status (Oct 24, 2025)
-✅ **OAuth Flow:** Fully functional with 2FA authentication  
-✅ **Token Persistence:** Survives backend restarts via Redis cache  
-✅ **Live Accounts:** Connected to real TradeStation accounts (11775499, 210MJP11)  
-✅ **Options Data:** Access to real-time options chains, strikes, premiums  
-✅ **Real-time Positions:** Live P&L tracking for stocks and options  
+✅ **OAuth Flow:** Fully functional with 2FA authentication
+✅ **Token Persistence:** Survives backend restarts via Redis cache
+✅ **Live Accounts:** Connected to real TradeStation accounts (11775499, 210MJP11)
+✅ **Options Data:** Access to real-time options chains, strikes, premiums
+✅ **Real-time Positions:** Live P&L tracking for stocks and options
 ✅ **Account Balances:** Cash balance, buying power, equity values
 
 #### Authentication Header
@@ -405,9 +610,9 @@ curl -H "X-User-ID: default" http://localhost:8000/api/tradestation/accounts
 
 #### Router Mounting
 ```python
-# backend/server.py
+// backend/server.py
 from app.routers.tradestation import router as ts_data_router
-app.include_router(ts_data_router, prefix="/api")  # Mounts /api/tradestation/*
+app.include_router(ts_data_router, prefix="/api")  // Mounts /api/tradestation/*
 ```
 
 #### Token Persistence Implementation
@@ -435,7 +640,7 @@ app.include_router(ts_data_router, prefix="/api")  # Mounts /api/tradestation/*
 4. **UW API hallucinations:** Only use 17 verified endpoints in `unusual_whales_service_clean.py`
 5. **Indentation:** Must be 4-space (Python 3.12 strict enforcement)
 6. **FIFO integrity:** Never modify positions - always add transactions and recompute
-7. **TradeStation OAuth:** 
+7. **TradeStation OAuth:**
    - Missing `audience` parameter causes 401 errors
    - Must set BOTH `TS_MODE` and `TRADESTATION_MODE`
    - SIMULATOR domain blocked on Codespaces - use LIVE mode
@@ -448,7 +653,7 @@ app.include_router(ts_data_router, prefix="/api")  # Mounts /api/tradestation/*
 cd backend
 python -m uvicorn server:app --reload --port 8000
 
-# Quality gates (CI/CD compliance):
+// Quality gates (CI/CD compliance):
 pytest -q --maxfail=1 --disable-warnings
 ruff check . && ruff format --check
 mypy . --ignore-missing-imports
@@ -459,9 +664,9 @@ pip-audit --strict
 ### Frontend Development
 ```bash
 cd frontend
-npm start  # Uses Craco (craco.config.js)
+npm start  // Uses Craco (craco.config.js)
 
-# Quality gates:
+// Quality gates:
 npm run lint
 npm run build
 npm audit --audit-level=high
@@ -469,8 +674,8 @@ npm audit --audit-level=high
 
 ### Docker Compose
 ```bash
-docker-compose up  # Backend :8000, Redis :6379
-# Uses: python -m uvicorn server:app --reload (not app.main:app)
+docker-compose up  // Backend :8000, Redis :6379
+// Uses: python -m uvicorn server:app --reload (not app.main:app)
 ```
 
 ### Integration Tests
@@ -497,17 +702,17 @@ python tradestation_integration_test.py
 ## Critical Environment Variables
 
 ```bash
-# Backend (backend/.env)
+// Backend (backend/.env)
 REDIS_URL=redis://localhost:6379/0
-FM_FORCE_FALLBACK=1              # Force in-memory cache
-FM_REDIS_REQUIRED=1              # Fail if Redis unavailable
-TEST_MODE=1                      # Shared in-memory for tests
+FM_FORCE_FALLBACK=1              // Force in-memory cache
+FM_REDIS_REQUIRED=1              // Fail if Redis unavailable
+TEST_MODE=1                      // Shared in-memory for tests
 MONGO_URL=mongodb://...
 TS_CLIENT_ID/TS_CLIENT_SECRET/TS_REDIRECT_URI
 UW_API_TOKEN or UNUSUAL_WHALES_API_KEY
 
-# Frontend (frontend/.env.local)
-REACT_APP_BACKEND_URL=http://localhost:8000  # NEVER hardcode!
+// Frontend (frontend/.env.local)
+REACT_APP_BACKEND_URL=http://localhost:8000  // NEVER hardcode!
 ```
 
 ---

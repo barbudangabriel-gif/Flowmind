@@ -38,6 +38,14 @@ export default function HomePage() {
       link: '/optimize',
       color: 'amber',
       badge: 'AI'
+    },
+    {
+      title: 'Strategy Cards Test',
+      description: 'Universal strategy card system (4 strategies)',
+      icon: Zap,
+      link: '/strategy-card-test',
+      color: 'cyan',
+      badge: 'NEW'
     }
   ];
 
@@ -99,6 +107,7 @@ export default function HomePage() {
                 blue: 'from-blue-500/20 to-blue-600/10 border-blue-500/30 hover:border-blue-400',
                 purple: 'from-purple-500/20 to-purple-600/10 border-purple-500/30 hover:border-purple-400',
                 amber: 'from-amber-500/20 to-amber-600/10 border-amber-500/30 hover:border-amber-400',
+                cyan: 'from-cyan-500/20 to-cyan-600/10 border-cyan-500/30 hover:border-cyan-400',
               };
 
               const iconColorClasses = {
@@ -106,6 +115,7 @@ export default function HomePage() {
                 blue: 'text-blue-400',
                 purple: 'text-purple-400',
                 amber: 'text-amber-400',
+                cyan: 'text-cyan-400',
               };
 
               return (

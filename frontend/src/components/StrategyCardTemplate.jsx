@@ -1,0 +1,467 @@
+import React from 'react';
+
+/**
+ * StrategyCardTemplate - Universal card matching StrategyCard.jsx design
+ * EXACT layout from Screenshot_545.png (Long Call reference)
+ * Used in Optimize tab and Strategy Library for all 69 strategies
+ */
+export default function StrategyCardTemplate({ 
+  strategy,
+  onClick 
+}) {
+  const {
+    name = 'Strategy Name',
+    legs = [],
+    returnPercent = 0,
+    chancePercent = 0,
+    profit = 0,
+    risk = 0,
+    collateral = 0,
+    category = 'bullish',
+  } = strategy;
+
+  // Format currency exactly as in StrategyCard
+  const formatCurrency = (val) => {
+    if (!val) return '$0';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(val);
+  };
+
+  // Dynamic color for Return (orange gradient)
+  const getReturnColor = (percent) => {
+    if (percent <= 0) return 'rgba(255, 255, 255, 0.5)';
+    const intensity = Math.min(percent / 100, 1);
+    const r = Math.round(217 + (251 - 217) * intensity);
+    const g = Math.round(119 + (146 - 119) * intensity);
+    const b = Math.round(6 + (60 - 6) * intensity);
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
+  // Dynamic color for Chance (green gradient)
+  const getChanceColor = (percent) => {
+    if (percent <= 0) return 'rgba(255, 255, 255, 0.5)';
+    const intensity = Math.min(percent / 100, 1);
+    const r = Math.round(134 - (134 - 34) * intensity);
+    const g = Math.round(239 - (239 - 197) * intensity);
+    const b = Math.round(172 - (172 - 94) * intensity);
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
+  // Format legs description (clean: "Buy 195C")
+  const formatLegs = (legs) => {
+    if (!legs || legs.length === 0) return 'No configuration';
+    return legs.map(leg => {
+      // Support both old format (side/kind) and new format (action/type)
+      const action = (leg.action || leg.side || 'buy').toLowerCase() === 'buy' ? 'BUY' : 'SELL';
+      const type = (leg.type || leg.kind || 'call').toUpperCase();
+      const strike = leg.strike || leg.strike_label || '0';
+      
+      // For generated strategies with strike_label (like "lower", "higher")
+      if (typeof strike === 'string' && !strike.match(/^\d/)) {
+        return `${action} ${type}${leg.quantity > 1 ? ` x${leg.quantity}` : ''}`;
+      }
+      
+      const typeSymbol = type.includes('CALL') ? 'C' : 'P';
+      return `${action} ${strike}${typeSymbol}${leg.quantity > 1 ? ` x${leg.quantity}` : ''}`;
+    }).join(', ');
+  };
+
+  // Generate P&L curve based on strategy type
+  const generatePnLCurve = () => {
+    const points = [];
+    
+    // For Long Call: shift curve right by decreasing both ends
+    const strikePrice = 220;
+    const numPoints = 50;
+    
+    // Shift right: start at 175 (was 185), end at 325 (was 335)
+    const minPrice = 175; // -10 to shift right
+    const maxPrice = 325; // -10 to shift right
+    
+    for (let i = 0; i < numPoints; i++) {
+      const price = minPrice + (i / (numPoints - 1)) * (maxPrice - minPrice);
+      
+      let pnl;
+      
+      if (name.includes('Bull Call Spread')) {
+        const lowerStrike = 220;
+        const higherStrike = 240;
+        const netDebit = risk || 1300;
+        
+        if (price <= lowerStrike) {
+          pnl = -netDebit;
+        } else if (price >= higherStrike) {
+          pnl = (higherStrike - lowerStrike) * 100 - netDebit;
+        } else {
+          pnl = (price - lowerStrike) * 100 - netDebit;
+        }
+      } else if (name.includes('Bear Call Spread')) {
+        // Bear Call Spread: Sell lower strike, Buy higher strike (credit spread)
+        const lowerStrike = 220;
+        const higherStrike = 240;
+        const netCredit = profit || 1300; // Premium received
+        
+        if (price <= lowerStrike) {
+          // Below lower strike: both expire worthless → keep credit
+          pnl = netCredit;
+        } else if (price >= higherStrike) {
+          // Above higher strike: max loss = (spread width * 100) - credit
+          pnl = -((higherStrike - lowerStrike) * 100 - netCredit);
+        } else {
+          // Between strikes: linear loss from credit to max loss
+          const intrinsicLoss = (price - lowerStrike) * 100;
+          pnl = netCredit - intrinsicLoss;
+        }
+      } else if (name.includes('Long Put')) {
+        const strikePrice = 200;
+        const premium = risk || 2500;
+        if (price >= strikePrice) {
+          pnl = -premium;
+        } else {
+          pnl = (strikePrice - price) * 100 - premium;
+        }
+      } else if (name.includes('Long Call')) {
+        const strikePrice = 220;
+        const premium = risk || 3787.50;
+        if (price < strikePrice) {
+          pnl = -premium;
+        } else {
+          pnl = (price - strikePrice) * 100 - premium;
+        }
+      } else {
+        // Default linear
+        pnl = ((i / numPoints) - 0.5) * (profit || 2000) * 2;
+      }
+      
+      points.push([price, Math.round(pnl)]);
+    }
+    
+    return points;
+  };
+
+  // Render chart
+  const renderChart = () => {
+    const data = generatePnLCurve();
+    
+    const width = 365;
+    const height = 145;
+    const padding = { top: 8, right: 13, bottom: 32, left: 52 }; // Shifted left 4px total: left 54→52, right 11→13
+    
+    // Y-axis range
+    const yMin = -4000;
+    const yMax = 6000;
+    const yRange = yMax - yMin;
+    
+    // X-axis range
+    const xMin = data[0][0];
+    const xMax = data[data.length - 1][0];
+    
+    // HARDCODE: Long Put needs inverted gradient
+    const isLongPut = name.includes('Long Put');
+    
+    // Scale functions
+    const scaleX = (price) => {
+      return padding.left + ((price - xMin) / (xMax - xMin)) * (width - padding.left - padding.right);
+    };
+    
+    const scaleY = (pnl) => {
+      return height - padding.bottom - ((pnl - yMin) / yRange) * (height - padding.top - padding.bottom);
+    };
+    
+    const zeroY = scaleY(0);
+    
+    // Y-axis labels
+    const yLabels = [-4000, -2000, 0, 2000, 4000, 6000];
+    const xLabels = [185, 205, 225, 245, 265, 285, 305, 325]; // Adjusted for 175-325 range
+    
+    // Calculate gradient coordinates in userSpaceOnUse
+    const topY = padding.top;
+    const bottomY = height - padding.bottom;
+    
+    // Calculate where zero line is as percentage of total chart height
+    const chartHeight = bottomY - topY;
+    const zeroOffsetFromTop = zeroY - topY;
+    const zeroPercent = (zeroOffsetFromTop / chartHeight) * 100;
+    
+    // Split data into loss and profit segments
+    let intersectionPoint = null;
+    let intersectionIndex = -1;
+    
+    for (let i = 0; i < data.length - 1; i++) {
+      if ((data[i][1] <= 0 && data[i + 1][1] > 0) || (data[i][1] > 0 && data[i + 1][1] <= 0)) {
+        const x1 = data[i][0], y1 = data[i][1];
+        const x2 = data[i + 1][0], y2 = data[i + 1][1];
+        const t = -y1 / (y2 - y1);
+        const xIntersect = x1 + t * (x2 - x1);
+        intersectionPoint = [xIntersect, 0];
+        intersectionIndex = i;
+        break;
+      }
+    }
+    
+    let lossPoints = [];
+    let profitPoints = [];
+    
+    if (intersectionPoint) {
+      lossPoints = data.slice(0, intersectionIndex + 1);
+      lossPoints.push(intersectionPoint);
+      profitPoints = [intersectionPoint];
+      profitPoints.push(...data.slice(intersectionIndex + 1));
+    } else {
+      if (data[0][1] <= 0) {
+        lossPoints = data;
+      } else {
+        profitPoints = data;
+      }
+    }
+    
+    const lossPath = lossPoints.map((point, i) => {
+      const x = scaleX(point[0]);
+      const y = scaleY(point[1]);
+      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+    }).join(' ');
+    
+    const profitPath = profitPoints.map((point, i) => {
+      const x = scaleX(point[0]);
+      const y = scaleY(point[1]);
+      return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+    }).join(' ');
+    
+    return (
+      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="w-full">
+        <defs>
+          {/* EXACT ca StrategyChart.jsx - CYAN cu opacitate 0.85 */}
+          <linearGradient id="redGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgba(220, 38, 38, 0)" />
+            <stop offset="100%" stopColor="rgba(220, 38, 38, 0.85)" />
+          </linearGradient>
+          <linearGradient id="greenGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgba(6, 182, 212, 0.85)" />
+            <stop offset="100%" stopColor="rgba(6, 182, 212, 0)" />
+          </linearGradient>
+        </defs>
+        
+        {/* Y-axis grid lines */}
+        {yLabels.map((value, i) => {
+          const y = scaleY(value);
+          return (
+            <g key={`y-${i}`}>
+              <line
+                x1={padding.left}
+                y1={y}
+                x2={width - padding.right}
+                y2={y}
+                stroke="rgba(255, 255, 255, 0.12)"
+                strokeWidth="1"
+              />
+              <line
+                x1={padding.left - 5}
+                y1={y}
+                x2={padding.left}
+                y2={y}
+                stroke="rgba(255, 255, 255, 0.7)"
+                strokeWidth="2"
+              />
+              <text
+                x={padding.left - 8}
+                y={y + 4}
+                textAnchor="end"
+                fill="rgba(255, 255, 255, 0.85)"
+                fontSize="11"
+                fontFamily="system-ui"
+                fontWeight="700"
+              >
+                {formatCurrency(value)}
+              </text>
+            </g>
+          );
+        })}
+        
+        {/* Zero line */}
+        <line
+          x1={padding.left}
+          y1={zeroY}
+          x2={width - padding.right}
+          y2={zeroY}
+          stroke="rgba(255, 255, 255, 0.3)"
+          strokeWidth="1.5"
+        />
+        
+        {/* Breakeven vertical line (dashed) at intersection point */}
+        {intersectionPoint && (
+          <line
+            x1={scaleX(intersectionPoint[0])}
+            y1={padding.top}
+            x2={scaleX(intersectionPoint[0])}
+            y2={height - padding.bottom}
+            stroke="rgba(255, 255, 255, 0.5)"
+            strokeWidth="1.5"
+            strokeDasharray="3,3"
+          />
+        )}
+        
+        {/* Loss line (red) */}
+        {lossPath && lossPoints.length > 0 && (
+          <>
+            <path
+              d={lossPath}
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d={`${lossPath} L ${scaleX(lossPoints[lossPoints.length - 1][0])} ${zeroY} L ${scaleX(lossPoints[0][0])} ${zeroY} Z`}
+              fill="url(#redGradient)"
+            />
+          </>
+        )}
+        
+        {/* Profit line (CYAN) */}
+        {profitPath && profitPoints.length > 0 && (
+          <>
+            <path
+              d={profitPath}
+              fill="none"
+              stroke="#06b6d4"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d={`${profitPath} L ${scaleX(profitPoints[profitPoints.length - 1][0])} ${zeroY} L ${scaleX(profitPoints[0][0])} ${zeroY} Z`}
+              fill="url(#greenGradient)"
+            />
+          </>
+        )}
+        
+        {/* Axes */}
+        <line
+          x1={padding.left}
+          y1={height - 20}
+          x2={width - padding.right}
+          y2={height - 20}
+          stroke="rgba(255, 255, 255, 1)"
+          strokeWidth="1"
+        />
+        <line
+          x1={padding.left}
+          y1={padding.top}
+          x2={padding.left}
+          y2={height - 20}
+          stroke="rgba(255, 255, 255, 1)"
+          strokeWidth="1"
+        />
+        
+        {/* X-axis labels */}
+        {xLabels.map((price, i) => {
+          const x = scaleX(price);
+          return (
+            <g key={`x-${i}`}>
+              <line
+                x1={x}
+                y1={height - 20}
+                x2={x}
+                y2={height - 15}
+                stroke="rgba(255, 255, 255, 0.7)"
+                strokeWidth="2"
+              />
+              <text
+                x={x}
+                y={height - 8}
+                textAnchor="middle"
+                fill="rgba(255, 255, 255, 0.85)"
+                fontSize="11"
+                fontFamily="system-ui"
+                fontWeight="700"
+              >
+                ${price}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    );
+  };
+
+  return (
+    <div 
+      className="rounded-lg transition-all cursor-pointer"
+      style={{
+        backgroundColor: '#282841',
+        border: '2px solid #4a4a6a',
+        boxShadow: '0 0 0 1px rgba(74, 74, 106, 0.3)',
+        maxWidth: '365px',
+        width: '365px',
+        paddingLeft: '2px',
+        paddingRight: '12px',
+        paddingTop: '18px',
+        paddingBottom: '12px'
+      }}
+      onClick={onClick}
+    >
+      {/* Title */}
+      <h3 className="mb-0 text-center" style={{ fontWeight: 400, color: 'rgba(255, 255, 255, 1)', fontSize: '0.975rem' }}>
+        {name}
+      </h3>
+      
+      {/* Legs */}
+      <p className="text-xs mb-0 text-center" style={{ fontWeight: 700, color: 'rgba(156, 163, 175, 1)' }}>
+        {formatLegs(legs)}
+      </p>
+      
+      {/* Metrics row */}
+      <div className="flex items-center justify-between w-full mb-1 text-xs" style={{ paddingLeft: '10px' }}>
+        {returnPercent > 0 && (
+          <div>
+            <span style={{ fontWeight: 500, color: getReturnColor(returnPercent) }}>{returnPercent}%</span>
+            <span className="ml-1" style={{ fontWeight: 500, color: 'rgba(255, 255, 255, 1)' }}>Return on risk</span>
+          </div>
+        )}
+        {chancePercent > 0 && (
+          <div>
+            <span style={{ fontWeight: 500, color: getChanceColor(chancePercent) }}>{chancePercent}%</span>
+            <span className="ml-1" style={{ fontWeight: 500, color: 'rgba(255, 255, 255, 1)' }}>Chance</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Profit/Risk line */}
+      <div className="flex items-center justify-between w-full mb-1.5 text-xs" style={{ paddingLeft: '10px' }}>
+        {profit !== 0 && <span style={{ fontWeight: 500, color: 'rgba(255, 255, 255, 1)' }}>{formatCurrency(profit)} Profit</span>}
+        {risk !== 0 && <span style={{ fontWeight: 500, color: 'rgba(255, 255, 255, 1)' }}>{formatCurrency(risk)} Risk</span>}
+        {collateral !== 0 && <span style={{ fontWeight: 500, color: 'rgba(255, 255, 255, 1)' }}>{formatCurrency(collateral)} Collateral</span>}
+      </div>
+      
+      {/* Chart - no container, direct SVG */}
+      <div className="mb-1.5">
+        {renderChart()}
+      </div>
+
+      {/* Open in Builder button */}
+      <div className="text-center">
+        <div 
+          className="rounded cursor-pointer transition-all hover:opacity-80 inline-block"
+          style={{
+            backgroundColor: '#06b6d4',
+            border: '1px solid #06b6d4',
+            padding: '3px 10px'
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onClick) onClick();
+          }}
+        >
+          <span style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.75rem' }}>
+            Open in Builder
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}

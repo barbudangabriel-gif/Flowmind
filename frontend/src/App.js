@@ -10,6 +10,9 @@ import HomePage from './pages/HomePage';
 import Dashboard from './pages/Dashboard';
 import StrategyLibraryPage from './pages/StrategyLibraryPage';
 import BuilderV2Page from './pages/BuilderV2Page';
+import StrategyChartTestPage from './pages/StrategyChartTestPage';
+import UniversalStrategyCardTestPage from './pages/UniversalStrategyCardTestPage';
+import LongPutTestPage from './pages/LongPutTestPage';
 import SimulatorPage from './pages/SimulatorPage';
 import FlowPage from './pages/FlowPage';
 import MindfolioList from './pages/MindfolioList';
@@ -218,6 +221,9 @@ function App() {
                 <Route path="/" element={<HomePage />} />
  <Route path="/dashboard" element={<Dashboard />} />
  <Route path="/builder" element={<BuilderV2Page />} />
+ <Route path="/strategy-chart-test" element={<StrategyChartTestPage />} />
+ <Route path="/strategy-card-test" element={<UniversalStrategyCardTestPage />} />
+ <Route path="/long-put-test" element={<LongPutTestPage />} />
  <Route path="/strategies" element={<StrategyLibraryPage />} />
  <Route path="/card-test" element={<CardTestPage />} />
  <Route path="/flow" element={<FlowPage />} />

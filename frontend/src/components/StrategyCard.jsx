@@ -73,22 +73,48 @@ export default function StrategyCard({ strategy, metrics = {}, onClick }) {
     const numPoints = 50;
     
     for (let i = 0; i < numPoints; i++) {
-      const pricePercent = (i / numPoints) * 0.55 + 0.775; // 77.5% to 132.5% (6px less loss zone than original)
+      const pricePercent = (i / numPoints) * 0.55 + 0.775; // 77.5% to 132.5%
       const price = Math.round(basePrice * pricePercent);
       
-      // Realistic profit curve for Long Call
       let pnl;
-      if (name.includes('Call') && !name.includes('Spread')) {
+      
+      if (name.includes('Bull Call Spread')) {
+        // Bull Call Spread: Buy lower strike, Sell higher strike
+        const lowerStrike = 220;
+        const higherStrike = 240;
+        const netDebit = risk || 1300;
+        
+        if (price <= lowerStrike) {
+          pnl = -netDebit;
+        } else if (price >= higherStrike) {
+          const maxProfit = (higherStrike - lowerStrike) * 100 - netDebit;
+          pnl = maxProfit;
+        } else {
+          const intrinsicValue = (price - lowerStrike) * 100;
+          pnl = intrinsicValue - netDebit;
+        }
+      } else if (name.includes('Long Put')) {
+        // Long Put: profit increases as price goes down (inverse hockey stick)
+        const strikePrice = 200;
+        const premium = risk || 2500;
+        if (price >= strikePrice) {
+          // Above strike: put expires worthless
+          pnl = -premium;
+        } else {
+          // Below strike: intrinsic value = (strike - price) * 100 - premium
+          pnl = (strikePrice - price) * 100 - premium;
+        }
+      } else if (name.includes('Call') && !name.includes('Spread')) {
         // Long Call: hockey stick - loss limited, profit unlimited
-        const strikePrice = 195;
-        const premium = risk || 2580;
+        const strikePrice = 220;
+        const premium = risk || 3787.50;
         if (price < strikePrice) {
           pnl = -premium;
         } else {
           pnl = (price - strikePrice) * 100 - premium;
         }
       } else if (name.includes('Spread')) {
-        // Spreads: bounded profit
+        // Other spreads: bounded profit (generic)
         const center = numPoints / 2;
         const distance = Math.abs(i - center);
         pnl = (profit || 1000) * (1 - Math.pow(distance / center, 2)) - (risk || 500) * 0.3;
@@ -111,8 +137,8 @@ export default function StrategyCard({ strategy, metrics = {}, onClick }) {
     const height = 180;
     const padding = { top: 10, right: -8, bottom: 45, left: 33 };  // Moved 18px right total: left 33, right -8
     
-    // Y-axis range (from screenshot: -$2,000 to $6,000)
-    const yMin = -2000;
+    // Y-axis range - adjusted for better loss visibility
+    const yMin = -4000;  // Increased from -2000 to show loss zone better
     const yMax = 6000;
     const yRange = yMax - yMin;
     
@@ -139,8 +165,8 @@ export default function StrategyCard({ strategy, metrics = {}, onClick }) {
     // Zero line
     const zeroY = scaleY(0);
     
-    // Y-axis labels
-    const yLabels = [-2000, 0, 2000, 4000, 6000];
+    // Y-axis labels - adjusted for new range
+    const yLabels = [-4000, -2000, 0, 2000, 4000, 6000];
     
     // X-axis labels - slightly less loss zone (165-265 range)
     const xLabels = [165, 185, 205, 225, 245, 265];
@@ -497,7 +523,9 @@ export default function StrategyCard({ strategy, metrics = {}, onClick }) {
           }}
           onClick={(e) => {
             e.stopPropagation();
-            console.log('Open in Builder clicked');
+            if (onClick) {
+              onClick();
+            }
           }}
         >
           <span style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.875rem' }}>
