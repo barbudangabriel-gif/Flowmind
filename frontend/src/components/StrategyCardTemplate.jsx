@@ -175,9 +175,16 @@ export default function StrategyCardTemplate({
     const height = 155; // Card height
     const padding = { top: 20, right: 13, bottom: 32, left: 52 }; // Increased top from 8 to 20 for tooltip label
     
-    // Y-axis range: adjust for Long Put/Call and spreads
-    const yMin = name.includes('Bull Call Spread') || name.includes('Bear Call Spread') ? -2000 : -4000;
-    const yMax = name.includes('Long Put') ? 10000 : (name.includes('Long Call') ? 9000 : (name.includes('Bull Call Spread') || name.includes('Bear Call Spread') ? 4000 : 6000));
+    // Calculate dynamic Y-axis range from actual P&L data
+    const pnlValues = data.map(point => point[1]);
+    const minPnL = Math.min(...pnlValues);
+    const maxPnL = Math.max(...pnlValues);
+    
+    // Add 20% padding to Y-range for better visualization
+    const pnlRange = maxPnL - minPnL;
+    const yPadding = pnlRange * 0.2;
+    const yMin = Math.floor((minPnL - yPadding) / 100) * 100; // Round to nearest 100
+    const yMax = Math.ceil((maxPnL + yPadding) / 100) * 100;
     const yRange = yMax - yMin;
     
     // X-axis range
@@ -198,26 +205,21 @@ export default function StrategyCardTemplate({
     
     const zeroY = scaleY(0);
     
-    // Y-axis labels: dynamic based on strategy type
-    const yLabels = name.includes('Long Put') 
-      ? [-4000, -2000, 0, 2000, 4000, 6000, 8000, 10000]
-      : name.includes('Long Call')
-      ? [-4000, -2000, 0, 2000, 4000, 6000, 8000]
-      : (name.includes('Bull Call Spread') || name.includes('Bear Call Spread'))
-      ? [-2000, -1000, 0, 1000, 2000, 3000, 4000]
-      : [-4000, -2000, 0, 2000, 4000, 6000];
+    // Y-axis labels: dynamic based on yMin/yMax
+    const yLabelCount = 6;
+    const yStep = Math.ceil(yRange / (yLabelCount - 1) / 100) * 100; // Round to nearest 100
+    const yLabels = [];
+    for (let i = 0; i < yLabelCount; i++) {
+      yLabels.push(yMin + (i * yStep));
+    }
     
-    // X-axis labels: dynamic based on strategy type
-    let xLabels;
-    if (name.includes('Long Put')) {
-      // For Long Put (range 100-275): 8 evenly spaced labels (~25 apart)
-      xLabels = [100, 125, 150, 175, 200, 225, 250, 275];
-    } else if (name.includes('Bull Call Spread') || name.includes('Bear Call Spread')) {
-      // For spreads (range 155-305): centered on 230
-      xLabels = [155, 175, 195, 215, 235, 255, 275, 295];
-    } else {
-      // For Long Call (range 175-325)
-      xLabels = [185, 205, 225, 245, 265, 285, 305, 325];
+    // X-axis labels: dynamic based on xMin/xMax
+    const xLabelCount = 8;
+    const xRange = xMax - xMin;
+    const xStep = Math.ceil(xRange / (xLabelCount - 1) / 5) * 5; // Round to nearest 5
+    const xLabels = [];
+    for (let i = 0; i < xLabelCount; i++) {
+      xLabels.push(Math.round(xMin + (i * xStep)));
     }
     
     // Calculate gradient coordinates in userSpaceOnUse
@@ -480,38 +482,38 @@ export default function StrategyCardTemplate({
           );
         })()}
         
-        {/* Loss line (red) - for Long Put this is the right side (above strike) */}
+        {/* Loss line (red) - for Long Put and Bear Call Spread, colors are inverted */}
         {lossPath && lossPoints.length > 0 && (
           <>
             <path
               d={lossPath}
               fill="none"
-              stroke={name.includes('Long Put') ? "#06b6d4" : "#ef4444"}
+              stroke={(name.includes('Long Put') || name.includes('Bear Call Spread')) ? "#06b6d4" : "#ef4444"}
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
               d={`${lossPath} L ${scaleX(lossPoints[lossPoints.length - 1][0])} ${zeroY} L ${scaleX(lossPoints[0][0])} ${zeroY} Z`}
-              fill={name.includes('Long Put') ? "url(#greenGradient)" : "url(#redGradient)"}
+              fill={(name.includes('Long Put') || name.includes('Bear Call Spread')) ? "url(#greenGradient)" : "url(#redGradient)"}
             />
           </>
         )}
         
-        {/* Profit line (CYAN) - for Long Put this is the left side (below strike) */}
+        {/* Profit line (CYAN) - for Long Put and Bear Call Spread, colors are inverted */}
         {profitPath && profitPoints.length > 0 && (
           <>
             <path
               d={profitPath}
               fill="none"
-              stroke={name.includes('Long Put') ? "#ef4444" : "#06b6d4"}
+              stroke={(name.includes('Long Put') || name.includes('Bear Call Spread')) ? "#ef4444" : "#06b6d4"}
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
               d={`${profitPath} L ${scaleX(profitPoints[profitPoints.length - 1][0])} ${zeroY} L ${scaleX(profitPoints[0][0])} ${zeroY} Z`}
-              fill={name.includes('Long Put') ? "url(#redGradient)" : "url(#greenGradient)"}
+              fill={(name.includes('Long Put') || name.includes('Bear Call Spread')) ? "url(#redGradient)" : "url(#greenGradient)"}
             />
           </>
         )}
