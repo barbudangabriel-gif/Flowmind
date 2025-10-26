@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 /**
  * StrategyCardTemplate - Universal card matching StrategyCard.jsx design
@@ -19,6 +19,9 @@ export default function StrategyCardTemplate({
     collateral = 0,
     category = 'bullish',
   } = strategy;
+
+  // Tooltip state
+  const [tooltip, setTooltip] = useState({ show: false, x: 0, y: 0, price: 0, pnl: 0 });
 
   // Format currency exactly as in StrategyCard
   const formatCurrency = (val) => {
@@ -156,11 +159,11 @@ export default function StrategyCardTemplate({
     
     const width = 365;
     const height = 145;
-    const padding = { top: 8, right: 13, bottom: 32, left: 52 }; // Shifted left 4px total: left 54→52, right 11→13
+    const padding = { top: 20, right: 13, bottom: 32, left: 52 }; // Increased top from 8 to 20 for tooltip label
     
     // Y-axis range: adjust for Long Put to show less vertical range
     const yMin = -4000;
-    const yMax = name.includes('Long Put') ? 10000 : 6000; // Increased for Long Put to flatten slope
+    const yMax = name.includes('Long Put') ? 10000 : (name.includes('Long Call') ? 9000 : 6000); // Increased for Long Call/Put to flatten slope
     const yRange = yMax - yMin;
     
     // X-axis range
@@ -184,6 +187,8 @@ export default function StrategyCardTemplate({
     // Y-axis labels: dynamic based on strategy type
     const yLabels = name.includes('Long Put') 
       ? [-4000, -2000, 0, 2000, 4000, 6000, 8000, 10000]
+      : name.includes('Long Call')
+      ? [-4000, -2000, 0, 2000, 4000, 6000, 8000]
       : [-4000, -2000, 0, 2000, 4000, 6000];
     
     // X-axis labels: dynamic based on strategy type
@@ -249,8 +254,55 @@ export default function StrategyCardTemplate({
       return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
     }).join(' ');
     
+    // Mouse handlers for tooltip
+    const handleMouseMove = (e) => {
+      const svg = e.currentTarget;
+      const rect = svg.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      
+      // Convert to price
+      const price = xMin + ((mouseX - padding.left) / (width - padding.left - padding.right)) * (xMax - xMin);
+      
+      // Calculate P&L at this price (same logic as generatePnLCurve)
+      let pnl;
+      let probability = 0; // Simplified: chance of reaching this price
+      
+      if (name.includes('Long Put')) {
+        const strikePrice = 200;
+        const premium = risk || 2650;
+        pnl = price >= strikePrice ? -premium : (strikePrice - price) * 100 - premium;
+        // Probability: higher when price is closer to current (200)
+        probability = Math.max(0, Math.min(100, 100 - Math.abs(price - 200) / 2));
+      } else if (name.includes('Long Call')) {
+        const strikePrice = 220;
+        const premium = risk || 3787.50;
+        pnl = price < strikePrice ? -premium : (price - strikePrice) * 100 - premium;
+        // Probability: higher when price is closer to current (221)
+        probability = Math.max(0, Math.min(100, 100 - Math.abs(price - 221) / 2));
+      } else {
+        pnl = 0;
+        probability = 50;
+      }
+      
+      // Calculate Y position on the curve
+      const curveY = scaleY(pnl);
+      
+      setTooltip({ show: true, x: mouseX, price, pnl, curveY, probability });
+    };
+    
+    const handleMouseLeave = () => {
+      setTooltip({ show: false, x: 0, price: 0, pnl: 0, curveY: 0, probability: 0 });
+    };
+    
     return (
-      <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} className="w-full">
+      <svg 
+        width="100%" 
+        height={height} 
+        viewBox={`0 0 ${width} ${height}`} 
+        className="w-full"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         <defs>
           {/* EXACT ca StrategyChart.jsx - CYAN cu opacitate 0.85 */}
           <linearGradient id="redGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -309,18 +361,75 @@ export default function StrategyCardTemplate({
           strokeWidth="1.5"
         />
         
-        {/* Breakeven vertical line (dashed) at intersection point */}
+        {/* Current Price vertical line (white dashed, fine dots) */}
+        {(() => {
+          const currentPrice = name.includes('Long Put') ? 200 : 221.09; // Strike price for puts, spot for calls
+          return (
+            <line
+              x1={scaleX(currentPrice)}
+              y1={padding.top}
+              x2={scaleX(currentPrice)}
+              y2={height - padding.bottom}
+              stroke="rgba(255, 255, 255, 0.7)"
+              strokeWidth="1.5"
+              strokeDasharray="2,2"
+            />
+          );
+        })()}
+        
+        {/* Breakeven vertical line (cyan solid) at intersection point with label */}
         {intersectionPoint && (
-          <line
-            x1={scaleX(intersectionPoint[0])}
-            y1={padding.top}
-            x2={scaleX(intersectionPoint[0])}
-            y2={height - padding.bottom}
-            stroke="rgba(255, 255, 255, 0.5)"
-            strokeWidth="1.5"
-            strokeDasharray="3,3"
-          />
+          <>
+            <line
+              x1={scaleX(intersectionPoint[0])}
+              y1={padding.top}
+              x2={scaleX(intersectionPoint[0])}
+              y2={height - padding.bottom}
+              stroke="rgba(6, 182, 212, 0.8)"
+              strokeWidth="1.5"
+            />
+            <text
+              x={scaleX(intersectionPoint[0])}
+              y={padding.top - 2}
+              textAnchor="middle"
+              fill="rgba(6, 182, 212, 0.9)"
+              fontSize="9"
+              fontFamily="system-ui"
+              fontWeight="600"
+            >
+              ${intersectionPoint[0].toFixed(0)}
+            </text>
+          </>
         )}
+        
+        {/* Chance line (orange solid) - positioned based on probability */}
+        {(() => {
+          // Calculate chance line position based on strategy
+          let chancePrice;
+          if (name.includes('Long Put')) {
+            // For Long Put: chance is below current price (32% chance means price at ~155)
+            const strikePrice = 200;
+            const currentPrice = 221.09;
+            // Approximate: chance line at ~75% of distance from breakeven to current
+            chancePrice = intersectionPoint ? intersectionPoint[0] + (currentPrice - intersectionPoint[0]) * 0.25 : 155;
+          } else {
+            // For Long Call: chance is above strike
+            const strikePrice = 220;
+            const breakeven = intersectionPoint ? intersectionPoint[0] : 257;
+            chancePrice = breakeven + 30; // ~30 points above breakeven
+          }
+          
+          return (
+            <line
+              x1={scaleX(chancePrice)}
+              y1={padding.top}
+              x2={scaleX(chancePrice)}
+              y2={height - padding.bottom}
+              stroke="rgba(251, 146, 60, 0.7)"
+              strokeWidth="1.5"
+            />
+          );
+        })()}
         
         {/* Loss line (red) - for Long Put this is the right side (above strike) */}
         {lossPath && lossPoints.length > 0 && (
@@ -403,6 +512,58 @@ export default function StrategyCardTemplate({
             </g>
           );
         })}
+        
+        {/* Tooltip - vertical line with labels */}
+        {tooltip.show && (
+          <g>
+            {/* Vertical tracking line */}
+            <line
+              x1={tooltip.x}
+              y1={padding.top}
+              x2={tooltip.x}
+              y2={height - padding.bottom}
+              stroke="rgba(255, 255, 255, 0.5)"
+              strokeWidth="1"
+              strokeDasharray="2,2"
+            />
+            
+            {/* Dot on curve */}
+            <circle
+              cx={tooltip.x}
+              cy={tooltip.curveY}
+              r="3"
+              fill={tooltip.pnl >= 0 ? "rgba(6, 182, 212, 1)" : "rgba(239, 68, 68, 1)"}
+              stroke="white"
+              strokeWidth="1.5"
+            />
+            
+            {/* Top label - Price and Probability (no background) */}
+            <text
+              x={tooltip.x}
+              y={padding.top - 6}
+              textAnchor="middle"
+              fill="rgba(255, 255, 255, 0.95)"
+              fontSize="9"
+              fontFamily="system-ui"
+              fontWeight="600"
+            >
+              ${tooltip.price.toFixed(1)} ({tooltip.probability.toFixed(0)}%)
+            </text>
+            
+            {/* Bottom label - P&L (follows curve, white text, raised up) */}
+            <text
+              x={tooltip.x}
+              y={tooltip.curveY - 8}
+              textAnchor="middle"
+              fill="rgba(255, 255, 255, 0.95)"
+              fontSize="10"
+              fontFamily="system-ui"
+              fontWeight="700"
+            >
+              {formatCurrency(tooltip.pnl)}
+            </text>
+          </g>
+        )}
       </svg>
     );
   };
