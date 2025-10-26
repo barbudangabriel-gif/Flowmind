@@ -30,7 +30,7 @@
  * - Large chart in Build tab: 1000x400px (full width of container)
  * - Same P&L curve, colors, axes, but scaled up
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Hammer, Target, BookOpen, TrendingUp, TrendingDown, ChevronDown, Search, RefreshCw, ArrowUp, ArrowDown, Minus, ArrowUpDown, ArrowUpCircle, ArrowDownCircle, ChevronLeft, ChevronRight, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
 import StrategyCard from '../components/StrategyCard';
@@ -59,20 +59,21 @@ const sliderStyles = `
     -moz-appearance: textfield;
   }
   
-  /* Custom Scrollbar */
+  /* Custom Scrollbar - Rectangular Cyan */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 8px !important;
+    height: 8px !important;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.3);
-    border-radius: 3px;
+    background: rgba(15, 23, 42, 0.3) !important;
+    border-radius: 0 !important;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(100, 116, 139, 0.5);
-    border-radius: 3px;
+    background: #0e7490 !important;
+    border-radius: 0 !important;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(100, 116, 139, 0.7);
+    background: #0891b2 !important;
   }
   
   .slider-cyan::-webkit-slider-thumb {
@@ -536,6 +537,9 @@ function OptionsTable({ rangeValue, ivValue, currentPrice, strike, premium, disp
  */
 function BuilderTab({ selectedStrategy }) {
   const [selectedDate, setSelectedDate] = useState("18");
+  const [selectedMonth, setSelectedMonth] = useState("Dec");
+  const [monthWidths, setMonthWidths] = useState({});
+  const monthRefs = useRef({});
   const [rangeValue, setRangeValue] = useState(37);
   const [ivValue, setIvValue] = useState(34.8);
   const [dteValue, setDteValue] = useState(420); // Start at expiration (420 DTE)
@@ -585,11 +589,23 @@ function BuilderTab({ selectedStrategy }) {
 
   const strikes = Array.from({ length: 56 }, (_, i) => 85 + i * 5);
 
+  // Measure month card widths after render
+  useEffect(() => {
+    const newWidths = {};
+    Object.keys(monthRefs.current).forEach((monthName) => {
+      const el = monthRefs.current[monthName];
+      if (el) {
+        newWidths[monthName] = el.offsetWidth;
+      }
+    });
+    setMonthWidths(newWidths);
+  }, []);
+
   return (
     <div className="h-full bg-gradient-to-b from-[#0a0e27] via-[#0a0e1a] to-[#0a0e27] text-white p-6 overflow-y-auto">
       {/* Header with Action Buttons - aligned with 60% container */}
-      <div className="w-[52%] mx-auto mb-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="w-[52%] mx-auto mb-2">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-semibold">{strategyData.strategyName}</h1>
             <button className="text-gray-400 hover:text-gray-300">
@@ -624,9 +640,9 @@ function BuilderTab({ selectedStrategy }) {
         <div className="flex items-center gap-3">
           <div className="px-2 py-1 border border-gray-600 rounded text-sm">{symbol}</div>
           <div className="text-2xl font-semibold text-white">${currentPrice}</div>
-          <div className="text-emerald-400 text-sm">
-            <div className="text-white">+{priceChangePercent}%</div>
-            <div className="text-white">+${priceChange}</div>
+          <div className={`text-sm ${priceChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div>{priceChange >= 0 ? '+' : ''}{priceChangePercent}%</div>
+            <div>{priceChange >= 0 ? '+' : ''}${priceChange}</div>
           </div>
           <div className="text-gray-400 text-sm flex items-center gap-1">
             Real-time
@@ -640,22 +656,35 @@ function BuilderTab({ selectedStrategy }) {
       {/* Chart Section - 60% width centered */}
       <div className="w-[52%] mx-auto">
         {/* Expiration Timeline */}
-        <div className="mb-6">
-          <div className="text-sm mb-3">EXPIRATION: 1.2y</div>
+        <div className="mb-2">
+          <div className="text-sm mb-2">EXPIRATION: 1.2y</div>
           <div className="relative h-20 bg-gray-900/50 rounded overflow-x-auto custom-scrollbar">
             <div className="flex items-center justify-between px-2 h-full">
               {months.map((month, idx) => (
                 <div key={idx} className="flex flex-col items-center justify-center min-w-fit">
-                  <div className="text-xs text-white mb-2 whitespace-nowrap">{month.name}</div>
+                  <div 
+                    ref={(el) => monthRefs.current[month.name] = el}
+                    className="text-xs text-white mb-1 px-4 py-1 bg-gray-600 rounded text-center w-full h-6"
+                  >
+                    {month.name}
+                  </div>
                   <div className="flex gap-1.5">
                     {month.dates.map((date) => (
                       <button
                         key={date}
-                        onClick={() => setSelectedDate(date)}
-                        className={`px-4 py-1.5 rounded text-sm transition-colors ${
-                          selectedDate === date && month.name === "Dec"
-                            ? "bg-cyan-500 text-white"
-                            : "bg-gray-800 text-white hover:bg-gray-700"
+                        onClick={() => {
+                          setSelectedDate(date);
+                          setSelectedMonth(month.name);
+                        }}
+                        style={
+                          selectedDate === date && selectedMonth === month.name
+                            ? { width: monthWidths[month.name] ? `${monthWidths[month.name]}px` : 'auto' }
+                            : {}
+                        }
+                        className={`px-4 py-1 rounded text-sm transition-colors h-6 ${
+                          selectedDate === date && selectedMonth === month.name
+                            ? "bg-cyan-700 text-white"
+                            : "text-white hover:text-cyan-400"
                         }`}
                       >
                         {date}
@@ -1257,7 +1286,7 @@ function BuilderTab({ selectedStrategy }) {
             onClick={() => setLayerTab('table')}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               layerTab === 'table'
-                ? 'bg-cyan-500 text-white'
+                ? 'bg-cyan-700 text-white'
                 : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
             }`}
           >
@@ -1270,7 +1299,7 @@ function BuilderTab({ selectedStrategy }) {
             onClick={() => setLayerTab('graph')}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors ${
               layerTab === 'graph'
-                ? 'bg-cyan-500 text-white'
+                ? 'bg-cyan-700 text-white'
                 : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
             }`}
           >
@@ -1283,7 +1312,7 @@ function BuilderTab({ selectedStrategy }) {
             onClick={() => setDisplayMode('pnl_dollar')}
             className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
               displayMode === 'pnl_dollar'
-                ? 'bg-cyan-500 text-white'
+                ? 'bg-cyan-700 text-white'
                 : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
             }`}
           >
@@ -1293,7 +1322,7 @@ function BuilderTab({ selectedStrategy }) {
             onClick={() => setDisplayMode('pnl_percent')}
             className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
               displayMode === 'pnl_percent'
-                ? 'bg-cyan-500 text-white'
+                ? 'bg-cyan-700 text-white'
                 : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
             }`}
           >
@@ -1303,7 +1332,7 @@ function BuilderTab({ selectedStrategy }) {
             onClick={() => setDisplayMode('contract_value')}
             className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
               displayMode === 'contract_value'
-                ? 'bg-cyan-500 text-white'
+                ? 'bg-cyan-700 text-white'
                 : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
             }`}
           >
@@ -1313,7 +1342,7 @@ function BuilderTab({ selectedStrategy }) {
             onClick={() => setDisplayMode('max_risk_percent')}
             className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
               displayMode === 'max_risk_percent'
-                ? 'bg-cyan-500 text-white'
+                ? 'bg-cyan-700 text-white'
                 : 'bg-transparent border border-gray-600 text-white hover:bg-gray-800'
             }`}
           >

@@ -191,3 +191,20 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari, Opera */
 }
+
+/* Custom Scrollbar - Rectangular Cyan */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3) !important;
+  border-radius: 0 !important;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #0e7490 !important;
+  border-radius: 0 !important;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #0891b2 !important;
+}
