@@ -132,8 +132,21 @@
       }
     ],
     "pnl_formula": {
-      "type": "spread",
-      "description": "Net debit spread"
+      "type": "multi_segment",
+      "segments": [
+        {
+          "range": "below_lower",
+          "formula": "-net_debit"
+        },
+        {
+          "range": "between",
+          "formula": "(price - lower_strike) * 100 - net_debit"
+        },
+        {
+          "range": "above_higher",
+          "formula": "(higher_strike - lower_strike) * 100 - net_debit"
+        }
+      ]
     },
     "breakeven": "lower_strike + net_debit / 100",
     "max_profit": "(higher_strike - lower_strike) * 100 - net_debit",
@@ -165,8 +178,21 @@
       }
     ],
     "pnl_formula": {
-      "type": "spread",
-      "description": "Net credit spread"
+      "type": "multi_segment",
+      "segments": [
+        {
+          "range": "below_lower",
+          "formula": "net_credit"
+        },
+        {
+          "range": "between",
+          "formula": "net_credit - (price - lower_strike) * 100"
+        },
+        {
+          "range": "above_higher",
+          "formula": "-((higher_strike - lower_strike) * 100 - net_credit)"
+        }
+      ]
     },
     "breakeven": "lower_strike + net_credit / 100",
     "max_profit": "net_credit",

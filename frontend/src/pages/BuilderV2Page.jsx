@@ -803,24 +803,19 @@ function BuilderTab({ selectedStrategy }) {
                 const height = 400;
                 const padding = { top: 20, right: 1, bottom: 40, left: 70 };
                 
-                // Y-axis range: -$5,000 to $12,000
-                const yMin = -5000;
-                const yMax = 12000;
-                const yRange = yMax - yMin;
-                
-                // X-axis range: $100 to $330
-                const xMin = 100;
-                const xMax = 330;
-                const xRange = xMax - xMin;
-                
-                // Scale functions
-                const scaleX = (price) => {
-                  return padding.left + ((price - xMin) / xRange) * (width - padding.left - padding.right);
-                };
-                
-                const scaleY = (pnl) => {
-                  return height - padding.bottom - ((pnl - yMin) / yRange) * (height - padding.top - padding.bottom);
-                };
+                // Dynamic X-axis range based on strategy type
+                let xMin, xMax;
+                if (strategyData.strategyId === 'long_put') {
+                  xMin = 100;
+                  xMax = 275;
+                } else if (strategyData.strategyId === 'bull_call_spread' || strategyData.strategyId === 'bear_call_spread') {
+                  xMin = 155;
+                  xMax = 305;
+                } else {
+                  // Long Call default
+                  xMin = 175;
+                  xMax = 325;
+                }
                 
                 // Generate P&L curve using StrategyEngine
                 const generatePnL = () => {
@@ -838,6 +833,30 @@ function BuilderTab({ selectedStrategy }) {
                 };
                 
                 const data = generatePnL();
+                
+                // Calculate dynamic Y-axis range from actual P&L data
+                const pnlValues = data.map(point => point[1]);
+                const minPnL = Math.min(...pnlValues);
+                const maxPnL = Math.max(...pnlValues);
+                
+                // Add 20% padding to Y-range for better visualization
+                const pnlRange = maxPnL - minPnL;
+                const yPadding = pnlRange * 0.2;
+                const yMin = Math.floor((minPnL - yPadding) / 100) * 100; // Round to nearest 100
+                const yMax = Math.ceil((maxPnL + yPadding) / 100) * 100;
+                const yRange = yMax - yMin;
+                
+                const xRange = xMax - xMin;
+                
+                // Scale functions
+                const scaleX = (price) => {
+                  return padding.left + ((price - xMin) / xRange) * (width - padding.left - padding.right);
+                };
+                
+                const scaleY = (pnl) => {
+                  return height - padding.bottom - ((pnl - yMin) / yRange) * (height - padding.top - padding.bottom);
+                };
+                
                 const zeroY = scaleY(0);
                 
                 // Split data into loss and profit segments
@@ -877,11 +896,21 @@ function BuilderTab({ selectedStrategy }) {
                   return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
                 }).join(' ');
                 
-                // Y-axis labels
-                const yLabels = [-5000, -4000, -2000, 0, 2000, 4000, 6000, 8000, 10000, 12000];
+                // Y-axis labels: dynamic based on yMin/yMax
+                const yLabelCount = 6;
+                const yStep = Math.ceil(yRange / (yLabelCount - 1) / 100) * 100; // Round to nearest 100
+                const yLabels = [];
+                for (let i = 0; i < yLabelCount; i++) {
+                  yLabels.push(yMin + (i * yStep));
+                }
                 
-                // X-axis labels
-                const xLabels = [100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 330];
+                // X-axis labels: dynamic based on xMin/xMax
+                const xLabelCount = 8;
+                const xStep = Math.ceil(xRange / (xLabelCount - 1) / 5) * 5; // Round to nearest 5
+                const xLabels = [];
+                for (let i = 0; i < xLabelCount; i++) {
+                  xLabels.push(Math.round(xMin + (i * xStep)));
+                }
                 
                 return (
                   <>

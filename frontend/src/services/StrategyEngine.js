@@ -90,10 +90,27 @@ class StrategyEngine {
   generatePnLCurve(priceMin, priceMax, step = 1) {
     const points = [];
     
+    // Collect all critical strike prices for sharp angles
+    const criticalPrices = new Set();
+    if (this.strikes.strike) criticalPrices.add(this.strikes.strike);
+    if (this.strikes.lower_strike) criticalPrices.add(this.strikes.lower_strike);
+    if (this.strikes.higher_strike) criticalPrices.add(this.strikes.higher_strike);
+    
+    // Generate regular points
     for (let price = priceMin; price <= priceMax; price += step) {
-      const pnl = this.calculatePnL(price);
-      points.push({ price, pnl });
+      points.push({ price, pnl: this.calculatePnL(price) });
+      
+      // Add critical prices nearby (for sharp angles)
+      for (const strike of criticalPrices) {
+        if (price < strike && price + step > strike) {
+          // Insert point exactly at strike
+          points.push({ price: strike, pnl: this.calculatePnL(strike) });
+        }
+      }
     }
+    
+    // Sort by price
+    points.sort((a, b) => a.price - b.price);
     
     return points;
   }
@@ -136,25 +153,25 @@ class StrategyEngine {
     return "0"; // Fallback
   }
 
-  /**
+    /**
    * Check if price is in specified range
    */
   isPriceInRange(price, range) {
     switch (range) {
       case 'below_lower':
-        return price < this.strikes.lower_strike;
-      
-      case 'between_strikes':
-        return price >= this.strikes.lower_strike && price <= this.strikes.higher_strike;
+        return price <= this.strikes.lower_strike;
       
       case 'above_higher':
-        return price > this.strikes.higher_strike;
+        return price >= this.strikes.higher_strike;
       
       case 'below_higher':
         return price < this.strikes.higher_strike;
       
       case 'above_lower':
         return price > this.strikes.lower_strike;
+      
+      case 'between':
+        return price > this.strikes.lower_strike && price < this.strikes.higher_strike;
       
       default:
         return false;
