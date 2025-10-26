@@ -74,13 +74,20 @@ export default function StrategyCardTemplate({
   const generatePnLCurve = () => {
     const points = [];
     
-    // For Long Call: shift curve right by decreasing both ends
-    const strikePrice = 220;
     const numPoints = 50;
     
-    // Shift right: start at 175 (was 185), end at 325 (was 335)
-    const minPrice = 175; // -10 to shift right
-    const maxPrice = 325; // -10 to shift right
+    // Dynamic price range based on strategy type
+    let minPrice, maxPrice;
+    
+    if (name.includes('Long Put')) {
+      // For Long Put with strike 200: range 100-275 (centered lower)
+      minPrice = 100;
+      maxPrice = 275;
+    } else {
+      // For Long Call and spreads: range 175-325 (centered on 220)
+      minPrice = 175;
+      maxPrice = 325;
+    }
     
     for (let i = 0; i < numPoints; i++) {
       const price = minPrice + (i / (numPoints - 1)) * (maxPrice - minPrice);
@@ -118,7 +125,7 @@ export default function StrategyCardTemplate({
         }
       } else if (name.includes('Long Put')) {
         const strikePrice = 200;
-        const premium = risk || 2500;
+        const premium = risk || 2650;
         if (price >= strikePrice) {
           pnl = -premium;
         } else {
@@ -151,9 +158,9 @@ export default function StrategyCardTemplate({
     const height = 145;
     const padding = { top: 8, right: 13, bottom: 32, left: 52 }; // Shifted left 4px total: left 54→52, right 11→13
     
-    // Y-axis range
+    // Y-axis range: adjust for Long Put to show less vertical range
     const yMin = -4000;
-    const yMax = 6000;
+    const yMax = name.includes('Long Put') ? 10000 : 6000; // Increased for Long Put to flatten slope
     const yRange = yMax - yMin;
     
     // X-axis range
@@ -174,9 +181,20 @@ export default function StrategyCardTemplate({
     
     const zeroY = scaleY(0);
     
-    // Y-axis labels
-    const yLabels = [-4000, -2000, 0, 2000, 4000, 6000];
-    const xLabels = [185, 205, 225, 245, 265, 285, 305, 325]; // Adjusted for 175-325 range
+    // Y-axis labels: dynamic based on strategy type
+    const yLabels = name.includes('Long Put') 
+      ? [-4000, -2000, 0, 2000, 4000, 6000, 8000, 10000]
+      : [-4000, -2000, 0, 2000, 4000, 6000];
+    
+    // X-axis labels: dynamic based on strategy type
+    let xLabels;
+    if (name.includes('Long Put')) {
+      // For Long Put (range 100-275): 8 evenly spaced labels (~25 apart)
+      xLabels = [100, 125, 150, 175, 200, 225, 250, 275];
+    } else {
+      // For Long Call and spreads (range 175-325)
+      xLabels = [185, 205, 225, 245, 265, 285, 305, 325];
+    }
     
     // Calculate gradient coordinates in userSpaceOnUse
     const topY = padding.top;
@@ -304,38 +322,38 @@ export default function StrategyCardTemplate({
           />
         )}
         
-        {/* Loss line (red) */}
+        {/* Loss line (red) - for Long Put this is the right side (above strike) */}
         {lossPath && lossPoints.length > 0 && (
           <>
             <path
               d={lossPath}
               fill="none"
-              stroke="#ef4444"
+              stroke={name.includes('Long Put') ? "#06b6d4" : "#ef4444"}
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
               d={`${lossPath} L ${scaleX(lossPoints[lossPoints.length - 1][0])} ${zeroY} L ${scaleX(lossPoints[0][0])} ${zeroY} Z`}
-              fill="url(#redGradient)"
+              fill={name.includes('Long Put') ? "url(#greenGradient)" : "url(#redGradient)"}
             />
           </>
         )}
         
-        {/* Profit line (CYAN) */}
+        {/* Profit line (CYAN) - for Long Put this is the left side (below strike) */}
         {profitPath && profitPoints.length > 0 && (
           <>
             <path
               d={profitPath}
               fill="none"
-              stroke="#06b6d4"
+              stroke={name.includes('Long Put') ? "#ef4444" : "#06b6d4"}
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
               d={`${profitPath} L ${scaleX(profitPoints[profitPoints.length - 1][0])} ${zeroY} L ${scaleX(profitPoints[0][0])} ${zeroY} Z`}
-              fill="url(#greenGradient)"
+              fill={name.includes('Long Put') ? "url(#redGradient)" : "url(#greenGradient)"}
             />
           </>
         )}

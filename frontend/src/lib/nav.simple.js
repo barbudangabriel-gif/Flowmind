@@ -12,6 +12,7 @@ export function buildNav(ctx) {
  title: "Overview",
  isComplete: true,
  items: [
+ { label: "Home (Dev)", to: "/", icon: "Home" },
  { label: "Dashboard", to: "/dashboard", icon: "LayoutDashboard" },
  ],
  },
@@ -21,7 +22,25 @@ export function buildNav(ctx) {
  title: "Accounts",
  isComplete: true,
  items: [
- { label: "Account Balance", to: "/account/balance", icon: "Wallet" },
+ { 
+ label: "TradeStation", 
+ to: "/account/tradestation", 
+ icon: "Wallet",
+ children: [
+ { label: "Equity", to: "/account/tradestation/equity", icon: "TrendingUp" },
+ { label: "Futures", to: "/account/tradestation/futures", icon: "Zap" },
+ ]
+ },
+ { 
+ label: "Tastytrade", 
+ to: "/account/tastytrade", 
+ icon: "Wallet",
+ children: [
+ { label: "Equity", to: "/account/tastytrade/equity", icon: "TrendingUp" },
+ { label: "Futures", to: "/account/tastytrade/futures", icon: "Zap" },
+ { label: "Crypto", to: "/account/tastytrade/crypto", icon: "Bitcoin" },
+ ]
+ },
  ],
  },
 
@@ -77,11 +96,6 @@ export function buildNav(ctx) {
  to: "/builder", 
  icon: "Sparkles"
  },
-	{
-	 label: "Simulator",
-	 to: "/simulator",
-	 icon: "BarChart2"
-	},
  { 
  label: "Analytics", 
  to: "/options/analytics", 
@@ -96,6 +110,7 @@ export function buildNav(ctx) {
  to: "/screener/iv", 
  icon: "Bot",
  children: [
+ { label: "Trade Simulator", to: "/simulator", icon: "PlayCircle" },
  { label: "IV Setups (Auto)", to: "/screener/iv", icon: "Activity" },
  { label: "Iron Condor Scanner", to: "/screener/iv?strategy=IRON_CONDOR", icon: "Target" },
  { label: "Calendar Scanner", to: "/screener/iv?strategy=CALENDAR", icon: "Calendar" },

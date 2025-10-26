@@ -41,17 +41,17 @@ export default function UniversalStrategyCardTestPage() {
     collateral: 0,
   };
 
-  // Long Put strategy data
+  // Long Put strategy data (AMZN @ $221.09, 420 DTE)
   const longPutStrategy = {
     name: 'Long Put',
     category: 'bearish',
     legs: [
       { side: 'BUY', kind: 'PUT', strike: '200', qty: 1 }
     ],
-    returnPercent: 120,
-    chancePercent: 38,
-    profit: 15000,
-    risk: 2500,
+    returnPercent: 160,
+    chancePercent: 32,
+    profit: 17000,
+    risk: 2650,
     collateral: 0,
   };
 
@@ -135,13 +135,13 @@ export default function UniversalStrategyCardTestPage() {
             ...longPutStrategy,
             strategyId: 'long_put',
             strikes: { strike: 200 },
-            premiums: { premium: 2500 }
+            premiums: { premium: 2650 }
           }}
           onClick={() => handleOpenInBuilder({
             strategyId: 'long_put',
             name: 'Long Put',
             strikes: { strike: 200 },
-            premiums: { premium: 2500 }
+            premiums: { premium: 2650 }
           })}
         />
 

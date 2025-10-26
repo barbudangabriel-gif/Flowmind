@@ -221,6 +221,7 @@ function App() {
                 <Route path="/" element={<HomePage />} />
  <Route path="/dashboard" element={<Dashboard />} />
  <Route path="/builder" element={<BuilderV2Page />} />
+ <Route path="/simulator" element={<SimulatorPage />} />
  <Route path="/strategy-chart-test" element={<StrategyChartTestPage />} />
  <Route path="/strategy-card-test" element={<UniversalStrategyCardTestPage />} />
  <Route path="/long-put-test" element={<LongPutTestPage />} />
