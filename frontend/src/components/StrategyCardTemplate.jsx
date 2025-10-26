@@ -86,8 +86,12 @@ export default function StrategyCardTemplate({
       // For Long Put with strike 200: range 100-275 (centered lower)
       minPrice = 100;
       maxPrice = 275;
+    } else if (name.includes('Bull Call Spread') || name.includes('Bear Call Spread')) {
+      // For spreads (220-240): center on 230, range 155-305
+      minPrice = 155;
+      maxPrice = 305;
     } else {
-      // For Long Call and spreads: range 175-325 (centered on 220)
+      // For Long Call: range 175-325 (centered on 220)
       minPrice = 175;
       maxPrice = 325;
     }
@@ -100,7 +104,12 @@ export default function StrategyCardTemplate({
       if (name.includes('Bull Call Spread')) {
         const lowerStrike = 220;
         const higherStrike = 240;
-        const netDebit = risk || 1300;
+        const netDebit = risk || 700; // Max loss (cost to enter position)
+        
+        // Debug: Log first/last points to verify P&L calculation
+        if (i === 0 || i === numPoints - 1) {
+          console.log(`Bull Call [${i === 0 ? 'START' : 'END'}] Price: ${price.toFixed(2)}, netDebit: ${netDebit}, risk: ${risk}`);
+        }
         
         if (price <= lowerStrike) {
           pnl = -netDebit;
@@ -108,6 +117,11 @@ export default function StrategyCardTemplate({
           pnl = (higherStrike - lowerStrike) * 100 - netDebit;
         } else {
           pnl = (price - lowerStrike) * 100 - netDebit;
+        }
+        
+        // Debug: Log P&L for key prices
+        if (i === 0 || i === numPoints - 1 || Math.abs(price - lowerStrike) < 1 || Math.abs(price - higherStrike) < 1) {
+          console.log(`  → P&L: ${pnl}`);
         }
       } else if (name.includes('Bear Call Spread')) {
         // Bear Call Spread: Sell lower strike, Buy higher strike (credit spread)
@@ -158,12 +172,12 @@ export default function StrategyCardTemplate({
     const data = generatePnLCurve();
     
     const width = 365;
-    const height = 145;
+    const height = 155; // Card height
     const padding = { top: 20, right: 13, bottom: 32, left: 52 }; // Increased top from 8 to 20 for tooltip label
     
-    // Y-axis range: adjust for Long Put to show less vertical range
-    const yMin = -4000;
-    const yMax = name.includes('Long Put') ? 10000 : (name.includes('Long Call') ? 9000 : 6000); // Increased for Long Call/Put to flatten slope
+    // Y-axis range: adjust for Long Put/Call and spreads
+    const yMin = name.includes('Bull Call Spread') || name.includes('Bear Call Spread') ? -2000 : -4000;
+    const yMax = name.includes('Long Put') ? 10000 : (name.includes('Long Call') ? 9000 : (name.includes('Bull Call Spread') || name.includes('Bear Call Spread') ? 4000 : 6000));
     const yRange = yMax - yMin;
     
     // X-axis range
@@ -189,6 +203,8 @@ export default function StrategyCardTemplate({
       ? [-4000, -2000, 0, 2000, 4000, 6000, 8000, 10000]
       : name.includes('Long Call')
       ? [-4000, -2000, 0, 2000, 4000, 6000, 8000]
+      : (name.includes('Bull Call Spread') || name.includes('Bear Call Spread'))
+      ? [-2000, -1000, 0, 1000, 2000, 3000, 4000]
       : [-4000, -2000, 0, 2000, 4000, 6000];
     
     // X-axis labels: dynamic based on strategy type
@@ -196,8 +212,11 @@ export default function StrategyCardTemplate({
     if (name.includes('Long Put')) {
       // For Long Put (range 100-275): 8 evenly spaced labels (~25 apart)
       xLabels = [100, 125, 150, 175, 200, 225, 250, 275];
+    } else if (name.includes('Bull Call Spread') || name.includes('Bear Call Spread')) {
+      // For spreads (range 155-305): centered on 230
+      xLabels = [155, 175, 195, 215, 235, 255, 275, 295];
     } else {
-      // For Long Call and spreads (range 175-325)
+      // For Long Call (range 175-325)
       xLabels = [185, 205, 225, 245, 265, 285, 305, 325];
     }
     
@@ -267,17 +286,40 @@ export default function StrategyCardTemplate({
       let pnl;
       let probability = 0; // Simplified: chance of reaching this price
       
-      if (name.includes('Long Put')) {
+      if (name.includes('Bull Call Spread')) {
+        const lowerStrike = 220;
+        const higherStrike = 240;
+        const netDebit = risk || 700;
+        if (price <= lowerStrike) {
+          pnl = -netDebit;
+        } else if (price >= higherStrike) {
+          pnl = (higherStrike - lowerStrike) * 100 - netDebit;
+        } else {
+          pnl = (price - lowerStrike) * 100 - netDebit;
+        }
+        probability = Math.max(0, Math.min(100, 100 - Math.abs(price - 221) / 2));
+      } else if (name.includes('Bear Call Spread')) {
+        const lowerStrike = 220;
+        const higherStrike = 240;
+        const netCredit = profit || 1300;
+        if (price <= lowerStrike) {
+          pnl = netCredit;
+        } else if (price >= higherStrike) {
+          pnl = -((higherStrike - lowerStrike) * 100 - netCredit);
+        } else {
+          const intrinsicLoss = (price - lowerStrike) * 100;
+          pnl = netCredit - intrinsicLoss;
+        }
+        probability = Math.max(0, Math.min(100, 100 - Math.abs(price - 221) / 2));
+      } else if (name.includes('Long Put')) {
         const strikePrice = 200;
         const premium = risk || 2650;
         pnl = price >= strikePrice ? -premium : (strikePrice - price) * 100 - premium;
-        // Probability: higher when price is closer to current (200)
         probability = Math.max(0, Math.min(100, 100 - Math.abs(price - 200) / 2));
       } else if (name.includes('Long Call')) {
         const strikePrice = 220;
         const premium = risk || 3787.50;
         pnl = price < strikePrice ? -premium : (price - strikePrice) * 100 - premium;
-        // Probability: higher when price is closer to current (221)
         probability = Math.max(0, Math.min(100, 100 - Math.abs(price - 221) / 2));
       } else {
         pnl = 0;
@@ -363,13 +405,20 @@ export default function StrategyCardTemplate({
         
         {/* Current Price vertical line (white dashed, fine dots) */}
         {(() => {
-          const currentPrice = name.includes('Long Put') ? 200 : 221.09; // Strike price for puts, spot for calls
+          let currentPrice;
+          if (name.includes('Long Put')) {
+            currentPrice = 200; // Strike
+          } else if (name.includes('Bull Call Spread') || name.includes('Bear Call Spread')) {
+            currentPrice = 221.09; // Current spot price between strikes
+          } else {
+            currentPrice = 221.09; // Default spot
+          }
           return (
             <line
               x1={scaleX(currentPrice)}
               y1={padding.top}
               x2={scaleX(currentPrice)}
-              y2={height - padding.bottom}
+              y2={height - 20}
               stroke="rgba(255, 255, 255, 0.7)"
               strokeWidth="1.5"
               strokeDasharray="2,2"
@@ -384,7 +433,7 @@ export default function StrategyCardTemplate({
               x1={scaleX(intersectionPoint[0])}
               y1={padding.top}
               x2={scaleX(intersectionPoint[0])}
-              y2={height - padding.bottom}
+              y2={height - 20}
               stroke="rgba(6, 182, 212, 0.8)"
               strokeWidth="1.5"
             />
@@ -424,7 +473,7 @@ export default function StrategyCardTemplate({
               x1={scaleX(chancePrice)}
               y1={padding.top}
               x2={scaleX(chancePrice)}
-              y2={height - padding.bottom}
+              y2={height - 20}
               stroke="rgba(251, 146, 60, 0.7)"
               strokeWidth="1.5"
             />
@@ -629,14 +678,14 @@ export default function StrategyCardTemplate({
           style={{
             backgroundColor: '#06b6d4',
             border: '1px solid #06b6d4',
-            padding: '3px 10px'
+            padding: '2px 8px'
           }}
           onClick={(e) => {
             e.stopPropagation();
             if (onClick) onClick();
           }}
         >
-          <span style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.75rem' }}>
+          <span style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.8rem' }}>
             Open in Builder
           </span>
         </div>
