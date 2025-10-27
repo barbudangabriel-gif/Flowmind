@@ -1,7 +1,7 @@
 # FlowMind AI Agent Instructions
 
 **Project:** Options analytics platform with FastAPI backend, React 19 frontend
-**Last Updated:** October 25, 2025
+**Last Updated:** October 27, 2025
 
 ---
 
@@ -11,10 +11,11 @@
 3. Frontend Component Structure
 4. BuilderV2 Page - Build Tab
 5. Strategy Engine Proposal
-6. Developer Workflows
-7. External APIs
-8. Common Pitfalls
-9. Key Files
+6. TradeStation Import System (NEW - Oct 27, 2025)
+7. Developer Workflows
+8. External APIs
+9. Common Pitfalls
+10. Key Files
 
 ---
 
@@ -400,6 +401,293 @@ onMouseMove={(e) => {
   transform: 'translate(10px, -50%)'
 }}>
 ```
+
+**Next Steps (Pending Implementation):**
+- [ ] Layer system: Table, Graph, P/L, Greeks tabs with button switching
+- [ ] Strategy Card → Build Tab integration (state transfer)
+- [ ] Backend connection for live TradeStation options data
+- [ ] Dynamic strategy switching (currently hardcoded Long Call)
+- [ ] Universal Strategy Engine (see Strategy Engine Proposal section)
+
+---
+
+## TradeStation Import System
+
+### Overview (Oct 27, 2025)
+**Status:** ✅ OAuth flow complete, ❌ Positions backup incomplete  
+**File:** `backend/mindfolio.py` (import endpoint line 608-760)  
+**Purpose:** Import live TradeStation positions into FlowMind mindfolios with FIFO tracking
+
+### Known Issues (CRITICAL)
+1. **Positions not in backup:** Positions stored separately in Redis (`key_mindfolio_positions`), not in Mindfolio model
+2. **Redis volatility:** Data lost on restart (save config: 3600s/1key, 300s/100keys, 60s/10000keys)
+3. **Codespaces port reset:** Port 8000 reverts to private on backend reload/codespace suspend
+4. **Token expiry:** TradeStation OAuth token expires, needs re-auth mid-session
+
+### Import Flow
+```
+1. User → /mindfolio/import page (frontend/src/pages/ImportFromTradeStation.jsx)
+2. OAuth: https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/ts/login
+3. Callback → frontend_url/mindfolio/import (3s auto-redirect)
+4. Select account → POST /api/mindfolio/import-from-tradestation
+5. Backend:
+   - Create Mindfolio (cash_balance from balances API)
+   - Fetch positions (40+ positions for account 11775499)
+   - Create BUY transactions for each position
+   - Save transactions to Redis (key: tx:{id})
+   - Update transaction list (key: mf:{id}:transactions)
+   - Call calculate_positions_fifo() → returns List[Position]
+   - Save positions to Redis (key: mf:{id}:positions)
+   - pf_put() → triggers backup_mindfolio_to_disk()
+6. Backup: JSON file at /workspaces/Flowmind/data/mindfolios/{id}.json
+```
+
+### Data Model
+```python
+# Mindfolio (backend/mindfolio.py line 94-116)
+class Mindfolio(BaseModel):
+    id: str
+    name: str
+    broker: str = "TradeStation"
+    environment: str = "SIM"  # "SIM" | "LIVE"
+    account_type: str = "Equity"
+    account_id: Optional[str] = None
+    cash_balance: float
+    starting_balance: float = 10000.0
+    status: str = "ACTIVE"
+    modules: List[ModuleAllocation] = []
+    created_at: str
+    updated_at: str
+    # NOTE: positions NOT in model - stored separately in Redis!
+
+# Position (line 74-79)
+class Position(BaseModel):
+    symbol: str
+    qty: float
+    cost_basis: float
+    avg_cost: float
+
+# Transaction (line 81-92)
+class Transaction(BaseModel):
+    id: str
+    mindfolio_id: str
+    datetime: str
+    symbol: str
+    side: str  # "BUY" | "SELL"
+    qty: float
+    price: float
+    fee: float = 0.0
+    notes: str = ""
+    created_at: str
+```
+
+### Redis Keys
+```python
+key_mindfolio(id) = f"mindfolio:{id}"
+key_mindfolio_list() = "mindfolios"
+key_transaction(tid) = f"tx:{tid}"
+key_mindfolio_transactions(pid) = f"mf:{pid}:transactions"
+key_mindfolio_positions(pid) = f"mf:{pid}:positions"
+```
+
+### JSON Backup System
+```python
+# backend/mindfolio.py line 163-195
+BACKUP_DIR = Path("/workspaces/Flowmind/data/mindfolios")
+
+def backup_mindfolio_to_disk(mindfolio: Mindfolio):
+    """Auto-called by pf_put() after every mindfolio save"""
+    backup_file = BACKUP_DIR / f"{mindfolio.id}.json"
+    json_data = json.dumps(mindfolio.dict(), indent=2)  # Pydantic v2: use .dict(), not .json(indent=2)
+    backup_file.write_text(json_data)
+    # NOTE: Does NOT include positions! Positions stored separately in Redis.
+
+def restore_mindfolio_from_disk(mindfolio_id: str):
+    """Manual restore from backup JSON"""
+    backup_file = BACKUP_DIR / f"{mindfolio_id}.json"
+    if backup_file.exists():
+        data = json.loads(backup_file.read_text())
+        return Mindfolio(**data)
+    return None
+
+# Restore endpoint: POST /api/mindfolio/restore-from-backup
+# Scans backup dir, restores all JSON files to Redis
+```
+
+### FIFO Position Calculation
+```python
+# backend/mindfolio.py line 221-270
+async def calculate_positions_fifo(mindfolio_id: str) -> List[Position]:
+    """Calculate current positions using FIFO method"""
+    transactions = await get_mindfolio_transactions(mindfolio_id)
+    lots: dict[str, list[dict]] = {}  # {symbol: [{"qty": float, "price": float}, ...]}
+    
+    for tx in transactions:
+        if tx.side == "BUY":
+            # Add to lots
+            cost_per_share = tx.price + (tx.fee / tx.qty if tx.qty > 0 else 0)
+            lots[symbol].append({"qty": tx.qty, "price": cost_per_share})
+        elif tx.side == "SELL":
+            # Consume lots FIFO
+            qty_to_sell = tx.qty
+            while qty_to_sell > 0 and lots[symbol]:
+                lot = lots[symbol][0]
+                if lot["qty"] <= qty_to_sell:
+                    qty_to_sell -= lot["qty"]
+                    lots[symbol].pop(0)  # Consume entire lot
+                else:
+                    lot["qty"] -= qty_to_sell
+                    qty_to_sell = 0
+    
+    # Return remaining positions
+    positions = []
+    for symbol, remaining_lots in lots.items():
+        if remaining_lots:
+            total_qty = sum(lot["qty"] for lot in remaining_lots)
+            total_cost = sum(lot["qty"] * lot["price"] for lot in remaining_lots)
+            positions.append(Position(
+                symbol=symbol,
+                qty=round2(total_qty),
+                cost_basis=round2(total_cost),
+                avg_cost=round2(total_cost / total_qty)
+            ))
+    return sorted(positions, key=lambda x: x.symbol)
+```
+
+### Import Endpoint Implementation
+```python
+# backend/mindfolio.py line 608-760
+@router.post("/import-from-tradestation")
+async def import_full_tradestation_mindfolio(body: dict, ...):
+    # 1. Get TradeStation token from cache
+    token_data = await get_valid_token(user_id)
+    
+    # 2. Fetch balances
+    balance_url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/balances"
+    balance_response = requests.get(balance_url, headers={"Authorization": f"Bearer {token}"})
+    cash_balance = float(balances_list[0].get("CashBalance", 0))
+    
+    # 3. Fetch positions
+    positions_url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/positions"
+    positions_response = requests.get(positions_url, headers=...)
+    positions_list = positions_data.get("Positions", [])  # 40+ positions
+    
+    # 4. Create mindfolio
+    new_mindfolio = Mindfolio(
+        id=f"mf_{secrets.token_hex(6)}",
+        name=f"TradeStation - {account_id}",
+        broker="TradeStation",
+        environment=os.getenv("TRADESTATION_MODE", "SIMULATION"),
+        cash_balance=cash_balance,
+        ...
+    )
+    await pf_put(new_mindfolio)  # Triggers backup (without positions!)
+    
+    # 5. Create BUY transactions for each position
+    cli = await get_kv()
+    for pos in positions_list:
+        tx = Transaction(
+            id=f"tx_{secrets.token_hex(6)}",
+            mindfolio_id=new_mindfolio.id,
+            symbol=pos.get("Symbol"),
+            side="BUY",
+            qty=float(pos.get("Quantity")),
+            price=float(pos.get("AveragePrice")),
+            ...
+        )
+        # Save transaction
+        await cli.set(key_transaction(tx.id), tx.model_dump_json())
+        
+        # Update transaction list
+        tx_list_raw = await cli.get(key_mindfolio_transactions(new_mindfolio.id)) or "[]"
+        tx_ids = json.loads(tx_list_raw)
+        tx_ids.append(tx.id)
+        await cli.set(key_mindfolio_transactions(new_mindfolio.id), json.dumps(tx_ids))
+    
+    # 6. Calculate positions from transactions
+    calculated_positions = await calculate_positions_fifo(new_mindfolio.id)
+    
+    # 7. Save positions to Redis
+    positions_json = json.dumps([pos.dict() for pos in calculated_positions])
+    await cli.set(key_mindfolio_positions(new_mindfolio.id), positions_json)
+    
+    # 8. Re-save mindfolio (triggers backup again, still without positions)
+    refreshed_mindfolio = await pf_get(new_mindfolio.id)
+    if refreshed_mindfolio:
+        await pf_put(refreshed_mindfolio)
+    
+    return {
+        "status": "success",
+        "mindfolio": refreshed_mindfolio.dict(),
+        "positions_imported": len(calculated_positions),
+        ...
+    }
+```
+
+### Debugging Commands
+```bash
+# Check mindfolios in Redis
+curl -s http://localhost:8000/api/mindfolio -H "X-User-ID: default" | jq
+
+# Check backup files
+ls -lh /workspaces/Flowmind/data/mindfolios/
+cat /workspaces/Flowmind/data/mindfolios/mf_*.json | jq
+
+# Check Redis keys
+docker exec flowmind-redis-1 redis-cli KEYS "*"
+docker exec flowmind-redis-1 redis-cli GET "mf:{id}:positions"
+
+# Check transactions
+docker exec flowmind-redis-1 redis-cli GET "mf:{id}:transactions"
+docker exec flowmind-redis-1 redis-cli GET "tx:{transaction_id}"
+
+# Manual restore from backup
+curl -X POST http://localhost:8000/api/mindfolio/restore-from-backup -H "X-User-ID: default"
+
+# Delete mindfolio (also deletes backup)
+curl -X DELETE http://localhost:8000/api/mindfolio/{id} -H "X-User-ID: default"
+```
+
+### TODO: Fix Positions in Backup
+**Problem:** Backup JSON only contains Mindfolio fields, not positions (stored separately)  
+**Solutions:**
+1. **Option A:** Add positions to Mindfolio model (breaks separation of concerns)
+2. **Option B:** Modify backup_mindfolio_to_disk() to fetch + include positions in JSON
+3. **Option C:** Separate positions backup file: {id}_positions.json
+4. **Option D:** Auto-restore from backup on backend startup (workaround for Redis volatility)
+
+**Recommended:** Option B - Fetch positions in backup function:
+```python
+def backup_mindfolio_to_disk(mindfolio: Mindfolio) -> None:
+    try:
+        # Get positions from Redis
+        cli = await get_kv()  # Need to make function async!
+        positions_json = await cli.get(key_mindfolio_positions(mindfolio.id)) or "[]"
+        positions = json.loads(positions_json)
+        
+        # Create backup dict with positions
+        backup_data = mindfolio.dict()
+        backup_data["positions"] = positions
+        
+        backup_file = BACKUP_DIR / f"{mindfolio.id}.json"
+        backup_file.write_text(json.dumps(backup_data, indent=2))
+    except Exception as e:
+        logger.error(f"Failed to backup mindfolio {mindfolio.id}: {e}")
+```
+
+### Codespaces Port Visibility Issue
+**Problem:** Port 8000 reverts to private on backend reload/suspend  
+**Symptoms:** CORS errors, "Failed to fetch", 401 on public URL  
+**Fix:** VS Code → PORTS tab → port 8000 → right click → Port Visibility → Public  
+**Permanent solution:** Deploy to Railway/VPS/Windows Docker Desktop (stable URLs)
+
+### OAuth Token Expiry
+**Token lifetime:** 60 minutes (TradeStation limit)  
+**Symptoms:** Import fails with 401, "Not authenticated"  
+**Fix:** Re-authenticate: https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/ts/login  
+**Storage:** Redis/fallback cache (key: `ts_token:{user_id}`, TTL: 60 days for refresh token)
+
+---
 
 **Next Steps (Pending Implementation):**
 - [ ] Layer system: Table, Graph, P/L, Greeks tabs with button switching
