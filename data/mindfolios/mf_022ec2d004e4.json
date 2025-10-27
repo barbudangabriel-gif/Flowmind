@@ -1,14 +1,14 @@
 {
-  "id": "mf_4a8073ae3304",
+  "id": "mf_022ec2d004e4",
   "name": "TradeStation - 11775499",
   "broker": "TradeStation",
   "environment": "LIVE",
   "account_type": "Equity",
   "account_id": "11775499",
-  "cash_balance": 488465.635,
-  "starting_balance": 488465.635,
+  "cash_balance": 490403.635,
+  "starting_balance": 490403.635,
   "status": "ACTIVE",
   "modules": [],
-  "created_at": "2025-10-27T17:15:56.896358",
-  "updated_at": "2025-10-27T17:15:56.896420"
+  "created_at": "2025-10-27T18:20:38.292151",
+  "updated_at": "2025-10-27T18:20:38.292204"
 }
