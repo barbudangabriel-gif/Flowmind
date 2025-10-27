@@ -4,31 +4,31 @@ import api from './api.js';
 export const mindfolioAPI = {
  // Mindfolios
  listMindfolios: async () => {
- const response = await api.get('/mindfolios');
+ const response = await api.get('/mindfolio');
  return response.data;
  },
 
  createMindfolio: async (name, base_currency = 'USD') => {
- const response = await api.post('/mindfolios', { name, base_currency });
+ const response = await api.post('/mindfolio', { name, base_currency });
  return response.data;
  },
 
  // Summary 
  summary: async (pid) => {
- const response = await api.get(`/mindfolios/${pid}/stats`);
+ const response = await api.get(`/mindfolio/${pid}/stats`);
  return response.data;
  },
 
  // Positions (FIFO generic)
  positions: async (pid) => {
- const response = await api.get(`/mindfolios/${pid}/positions`);
+ const response = await api.get(`/mindfolio/${pid}/positions`);
  return response.data;
  },
 
  // TS Positions grid
  positionsTS: async (pid) => {
  try {
- const response = await api.get(`/mindfolios/positions-ts`, { params: { mindfolioId: pid } });
+ const response = await api.get(`/mindfolio/positions-ts`, { params: { mindfolioId: pid } });
  return response.data;
  } catch (error) {
  // Fallback to regular positions
@@ -46,25 +46,25 @@ export const mindfolioAPI = {
  }
  });
  
- const response = await api.get(`/mindfolios/${pid}/transactions`, { params });
+ const response = await api.get(`/mindfolio/${pid}/transactions`, { params });
  return response.data;
  },
  
  createTx: async (pid, body) => {
- const response = await api.post(`/mindfolios/${pid}/transactions`, body);
+ const response = await api.post(`/mindfolio/${pid}/transactions`, body);
  return response.data;
  },
 
  // Import CSV
  importCSV: async (pid, csv_data) => {
- const response = await api.post(`/mindfolios/${pid}/import-csv`, { csv_data });
+ const response = await api.post(`/mindfolio/${pid}/import-csv`, { csv_data });
  return response.data;
  },
 
  // Buckets
  listBuckets: async (pid) => {
  try {
- const response = await api.get(`/mindfolios/${pid}/buckets`);
+ const response = await api.get(`/mindfolio/${pid}/buckets`);
  return response.data;
  } catch (error) {
  console.warn('Buckets not available:', error);
@@ -73,7 +73,7 @@ export const mindfolioAPI = {
  },
 
  createBucket: async (pid, body) => {
- const response = await api.post(`/mindfolios/${pid}/buckets`, body);
+ const response = await api.post(`/mindfolio/${pid}/buckets`, body);
  return response.data;
  },
 
@@ -81,7 +81,7 @@ export const mindfolioAPI = {
  equity: async (pid, params = {}) => {
  try {
  const queryParams = { ...params };
- const response = await api.get(`/mindfolios/${pid}/analytics/equity`, { params: queryParams });
+ const response = await api.get(`/mindfolio/${pid}/analytics/equity`, { params: queryParams });
  return response.data;
  } catch (error) {
  console.warn('Equity analytics not available:', error);
@@ -102,7 +102,7 @@ export const mindfolioAPI = {
  // EOD Analytics (End of Day snapshots)
  eod: async (pid) => {
  try {
- const response = await api.get(`/mindfolios/${pid}/analytics/eod`);
+ const response = await api.get(`/mindfolio/${pid}/analytics/eod`);
  return response.data;
  } catch (error) {
  console.warn('EOD analytics not available:', error);
@@ -115,7 +115,7 @@ export const mindfolioAPI = {
  // EOD Snapshot (trigger manual snapshot)
  eodSnapshot: async (pid) => {
  try {
- const response = await api.post(`/mindfolios/${pid}/analytics/eod/snapshot`);
+ const response = await api.post(`/mindfolio/${pid}/analytics/eod/snapshot`);
  return response.data;
  } catch (error) {
  console.error('EOD snapshot failed:', error);

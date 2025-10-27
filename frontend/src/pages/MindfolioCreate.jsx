@@ -24,7 +24,7 @@ export default function MindfolioCreate() {
  modules: []
  });
  console.log('Created mindfolio:', mindfolio);
- // Navigate to mindfolio list instead of detail page
+ // Navigate to mindfolio list (manager page)
  navigate('/mindfolio');
  } catch (ex) {
  console.error('Creation error:', ex);

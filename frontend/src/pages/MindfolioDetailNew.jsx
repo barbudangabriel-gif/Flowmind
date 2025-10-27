@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { mfClient } from "../services/mindfolioClient";
 import { Line, Bar } from "react-chartjs-2";
 import {
@@ -29,6 +29,7 @@ ChartJS.register(
 
 export default function MindfolioDetailNew() {
  const { id } = useParams();
+ const navigate = useNavigate();
  const [mindfolio, setMindfolio] = useState(null);
  const [activeTab, setActiveTab] = useState("SUMMARY");
  const [timeRange, setTimeRange] = useState("1M");
@@ -38,6 +39,7 @@ export default function MindfolioDetailNew() {
  const [isDashboardExpanded, setIsDashboardExpanded] = useState(false);
  const [stocksView, setStocksView] = useState("OPEN"); // OPEN or ALL
  const [expandedTickers, setExpandedTickers] = useState({}); // Track expanded tickers
+ const [deleting, setDeleting] = useState(false);
 
  useEffect(() => {
  loadMindfolio();
@@ -70,6 +72,23 @@ export default function MindfolioDetailNew() {
  });
  } finally {
  setLoading(false);
+ }
+ };
+
+ const handleDelete = async () => {
+ if (!window.confirm(`Are you sure you want to delete "${mindfolio?.name}"? This action cannot be undone.`)) {
+ return;
+ }
+ 
+ setDeleting(true);
+ try {
+ await mfClient.delete(id);
+ // Redirect to mindfolio list after successful deletion
+ navigate('/mindfolio');
+ } catch (err) {
+ console.error('Failed to delete mindfolio:', err);
+ alert('Failed to delete mindfolio: ' + err.message);
+ setDeleting(false);
  }
  };
 
@@ -275,6 +294,13 @@ export default function MindfolioDetailNew() {
  </button>
  <button className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition">
  + Add Position
+ </button>
+ <button 
+ onClick={handleDelete}
+ disabled={deleting}
+ className="px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition"
+ >
+ {deleting ? 'Deleting...' : 'Delete'}
  </button>
  </div>
  </div>

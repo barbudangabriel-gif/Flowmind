@@ -474,6 +474,15 @@ async def patch_mindfolio(pid: str, body: MindfolioPatch):
     return p
 
 
+@router.delete("/{pid}")
+async def delete_mindfolio(pid: str):
+    """Permanently delete mindfolio"""
+    kv = await get_kv()
+    key = f"mindfolio:{pid}"
+    await kv.delete(key)
+    return {"deleted": True, "id": pid}
+
+
 @router.post("/{pid}/funds", response_model=Mindfolio)
 async def funds(pid: str, body: FundsOp):
     """Add/subtract funds from mindfolio"""

@@ -50,6 +50,13 @@ class AsyncTTLDict:
             return -1  # no expiry
         return max(0, int(exp - time.time()))
 
+    async def delete(self, key: str) -> int:
+        """Delete key from store, return 1 if deleted, 0 if not found"""
+        if key in self._store:
+            del self._store[key]
+            return 1
+        return 0
+
     async def ping(self) -> bool:
         return True
 

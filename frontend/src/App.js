@@ -125,10 +125,15 @@ function App() {
  useEffect(() => {
  let mounted = true;
  
+ console.log('[App.js] Fetching mindfolios from:', `${process.env.REACT_APP_BACKEND_URL}/api/mindfolio`);
+ 
  mfClient.list()
  .then(data => {
  if (!mounted) return;
- setMindfolios(data || []);
+ console.log('[App.js] Mindfolios received:', data);
+ // Filter out deleted mindfolios
+ const active = (data || []).filter(m => m.status !== 'DELETED');
+ setMindfolios(active);
  })
  .catch(e => {
  console.error('Failed to load mindfolios for sidebar:', e);
@@ -148,8 +153,14 @@ function App() {
  // Auto-refresh mindfolios every 30 seconds
  useEffect(() => {
  const interval = setInterval(() => {
+ console.log('[App.js] Auto-refreshing mindfolios...');
  mfClient.list()
- .then(data => setMindfolios(data || []))
+ .then(data => {
+ console.log('[App.js] Auto-refresh received:', data);
+ // Filter out deleted mindfolios
+ const active = (data || []).filter(m => m.status !== 'DELETED');
+ setMindfolios(active);
+ })
  .catch(e => console.error('Mindfolio refresh failed:', e));
  }, 30000);
  return () => clearInterval(interval);

@@ -16,7 +16,9 @@ export default function MindfolioList() {
  mfClient.list()
  .then(data => {
  if (!mounted) return;
- setItems(data || []);
+ // Filter out DELETED mindfolios
+ const active = (data || []).filter(m => m.status !== 'DELETED');
+ setItems(active);
  })
  .catch(e => {
  console.error('Mindfolio list error:', e);

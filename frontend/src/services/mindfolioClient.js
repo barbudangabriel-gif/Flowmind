@@ -57,26 +57,26 @@ export const mfClient = {
  method: "POST", 
  body: JSON.stringify({ module, alloc }) 
  }),
- stats: (pid) => j(`/api/mindfolios/${pid}/stats`),
+ stats: (pid) => j(`/api/mindfolio/${pid}/stats`),
  
  // Transaction operations
  getTransactions: (pid, symbol = null) => {
  const params = new URLSearchParams();
  if (symbol) params.set('symbol', symbol);
  const query = params.toString() ? `?${params.toString()}` : '';
- return j(`/api/mindfolios/${pid}/transactions${query}`);
+ return j(`/api/mindfolio/${pid}/transactions${query}`);
  },
  
- createTransaction: (pid, transaction) => j(`/api/mindfolios/${pid}/transactions`, {
+ createTransaction: (pid, transaction) => j(`/api/mindfolio/${pid}/transactions`, {
  method: "POST",
  body: JSON.stringify(transaction)
  }),
  
- getPositions: (pid) => j(`/api/mindfolios/${pid}/positions`),
+ getPositions: (pid) => j(`/api/mindfolio/${pid}/positions`),
  
- getRealizedPnL: (pid) => j(`/api/mindfolios/${pid}/realized-pnl`),
+ getRealizedPnL: (pid) => j(`/api/mindfolio/${pid}/realized-pnl`),
  
- importCSV: (pid, csvData) => j(`/api/mindfolios/${pid}/import-csv`, {
+ importCSV: (pid, csvData) => j(`/api/mindfolio/${pid}/import-csv`, {
  method: "POST",
  body: JSON.stringify({ csv_data: csvData })
  })

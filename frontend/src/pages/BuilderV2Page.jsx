@@ -1377,43 +1377,68 @@ function OptimizeTab({
   budget, setBudget, sliderPosition, setSliderPosition, maxReturn, maxChance,
   groupedDates, growthPercent
 }) {
-  const mockStrategies = [
-    { 
-      name: 'Bull Call Spread',
-      legs: [
-        { side: 'BUY', kind: 'CALL', strike: '195', qty: 1 },
-        { side: 'SELL', kind: 'CALL', strike: '210', qty: 1 }
-      ],
-      returnPercent: 85,
-      chancePercent: 65,
-      profit: 1500,
-      risk: 500,
-      collateral: 0
-    },
-    {
-      name: 'Long Call',
-      legs: [{ side: 'BUY', kind: 'CALL', strike: '195', qty: 1 }],
-      returnPercent: 120,
-      chancePercent: 45,
-      profit: 3000,
-      risk: 2500,
-      collateral: 0
-    },
-    {
-      name: 'Iron Condor',
-      legs: [
-        { side: 'SELL', kind: 'PUT', strike: '185', qty: 1 },
-        { side: 'BUY', kind: 'PUT', strike: '180', qty: 1 },
-        { side: 'SELL', kind: 'CALL', strike: '215', qty: 1 },
-        { side: 'BUY', kind: 'CALL', strike: '220', qty: 1 }
-      ],
-      returnPercent: 25,
-      chancePercent: 70,
-      profit: 750,
-      risk: 3000,
-      collateral: 0
-    },
-  ];
+  const [strategies, setStrategies] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
+
+  // Fetch strategies from backend when inputs change
+  useEffect(() => {
+    const fetchStrategies = async () => {
+      if (!symbol) return;
+      
+      setIsLoading(true);
+      setApiError(null);
+      
+      try {
+        const API = process.env.REACT_APP_BACKEND_URL || "";
+        const expiry = expirationDates[selectedExpiryIndex];
+        const dte = expiry ? Math.round((new Date(expiry) - new Date()) / (1000 * 60 * 60 * 24)) : 30;
+        
+        const payload = {
+          symbol: symbol,
+          direction: selectedDirection || 'bullish',
+          target_price: targetPrice,
+          budget: budget ? parseFloat(budget) : undefined,
+          slider_position: sliderPosition,
+          expiry: expiry,
+          dte: dte
+        };
+        
+        const response = await fetch(`${API}/api/builder/optimize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        
+        const data = await response.json();
+        
+        // Transform backend response to match expected format
+        const transformedStrategies = (data.strategies || []).map(strat => ({
+          name: strat.name || strat.strategy,
+          legs: strat.legs || [],
+          returnPercent: strat.return_pct || 0,
+          chancePercent: strat.pop || 0,
+          profit: strat.max_profit || 0,
+          risk: Math.abs(strat.max_loss || 0),
+          collateral: strat.collateral || 0,
+          breakeven: strat.breakeven,
+          score: strat.score
+        }));
+        
+        setStrategies(transformedStrategies);
+      } catch (error) {
+        console.error('Failed to fetch strategies:', error);
+        setApiError(error.message);
+        setStrategies([]); // Clear strategies on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchStrategies();
+  }, [symbol, selectedDirection, selectedExpiryIndex, targetPrice, budget, sliderPosition, expirationDates]);
 
   return (
     <div>
@@ -1647,14 +1672,30 @@ function OptimizeTab({
 
       {/* Suggested Strategies */}
       <div className="max-w-7xl mx-auto space-y-6 mt-8">
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-16">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+            <p className="text-white text-sm mt-4">Loading strategies...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {apiError && !isLoading && (
+          <div className="text-center py-16 bg-red-900/20 border border-red-700/30 rounded-lg">
+            <div className="text-red-400 text-lg mb-2">Failed to load strategies</div>
+            <p className="text-red-600 text-sm">{apiError}</p>
+          </div>
+        )}
+
         {/* Suggested Strategies */}
-        {symbol && selectedDirection && (
+        {!isLoading && !apiError && symbol && selectedDirection && strategies.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold text-white mb-4">
               Recommended Strategies for <span className="text-cyan-400">{symbol}</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockStrategies.map((strategy, idx) => (
+              {strategies.map((strategy, idx) => (
                 <StrategyCard
                   key={idx}
                   strategy={strategy}
@@ -1666,10 +1707,18 @@ function OptimizeTab({
         )}
 
         {/* Empty State */}
-        {(!symbol || !selectedDirection) && (
+        {!isLoading && !apiError && (!symbol || !selectedDirection) && (
           <div className="text-center py-16 bg-slate-800/20 border border-slate-700/30 rounded-lg">
             <div className="text-slate-400 text-lg mb-2">Select a direction to see strategies</div>
             <p className="text-slate-600 text-sm">Choose a market direction above to view recommended strategies</p>
+          </div>
+        )}
+
+        {/* No Results State */}
+        {!isLoading && !apiError && symbol && selectedDirection && strategies.length === 0 && (
+          <div className="text-center py-16 bg-slate-800/20 border border-slate-700/30 rounded-lg">
+            <div className="text-slate-400 text-lg mb-2">No strategies found</div>
+            <p className="text-slate-600 text-sm">Try adjusting your filters or budget</p>
           </div>
         )}
       </div>

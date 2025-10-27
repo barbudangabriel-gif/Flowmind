@@ -255,7 +255,7 @@ export default function AnalyticsPanel({ mindfolioId }) {
  <div className="flex items-center gap-4">
  <button
  onClick={() => {
- const url = `${import.meta.env.REACT_APP_BACKEND_URL || '/api'}/mindfolios/${mindfolioId}/analytics/equity.csv`;
+ const url = `${import.meta.env.REACT_APP_BACKEND_URL || '/api'}/mindfolio/${mindfolioId}/analytics/equity.csv`;
  window.open(url, '_blank');
  }}
  className="px-3 py-1 text-lg bg-blue-600 text-[rgb(252, 251, 255)] rounded hover:bg-blue-700 transition-colors"

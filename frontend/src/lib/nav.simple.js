@@ -59,7 +59,7 @@ export function buildNav(ctx) {
  label: p.name,
  to: `/mindfolio/${p.id}`,
  icon: "FolderKanban",
- badge: p.nav ? { text: `$${Math.round(p.nav/1000)}k`, tone: "default" } : undefined,
+ badge: (p.nav || p.cash_balance) ? { text: `$${Math.round((p.nav || p.cash_balance)/1000)}k`, tone: "default" } : undefined,
  }))),
  // Placeholder if no mindfolios
  ...((ctx.mindfolios || []).length === 0 ? [
