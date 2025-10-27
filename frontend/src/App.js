@@ -20,6 +20,7 @@ import MindfolioDetail from './pages/MindfolioDetail';
 import MindfolioDetailNew from './pages/MindfolioDetailNew';
 import MindfolioCreate from './pages/MindfolioCreate';
 import MindfolioPage from './pages/MindfolioPage';
+import ImportFromTradeStation from './pages/ImportFromTradeStation';
 import AccountBalancePage from './pages/AccountBalancePage';
 import TradeStationLogin from './pages/TradeStationLogin';
 import MarketMoversPage from './pages/MarketMoversPage';
@@ -172,7 +173,11 @@ function App() {
       flags: {},
       metrics: {},
       mindfolios: mindfolios
-    }; return (
+    };
+    
+    console.log('[App.js] Context mindfolios:', mindfolios);
+    
+    return (
  <WebSocketProvider>
  <BrowserRouter>
  {/* Inactivity monitor - returns to homepage after 5 minutes of inactivity */}
@@ -248,6 +253,7 @@ function App() {
  <Route path="/tradestation/login" element={<TradeStationLogin />} />
  <Route path="/mindfolio" element={<MindfolioList />} />
  <Route path="/mindfolio/new" element={<MindfolioCreate />} />
+ <Route path="/mindfolio/import" element={<ImportFromTradeStation />} />
  <Route path="/mindfolio/page/:id" element={<MindfolioPage />} />
  <Route path="/mindfolio/:id/old" element={<MindfolioDetail />} />
                 <Route path="/mindfolio/:id" element={<MindfolioDetailNew />} />

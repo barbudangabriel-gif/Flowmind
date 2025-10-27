@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import json
 import logging
+import os
+import secrets
 import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from pydantic import BaseModel, validator
 
+from app.deps.tradestation import get_bearer_token
 from redis_fallback import get_kv
 from utils.redis_client import get_redis
 
@@ -478,16 +481,40 @@ async def patch_mindfolio(pid: str, body: MindfolioPatch):
 async def delete_mindfolio(pid: str):
     """Permanently delete mindfolio"""
     kv = await get_kv()
+    
+    # Delete the mindfolio data
     key = f"mindfolio:{pid}"
-    await kv.delete(key)
-    return {"deleted": True, "id": pid}
+    if hasattr(kv, 'delete'):
+        result = await kv.delete(key)
+    else:
+        result = kv.delete(key)
+    
+    # Remove from the index list
+    list_key = key_mindfolio_list()
+    current_list = await kv.get(list_key) or "[]"
+    pf_list = json.loads(current_list)
+    
+    if pid in pf_list:
+        pf_list.remove(pid)
+        await kv.set(list_key, json.dumps(pf_list))
+    
+    return {"deleted": True, "id": pid, "result": result}
 
 
 @router.post("/{pid}/funds", response_model=Mindfolio)
 async def funds(pid: str, body: FundsOp):
     """Add/subtract funds from mindfolio"""
     p = await pf_get(pid)
-    p.cash_balance = round(p.cash_balance + float(body.delta), 2)
+    
+    # Validate sufficient cash for withdrawals
+    new_balance = p.cash_balance + float(body.delta)
+    if new_balance < 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Insufficient cash. Available: ${p.cash_balance:.2f}, Requested: ${abs(body.delta):.2f}"
+        )
+    
+    p.cash_balance = round(new_balance, 2)
     await pf_put(p)
     return p
 
@@ -502,6 +529,295 @@ async def allocate(pid: str, body: AllocOp):
     p.modules = mods
     await pf_put(p)
     return p
+
+
+@router.post("/import-from-tradestation")
+async def import_full_tradestation_mindfolio(
+    body: dict,
+    request: Request,
+    x_user_id: str = Header(None, alias="X-User-ID")
+):
+    """
+    Create a master TradeStation mindfolio with ALL positions and cash.
+    
+    Body: {
+        "account_id": "11775499",
+        "name": "TradeStation - Account 11775499" (optional)
+    }
+    
+    Returns the created mindfolio with all positions imported as transactions.
+    """
+    import requests
+    from app.services.tradestation import get_valid_token
+    
+    user_id = x_user_id or "default"
+    
+    # Get token from cache
+    token_data = await get_valid_token(user_id)
+    if not token_data:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = token_data.get("access_token")
+    
+    account_id = body.get("account_id")
+    mindfolio_name = body.get("name", f"TradeStation - {account_id}")
+    
+    if not account_id:
+        raise HTTPException(status_code=400, detail="account_id required")
+    
+    # TradeStation API base URL
+    TS_MODE = os.getenv("TRADESTATION_MODE", "SIMULATION")
+    if TS_MODE == "LIVE":
+        TS_API_BASE = "https://api.tradestation.com/v3"
+    else:
+        TS_API_BASE = "https://sim-api.tradestation.com/v3"
+    
+    try:
+        # Get KV client for transaction storage
+        cli = await get_kv()
+        
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+        
+        # Get account balance
+        balance_url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/balances"
+        balance_response = requests.get(balance_url, headers=headers, timeout=10)
+        
+        if balance_response.status_code != 200:
+            raise HTTPException(status_code=balance_response.status_code, detail="Failed to fetch balances")
+        
+        balance_data = balance_response.json()
+        balances_list = balance_data.get("Balances", [])
+        cash_balance = float(balances_list[0].get("CashBalance", 0)) if balances_list else 0.0
+        
+        # Get ALL positions
+        positions_url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/positions"
+        positions_response = requests.get(positions_url, headers=headers, timeout=10)
+        
+        if positions_response.status_code != 200:
+            raise HTTPException(status_code=positions_response.status_code, detail="Failed to fetch positions")
+        
+        positions_data = positions_response.json()
+        positions_list = positions_data.get("Positions", [])
+        
+        # Create new mindfolio
+        new_mindfolio = Mindfolio(
+            id=f"mf_{secrets.token_hex(6)}",
+            name=mindfolio_name,
+            broker="TradeStation",
+            environment=os.getenv("TRADESTATION_MODE", "SIMULATION"),
+            account_type="Equity",
+            account_id=account_id,
+            cash_balance=cash_balance,
+            starting_balance=cash_balance,
+            status="ACTIVE",
+            modules=[],
+            created_at=datetime.utcnow().isoformat(),
+            updated_at=datetime.utcnow().isoformat()
+        )
+        
+        await pf_put(new_mindfolio)
+        
+        # Import ALL positions as BUY transactions
+        imported_positions = []
+        for pos in positions_list:
+            quantity = float(pos.get("Quantity", 0))
+            if quantity == 0:
+                continue
+            
+            symbol = pos.get("Symbol", "")
+            asset_type = pos.get("AssetType", "")
+            avg_price = float(pos.get("AveragePrice", 0))
+            current_price = float(pos.get("Last", 0))
+            market_value = float(pos.get("MarketValue", 0))
+            unrealized_pnl = float(pos.get("UnrealizedProfitLoss", 0))
+            
+            # Create transaction
+            now = datetime.utcnow().isoformat()
+            tx = Transaction(
+                id=f"tx_{secrets.token_hex(6)}",
+                mindfolio_id=new_mindfolio.id,
+                datetime=now,
+                symbol=symbol,
+                side="BUY",
+                qty=quantity,
+                price=avg_price,
+                notes=f"Imported from TradeStation account {account_id}",
+                created_at=now
+            )
+            
+            # Save transaction to Redis
+            await cli.set(key_transaction(tx.id), tx.json())
+            
+            # Update transaction list for mindfolio
+            tx_list_raw = await cli.get(key_mindfolio_transactions(new_mindfolio.id)) or "[]"
+            tx_ids = json.loads(tx_list_raw)
+            tx_ids.append(tx.id)
+            await cli.set(key_mindfolio_transactions(new_mindfolio.id), json.dumps(tx_ids))
+            
+            imported_positions.append({
+                "symbol": symbol,
+                "asset_type": asset_type,
+                "quantity": quantity,
+                "avg_price": avg_price,
+                "current_price": current_price,
+                "market_value": market_value,
+                "unrealized_pnl": unrealized_pnl
+            })
+        
+        return {
+            "status": "success",
+            "mindfolio": new_mindfolio.dict(),
+            "positions_imported": len(imported_positions),
+            "positions": imported_positions,
+            "cash_balance": cash_balance
+        }
+        
+    except Exception as e:
+        logger.error(f"TradeStation import failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+
+
+@router.post("/{pid}/import-positions")
+async def import_positions_from_tradestation(pid: str, body: dict):
+    """
+    Import selected positions from TradeStation to this mindfolio.
+    
+    Body: {
+        "account_id": "11775499",
+        "positions": [
+            {"symbol": "TSLA", "quantity": 100, "avg_price": 250.00},
+            {"symbol": "AAPL", "quantity": 50, "avg_price": 180.00}
+        ],
+        "cash_amount": 5000.00
+    }
+    
+    Validates:
+    - Cash amount doesn't exceed TS account balance
+    - Positions exist in TS account
+    - Creates transactions in mindfolio
+    """
+    from app.services.tradestation import get_valid_token
+    import requests
+    
+    p = await pf_get(pid)
+    account_id = body.get("account_id")
+    positions_to_import = body.get("positions", [])
+    cash_to_transfer = body.get("cash_amount", 0)
+    
+    if not account_id:
+        raise HTTPException(status_code=400, detail="account_id required")
+    
+    # Get TradeStation positions and balance
+    try:
+        token = await get_valid_token("default")  # TODO: use actual user_id
+        headers = {"Authorization": f"Bearer {token}"}
+        
+        # Get account balance
+        ts_mode = os.getenv("TRADESTATION_MODE", "SIMULATION")
+        ts_base = "https://api.tradestation.com/v3" if ts_mode == "LIVE" else "https://sim-api.tradestation.com/v3"
+        
+        balance_url = f"{ts_base}/brokerage/accounts/{account_id}/balances"
+        balance_resp = requests.get(balance_url, headers=headers, timeout=10)
+        balance_resp.raise_for_status()
+        balance_data = balance_resp.json()
+        
+        available_cash = float(balance_data.get("Balances", [{}])[0].get("CashBalance", 0))
+        
+        # Validate cash transfer
+        if cash_to_transfer > available_cash:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient cash in TradeStation. Available: ${available_cash:.2f}, Requested: ${cash_to_transfer:.2f}"
+            )
+        
+        # Get TS positions
+        pos_url = f"{ts_base}/brokerage/accounts/{account_id}/positions"
+        pos_resp = requests.get(pos_url, headers=headers, timeout=10)
+        pos_resp.raise_for_status()
+        ts_positions = pos_resp.json().get("Positions", [])
+        
+        # Validate each position exists and has sufficient quantity
+        ts_pos_map = {p["Symbol"]: p for p in ts_positions}
+        
+        for pos in positions_to_import:
+            symbol = pos["symbol"]
+            qty = pos["quantity"]
+            
+            if symbol not in ts_pos_map:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Position {symbol} not found in TradeStation account"
+                )
+            
+            ts_qty = int(ts_pos_map[symbol]["Quantity"])
+            if qty > ts_qty:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Insufficient quantity for {symbol}. Available: {ts_qty}, Requested: {qty}"
+                )
+        
+        # All validations passed - create transactions
+        transactions_created = []
+        
+        # Transfer cash
+        if cash_to_transfer > 0:
+            p.cash_balance += cash_to_transfer
+            transactions_created.append({
+                "type": "CASH_DEPOSIT",
+                "amount": cash_to_transfer,
+                "description": f"Transferred from TradeStation account {account_id}"
+            })
+        
+        # Import positions as BUY transactions
+        for pos in positions_to_import:
+            symbol = pos["symbol"]
+            qty = pos["quantity"]
+            avg_price = pos["avg_price"]
+            
+            # Create transaction
+            tx = Transaction(
+                mindfolio_id=pid,
+                action="BUY",
+                symbol=symbol,
+                quantity=qty,
+                price=avg_price,
+                timestamp=datetime.utcnow().isoformat(),
+                notes=f"Imported from TradeStation account {account_id}"
+            )
+            
+            # Save transaction
+            await tx_put(tx)
+            
+            # Deduct cost from cash
+            cost = qty * avg_price
+            p.cash_balance -= cost
+            
+            transactions_created.append({
+                "symbol": symbol,
+                "quantity": qty,
+                "price": avg_price,
+                "cost": cost
+            })
+        
+        # Save updated mindfolio
+        await pf_put(p)
+        
+        return {
+            "status": "success",
+            "mindfolio_id": pid,
+            "cash_transferred": cash_to_transfer,
+            "positions_imported": len(positions_to_import),
+            "transactions": transactions_created,
+            "new_cash_balance": p.cash_balance
+        }
+        
+    except requests.RequestException as e:
+        raise HTTPException(status_code=503, detail=f"TradeStation API error: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
 
 
 @router.get("/{pid}/stats")

@@ -61,13 +61,14 @@ class AsyncTTLDict:
         return True
 
 
-# Shared instance for consistent storage (test mode AND fallback mode)
+# Shared instance for consistent storage (test mode AND fallback mode AND Redis singleton)
 _shared_kv_instance = None
+_redis_client = None
 
 
 async def get_kv():
     """Returnează Redis client sau fallback in-memory"""
-    global _shared_kv_instance
+    global _shared_kv_instance, _redis_client
 
     # Force in-memory store during tests (shared instance)
     if os.environ.get("TEST_MODE") == "1":
@@ -84,12 +85,22 @@ async def get_kv():
     required = os.getenv("FM_REDIS_REQUIRED") == "1"
 
     if redis_from_url and url:
-        try:
-            return redis_from_url(url, decode_responses=True)
-        except Exception as e:
-            if required:
-                raise RuntimeError(f"Redis connection required but failed: {e}")
-            pass
+        # Use singleton Redis client
+        if _redis_client is None:
+            try:
+                _redis_client = redis_from_url(url, decode_responses=True)
+                # Test connection
+                await _redis_client.ping()
+                print(f"✅ Redis connected at {url}")
+            except Exception as e:
+                print(f"❌ Redis connection failed: {e}")
+                if required:
+                    raise RuntimeError(f"Redis connection required but failed: {e}")
+                # Reset on failure
+                _redis_client = None
+        
+        if _redis_client:
+            return _redis_client
 
     if required:
         raise RuntimeError(
@@ -97,6 +108,7 @@ async def get_kv():
         )
 
     # Fallback to shared singleton instance when Redis not available
+    print(f"⚠️  Using in-memory fallback (Redis not available)")
     if _shared_kv_instance is None:
         _shared_kv_instance = AsyncTTLDict()
     return _shared_kv_instance

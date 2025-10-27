@@ -1,6 +1,6 @@
 # 📋 FlowMind Project Tasks & Roadmap
 
-**Last Updated:** October 24, 2025  
+**Last Updated:** October 27, 2025  
 **Repository:** github.com/barbudangabriel-gif/Flowmind  
 **Project Status:** Active Development
 
@@ -18,6 +18,30 @@
 ---
 
 ## 🚀 Active Tasks (In Progress)
+
+### 1. 🔄 TradeStation Transaction History Import (NEW - Oct 27, 2025)
+**Status:** 🔄 PLANNED  
+**Assignee:** AI Agent  
+**Priority:** MEDIUM
+
+**Goal:** Import transaction history and deposits/withdrawals from TradeStation for audit trail
+
+**Implementation Plan:**
+- [ ] Add endpoint: `POST /api/mindfolio/{id}/import-history`
+- [ ] Use TradeStation API: `GET /brokerage/accounts/{account_id}/historicalorders`
+- [ ] Optional: `GET /brokerage/accounts/{account_id}/cashbalance/BOD` for deposits/withdrawals
+- [ ] Convert TS orders to FlowMind transactions (BUY/SELL with dates, prices, quantities)
+- [ ] Store as historical transactions (read-only, audit purpose only)
+- [ ] UI: Button in mindfolio detail page "Import Transaction History"
+
+**Notes:**
+- Master TS mindfolio remains snapshot (positions + cash)
+- Transaction history is for audit/review only, NOT for FIFO recalculation
+- TradeStation already provides average prices and P&L calculations
+
+**Estimated Time:** 2-3 hours
+
+---
 
 ### 1. 🎨 BuilderV2 Page - Complete All 4 Tabs + "Open in Builder" Auto-Population (HIGH PRIORITY)
 **Status:** 🔄 IN PROGRESS - October 24, 2025  
@@ -56,7 +80,7 @@
   - [ ] Scale from 360x180 (card) to 1000x400 (Build tab)
   - [ ] Reference: See `STRATEGY_ENGINE_PROPOSAL.md` for architecture
 
-**Completed Work:**
+**Completed Work (Oct 24):**
 - [x] Build Tab: Complete options trading builder interface with P&L chart
 - [x] Probability mathematics: Risk-neutral lognormal distribution (see copilot-instructions.md)
 - [x] Black-Scholes option valuation with smooth date slider transitions
@@ -74,6 +98,49 @@
   - [x] Custom 6px scrollbar for columns and FiltersPanel
   - [x] Tab navigation header with Market Bias indicator (gradient cyan-to-purple bulina)
   - [x] Consistent fonts: text-base font-semibold for tabs, text-lg for flow data
+
+---
+
+### 2. 💼 Mindfolio Manager - TradeStation Import Workflow (COMPLETED - Oct 27, 2025)
+**Status:** ✅ COMPLETE  
+**Priority:** HIGH
+
+**Completed Features:**
+- [x] Removed sidebar "Create Mindfolio" buttons (2 instances removed)
+- [x] Added two-button Manager interface:
+  - [x] "Import from TradeStation" (gradient blue-purple, priority action)
+  - [x] "Create Empty Mindfolio" (gray, secondary action)
+- [x] Created dedicated import page: `frontend/src/pages/ImportFromTradeStation.jsx`
+  - [x] Account selection dropdown
+  - [x] Positions preview table (symbol, quantity, value, P&L)
+  - [x] Balance display
+  - [x] "Import X Positions" button with loading state
+- [x] Backend endpoint: `POST /api/mindfolio/import-from-tradestation`
+  - [x] Fetches positions from TradeStation API
+  - [x] Fetches cash balance
+  - [x] Creates master mindfolio with all 51 positions
+  - [x] Stores transactions with FIFO-ready structure
+- [x] Authentication flow: X-User-ID header with token from cache
+- [x] Frontend route: `/mindfolio/import`
+
+**Import Results (Oct 27):**
+- ✅ 51 positions imported successfully
+- ✅ Cash balance: $447,395.73
+- ✅ Mindfolio ID: mf_bc04f8dc90bd
+- ✅ Name: "TradeStation Master"
+- ⚠️ Minor UX issue: Redirect after import shows "site can't be reached" (non-blocking)
+
+**Files Modified:**
+- `backend/mindfolio.py` - Import endpoint with transaction storage
+- `frontend/src/pages/ImportFromTradeStation.jsx` - Full import UI
+- `frontend/src/pages/MindfolioList.jsx` - Two-button interface
+- `frontend/src/lib/nav.simple.js` - Sidebar buttons removed
+- `frontend/src/services/mindfolioClient.js` - Import API method
+- `frontend/src/App.js` - Route added
+
+**Estimated Time:** 4 hours (actual)
+
+---
   - [x] Build tab uses custom slider styles (cyan thumb, 18px diameter)
 - [x] **Code Structure:** OptimizeTab separated, BuildTab fully replaced (deleted BuilderPage link)
 - [x] **State Management:** 14 props correctly passed from BuilderV2Page to OptimizeTab
@@ -173,19 +240,32 @@ account_id: Optional[str] = None  # Broker's account number
 
 ---
 
-### 3. � Sidebar Audit & Missing Pages (HIGH PRIORITY)
-**Status:** 🔴 CRITICAL - Many sidebar links have NO pages  
-**Assignee:** TBD  
-**Due:** 1-2 days (October 22-23, 2025)  
-**Task File:** `frontend/src/SIDEBAR_TODO.md`
+### 3. 📱 Sidebar Audit & Missing Pages (HIGH PRIORITY)
+**Status:** � IN PROGRESS - Phase 1 Complete (October 27, 2025)  
+**Assignee:** GitHub Copilot  
+**Due:** 1-2 days remaining for Phases 2-4  
+**Task Files:** 
+- `SIDEBAR_AUDIT_REPORT.md` (complete audit - 700+ lines)
+- `SIDEBAR_PHASE1_COMPLETE.md` (implementation summary)
 
 **Problem:**
-Sidebar în `nav.simple.js` (400 lines) are ~40 menu items, dar multe NU au pagini create!
+Sidebar in `nav.simple.js` has ~47 menu items, but only 36% have working pages!
 
-**Phase 1: Audit Complet (4 ore)**
-- [ ] Mapare completă: Sidebar items → Routes în App.js
-- [ ] Identificare: Care links NU au pagină? (returnează 404 sau ComingSoonPage)
-- [ ] Documentare: Tabel complet cu 4 coloane: Menu Item | Route | Page Exists? | File Path
+**Phase 1: Audit Complete + Quick Fixes ✅ DONE (October 27, 2025)**
+- [x] Complete mapping: Sidebar items → Routes in App.js
+- [x] Identified missing pages: 30/47 routes (64%) have no pages
+- [x] Documentation: Complete table with Menu Item | Route | Page Exists? | File Path
+- [x] **Quick Fix 1:** Fixed TradeStation route mismatch (`/providers/ts` → `/tradestation/login`)
+- [x] **Quick Fix 2:** Added Strategy Library to sidebar (page existed, not in menu)
+- [x] **Quick Fix 3:** Added Account Balance to sidebar (page existed, not in menu)
+- [x] **Quick Fix 4:** Removed duplicate "Sell Puts (Auto)" entry
+- [x] **Quick Fix 5:** Fixed active state highlighting for nested routes (startsWith logic)
+
+**Results After Phase 1:**
+- ✅ Working routes: 19/47 (40%) - UP from 17/47 (36%)
+- ✅ Route mismatches: 0 (was 1)
+- ✅ Active state highlighting: Fixed for nested routes
+- 🔴 Still missing: 28/47 routes (60%)
 
 **Phase 2: Decizie per Item (2 ore)**
 Pentru fiecare item fără pagină, decide:

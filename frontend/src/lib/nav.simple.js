@@ -6,6 +6,7 @@ const ivDependentDisabled = (ctx) => !ctx.metrics?.ivOnline;
 const ivDisabledReason = () => "IV service offline";
 
 export function buildNav(ctx) {
+ console.log('[nav.simple.js] Building nav with ctx.mindfolios:', ctx.mindfolios);
  return [
  // OVERVIEW
  {
@@ -22,6 +23,11 @@ export function buildNav(ctx) {
  title: "Accounts",
  isComplete: true,
  items: [
+ { 
+ label: "Account Balance", 
+ to: "/account/balance", 
+ icon: "DollarSign"
+ },
  { 
  label: "TradeStation", 
  to: "/account/tradestation", 
@@ -48,11 +54,17 @@ export function buildNav(ctx) {
  {
  title: "Mindfolio Manager",
  items: [
+ // Main manager page
+ { 
+ label: "Manager Dashboard", 
+ to: "/mindfolio", 
+ icon: "LayoutDashboard"
+ },
  // View all mindfolios with dynamic children
  { 
- label: "View All Mindfolios", 
+ label: "My Mindfolios", 
  to: "/mindfolio", 
- icon: "List",
+ icon: "FolderKanban",
  children: [
  // Dynamic mindfolios
  ...((ctx.mindfolios || []).map(p => ({
@@ -63,12 +75,10 @@ export function buildNav(ctx) {
  }))),
  // Placeholder if no mindfolios
  ...((ctx.mindfolios || []).length === 0 ? [
- { label: "No mindfolios yet", to: "/mindfolio/new", icon: "FileX" }
+ { label: "No mindfolios yet", to: "/mindfolio", icon: "FileX" }
  ] : [])
  ]
  },
- // Create new
- { label: "+ Create Mindfolio", to: "/mindfolio/new", icon: "PlusCircle" },
  // Mindfolio Analytics
  { label: "Mindfolio Analytics", to: "/mindfolio/analytics", icon: "BarChart3" },
  // Smart Rebalancing
@@ -97,6 +107,11 @@ export function buildNav(ctx) {
  icon: "Sparkles"
  },
  { 
+ label: "Strategy Library", 
+ to: "/strategies", 
+ icon: "Library"
+ },
+ { 
  label: "Analytics", 
  to: "/options/analytics", 
  icon: "BarChart2",
@@ -116,7 +131,6 @@ export function buildNav(ctx) {
  { label: "Calendar Scanner", to: "/screener/iv?strategy=CALENDAR", icon: "Calendar" },
  { label: "Diagonal Scanner", to: "/screener/iv?strategy=DIAGONAL", icon: "TrendingUp" },
  { label: "Double Diagonal", to: "/screener/iv?strategy=DOUBLE_DIAGONAL", icon: "Layers" },
- { label: "Sell Puts (Auto)", to: "/screener/sell-puts", icon: "ArrowDownCircle" },
  { label: "Put Selling Engine", to: "/screener/sell-puts", icon: "ArrowDown" },
  { label: "Covered Calls", to: "/screener/covered-calls", icon: "Shield" },
  { label: "Cash-Secured Puts", to: "/screener/csp", icon: "DollarSign" },
@@ -178,7 +192,7 @@ export function buildNav(ctx) {
  to: "/settings/keys", 
  icon: "KeyRound",
  children: [
- { label: "TradeStation", to: "/providers/ts", icon: "Building2" },
+ { label: "TradeStation", to: "/tradestation/login", icon: "Building2" },
  { label: "Unusual Whales", to: "/providers/uw", icon: "Fish" },
  { label: "API Keys", to: "/settings/keys", icon: "Key" },
  ]

@@ -59,6 +59,12 @@ export const mfClient = {
  }),
  stats: (pid) => j(`/api/mindfolio/${pid}/stats`),
  
+ // TradeStation import
+ importFromTradeStation: (account_id, name) => j(`/api/mindfolio/import-from-tradestation`, {
+ method: "POST",
+ body: JSON.stringify({ account_id, name })
+ }),
+ 
  // Transaction operations
  getTransactions: (pid, symbol = null) => {
  const params = new URLSearchParams();

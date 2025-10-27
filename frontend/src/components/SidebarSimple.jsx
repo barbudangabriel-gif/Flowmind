@@ -110,8 +110,11 @@ function Row({ item, ctx, depth = 0, expandedItems, toggleItem }) {
  console.warn('Badge resolution failed:', e);
  }
 
- // Check if this route is active
- const isActive = item.to && location.pathname === item.to;
+ // Check if this route is active (use startsWith for nested routes)
+ const isActive = item.to && (
+   location.pathname === item.to || 
+   (item.to !== '/' && location.pathname.startsWith(item.to))
+ );
 
  const baseClasses = `flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] font-medium transition-all duration-200 ${depth > 0 ? 'ml-4' : ''}`;
  const stateClasses = disabled 
@@ -249,8 +252,8 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  const itemKey = `${sec.title}-${idx}`;
  const hasChildren = it.children && it.children.length > 0;
  const isActive = activePopover === itemKey;
- const isItemActive = it.to && location.pathname === it.to;
- const isChildActive = hasChildren && it.children.some(ch => ch.to && location.pathname === ch.to);
+ const isItemActive = it.to && (location.pathname === it.to || (it.to !== '/' && location.pathname.startsWith(it.to)));
+ const isChildActive = hasChildren && it.children.some(ch => ch.to && (location.pathname === ch.to || (ch.to !== '/' && location.pathname.startsWith(ch.to))));
  
  // Regular item without children - just show icon with link
  if (!hasChildren) {
@@ -311,7 +314,7 @@ export default function SidebarSimple({ ctx, collapsed = false }) {
  </div>
  {/* Children items */}
  {it.children.map((ch, cidx) => {
- const isChildActive = ch.to && location.pathname === ch.to;
+ const isChildActive = ch.to && (location.pathname === ch.to || (ch.to !== '/' && location.pathname.startsWith(ch.to)));
  return (
  <Link
  key={cidx}
