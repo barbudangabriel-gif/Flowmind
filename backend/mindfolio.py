@@ -742,8 +742,12 @@ async def import_full_tradestation_mindfolio(
             })
         
         # Recalculate positions from transactions
-        await calculate_positions(new_mindfolio.id)
+        await calculate_positions_fifo(new_mindfolio.id)
         refreshed_mindfolio = await pf_get(new_mindfolio.id)
+        
+        # Save again with positions populated (backup will include positions)
+        if refreshed_mindfolio:
+            await pf_put(refreshed_mindfolio)
         
         return {
             "status": "success",
