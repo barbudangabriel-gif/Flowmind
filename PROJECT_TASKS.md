@@ -19,27 +19,61 @@
 
 ## 🚀 Active Tasks (In Progress)
 
-### 1. 🔄 TradeStation Transaction History Import (NEW - Oct 27, 2025)
-**Status:** 🔄 PLANNED  
+### 1. � Mindfolio Detail Page Redesign + YTD Import (HIGH PRIORITY - Oct 27, 2025)
+**Status:** 🔄 PLANNED for Next Session  
 **Assignee:** AI Agent  
-**Priority:** MEDIUM
+**Priority:** HIGH  
+**File:** `frontend/src/pages/MindfolioDetailNew.jsx`
 
-**Goal:** Import transaction history and deposits/withdrawals from TradeStation for audit trail
+**Goal:** Redesign mindfolio detail page to match FlowMind style and import complete YTD data from TradeStation
 
-**Implementation Plan:**
-- [ ] Add endpoint: `POST /api/mindfolio/{id}/import-history`
-- [ ] Use TradeStation API: `GET /brokerage/accounts/{account_id}/historicalorders`
-- [ ] Optional: `GET /brokerage/accounts/{account_id}/cashbalance/BOD` for deposits/withdrawals
-- [ ] Convert TS orders to FlowMind transactions (BUY/SELL with dates, prices, quantities)
-- [ ] Store as historical transactions (read-only, audit purpose only)
-- [ ] UI: Button in mindfolio detail page "Import Transaction History"
+**Phase 1: Page Redesign**
+- [ ] Fetch data from imported mindfolio (positions, cash, P&L)
+- [ ] Display positions in FlowMind-style table (similar to TradeStation Live page)
+- [ ] Show total value, cash balance, unrealized P&L
+- [ ] Group positions by symbol (stock + options dropdown like Live page)
+- [ ] Match styling: dark theme, cyan/orange gradients, 6px scrollbar
+- [ ] Performance metrics cards (Daily P&L, Total Return, Win Rate)
+
+**Phase 2: YTD Import from TradeStation**
+- [ ] Import ALL Year-to-Date data (positions + transaction history)
+- [ ] Endpoint: `POST /api/mindfolio/{id}/import-ytd`
+- [ ] Use TradeStation APIs:
+  - [ ] `GET /brokerage/accounts/{account_id}/historicalorders?since=2025-01-01`
+  - [ ] `GET /brokerage/accounts/{account_id}/positions` (current snapshot)
+  - [ ] `GET /brokerage/accounts/{account_id}/balances` (cash history if available)
+- [ ] Store complete transaction history (BUY/SELL/DEPOSIT/WITHDRAWAL)
+- [ ] Calculate realized P&L from closed positions
+- [ ] Build performance timeline (daily/weekly/monthly)
+
+**Phase 3: Analytics & Visualization**
+- [ ] P&L chart (line chart with YTD performance)
+- [ ] Win/Loss breakdown (pie chart)
+- [ ] Sector allocation (if available from positions)
+- [ ] Trade statistics (avg hold time, best/worst trades)
+- [ ] Export functionality (CSV/Excel)
+
+**UI Requirements:**
+- Match FlowMind design system (see BuilderV2, Flow pages)
+- Responsive layout with cards and tables
+- Real-time data sync with TradeStation (refresh button)
+- Group options under stock symbols (expandable rows)
+- Cyan text for calls, orange for puts
+- Blue left border for options (indented rows)
 
 **Notes:**
-- Master TS mindfolio remains snapshot (positions + cash)
-- Transaction history is for audit/review only, NOT for FIFO recalculation
-- TradeStation already provides average prices and P&L calculations
+- YTD import critical for performance tracking
+- Transaction history needed for realized P&L calculation
+- Master TS mindfolio = source of truth
+- Other mindfolios = subsets for strategy tracking
 
-**Estimated Time:** 2-3 hours
+**Estimated Time:** 6-8 hours (full implementation)
+
+---
+
+### 2. 🔄 TradeStation Transaction History Import (MERGED INTO #1 - Oct 27, 2025)
+**Status:** ✅ MERGED  
+**Note:** Combined with Mindfolio Detail Page redesign for cohesive implementation
 
 ---
 
