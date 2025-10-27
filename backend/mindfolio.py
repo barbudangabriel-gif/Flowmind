@@ -6,6 +6,7 @@ import os
 import secrets
 import uuid
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Request
@@ -18,6 +19,10 @@ from utils.redis_client import get_redis
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/mindfolio", tags=["mindfolio"])
+
+# Persistent backup directory
+BACKUP_DIR = Path("/workspaces/Flowmind/data/mindfolios")
+BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ——— Models ———
@@ -152,6 +157,41 @@ def key_mindfolio_transactions(pid: str) -> str:
 
 def key_mindfolio_positions(pid: str) -> str:
     return f"mf:{pid}:positions"
+
+
+# ——— Backup/Restore Functions ———
+def backup_mindfolio_to_disk(mindfolio: Mindfolio) -> None:
+    """Save mindfolio to JSON file as backup"""
+    try:
+        backup_file = BACKUP_DIR / f"{mindfolio.id}.json"
+        backup_file.write_text(mindfolio.json(indent=2))
+        logger.info(f"Backed up mindfolio {mindfolio.id} to disk")
+    except Exception as e:
+        logger.error(f"Failed to backup mindfolio {mindfolio.id}: {e}")
+
+
+def restore_mindfolio_from_disk(mindfolio_id: str) -> Optional[Mindfolio]:
+    """Restore mindfolio from JSON backup"""
+    try:
+        backup_file = BACKUP_DIR / f"{mindfolio_id}.json"
+        if backup_file.exists():
+            data = json.loads(backup_file.read_text())
+            logger.info(f"Restored mindfolio {mindfolio_id} from disk backup")
+            return Mindfolio(**data)
+    except Exception as e:
+        logger.error(f"Failed to restore mindfolio {mindfolio_id}: {e}")
+    return None
+
+
+def delete_mindfolio_backup(mindfolio_id: str) -> None:
+    """Delete mindfolio backup file"""
+    try:
+        backup_file = BACKUP_DIR / f"{mindfolio_id}.json"
+        if backup_file.exists():
+            backup_file.unlink()
+            logger.info(f"Deleted backup for mindfolio {mindfolio_id}")
+    except Exception as e:
+        logger.error(f"Failed to delete backup for {mindfolio_id}: {e}")
 
 
 # ——— FIFO Logic Functions ———
@@ -298,7 +338,7 @@ async def pf_get(pid: str) -> Mindfolio:
 
 
 async def pf_put(p: Mindfolio) -> None:
-    """Save mindfolio"""
+    """Save mindfolio to Redis + disk backup"""
     cli = await get_kv()
     p.updated_at = datetime.utcnow().isoformat()
     await cli.set(key_mindfolio(p.id), json.dumps(p.dict()))
@@ -309,6 +349,9 @@ async def pf_put(p: Mindfolio) -> None:
     if p.id not in pf_list:
         pf_list.append(p.id)
         await cli.set(key_mindfolio_list(), json.dumps(pf_list))
+    
+    # BACKUP to disk
+    backup_mindfolio_to_disk(p)
 
 
 async def pf_list() -> List[Mindfolio]:
@@ -330,6 +373,33 @@ async def pf_list() -> List[Mindfolio]:
 
 
 # ——— API Endpoints ———
+
+
+@router.post("/restore-from-backup")
+async def restore_all_from_backup():
+    """Restore all mindfolios from disk backups (in case Redis is cleared)"""
+    restored = []
+    failed = []
+    
+    for backup_file in BACKUP_DIR.glob("*.json"):
+        try:
+            mindfolio_id = backup_file.stem
+            mindfolio = restore_mindfolio_from_disk(mindfolio_id)
+            if mindfolio:
+                await pf_put(mindfolio)
+                restored.append(mindfolio_id)
+            else:
+                failed.append(mindfolio_id)
+        except Exception as e:
+            logger.error(f"Failed to restore {backup_file.name}: {e}")
+            failed.append(backup_file.stem)
+    
+    return {
+        "status": "success",
+        "restored": len(restored),
+        "failed": len(failed),
+        "mindfolios": restored
+    }
 
 
 # ——— TS Positions Grid Endpoint (must be before /{pid} patterns) ———
@@ -479,7 +549,7 @@ async def patch_mindfolio(pid: str, body: MindfolioPatch):
 
 @router.delete("/{pid}")
 async def delete_mindfolio(pid: str):
-    """Permanently delete mindfolio"""
+    """Permanently delete mindfolio from Redis + disk backup"""
     kv = await get_kv()
     
     # Delete the mindfolio data
@@ -497,6 +567,9 @@ async def delete_mindfolio(pid: str):
     if pid in pf_list:
         pf_list.remove(pid)
         await kv.set(list_key, json.dumps(pf_list))
+    
+    # DELETE disk backup
+    delete_mindfolio_backup(pid)
     
     return {"deleted": True, "id": pid, "result": result}
 
