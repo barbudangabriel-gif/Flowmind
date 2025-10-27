@@ -164,7 +164,8 @@ def backup_mindfolio_to_disk(mindfolio: Mindfolio) -> None:
     """Save mindfolio to JSON file as backup"""
     try:
         backup_file = BACKUP_DIR / f"{mindfolio.id}.json"
-        backup_file.write_text(mindfolio.json(indent=2))
+        json_data = json.dumps(mindfolio.dict(), indent=2)
+        backup_file.write_text(json_data)
         logger.info(f"Backed up mindfolio {mindfolio.id} to disk")
     except Exception as e:
         logger.error(f"Failed to backup mindfolio {mindfolio.id}: {e}")
@@ -740,9 +741,13 @@ async def import_full_tradestation_mindfolio(
                 "unrealized_pnl": unrealized_pnl
             })
         
+        # Recalculate positions from transactions
+        await calculate_positions(new_mindfolio.id)
+        refreshed_mindfolio = await pf_get(new_mindfolio.id)
+        
         return {
             "status": "success",
-            "mindfolio": new_mindfolio.dict(),
+            "mindfolio": refreshed_mindfolio.dict() if refreshed_mindfolio else new_mindfolio.dict(),
             "positions_imported": len(imported_positions),
             "positions": imported_positions,
             "cash_balance": cash_balance

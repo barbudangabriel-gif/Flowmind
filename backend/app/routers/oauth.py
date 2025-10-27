@@ -82,6 +82,7 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
 
         # Success page with auto-redirect
         frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+        import_page_url = f"{frontend_url}/mindfolio/import"
         return HTMLResponse(
             content=f"""
         <html>
@@ -132,7 +133,7 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
 
             if (countdown <= 0) {{
                 clearInterval(interval);
-                window.location.href = '{frontend_url}';
+                window.location.href = '{import_page_url}';
             }}
         }}, 1000);
         </script>
@@ -145,7 +146,7 @@ async def tradestation_callback(code: str = None, state: str = None, error: str 
         <p style="font-size: 14px; color: #6b7280;">
         Redirecting in <span id="countdown" class="countdown">3</span> seconds...
         </p>
-        <a href="{frontend_url}/" class="btn">Go to Dashboard Now →</a>
+        <a href="{import_page_url}" class="btn">Go to Import Page Now →</a>
         </div>
         </body>
         </html>

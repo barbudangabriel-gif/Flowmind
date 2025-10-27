@@ -85,8 +85,9 @@ export default function ImportFromTradeStation() {
         `TradeStation - ${selectedAccount}`
       );
       
-      alert(`Success! Imported ${result.positions_imported} positions.\nCash: $${result.cash_balance.toFixed(2)}`);
-      navigate(`/mindfolio/${result.mindfolio.id}`);
+      alert(`Success! Imported ${result.positions_imported} positions.\nCash: $${result.mindfolio.cash_balance.toFixed(2)}\n\nMindfolio ID: ${result.mindfolio.id}`);
+      // Redirect to mindfolio list instead of detail (detail page needs redesign)
+      navigate('/mindfolio');
     } catch (err) {
       console.error("Import failed:", err);
       alert("Import failed: " + err.message);
