@@ -7,7 +7,10 @@ async function j(path, init = {}) {
  
  try {
  const response = await fetch(`${BASE}${path}`, {
- headers: { "Content-Type": "application/json" },
+ headers: { 
+   "Content-Type": "application/json",
+   "X-User-ID": "default"
+ },
  ...init,
  signal: controller.signal,
  });
@@ -63,6 +66,12 @@ export const mfClient = {
  importFromTradeStation: (account_id, name) => j(`/api/mindfolio/import-from-tradestation`, {
  method: "POST",
  body: JSON.stringify({ account_id, name })
+ }),
+ 
+ // Import YTD transactions from TradeStation
+ importYTD: (pid, account_id) => j(`/api/mindfolio/${pid}/import-ytd`, {
+ method: "POST",
+ body: JSON.stringify({ account_id })
  }),
  
  // Transaction operations

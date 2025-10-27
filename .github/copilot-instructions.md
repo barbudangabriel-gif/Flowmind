@@ -413,34 +413,94 @@ onMouseMove={(e) => {
 
 ## TradeStation Import System
 
-### Overview (Oct 27, 2025)
-**Status:** ✅ OAuth flow complete, ❌ Positions backup incomplete  
-**File:** `backend/mindfolio.py` (import endpoint line 608-760)  
-**Purpose:** Import live TradeStation positions into FlowMind mindfolios with FIFO tracking
+### Overview (Oct 27, 2025 - 19:35 UTC)
+**Status:** ✅ Full import system operational  
+**Files:** 
+- `backend/mindfolio.py` (import-from-tradestation, import-ytd endpoints)
+- `frontend/src/pages/MindfolioDetailNewV2.jsx` (YTD import UI)
+- `frontend/src/services/mindfolioClient.js` (importYTD method)
 
-### Known Issues (CRITICAL)
-1. **Positions not in backup:** Positions stored separately in Redis (`key_mindfolio_positions`), not in Mindfolio model
-2. **Redis volatility:** Data lost on restart (save config: 3600s/1key, 300s/100keys, 60s/10000keys)
-3. **Codespaces port reset:** Port 8000 reverts to private on backend reload/codespace suspend
-4. **Token expiry:** TradeStation OAuth token expires, needs re-auth mid-session
+**Purpose:** Import live positions AND complete YTD transaction history from TradeStation
 
-### Import Flow
+### Import Types
+
+#### 1. Initial Import (Current Positions)
+**Endpoint:** `POST /api/mindfolio/import-from-tradestation`
+**Purpose:** Create new mindfolio with current positions snapshot
+**Flow:**
 ```
-1. User → /mindfolio/import page (frontend/src/pages/ImportFromTradeStation.jsx)
-2. OAuth: https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/ts/login
+1. User → /mindfolio/import page
+2. OAuth: https://{codespace}-8000.app.github.dev/api/ts/login
 3. Callback → frontend_url/mindfolio/import (3s auto-redirect)
 4. Select account → POST /api/mindfolio/import-from-tradestation
 5. Backend:
    - Create Mindfolio (cash_balance from balances API)
    - Fetch positions (40+ positions for account 11775499)
    - Create BUY transactions for each position
-   - Save transactions to Redis (key: tx:{id})
-   - Update transaction list (key: mf:{id}:transactions)
-   - Call calculate_positions_fifo() → returns List[Position]
-   - Save positions to Redis (key: mf:{id}:positions)
-   - pf_put() → triggers backup_mindfolio_to_disk()
-6. Backup: JSON file at /workspaces/Flowmind/data/mindfolios/{id}.json
+   - Calculate FIFO positions
+   - Backup to JSON
 ```
+
+#### 2. YTD Transaction History Import (NEW - Oct 27, 2025)
+**Endpoint:** `POST /api/mindfolio/{id}/import-ytd`
+**Purpose:** Import ALL filled orders since 2025-01-01 for complete P&L tracking
+**Flow:**
+```
+1. User clicks "Import YTD Data" in MindfolioDetailNewV2
+2. POST /api/mindfolio/{id}/import-ytd with account_id
+3. Backend:
+   - Get TradeStation token (token_data.get("access_token"))
+   - Fetch orders: GET /brokerage/accounts/{id}/orders?since=2025-01-01T00:00:00Z
+   - Pagination: Loop while NextToken exists (5300+ orders support)
+   - Filter: Only FILLED orders (Status: "FLL" or "FILLED")
+   - Extract: Symbol, FilledQuantity, FilledPrice, TradeAction
+   - Determine side: BUY (BUY/BUYTOOPEN/BUYTOCOVER) or SELL
+   - Create Transaction for each order
+   - Recalculate FIFO positions
+   - Return: transactions_imported, date_range, symbols, positions_recalculated
+4. Frontend:
+   - Show success alert with statistics
+   - Auto-reload mindfolio data
+   - Switch to Transactions tab
+```
+
+**Code Implementation:**
+```python
+# backend/mindfolio.py - import-ytd endpoint
+token_data = await get_valid_token(user_id)
+token = token_data.get("access_token")  # CRITICAL: Extract from dict!
+
+# Pagination support for 5300+ orders
+while orders_data.get("NextToken"):
+    params["pageToken"] = orders_data["NextToken"]
+    orders_resp = requests.get(orders_url, headers=headers, params=params)
+    all_orders.extend(orders_data.get("Orders", []))
+```
+
+### Known Issues (CRITICAL)
+
+1. **Positions backup fixed (Oct 27):**
+   - ✅ `backup_mindfolio_to_disk()` now async, fetches positions from Redis
+   - ✅ Positions included in JSON backup
+   - ✅ `restore_mindfolio_from_disk()` restores positions to Redis
+
+2. **YTD Import Issues (Pending Fix):**
+   - ⚠️ Orders imported with empty symbols (`symbol=""`, `qty=0`)
+   - Cause: TradeStation order structure may differ
+   - Debug: Added logging `logger.info(f"Sample order: {json.dumps(filled_orders[0])}")`
+   - Fix: Need to inspect actual order structure and adjust field extraction
+
+3. **Redis volatility:** Data lost on restart
+   - Mitigation: Auto-restore from JSON backups on startup (TODO)
+   - Config: 3600s/1key, 300s/100keys, 60s/10000keys
+
+4. **Codespaces port reset:** Port 8000 reverts to private on reload
+   - Fix: VS Code → PORTS tab → port 8000 → Public
+   - Permanent solution: Deploy to Railway/VPS
+
+5. **Token expiry:** TradeStation OAuth token expires (60 minutes)
+   - Solution: Re-auth at https://{codespace}-8000.app.github.dev/api/ts/login
+   - Token stored in Redis/fallback cache (60-day refresh token)
 
 ### Data Model
 ```python

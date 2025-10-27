@@ -18,6 +18,7 @@ import FlowPage from './pages/FlowPage';
 import MindfolioList from './pages/MindfolioList';
 import MindfolioDetail from './pages/MindfolioDetail';
 import MindfolioDetailNew from './pages/MindfolioDetailNew';
+import MindfolioDetailNewV2 from './pages/MindfolioDetailNewV2';
 import MindfolioCreate from './pages/MindfolioCreate';
 import MindfolioPage from './pages/MindfolioPage';
 import ImportFromTradeStation from './pages/ImportFromTradeStation';
@@ -256,8 +257,9 @@ function App() {
  <Route path="/mindfolio/import" element={<ImportFromTradeStation />} />
  <Route path="/mindfolio/page/:id" element={<MindfolioPage />} />
  <Route path="/mindfolio/:id/old" element={<MindfolioDetail />} />
-                <Route path="/mindfolio/:id" element={<MindfolioDetailNew />} />
-                <Route path="/logos" element={<LogosPage />} />
+ <Route path="/mindfolio/:id/legacy" element={<MindfolioDetailNew />} />
+ <Route path="/mindfolio/:id" element={<MindfolioDetailNewV2 />} />
+ <Route path="/logos" element={<LogosPage />} />
                 <Route path="/settings/screensaver" element={<ScreensaverSettings />} />
                 {/* Catch-all for all other routes */}
                 <Route path="*" element={<ComingSoonPage />} />

@@ -9,12 +9,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Header, Request
+from fastapi import APIRouter, HTTPException, Header, Request
 from pydantic import BaseModel, validator
 
-from app.deps.tradestation import get_bearer_token
 from redis_fallback import get_kv
-from utils.redis_client import get_redis
 
 logger = logging.getLogger(__name__)
 
@@ -160,23 +158,42 @@ def key_mindfolio_positions(pid: str) -> str:
 
 
 # ——— Backup/Restore Functions ———
-def backup_mindfolio_to_disk(mindfolio: Mindfolio) -> None:
-    """Save mindfolio to JSON file as backup"""
+async def backup_mindfolio_to_disk(mindfolio: Mindfolio) -> None:
+    """Save mindfolio to JSON file as backup (includes positions from Redis)"""
     try:
+        # Fetch positions from Redis
+        cli = await get_kv()
+        positions_json = await cli.get(key_mindfolio_positions(mindfolio.id)) or "[]"
+        positions = json.loads(positions_json)
+        
+        # Create backup dict with positions
+        backup_data = mindfolio.dict()
+        backup_data["positions"] = positions
+        
         backup_file = BACKUP_DIR / f"{mindfolio.id}.json"
-        json_data = json.dumps(mindfolio.dict(), indent=2)
-        backup_file.write_text(json_data)
-        logger.info(f"Backed up mindfolio {mindfolio.id} to disk")
+        backup_file.write_text(json.dumps(backup_data, indent=2))
+        logger.info(f"Backed up mindfolio {mindfolio.id} to disk with {len(positions)} positions")
     except Exception as e:
         logger.error(f"Failed to backup mindfolio {mindfolio.id}: {e}")
 
 
-def restore_mindfolio_from_disk(mindfolio_id: str) -> Optional[Mindfolio]:
-    """Restore mindfolio from JSON backup"""
+async def restore_mindfolio_from_disk(mindfolio_id: str) -> Optional[Mindfolio]:
+    """Restore mindfolio from JSON backup (includes positions restoration to Redis)"""
     try:
         backup_file = BACKUP_DIR / f"{mindfolio_id}.json"
         if backup_file.exists():
             data = json.loads(backup_file.read_text())
+            
+            # Extract positions if they exist in backup
+            positions = data.pop("positions", [])
+            
+            # Restore positions to Redis
+            if positions:
+                cli = await get_kv()
+                positions_json = json.dumps(positions)
+                await cli.set(key_mindfolio_positions(mindfolio_id), positions_json)
+                logger.info(f"Restored {len(positions)} positions for mindfolio {mindfolio_id}")
+            
             logger.info(f"Restored mindfolio {mindfolio_id} from disk backup")
             return Mindfolio(**data)
     except Exception as e:
@@ -351,8 +368,8 @@ async def pf_put(p: Mindfolio) -> None:
         pf_list.append(p.id)
         await cli.set(key_mindfolio_list(), json.dumps(pf_list))
     
-    # BACKUP to disk
-    backup_mindfolio_to_disk(p)
+    # BACKUP to disk (now async to fetch positions)
+    await backup_mindfolio_to_disk(p)
 
 
 async def pf_list() -> List[Mindfolio]:
@@ -385,7 +402,7 @@ async def restore_all_from_backup():
     for backup_file in BACKUP_DIR.glob("*.json"):
         try:
             mindfolio_id = backup_file.stem
-            mindfolio = restore_mindfolio_from_disk(mindfolio_id)
+            mindfolio = await restore_mindfolio_from_disk(mindfolio_id)
             if mindfolio:
                 await pf_put(mindfolio)
                 restored.append(mindfolio_id)
@@ -859,24 +876,36 @@ async def import_positions_from_tradestation(pid: str, body: dict):
             })
         
         # Import positions as BUY transactions
+        cli = await get_kv()
         for pos in positions_to_import:
             symbol = pos["symbol"]
             qty = pos["quantity"]
             avg_price = pos["avg_price"]
             
-            # Create transaction
+            # Create transaction using correct model
+            now = datetime.utcnow().isoformat()
             tx = Transaction(
+                id=f"tx_{secrets.token_hex(6)}",
                 mindfolio_id=pid,
-                action="BUY",
+                account_id=account_id,
+                datetime=now,
                 symbol=symbol,
-                quantity=qty,
+                side="BUY",
+                qty=qty,
                 price=avg_price,
-                timestamp=datetime.utcnow().isoformat(),
-                notes=f"Imported from TradeStation account {account_id}"
+                fee=0.0,
+                notes=f"Imported from TradeStation account {account_id}",
+                created_at=now
             )
             
-            # Save transaction
-            await tx_put(tx)
+            # Save transaction to Redis
+            await cli.set(key_transaction(tx.id), tx.json())
+            
+            # Update transaction list for mindfolio
+            tx_list_raw = await cli.get(key_mindfolio_transactions(pid)) or "[]"
+            tx_ids = json.loads(tx_list_raw)
+            tx_ids.append(tx.id)
+            await cli.set(key_mindfolio_transactions(pid), json.dumps(tx_ids))
             
             # Deduct cost from cash
             cost = qty * avg_price
@@ -904,6 +933,197 @@ async def import_positions_from_tradestation(pid: str, body: dict):
     except requests.RequestException as e:
         raise HTTPException(status_code=503, detail=f"TradeStation API error: {str(e)}")
     except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+
+
+@router.post("/{pid}/import-ytd")
+async def import_ytd_transactions(pid: str, body: dict, user_id: str = Header("default", alias="X-User-ID")):
+    """
+    Import all filled orders from TradeStation starting from 2025-01-01.
+    Creates BUY/SELL transactions in the mindfolio for complete P&L tracking.
+    
+    Body: {
+        "account_id": "11775499"  # TradeStation account ID
+    }
+    
+    Returns:
+        - transactions_imported: number of new transactions created
+        - date_range: earliest and latest transaction dates
+        - symbols: list of unique symbols found
+    """
+    from app.services.tradestation import get_valid_token
+    import requests
+    from datetime import datetime, timezone
+    
+    p = await pf_get(pid)
+    if not p:
+        raise HTTPException(status_code=404, detail=f"Mindfolio {pid} not found")
+    
+    account_id = body.get("account_id")
+    if not account_id:
+        raise HTTPException(status_code=400, detail="account_id required")
+    
+    try:
+        # Get TradeStation token
+        token_data = await get_valid_token(user_id)
+        if not token_data:
+            raise HTTPException(status_code=401, detail="Not authenticated with TradeStation. Please login first.")
+        
+        token = token_data.get("access_token")
+        if not token:
+            raise HTTPException(status_code=401, detail="Invalid token data")
+        
+        headers = {"Authorization": f"Bearer {token}"}
+        
+        # Determine API base URL
+        ts_mode = os.getenv("TRADESTATION_MODE", "SIMULATION")
+        ts_base = "https://api.tradestation.com/v3" if ts_mode == "LIVE" else "https://sim-api.tradestation.com/v3"
+        
+        # Fetch all orders since 2025-01-01
+        since_date = "2025-01-01T00:00:00Z"
+        orders_url = f"{ts_base}/brokerage/accounts/{account_id}/orders"
+        params = {"since": since_date}
+        
+        logger.info(f"Fetching orders from TradeStation for account {account_id} since {since_date}")
+        
+        orders_resp = requests.get(orders_url, headers=headers, params=params, timeout=15)
+        orders_resp.raise_for_status()
+        orders_data = orders_resp.json()
+        
+        all_orders = orders_data.get("Orders", [])
+        logger.info(f"Retrieved {len(all_orders)} orders from TradeStation")
+        logger.info(f"Response has pagination? NextToken: {orders_data.get('NextToken', 'None')}")
+        
+        # Check for pagination and fetch all pages
+        while orders_data.get("NextToken"):
+            params["pageToken"] = orders_data["NextToken"]
+            logger.info(f"Fetching next page with token: {orders_data['NextToken']}")
+            
+            orders_resp = requests.get(orders_url, headers=headers, params=params, timeout=15)
+            orders_resp.raise_for_status()
+            orders_data = orders_resp.json()
+            
+            page_orders = orders_data.get("Orders", [])
+            all_orders.extend(page_orders)
+            logger.info(f"Retrieved {len(page_orders)} more orders. Total so far: {len(all_orders)}")
+        
+        logger.info(f"Total orders retrieved after pagination: {len(all_orders)}")
+        
+        # Filter only FILLED orders (status: FLL or Filled)
+        filled_orders = [o for o in all_orders if o.get("Status", "").upper() in ["FLL", "FILLED"]]
+        logger.info(f"Found {len(filled_orders)} filled orders")
+        
+        # Debug: Log first order structure
+        if filled_orders:
+            logger.info(f"Sample order structure: {json.dumps(filled_orders[0], indent=2)}")
+        
+        if not filled_orders:
+            return {
+                "status": "success",
+                "transactions_imported": 0,
+                "message": "No filled orders found since 2025-01-01"
+            }
+        
+        # Create transactions from filled orders
+        cli = await get_kv()
+        transactions_created = []
+        symbols_set = set()
+        earliest_date = None
+        latest_date = None
+        
+        for order in filled_orders:
+            # Extract order details
+            symbol = order.get("Symbol", "")
+            filled_qty = float(order.get("FilledQuantity", 0) or 0)
+            avg_price = float(order.get("FilledPrice", 0) or order.get("LimitPrice", 0) or 0)
+            
+            # Determine side: BUY or SELL
+            action = order.get("TradeAction", "").upper()
+            side = "BUY" if action in ["BUY", "BUYTOOPEN", "BUYTOCOVER"] else "SELL"
+            
+            # Parse timestamp
+            timestamp_str = order.get("ClosedDateTime") or order.get("FilledTimestamp") or order.get("TimeStamp", "")
+            if timestamp_str:
+                # Handle different timestamp formats
+                try:
+                    if timestamp_str.endswith("Z"):
+                        order_datetime = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+                    else:
+                        order_datetime = datetime.fromisoformat(timestamp_str)
+                except:
+                    order_datetime = datetime.now(timezone.utc)
+            else:
+                order_datetime = datetime.now(timezone.utc)
+            
+            # Track date range
+            if not earliest_date or order_datetime < earliest_date:
+                earliest_date = order_datetime
+            if not latest_date or order_datetime > latest_date:
+                latest_date = order_datetime
+            
+            symbols_set.add(symbol)
+            
+            # Create transaction
+            now = datetime.utcnow().isoformat()
+            tx = Transaction(
+                id=f"tx_{secrets.token_hex(6)}",
+                mindfolio_id=pid,
+                account_id=account_id,
+                datetime=order_datetime.isoformat(),
+                symbol=symbol,
+                side=side,
+                qty=filled_qty,
+                price=avg_price,
+                fee=0.0,  # TODO: extract commission if available
+                notes=f"Imported from TradeStation order {order.get('OrderID', '')}",
+                created_at=now
+            )
+            
+            # Save transaction to Redis
+            await cli.set(key_transaction(tx.id), tx.json())
+            
+            # Update transaction list for mindfolio
+            tx_list_raw = await cli.get(key_mindfolio_transactions(pid)) or "[]"
+            tx_ids = json.loads(tx_list_raw)
+            tx_ids.append(tx.id)
+            await cli.set(key_mindfolio_transactions(pid), json.dumps(tx_ids))
+            
+            transactions_created.append({
+                "symbol": symbol,
+                "side": side,
+                "qty": filled_qty,
+                "price": avg_price,
+                "datetime": order_datetime.isoformat()
+            })
+        
+        # Recalculate positions from all transactions
+        calculated_positions = await calculate_positions_fifo(pid)
+        
+        # Save positions to Redis
+        positions_json = json.dumps([pos.dict() for pos in calculated_positions])
+        await cli.set(key_mindfolio_positions(pid), positions_json)
+        
+        # Update mindfolio updated_at timestamp
+        p.updated_at = datetime.utcnow().isoformat()
+        await pf_put(p)
+        
+        return {
+            "status": "success",
+            "transactions_imported": len(transactions_created),
+            "date_range": {
+                "earliest": earliest_date.isoformat() if earliest_date else None,
+                "latest": latest_date.isoformat() if latest_date else None
+            },
+            "symbols": sorted(list(symbols_set)),
+            "positions_recalculated": len(calculated_positions),
+            "sample_transactions": transactions_created[:5]  # Show first 5 as preview
+        }
+        
+    except requests.RequestException as e:
+        logger.error(f"TradeStation API error during YTD import: {e}")
+        raise HTTPException(status_code=503, detail=f"TradeStation API error: {str(e)}")
+    except Exception as e:
+        logger.error(f"YTD import failed: {e}")
         raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
 
 
@@ -1462,17 +1682,17 @@ async def create_eod_snapshot(pid: str):
 
         # Store snapshot in Redis (optional cache)
         try:
-            kv = get_redis()
+            kv = await get_kv()
             snapshot_key = f"eod_snapshot:{pid}:{date_str}"
-            kv.set(snapshot_key, json.dumps(snapshot.dict()), ex=86400 * 90)  # 90 days
+            await kv.set(snapshot_key, json.dumps(snapshot.dict()), ex=86400 * 90)  # 90 days
         except Exception:
             pass  # Redis cache is optional
 
         # Also add to series index (Redis cache)
         try:
-            kv = get_redis()
+            kv = await get_kv()
             series_key = f"eod_series:{pid}"
-            existing_series = kv.get(series_key)
+            existing_series = await kv.get(series_key)
             if existing_series:
                 series = json.loads(existing_series)
             else:
@@ -1496,7 +1716,7 @@ async def create_eod_snapshot(pid: str):
             series.sort(key=lambda x: x["date"])
             series = series[-365:]
 
-            kv.set(series_key, json.dumps(series), ex=86400 * 90)
+            await kv.set(series_key, json.dumps(series), ex=86400 * 90)
         except Exception:
             pass  # Redis cache is optional
 
@@ -1518,9 +1738,9 @@ async def get_eod_series(pid: str):
         # Try Redis cache first, fallback to sample data
         series = []
         try:
-            kv = get_redis()
+            kv = await get_kv()
             series_key = f"eod_series:{pid}"
-            existing_series = kv.get(series_key)
+            existing_series = await kv.get(series_key)
             if existing_series:
                 series = json.loads(existing_series)
         except Exception:

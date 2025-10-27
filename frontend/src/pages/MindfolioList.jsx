@@ -50,34 +50,9 @@ export default function MindfolioList() {
  .catch(e => {
  console.error('Mindfolio list error:', e);
  setErr(String(e));
- // Fallback to mock data
+ // No fallback - show empty list if API fails
  if (!mounted) return;
- setItems([
- {
- id: '1',
- name: 'Growth Mindfolio',
- cash_balance: 50000,
- status: 'ACTIVE',
- modules: [{ module: 'IV_SERVICE', budget: 10000 }],
- created_at: new Date().toISOString()
- },
- {
- id: '2',
- name: 'Income Mindfolio',
- cash_balance: 75000,
- status: 'ACTIVE',
- modules: [{ module: 'FLOW_SCANNER', budget: 15000 }],
- created_at: new Date().toISOString()
- },
- {
- id: '3',
- name: 'Tech Mindfolio',
- cash_balance: 100000,
- status: 'PAUSED',
- modules: [{ module: 'EARNINGS', budget: 20000 }],
- created_at: new Date().toISOString()
- }
- ]);
+ setItems([]);
  })
  .finally(() => setLoading(false));
  
