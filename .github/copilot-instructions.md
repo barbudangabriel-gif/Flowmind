@@ -1,7 +1,14 @@
 # FlowMind AI Agent Instructions
 
 **Project:** Options analytics platform with FastAPI backend, React 19 frontend
-**Last Updated:** October 27, 2025
+**Last Updated:** November 1, 2025
+
+**CRITICAL CONTEXT:**
+- **Target User:** Single user (Gabriel) - personal trading tool
+- **No multi-user support needed** - All features are for personal use only
+- **No user authentication system** - Direct access, no login/signup flows
+- **Development priority:** Functionality over scalability
+- **Deploy once, use daily** - Not a SaaS product
 
 ---
 
@@ -41,6 +48,7 @@
 - **Transparent**: Raportează probleme imediat
 - **Feedback-driven**: Corectează după fiecare ciclu
 - **Autonom**: Mergi înainte fără confirmări inutile
+- **Personal tool focus**: Build for Gabriel's workflow, not generic users
 
 ---
 
