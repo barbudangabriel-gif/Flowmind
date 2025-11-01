@@ -36,9 +36,7 @@ async def flow_summary(
         trades_hist = await uw.trades(sym_or_proxy, dN, now)
 
         logger.info(
-            f"UW flow summary for {sym_or_proxy}: live={len(trades_live)}, hist={
-                len(trades_hist)
-            }"
+            f"UW flow summary for {sym_or_proxy}: live={len(trades_live)}, hist={len(trades_hist)}"
         )
 
         return {

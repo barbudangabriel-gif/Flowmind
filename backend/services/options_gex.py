@@ -35,9 +35,7 @@ def fetch_chain(
     # Fetch fresh data
     try:
         logger.info(
-            f"Fetching fresh options data for {symbol} from {
-                provider.__class__.__name__
-            }"
+            f"Fetching fresh options data for {symbol} from {provider.__class__.__name__}"
         )
         spot = provider.get_spot(symbol)
         chain = provider.get_chain(symbol, expiry=expiry, dte=dte)
