@@ -52,6 +52,16 @@ test_result.md
 production_audit*.txt
 final_audit*.txt
 
+# Unusual Whales API documentation with tokens
+UW_*.md
+START_HERE_UW_API.md
+WEBSOCKET_IMPLEMENTATION_*.md
+*_uw_test.sh
+discover_*.sh
+quick_test_*.sh
+comprehensive_*.sh
+final_comprehensive_test.sh
+
 # Backup directories with credentials
 backups/
 
