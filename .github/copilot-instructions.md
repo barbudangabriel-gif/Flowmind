@@ -141,13 +141,35 @@ const params = {
 <StrategyChart {...params} size="full" showProbability={false} />
 ```
 
-**2. Backend URL Configuration**
+**2. Backend URL Configuration - CRITICAL**
 ```javascript
 // ALWAYS use environment variable, NEVER hardcode
 const API = process.env.REACT_APP_BACKEND_URL || "";
 // Alternative patterns seen in codebase:
 const API = window.API_BASE || process.env.REACT_APP_BACKEND_URL || "";
 ```
+
+**PRODUCTION BUILD REQUIREMENTS (Nov 1, 2025):**
+- **MUST create `.env.production` before building for production**
+- **MUST set `REACT_APP_BACKEND_URL=http://localhost:8080`** (Caddy proxy URL)
+- **NEVER build with empty REACT_APP_BACKEND_URL** - causes runtime errors
+
+```bash
+# CORRECT production build process:
+cd /opt/flowmind/frontend
+echo 'REACT_APP_BACKEND_URL=http://localhost:8080' > .env.production
+npm run build
+systemctl reload caddy
+
+# WRONG - causes "Cannot read properties of undefined" error:
+REACT_APP_BACKEND_URL="" npm run build  # ❌ Empty string breaks API calls
+```
+
+**Why `http://localhost:8080`?**
+- Frontend calls backend through Caddy reverse proxy (port 8080)
+- NOT direct to Docker backend (port 8000)
+- Caddyfile proxies `/api/*` to `http://localhost:8000` (Docker backend)
+- Frontend → Caddy :8080 → Backend :8000
 
 **3. Size-Responsive Components**
 ```javascript
