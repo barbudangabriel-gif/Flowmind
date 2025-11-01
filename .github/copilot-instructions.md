@@ -856,9 +856,9 @@ class StrategyEngine {
 #### Configuration (.env)
 ```bash
 // OAuth Credentials
-TS_CLIENT_ID=XEs0URG1rMrGDUFRKVhlDaclvQKq8Qpj
-TS_CLIENT_SECRET=NsAIybzKV6GbYGqQZwF0cHypdXfwiDYL5-EY4nRXEbIy748Zp-FdeuDXJIu6Jhwk
-TS_REDIRECT_URI=https://sturdy-system-wvrqjjp49wg29qxx-8000.app.github.dev/api/oauth/tradestation/callback
+TS_CLIENT_ID=YOUR_TRADESTATION_CLIENT_ID
+TS_CLIENT_SECRET=YOUR_TRADESTATION_CLIENT_SECRET
+TS_REDIRECT_URI=https://your-domain.com/api/oauth/tradestation/callback
 
 // CRITICAL: Both variables required for mode switching
 TS_MODE=LIVE

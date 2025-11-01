@@ -31,9 +31,29 @@ dist/
 dist
 
 # Environment files (comprehensive coverage)
-
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+frontend/.env.local
+deploy/.env.production
 *token.json*
 *credentials.json*
+
+# Sensitive documentation files with credentials
+EMAIL_QUICK_TRADESTATION.txt
+TRADESTATION_CALLBACK_SETUP.md
+NEXT_STEPS_QUICK.md
+WORK_LOG_*.md
+TRADESTATION_SERVICE_COMPLETE.md
+test_result.md
+*audit*.txt
+production_audit*.txt
+final_audit*.txt
+
+# Backup directories with credentials
+backups/
 
 # Logs and debug files
 npm-debug.log*
