@@ -411,31 +411,49 @@ REACT_APP_BACKEND_URL=http://localhost:8000
 
 ## 🐳 Deployment
 
+### 🚀 Production Deployment (Hetzner VPS)
+
+FlowMind includes a complete production deployment solution for **Hetzner Cloud** (€7-13/month):
+
+**Quick Start:**
+```bash
+# On your Hetzner server
+ssh root@YOUR_SERVER_IP
+curl -o setup.sh https://raw.githubusercontent.com/barbudangabriel-gif/Flowmind/main/deploy/hetzner-setup.sh
+chmod +x setup.sh && ./setup.sh
+```
+
+**Features:**
+✅ Auto HTTPS via Let's Encrypt (Caddy)  
+✅ Docker-based deployment (zero-downtime)  
+✅ Automated backups (Redis + mindfolios)  
+✅ Health monitoring & diagnostics  
+✅ Security hardening (firewall, non-root containers)  
+✅ Complete documentation & troubleshooting guides  
+
+**📚 Documentation:**
+- **Quick Start:** [deploy/README.md](./deploy/README.md)
+- **Complete Guide:** [deploy/DEPLOYMENT_GUIDE.md](./deploy/DEPLOYMENT_GUIDE.md)
+- **Step-by-step Checklist:** [deploy/CHECKLIST.md](./deploy/CHECKLIST.md)
+- **Cost Analysis:** [deploy/COST_ANALYSIS.md](./deploy/COST_ANALYSIS.md)
+- **Troubleshooting:** [deploy/TROUBLESHOOTING.md](./deploy/TROUBLESHOOTING.md)
+
+**Estimated Setup Time:** 45-60 minutes  
+**Monthly Cost:** ~€8-16 (~$9-18)
+
 ### Production Checklist
 
-- [ ] Set all required environment variables
-- [ ] Configure Redis (or accept in-memory fallback)
+- [ ] Set all required environment variables (see `deploy/.env.production.example`)
+- [ ] Configure Redis (included in docker-compose)
 - [ ] Set up MongoDB (optional, for mindfolios)
 - [ ] Configure TradeStation OAuth (for real options chains)
 - [ ] Set Unusual Whales API token (for live flow data)
-- [ ] Verify health endpoints: `/health`, `/readyz`, `/api/health/redis`
-- [ ] Test with real API keys (not demo mode)
-- [ ] Configure reverse proxy (Caddy/Nginx)
-- [ ] Set up SSL/TLS certificates
-- [ ] Configure CORS for frontend domain
-
-### Docker Production
-
-```bash
-# Build
-docker build -t flowmind-backend .
-
-# Run with Redis
-docker-compose -f docker-compose.prod.yml up -d
-
-# Verify
-curl https://your-domain.com/api/health/redis
-```
+- [ ] Point domain DNS to server IP
+- [ ] Update Caddyfile with your domain
+- [ ] Run deployment script
+- [ ] Verify health endpoints: `/health`, `/api/health/redis`
+- [ ] Test TradeStation OAuth flow
+- [ ] Set up automated backups (cron job included)
 
 ---
 
