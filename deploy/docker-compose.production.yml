@@ -1,0 +1,84 @@
+version: "3.9"
+
+services:
+  # Frontend - Built static files served by Caddy
+  # Build process happens in production-deploy.sh
+  
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.production
+    container_name: flowmind-backend
+    environment:
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379/0
+      
+      # Production mode
+      ENVIRONMENT: production
+      
+      # API Keys (from .env.production)
+      UW_API_TOKEN: ${UW_API_TOKEN}
+      UNUSUAL_WHALES_API_KEY: ${UW_API_TOKEN}
+      UW_BASE_URL: https://api.unusualwhales.com
+      UW_LIVE: 1
+      
+      # TradeStation OAuth
+      TS_CLIENT_ID: ${TS_CLIENT_ID}
+      TS_CLIENT_SECRET: ${TS_CLIENT_SECRET}
+      TS_REDIRECT_URI: ${TS_REDIRECT_URI}
+      TS_MODE: ${TS_MODE:-LIVE}
+      TRADESTATION_MODE: ${TS_MODE:-LIVE}
+      TS_BASE_URL: https://api.tradestation.com
+      TS_AUTH_URL: https://signin.tradestation.com/authorize
+      TS_TOKEN_URL: https://signin.tradestation.com/oauth/token
+      TS_SCOPE: "openid offline_access MarketData ReadAccount Trade OptionSpreads Matrix"
+      
+      # Security
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://flowmind.app,https://www.flowmind.app}
+      
+      # Performance
+      UVICORN_WORKERS: ${UVICORN_WORKERS:-4}
+      
+    volumes:
+      - ./data/mindfolios:/app/data/mindfolios
+      - ./logs:/app/logs
+    ports:
+      - "127.0.0.1:8000:8000"  # Only accessible from localhost (Caddy reverse proxy)
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - flowmind-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    container_name: flowmind-redis
+    command: redis-server --appendonly yes --appendfsync everysec
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - flowmind-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  flowmind-network:
+    driver: bridge

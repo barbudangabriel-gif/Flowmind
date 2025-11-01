@@ -1,0 +1,9 @@
+# Ignore production environment file (contains secrets)
+.env.production
+
+# Ignore backup files if any are created here
+*.backup
+*.bak
+
+# Ignore logs if any are created here
+*.log
