@@ -24,6 +24,12 @@ export function buildNav(ctx) {
  isComplete: true,
  items: [
  { 
+ label: "Aggregate View", 
+ to: "/account/aggregate", 
+ icon: "Layers",
+ description: "Unified view across all brokers"
+ },
+ { 
  label: "Account Balance", 
  to: "/account/balance", 
  icon: "DollarSign"

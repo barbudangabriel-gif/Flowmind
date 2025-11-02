@@ -19,6 +19,34 @@
 
 ## 🚀 Active Tasks (In Progress)
 
+### 1. 🏦 Account Balance Pages - Broker Integration (Nov 2, 2025)
+**Status:** 🔄 IN PROGRESS  
+**Priority:** HIGH  
+**Time Estimate:** 3-4 hours remaining
+
+**Completed:**
+- ✅ Futures account structure (3 main cards + 9 metrics, tooltip system)
+- ✅ Equity account structure (Portfolio Overview + Stocks/Options tabs)
+- ✅ InfoTooltip component with hover explanations
+- ✅ Tab switching system for Stocks vs Options
+- ✅ Mock backend endpoints for all 3 brokers (TS, TT, IBKR)
+- ✅ Conditional rendering based on account type
+- ✅ 7 account type pages working (TS Equity/Futures, TT Equity/Futures/Crypto, IBKR Equity/Futures)
+
+**TODO:**
+- [ ] Crypto account structure (waiting for user data)
+- [ ] Aggregate Account view (unifies all brokers + account types)
+- [ ] Connect to real broker APIs (replace mock endpoints)
+- [ ] WebSocket integration for live balance updates
+- [ ] Test all 8 account pages (7 types + 1 aggregate)
+
+**Files:**
+- `frontend/src/pages/AccountDetailPage.jsx` (615 lines)
+- `backend/app/routers/brokers_mock.py` (329 lines)
+- `frontend/src/lib/nav.simple.js` (navigation structure)
+
+---
+
 ### 0. 🎉 Backend API Endpoints - 100% Fixed (COMPLETED - Nov 2, 2025)
 **Status:** ✅ COMPLETE  
 **Priority:** CRITICAL  
