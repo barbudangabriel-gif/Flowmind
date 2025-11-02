@@ -46,6 +46,7 @@ import LiveLitTradesFeed from './LiveLitTradesFeed';
 import LiveOffLitTradesFeed from './LiveOffLitTradesFeed';
 import { FiltersPanel } from '../components/FiltersPanel';
 import StrategyEngine from '../services/StrategyEngine';
+import CoreEngineMonitor from '../components/CoreEngineMonitor';
 
 // Custom slider styles
 const sliderStyles = `
@@ -1741,6 +1742,7 @@ function FlowTab() {
   
   const flowTabs = [
     'Summary',
+    'CORE ENGINE',
     'Live Flow', 
     'Historical Flow',
     'News Flow',
@@ -1909,6 +1911,12 @@ function FlowTab() {
               <div className="w-80 flex-shrink-0 overflow-y-auto custom-scrollbar">
                 <FiltersPanel />
               </div>
+            </div>
+          )}
+
+          {activeFlowTab === 'CORE ENGINE' && (
+            <div className="h-full overflow-y-auto custom-scrollbar">
+              <CoreEngineMonitor />
             </div>
           )}
 

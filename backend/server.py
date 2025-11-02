@@ -819,6 +819,11 @@ from routers.stream import router as stream_router
 
 app.include_router(stream_router)  # Already has /api/stream prefix
 
+# CORE ENGINE router (198-agent hierarchical system)
+from routers.core_engine import router as core_engine_router
+
+app.include_router(core_engine_router)  # Already has /api/core-engine prefix
+
 # Wire observability (metrics, structured logging, request correlation)
 try:
     from config import get_settings
