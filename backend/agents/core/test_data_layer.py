@@ -16,7 +16,7 @@ from typing import List
 
 import pytest
 
-from backend.agents.core.data_layer import (
+from agents.core.data_layer import (
     RedisStreamsManager,
     RedisTimeSeriesManager,
     get_data_layer,

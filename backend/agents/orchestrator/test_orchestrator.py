@@ -4,7 +4,7 @@ Tests for centralized 200-agent coordination.
 """
 
 import asyncio
-from backend.agents.orchestrator import Orchestrator
+from agents.orchestrator import Orchestrator
 
 
 async def test_orchestrator_initialization():

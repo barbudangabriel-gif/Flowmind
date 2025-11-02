@@ -396,8 +396,21 @@ async def pf_list() -> List[Mindfolio]:
 @router.post("/restore-from-backup")
 async def restore_all_from_backup():
     """Restore all mindfolios from disk backups (in case Redis is cleared)"""
-    restored = []
-    failed = []
+    count = await restore_all_mindfolios_from_backup()
+    return {
+        "status": "success",
+        "restored": count,
+        "message": f"Restored {count} mindfolios from backup"
+    }
+
+
+async def restore_all_mindfolios_from_backup() -> int:
+    """Helper function to restore all mindfolios from disk backups.
+    
+    Returns:
+        Number of mindfolios successfully restored
+    """
+    restored_count = 0
     
     for backup_file in BACKUP_DIR.glob("*.json"):
         try:
@@ -405,19 +418,12 @@ async def restore_all_from_backup():
             mindfolio = await restore_mindfolio_from_disk(mindfolio_id)
             if mindfolio:
                 await pf_put(mindfolio)
-                restored.append(mindfolio_id)
-            else:
-                failed.append(mindfolio_id)
+                restored_count += 1
+                logger.info(f"Restored mindfolio {mindfolio_id} from backup")
         except Exception as e:
             logger.error(f"Failed to restore {backup_file.name}: {e}")
-            failed.append(backup_file.stem)
     
-    return {
-        "status": "success",
-        "restored": len(restored),
-        "failed": len(failed),
-        "mindfolios": restored
-    }
+    return restored_count
 
 
 # ——— TS Positions Grid Endpoint (must be before /{pid} patterns) ———
@@ -520,94 +526,41 @@ async def get_tradestation_positions_grid():
 @router.get("/templates")
 async def get_mindfolio_templates():
     """
-    Get predefined mindfolio templates for quick setup.
-    Returns 4 templates: Day Trading, Options Selling, Long-term Investing, Blank.
+    Get mindfolio templates (concepts only - no pre-allocated modules/balances).
+    User selects template → broker account → creates → then allocates modules.
     """
     templates = [
         {
             "id": "template_day_trading",
             "name": "Day Trading",
-            "description": "Active trading with quick entries/exits. Focus on momentum and technical analysis.",
-            "icon": "📈",
-            "starting_balance": 25000.0,  # PDT rule minimum
-            "modules": [
-                {
-                    "module": "MOMENTUM_SCANNER",
-                    "budget": 15000.0,
-                    "max_risk_per_trade": 500.0,
-                    "daily_loss_limit": 1500.0,
-                    "autotrade": False,
-                },
-                {
-                    "module": "BREAKOUT_TRADER",
-                    "budget": 10000.0,
-                    "max_risk_per_trade": 300.0,
-                    "daily_loss_limit": 1000.0,
-                    "autotrade": False,
-                },
-            ],
-            "recommended_for": "Experienced traders with time to monitor markets daily",
+            "description": "Active intraday trading with momentum and breakout strategies",
+            "icon": "📊",
+            "suggested_modules": ["MOMENTUM_SCANNER", "BREAKOUT_TRADER", "SCALPING_ENGINE"],
             "risk_level": "HIGH",
         },
         {
             "id": "template_options_selling",
             "name": "Options Selling",
-            "description": "Generate premium income by selling puts and covered calls. Conservative theta-positive strategy.",
-            "icon": "💰",
-            "starting_balance": 50000.0,
-            "modules": [
-                {
-                    "module": "SELL_PUTS_ENGINE",
-                    "budget": 30000.0,
-                    "max_risk_per_trade": 1000.0,
-                    "daily_loss_limit": 2000.0,
-                    "autotrade": False,
-                },
-                {
-                    "module": "COVERED_CALLS",
-                    "budget": 20000.0,
-                    "max_risk_per_trade": 500.0,
-                    "daily_loss_limit": 1000.0,
-                    "autotrade": False,
-                },
-            ],
-            "recommended_for": "Income-focused investors seeking monthly cash flow",
+            "description": "Premium income generation through puts and covered calls",
+            "icon": "�",
+            "suggested_modules": ["SELL_PUTS_ENGINE", "COVERED_CALLS", "IRON_CONDOR"],
+            "risk_level": "MEDIUM",
+        },
+        {
+            "id": "template_swing_trading",
+            "name": "Swing Trading",
+            "description": "Multi-day position trading based on technical patterns",
+            "icon": "📉",
+            "suggested_modules": ["SWING_DETECTOR", "TREND_FOLLOWER", "SUPPORT_RESISTANCE"],
             "risk_level": "MEDIUM",
         },
         {
             "id": "template_longterm",
             "name": "Long-term Investing",
-            "description": "Buy-and-hold strategy with blue-chip stocks and ETFs. Minimal trading, low fees.",
-            "icon": "🏦",
-            "starting_balance": 10000.0,
-            "modules": [
-                {
-                    "module": "VALUE_INVESTOR",
-                    "budget": 7000.0,
-                    "max_risk_per_trade": 1000.0,
-                    "daily_loss_limit": 0.0,  # No daily limit for long-term
-                    "autotrade": False,
-                },
-                {
-                    "module": "DIVIDEND_COLLECTOR",
-                    "budget": 3000.0,
-                    "max_risk_per_trade": 500.0,
-                    "daily_loss_limit": 0.0,
-                    "autotrade": False,
-                },
-            ],
-            "recommended_for": "Passive investors with long-term horizon (5+ years)",
+            "description": "Buy-and-hold strategy with blue-chip stocks and ETFs",
+            "icon": "💼",
+            "suggested_modules": ["VALUE_INVESTOR", "DIVIDEND_COLLECTOR", "PORTFOLIO_REBALANCER"],
             "risk_level": "LOW",
-        },
-        {
-            "id": "template_blank",
-            "name": "Blank Template",
-            "description": "Start from scratch. Customize your own modules and risk parameters.",
-            "icon": "📝",
-            "starting_balance": 10000.0,
-            "modules": [],
-            "recommended_for": "Advanced users who want full control",
-            "risk_level": "CUSTOM",
         },
     ]
 

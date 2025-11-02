@@ -16,7 +16,7 @@ Usage:
 import asyncio
 import logging
 from datetime import datetime
-from backend.agents.orchestrator import get_orchestrator
+from agents.orchestrator import get_orchestrator
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"

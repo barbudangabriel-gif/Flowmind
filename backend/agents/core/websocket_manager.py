@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from fastapi import WebSocket, WebSocketDisconnect
 
-from backend.agents.core.data_layer import get_data_layer
+from agents.core.data_layer import get_data_layer
 
 logger = logging.getLogger(__name__)
 

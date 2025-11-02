@@ -229,6 +229,8 @@ export default function MindfolioDetailNewV2() {
     { id: 'overview', label: 'Overview' },
     { id: 'positions', label: 'Positions' },
     { id: 'transactions', label: 'Transactions' },
+    { id: 'algos', label: 'Algos' },
+    { id: 'rebalancing', label: 'Smart Rebalancing' },
     { id: 'analytics', label: 'Analytics' }
   ];
 
@@ -492,12 +494,619 @@ export default function MindfolioDetailNewV2() {
           </div>
         )}
 
+        {activeTab === 'algos' && (
+          <div className="space-y-6">
+            {/* Capital Allocation Algorithms */}
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1">Capital Allocation Algorithms</h2>
+                  <p className="text-sm text-gray-400">Configure automated capital allocation strategies</p>
+                </div>
+                <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition">
+                  + Add Algorithm
+                </button>
+              </div>
+
+              {/* Algorithm Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Equal Weight Algorithm */}
+                <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white">Equal Weight</h3>
+                    <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded border border-green-500/30">
+                      ACTIVE
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-400 mb-4">
+                    Distribute capital equally across all selected symbols
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Allocated:</span>
+                      <span className="text-white font-medium">$15,000</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Symbols:</span>
+                      <span className="text-white font-medium">5</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Per Symbol:</span>
+                      <span className="text-white font-medium">$3,000</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <button className="flex-1 px-3 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-xs transition">
+                      Configure
+                    </button>
+                    <button className="flex-1 px-3 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-xs transition">
+                      Pause
+                    </button>
+                  </div>
+                </div>
+
+                {/* Risk Parity Algorithm */}
+                <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white">Risk Parity</h3>
+                    <span className="px-2 py-1 bg-gray-500/20 text-gray-400 text-xs rounded border border-gray-500/30">
+                      INACTIVE
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-400 mb-4">
+                    Allocate capital based on inverse volatility for equal risk contribution
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Allocated:</span>
+                      <span className="text-white font-medium">$0</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Symbols:</span>
+                      <span className="text-white font-medium">0</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Rebalance:</span>
+                      <span className="text-white font-medium">Weekly</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <button className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs transition">
+                      Activate
+                    </button>
+                    <button className="flex-1 px-3 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-xs transition">
+                      Configure
+                    </button>
+                  </div>
+                </div>
+
+                {/* Momentum Algorithm */}
+                <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white">Momentum Based</h3>
+                    <span className="px-2 py-1 bg-gray-500/20 text-gray-400 text-xs rounded border border-gray-500/30">
+                      INACTIVE
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-400 mb-4">
+                    Allocate more capital to assets with strong momentum signals
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Allocated:</span>
+                      <span className="text-white font-medium">$0</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Lookback:</span>
+                      <span className="text-white font-medium">20 days</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Rebalance:</span>
+                      <span className="text-white font-medium">Daily</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <button className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs transition">
+                      Activate
+                    </button>
+                    <button className="flex-1 px-3 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-xs transition">
+                      Configure
+                    </button>
+                  </div>
+                </div>
+
+                {/* Kelly Criterion Algorithm */}
+                <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white">Kelly Criterion</h3>
+                    <span className="px-2 py-1 bg-gray-500/20 text-gray-400 text-xs rounded border border-gray-500/30">
+                      INACTIVE
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-400 mb-4">
+                    Optimal position sizing based on win probability and risk-reward ratio
+                  </p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Allocated:</span>
+                      <span className="text-white font-medium">$0</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Win Rate:</span>
+                      <span className="text-white font-medium">N/A</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Kelly Factor:</span>
+                      <span className="text-white font-medium">0.25x</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <button className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs transition">
+                      Activate
+                    </button>
+                    <button className="flex-1 px-3 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-xs transition">
+                      Configure
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Options Strategy Scanners & Tools */}
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-white mb-1">Options Strategy Scanners</h2>
+                <p className="text-sm text-gray-400">Automated strategy scanners and trading tools</p>
+              </div>
+
+              {/* Scanner Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {/* Trade Simulator */}
+                <a href="/simulator" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-blue-500 transition group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500/30 transition">
+                      ▶
+                    </div>
+                    <h3 className="font-semibold text-white">Trade Simulator</h3>
+                  </div>
+                  <p className="text-sm text-gray-400">Test strategies with historical data</p>
+                </a>
+
+                {/* IV Setups (Auto) */}
+                <a href="/screener/iv" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-cyan-500 transition group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500/30 transition">
+                      📊
+                    </div>
+                    <h3 className="font-semibold text-white">IV Setups (Auto)</h3>
+                  </div>
+                  <p className="text-sm text-gray-400">Automated implied volatility analysis</p>
+                </a>
+
+                {/* Iron Condor Scanner */}
+                <a href="/screener/iv?strategy=IRON_CONDOR" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-purple-500 transition group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 group-hover:bg-purple-500/30 transition">
+                      🎯
+                    </div>
+                    <h3 className="font-semibold text-white">Iron Condor Scanner</h3>
+                  </div>
+                  <p className="text-sm text-gray-400">Find high probability condor setups</p>
+                </a>
+
+                {/* Calendar Scanner */}
+                <a href="/screener/iv?strategy=CALENDAR" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-green-500 transition group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 group-hover:bg-green-500/30 transition">
+                      📅
+                    </div>
+                    <h3 className="font-semibold text-white">Calendar Scanner</h3>
+                  </div>
+                  <p className="text-sm text-gray-400">Time-based spread opportunities</p>
+                </a>
+
+                {/* Diagonal Scanner */}
+                <a href="/screener/iv?strategy=DIAGONAL" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-yellow-500 transition group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 group-hover:bg-yellow-500/30 transition">
+                      📈
+                    </div>
+                    <h3 className="font-semibold text-white">Diagonal Scanner</h3>
+                  </div>
+                  <p className="text-sm text-gray-400">Diagonal spread opportunities</p>
+                </a>
+
+                {/* Double Diagonal */}
+                <a href="/screener/iv?strategy=DOUBLE_DIAGONAL" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-orange-500 transition group">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400 group-hover:bg-orange-500/30 transition">
+                      📊
+                    </div>
+                    <h3 className="font-semibold text-white">Double Diagonal</h3>
+                  </div>
+                  <p className="text-sm text-gray-400">Advanced diagonal strategies</p>
+                </a>
+              </div>
+
+              {/* Income Strategies */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white mb-3">Income Strategies</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Put Selling Engine */}
+                  <a href="/screener/sell-puts" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-red-500 transition group">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400 group-hover:bg-red-500/30 transition">
+                        ↓
+                      </div>
+                      <h3 className="font-semibold text-white">Put Selling Engine</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Cash-flow from selling puts</p>
+                  </a>
+
+                  {/* Covered Calls */}
+                  <a href="/screener/covered-calls" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-blue-500 transition group">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500/30 transition">
+                        🛡
+                      </div>
+                      <h3 className="font-semibold text-white">Covered Calls</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Generate income on holdings</p>
+                  </a>
+
+                  {/* Cash-Secured Puts */}
+                  <a href="/screener/csp" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-green-500 transition group">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 group-hover:bg-green-500/30 transition">
+                        💵
+                      </div>
+                      <h3 className="font-semibold text-white">Cash-Secured Puts</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Conservative put selling strategy</p>
+                  </a>
+                </div>
+              </div>
+
+              {/* Trade Management */}
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-3">Trade Management</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Preview Queue */}
+                  <a href="/trades/preview" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-cyan-500 transition group">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500/30 transition">
+                        📋
+                      </div>
+                      <h3 className="font-semibold text-white">Preview Queue</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Review pending trade setups</p>
+                  </a>
+
+                  {/* Orders (SIM) */}
+                  <a href="/trades/orders/sim" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-yellow-500 transition group">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center text-yellow-400 group-hover:bg-yellow-500/30 transition">
+                        📝
+                      </div>
+                      <h3 className="font-semibold text-white">Orders (SIM)</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Simulation account orders</p>
+                  </a>
+
+                  {/* Orders (LIVE) */}
+                  <a href="/trades/orders/live" className="bg-slate-700/30 border border-slate-600 rounded-lg p-4 hover:border-red-500 transition group">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400 group-hover:bg-red-500/30 transition">
+                        💳
+                      </div>
+                      <h3 className="font-semibold text-white">Orders (LIVE)</h3>
+                    </div>
+                    <p className="text-sm text-gray-400">Live account orders</p>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'rebalancing' && (
+          <div className="space-y-6">
+            {/* Smart Rebalancing */}
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1">Smart Rebalancing</h2>
+                  <p className="text-sm text-gray-400">AI-powered portfolio rebalancing recommendations</p>
+                </div>
+                <button className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-semibold transition">
+                  Run Analysis
+                </button>
+              </div>
+
+              {/* Rebalancing Status */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+                  <div className="text-sm text-gray-400 mb-1">Last Rebalanced</div>
+                  <div className="text-xl font-bold text-white">15 days ago</div>
+                  <div className="text-xs text-gray-400 mt-1">October 18, 2025</div>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+                  <div className="text-sm text-gray-400 mb-1">Drift Score</div>
+                  <div className="text-xl font-bold text-yellow-400">12.3%</div>
+                  <div className="text-xs text-gray-400 mt-1">Moderate drift detected</div>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+                  <div className="text-sm text-gray-400 mb-1">Recommendation</div>
+                  <div className="text-xl font-bold text-cyan-400">Rebalance</div>
+                  <div className="text-xs text-gray-400 mt-1">Expected improvement: +2.1%</div>
+                </div>
+              </div>
+
+              {/* Current vs Target Allocation */}
+              <div className="bg-slate-700/30 rounded-lg p-5 border border-slate-600 mb-6">
+                <h3 className="font-semibold text-white mb-4">Current vs Target Allocation</h3>
+                <div className="space-y-4">
+                  {/* Example allocation comparison */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-300">AAPL</span>
+                      <div className="flex gap-4 text-sm">
+                        <span className="text-gray-400">Current: <span className="text-white">25.3%</span></span>
+                        <span className="text-gray-400">Target: <span className="text-cyan-400">20.0%</span></span>
+                        <span className="text-red-400">+5.3%</span>
+                      </div>
+                    </div>
+                    <div className="w-full h-2 bg-slate-600 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-cyan-500 to-red-500" style={{width: '25.3%'}}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-300">MSFT</span>
+                      <div className="flex gap-4 text-sm">
+                        <span className="text-gray-400">Current: <span className="text-white">18.7%</span></span>
+                        <span className="text-gray-400">Target: <span className="text-cyan-400">20.0%</span></span>
+                        <span className="text-yellow-400">-1.3%</span>
+                      </div>
+                    </div>
+                    <div className="w-full h-2 bg-slate-600 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-cyan-500 to-yellow-500" style={{width: '18.7%'}}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-300">TSLA</span>
+                      <div className="flex gap-4 text-sm">
+                        <span className="text-gray-400">Current: <span className="text-white">22.1%</span></span>
+                        <span className="text-gray-400">Target: <span className="text-cyan-400">20.0%</span></span>
+                        <span className="text-red-400">+2.1%</span>
+                      </div>
+                    </div>
+                    <div className="w-full h-2 bg-slate-600 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-cyan-500 to-red-500" style={{width: '22.1%'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rebalancing Actions */}
+              <div className="bg-slate-700/30 rounded-lg p-5 border border-slate-600">
+                <h3 className="font-semibold text-white mb-4">Suggested Actions</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded border border-slate-600">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-red-400 font-medium">SELL</span>
+                        <span className="text-white font-medium">AAPL</span>
+                      </div>
+                      <div className="text-sm text-gray-400">Reduce position by $1,325 (5 shares @ $265)</div>
+                    </div>
+                    <button className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-sm transition">
+                      Execute
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded border border-slate-600">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-green-400 font-medium">BUY</span>
+                        <span className="text-white font-medium">MSFT</span>
+                      </div>
+                      <div className="text-sm text-gray-400">Increase position by $325 (1 share @ $325)</div>
+                    </div>
+                    <button className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-sm transition">
+                      Execute
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded border border-slate-600">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-red-400 font-medium">SELL</span>
+                        <span className="text-white font-medium">TSLA</span>
+                      </div>
+                      <div className="text-sm text-gray-400">Reduce position by $525 (2 shares @ $262.50)</div>
+                    </div>
+                    <button className="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white rounded text-sm transition">
+                      Execute
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-600">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-400">
+                      Total transactions: <span className="text-white font-medium">3</span> • 
+                      Est. cost: <span className="text-white font-medium">$0.00</span>
+                    </div>
+                    <button className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-semibold transition">
+                      Execute All
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'analytics' && (
           <div className="space-y-6">
+            {/* Performance Metrics */}
             <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Analytics</h2>
-              <div className="text-gray-400">
-                Performance metrics, sector allocation, and trade statistics coming soon...
+              <h2 className="text-xl font-bold text-white mb-4">Performance Metrics</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+                  <div className="text-sm text-gray-400 mb-1">Sharpe Ratio</div>
+                  <div className="text-2xl font-bold text-cyan-400">1.85</div>
+                  <div className="text-xs text-gray-400 mt-1">Risk-adjusted return</div>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+                  <div className="text-sm text-gray-400 mb-1">Max Drawdown</div>
+                  <div className="text-2xl font-bold text-red-400">-12.3%</div>
+                  <div className="text-xs text-gray-400 mt-1">Peak to trough</div>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+                  <div className="text-sm text-gray-400 mb-1">Volatility</div>
+                  <div className="text-2xl font-bold text-yellow-400">18.5%</div>
+                  <div className="text-xs text-gray-400 mt-1">Annualized std dev</div>
+                </div>
+                <div className="bg-slate-700/30 rounded-lg p-4 border border-slate-600">
+                  <div className="text-sm text-gray-400 mb-1">Alpha</div>
+                  <div className="text-2xl font-bold text-green-400">+3.2%</div>
+                  <div className="text-xs text-gray-400 mt-1">vs SPY benchmark</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Sector Allocation */}
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+              <h2 className="text-xl font-bold text-white mb-4">Sector Allocation</h2>
+              <div className="space-y-3">
+                {[
+                  { sector: 'Technology', pct: 35.2, color: 'bg-blue-500' },
+                  { sector: 'Healthcare', pct: 18.7, color: 'bg-green-500' },
+                  { sector: 'Financials', pct: 15.3, color: 'bg-yellow-500' },
+                  { sector: 'Consumer', pct: 12.8, color: 'bg-purple-500' },
+                  { sector: 'Energy', pct: 10.5, color: 'bg-red-500' },
+                  { sector: 'Other', pct: 7.5, color: 'bg-gray-500' }
+                ].map(item => (
+                  <div key={item.sector}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm text-gray-300">{item.sector}</span>
+                      <span className="text-sm text-white font-medium">{item.pct}%</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                      <div className={`h-full ${item.color}`} style={{width: `${item.pct}%`}}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Trade Statistics */}
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+              <h2 className="text-xl font-bold text-white mb-4">Trade Statistics</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <div className="text-sm text-gray-400 mb-3">Win/Loss Breakdown</div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Winning Trades</span>
+                      <span className="text-green-400 font-medium">28 (65%)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Losing Trades</span>
+                      <span className="text-red-400 font-medium">15 (35%)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Break Even</span>
+                      <span className="text-gray-400 font-medium">2</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-400 mb-3">Profit Metrics</div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Avg Win</span>
+                      <span className="text-green-400 font-medium">$485.20</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Avg Loss</span>
+                      <span className="text-red-400 font-medium">$-287.50</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Profit Factor</span>
+                      <span className="text-cyan-400 font-medium">1.68</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-400 mb-3">Hold Time</div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Avg Duration</span>
+                      <span className="text-white font-medium">5.3 days</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Shortest</span>
+                      <span className="text-white font-medium">0.5 days</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Longest</span>
+                      <span className="text-white font-medium">45 days</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Performers */}
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+              <h2 className="text-xl font-bold text-white mb-4">Top Performers</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-sm text-gray-400 mb-3">Best Trades</div>
+                  <div className="space-y-2">
+                    {[
+                      { symbol: 'NVDA', pnl: 1250.00, date: '2025-10-15' },
+                      { symbol: 'AAPL', pnl: 890.50, date: '2025-10-22' },
+                      { symbol: 'TSLA', pnl: 765.30, date: '2025-10-28' }
+                    ].map((trade, i) => (
+                      <div key={i} className="flex justify-between items-center p-3 bg-slate-700/30 rounded border border-slate-600">
+                        <div>
+                          <div className="text-white font-medium">{trade.symbol}</div>
+                          <div className="text-xs text-gray-400">{trade.date}</div>
+                        </div>
+                        <div className="text-green-400 font-bold">+${trade.pnl.toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm text-gray-400 mb-3">Worst Trades</div>
+                  <div className="space-y-2">
+                    {[
+                      { symbol: 'META', pnl: -425.00, date: '2025-10-12' },
+                      { symbol: 'GOOGL', pnl: -380.25, date: '2025-10-18' },
+                      { symbol: 'AMZN', pnl: -295.80, date: '2025-10-25' }
+                    ].map((trade, i) => (
+                      <div key={i} className="flex justify-between items-center p-3 bg-slate-700/30 rounded border border-slate-600">
+                        <div>
+                          <div className="text-white font-medium">{trade.symbol}</div>
+                          <div className="text-xs text-gray-400">{trade.date}</div>
+                        </div>
+                        <div className="text-red-400 font-bold">${trade.pnl.toFixed(2)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

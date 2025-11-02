@@ -1,4 +1,5 @@
-const BASE = process.env.REACT_APP_BACKEND_URL || "";
+const BASE = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+console.log('💾 mindfolioClient BASE URL:', BASE);
 
 async function j(path, init = {}) {
  // Add timeout to prevent hanging

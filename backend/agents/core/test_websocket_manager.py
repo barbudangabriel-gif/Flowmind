@@ -16,7 +16,7 @@ from typing import List
 
 import pytest
 
-from backend.agents.core.websocket_manager import (
+from agents.core.websocket_manager import (
     ConnectionManager,
     StreamConsumerTask,
     get_connection_manager,

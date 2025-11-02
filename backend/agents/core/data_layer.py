@@ -38,7 +38,7 @@ from collections import defaultdict, deque
 from typing import Any, Dict, List, Optional, Tuple
 
 # CRITICAL: Import from existing redis_fallback.py (no duplication!)
-from backend.redis_fallback import get_kv
+from redis_fallback import get_kv
 
 logger = logging.getLogger(__name__)
 

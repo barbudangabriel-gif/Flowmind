@@ -20,10 +20,10 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 from collections import defaultdict
 
-from backend.agents.tier4_workers import get_scanner_pool
-from backend.agents.tier3_supervisors import get_team_lead_pool
-from backend.agents.tier2_validators import get_sector_head_pool
-from backend.agents.tier1_director import get_master_director
+from agents.tier4_workers import get_scanner_pool
+from agents.tier3_supervisors import get_team_lead_pool
+from agents.tier2_validators import get_sector_head_pool
+from agents.tier1_director import get_master_director
 
 logger = logging.getLogger(__name__)
 

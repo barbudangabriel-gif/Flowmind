@@ -38,10 +38,10 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import aiohttp
 
 # Import existing GeopoliticalNewsAgent (REUSE!)
-from backend.geopolitical_news_agent import GeopoliticalNewsAgent
+from geopolitical_news_agent import GeopoliticalNewsAgent
 
 # Import data layer for Redis Streams/TimeSeries
-from backend.agents.core.data_layer import get_data_layer
+from agents.core.data_layer import get_data_layer
 
 logger = logging.getLogger(__name__)
 

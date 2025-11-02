@@ -16,8 +16,8 @@ from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from backend.agents.orchestrator import get_orchestrator
-from backend.redis_fallback import get_kv
+from agents.orchestrator import get_orchestrator
+from redis_fallback import get_kv
 
 logger = logging.getLogger(__name__)
 

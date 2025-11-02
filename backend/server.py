@@ -81,6 +81,16 @@ except ImportError:
     TS_DATA_ROUTER_AVAILABLE = False
     logger.warning("TradeStation data router not available")
 
+# NEW: Mock Broker Endpoints (for UI testing without auth)
+try:
+    from app.routers.brokers_mock import router as brokers_mock_router
+
+    BROKERS_MOCK_ROUTER_AVAILABLE = True
+    logger.warning("🔓 Mock broker endpoints ENABLED (DEV ONLY!)")
+except ImportError:
+    BROKERS_MOCK_ROUTER_AVAILABLE = False
+    logger.info("Mock broker endpoints not available")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
@@ -307,6 +317,18 @@ async def startup():
         await initialize_websocket()
     except Exception as e:
         logger.error(f" WebSocket initialization failed: {e}")
+
+    # Auto-restore mindfolios from disk backups (in case Redis was cleared)
+    try:
+        from mindfolio import restore_all_mindfolios_from_backup
+
+        restored_count = await restore_all_mindfolios_from_backup()
+        if restored_count > 0:
+            logger.info(f"✅ Auto-restored {restored_count} mindfolios from backup")
+        else:
+            logger.info("ℹ️  No mindfolios to restore from backup")
+    except Exception as e:
+        logger.warning(f"⚠️  Failed to auto-restore mindfolios from backup: {e}")
 
     logger.info("✨ FlowMind API Server started successfully!")
 
@@ -637,6 +659,13 @@ if TS_DATA_ROUTER_AVAILABLE:
 else:
     logger.warning(" TradeStation data router not available")
     logger.warning(" OAuth callback router not available")
+
+# NEW: Mount Mock Broker Endpoints (for UI testing without auth)
+if BROKERS_MOCK_ROUTER_AVAILABLE:
+    app.include_router(brokers_mock_router, prefix="/api")
+    logger.warning("🔓 Mock broker endpoints mounted at /api/{broker}/mock/* (DEV ONLY!)")
+else:
+    logger.info(" Mock broker endpoints not available")
 
 
 # NEW: TradeStation streaming endpoint
