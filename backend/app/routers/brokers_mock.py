@@ -64,8 +64,44 @@ async def get_mock_ts_accounts():
 
 @router.get("/tradestation/mock/accounts/{account_id}/balances")
 async def get_mock_ts_balances(account_id: str):
-    """Mock TradeStation balances endpoint for UI testing (NO AUTH)."""
+    """Mock TradeStation balances endpoint for UI testing (NO AUTH).
+    
+    Returns different balance structures based on account type:
+    - Futures accounts: FuturesBuyingPower, InitialMargin, MaintenanceMargin, etc.
+    - Equity accounts: BuyingPower, MarginUsed, DayTradingBuyingPower, etc.
+    """
     log.warning(f"🔓 Using MOCK balances for {account_id} (no auth)")
+    
+    # Futures account structure
+    if "Futures" in account_id or "789012" in account_id:
+        return {
+            "status": "success",
+            "Balances": [
+                {
+                    # Main metrics
+                    "FuturesBuyingPower": 1952.12,
+                    "CashBalance": 1952.12,
+                    "AccountValue": 1952.12,
+                    
+                    # Position metrics
+                    "FuturesPositions": 0,
+                    "RealizedPnL": 0.00,
+                    "UnrealizedPnL": 0.00,
+                    
+                    # Margin metrics
+                    "InitialMargin": 0.00,
+                    "MaintenanceMargin": 0.00,
+                    "OpenOrderInitialMargin": 0.00,
+                    
+                    # Cash metrics
+                    "CashAvailableToWithdraw": 1952.12,
+                    "PendingUSDDeposits": 0.00,
+                    "SecuritiesOnDeposit": 0.00,
+                }
+            ],
+        }
+    
+    # Equity account structure (default)
     return {
         "status": "success",
         "Balances": [
@@ -93,14 +129,23 @@ async def get_mock_tastytrade_accounts():
             {
                 "AccountID": "TT123456",
                 "Name": "Tastytrade Individual",
-                "AccountType": "Margin",
+                "AccountType": "Equity",  # Standardized: Equity = Margin
                 "CashBalance": 75000.00,
+                "Currency": "USD",
+            },
+            {
+                "AccountID": "TT456789",
+                "Name": "Tastytrade Futures",
+                "AccountType": "Futures",
+                "CashBalance": 25000.00,
+                "Currency": "USD",
             },
             {
                 "AccountID": "TT789012",
                 "Name": "Tastytrade Crypto",
                 "AccountType": "Crypto",
                 "CashBalance": 10000.00,
+                "Currency": "USD",
             },
         ],
     }
@@ -108,8 +153,57 @@ async def get_mock_tastytrade_accounts():
 
 @router.get("/tastytrade/mock/accounts/{account_id}/balances")
 async def get_mock_tastytrade_balances(account_id: str):
-    """Mock Tastytrade balances endpoint for UI testing (NO AUTH)."""
+    """Mock Tastytrade balances endpoint for UI testing (NO AUTH).
+    
+    Returns different balance structures based on account type.
+    """
     log.warning(f"🔓 Using MOCK Tastytrade balances for {account_id} (no auth)")
+    
+    # Futures account structure
+    if "456789" in account_id or "Futures" in account_id:
+        return {
+            "status": "success",
+            "Balances": [
+                {
+                    # Main metrics
+                    "FuturesBuyingPower": 25000.00,
+                    "CashBalance": 25000.00,
+                    "AccountValue": 25000.00,
+                    
+                    # Position metrics
+                    "FuturesPositions": 2,
+                    "RealizedPnL": 1250.00,
+                    "UnrealizedPnL": 340.50,
+                    
+                    # Margin metrics
+                    "InitialMargin": 8000.00,
+                    "MaintenanceMargin": 6000.00,
+                    "OpenOrderInitialMargin": 1500.00,
+                    
+                    # Cash metrics
+                    "CashAvailableToWithdraw": 16000.00,
+                    "PendingUSDDeposits": 0.00,
+                    "SecuritiesOnDeposit": 0.00,
+                }
+            ],
+        }
+    
+    # Crypto account structure - Placeholder
+    if "789012" in account_id or "Crypto" in account_id:
+        return {
+            "status": "success",
+            "Balances": [
+                {
+                    "CashBalance": 10000.00,
+                    "AccountValue": 12340.50,
+                    "BuyingPower": 10000.00,
+                    "UnrealizedPnL": 2340.50,
+                    "RealizedPnL": 0.00,
+                }
+            ],
+        }
+    
+    # Equity account structure (default)
     return {
         "status": "success",
         "Balances": [
@@ -161,8 +255,42 @@ async def get_mock_ibkr_accounts():
 
 @router.get("/ibkr/mock/accounts/{account_id}/balances")
 async def get_mock_ibkr_balances(account_id: str):
-    """Mock IBKR balances endpoint for UI testing (NO AUTH)."""
+    """Mock IBKR balances endpoint for UI testing (NO AUTH).
+    
+    Returns different balance structures based on account type.
+    """
     log.warning(f"🔓 Using MOCK IBKR balances for {account_id} (no auth)")
+    
+    # Futures account structure
+    if "7654321" in account_id or "Futures" in account_id:
+        return {
+            "status": "success",
+            "Balances": [
+                {
+                    # Main metrics
+                    "FuturesBuyingPower": 50000.00,
+                    "CashBalance": 50000.00,
+                    "AccountValue": 50000.00,
+                    
+                    # Position metrics
+                    "FuturesPositions": 0,
+                    "RealizedPnL": 0.00,
+                    "UnrealizedPnL": 0.00,
+                    
+                    # Margin metrics
+                    "InitialMargin": 0.00,
+                    "MaintenanceMargin": 0.00,
+                    "OpenOrderInitialMargin": 0.00,
+                    
+                    # Cash metrics
+                    "CashAvailableToWithdraw": 50000.00,
+                    "PendingUSDDeposits": 0.00,
+                    "SecuritiesOnDeposit": 0.00,
+                }
+            ],
+        }
+    
+    # Equity account structure (default)
     return {
         "status": "success",
         "Balances": [
