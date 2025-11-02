@@ -33,7 +33,6 @@ export function buildNav(ctx) {
  {
  title: "Account",
  items: [
- { label: "TradeStation Connect", to: "/tradestation/connect", icon: "Wallet" },
  {
  label: "Mindfolios", icon: "Briefcase",
  children: [

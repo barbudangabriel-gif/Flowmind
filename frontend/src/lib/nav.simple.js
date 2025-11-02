@@ -30,11 +30,6 @@ export function buildNav(ctx) {
  description: "Unified view across all brokers"
  },
  { 
- label: "Account Balance", 
- to: "/tradestation/connect", 
- icon: "DollarSign"
- },
- { 
  label: "TradeStation", 
  to: "/account/tradestation", 
  icon: "Wallet",
