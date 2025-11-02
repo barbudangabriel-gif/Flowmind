@@ -28,6 +28,10 @@ export default function MindfolioTemplateModal({ isOpen, onClose, onCreateFromTe
     'Tastytrade': {
       accountTypes: ['Equity', 'Futures', 'Crypto'],
       endpoint: '/api/tastytrade/mock/accounts'
+    },
+    'IBKR': {
+      accountTypes: ['Equity', 'Futures'],
+      endpoint: '/api/ibkr/mock/accounts'
     }
   };
 

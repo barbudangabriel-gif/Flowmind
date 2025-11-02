@@ -3,6 +3,23 @@
 IMPORTANT: These endpoints are for frontend development only!
 They bypass authentication and return fake data.
 REMOVE OR DISABLE IN PRODUCTION!
+
+ACCOUNT TYPE MAPPING (Unified Model):
+====================================
+1. EQUITY (Stock Options Trading)
+   - TradeStation: "Margin" account
+   - Tastytrade: "Margin" account
+   - All equity accounts are margin-enabled for options
+
+2. FUTURES (Futures & Futures Options)
+   - TradeStation: "Futures" account
+   - Tastytrade: "Futures" account
+   - Separate account required for futures trading
+
+3. CRYPTO (Cryptocurrency Trading)
+   - TradeStation: NOT SUPPORTED
+   - Tastytrade: "Crypto" account
+   - Digital assets only
 """
 
 import logging
@@ -15,7 +32,14 @@ router = APIRouter(tags=["Brokers Mock (DEV ONLY)"])
 
 @router.get("/tradestation/mock/accounts")
 async def get_mock_ts_accounts():
-    """Mock TradeStation accounts endpoint for UI testing (NO AUTH)."""
+    """Mock TradeStation accounts endpoint for UI testing (NO AUTH).
+    
+    Returns accounts with standardized AccountType:
+    - "Equity" → Maps to Margin account (stock + options)
+    - "Futures" → Futures trading account
+    
+    Note: TradeStation does NOT support crypto trading.
+    """
     log.warning("🔓 Using MOCK TradeStation accounts (no auth)")
     return {
         "status": "success",
@@ -23,14 +47,16 @@ async def get_mock_ts_accounts():
             {
                 "AccountID": "SIM123456",
                 "Name": "TradeStation Equity SIM",
-                "AccountType": "Margin",
+                "AccountType": "Equity",  # Standardized: Equity = Margin account
                 "CashBalance": 50000.00,
+                "Currency": "USD",
             },
             {
                 "AccountID": "SIM789012",
                 "Name": "TradeStation Futures SIM",
-                "AccountType": "Futures",
+                "AccountType": "Futures",  # Standardized: Futures account
                 "CashBalance": 25000.00,
+                "Currency": "USD",
             },
         ],
     }
@@ -96,6 +122,59 @@ async def get_mock_tastytrade_balances(account_id: str):
                 "MaintenanceMargin": 4200.00,
                 "OptionBuyingPower": 75000.00,
                 "AccountValue": 82340.50,
+            }
+        ],
+    }
+
+
+@router.get("/ibkr/mock/accounts")
+async def get_mock_ibkr_accounts():
+    """Mock Interactive Brokers accounts endpoint for UI testing (NO AUTH).
+    
+    Returns accounts with standardized AccountType:
+    - "Equity" → Maps to Margin account (stock + options)
+    - "Futures" → Futures trading account
+    
+    Note: IBKR does NOT support crypto trading directly.
+    """
+    log.warning("🔓 Using MOCK IBKR accounts (no auth)")
+    return {
+        "status": "success",
+        "Accounts": [
+            {
+                "AccountID": "U1234567",
+                "Name": "IBKR Individual Margin",
+                "AccountType": "Equity",  # Standardized: Equity = Margin account
+                "CashBalance": 100000.00,
+                "Currency": "USD",
+            },
+            {
+                "AccountID": "U7654321",
+                "Name": "IBKR Futures Account",
+                "AccountType": "Futures",  # Standardized: Futures account
+                "CashBalance": 50000.00,
+                "Currency": "USD",
+            },
+        ],
+    }
+
+
+@router.get("/ibkr/mock/accounts/{account_id}/balances")
+async def get_mock_ibkr_balances(account_id: str):
+    """Mock IBKR balances endpoint for UI testing (NO AUTH)."""
+    log.warning(f"🔓 Using MOCK IBKR balances for {account_id} (no auth)")
+    return {
+        "status": "success",
+        "Balances": [
+            {
+                "CashBalance": 100000.00,
+                "BuyingPower": 400000.00,  # IBKR typically has 4:1 margin
+                "Equity": 125500.75,
+                "MarketValue": 125500.75,
+                "MarginUsed": 25500.75,
+                "MaintenanceMargin": 12750.38,
+                "OptionBuyingPower": 100000.00,
+                "AccountValue": 125500.75,
             }
         ],
     }

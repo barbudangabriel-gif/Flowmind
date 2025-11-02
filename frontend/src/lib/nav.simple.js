@@ -47,6 +47,15 @@ export function buildNav(ctx) {
  { label: "Crypto", to: "/account/tastytrade/crypto", icon: "Bitcoin" },
  ]
  },
+ { 
+ label: "IBKR", 
+ to: "/account/ibkr", 
+ icon: "Wallet",
+ children: [
+ { label: "Equity", to: "/account/ibkr/equity", icon: "TrendingUp" },
+ { label: "Futures", to: "/account/ibkr/futures", icon: "Zap" },
+ ]
+ },
  ],
  },
 
