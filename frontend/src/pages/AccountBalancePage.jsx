@@ -155,19 +155,19 @@ const AccountBalancePage = () => {
  const isAuthenticated = authStatus?.authenticated;
 
  return (
- <div className="min-h-screen bg-gray-950 text-white p-6">
- <div className="max-w-7xl mx-auto">
-            <div className="mb-8">
-                <div className="flex items-center justify-between mb-2">
-                    <h1 className="text-[20px] text-white">Account Balance</h1>
+ <div className="min-h-screen bg-[#0f1419] p-4">
+ <div className="max-w-7xl mx-auto space-y-4">
+            <div>
+                <div className="flex items-center justify-between mb-1">
+                    <h1 className="text-xl text-white">Account Balance</h1>
                     <Link 
                         to="/mindfolios" 
-                        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors border border-gray-700"
+                        className="px-3 py-2 bg-[#0a0e1a] hover:bg-slate-700 text-white rounded-lg transition-colors border border-[#1a1f26] text-sm"
                     >
                         View Mindfolios →
                     </Link>
                 </div>
-                <p className="text-[14px] text-gray-400">View your TradeStation account balances and positions</p>
+                <p className="text-sm text-gray-400">View your TradeStation account balances and positions</p>
             </div>
 
  {/* Authentication Section */}
@@ -179,16 +179,16 @@ const AccountBalancePage = () => {
 
  {/* Error Message */}
  {error && (
- <div className="bg-red-900/30 border border-red-700 text-red-200 p-4 rounded-lg mb-6">
+ <div className="bg-red-900/30 border border-red-700 text-red-200 p-4 rounded-lg mb-3">
  <p className="text-sm">{error}</p>
  </div>
  )}
 
  {/* Account Selector */}
  {isAuthenticated && accounts.length > 0 && (
- <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-6">
- <h2 className="text-[14px] text-white text-white mb-4">Select Account</h2>
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+ <h2 className="text-base text-white mb-4">Select Account</h2>
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
  {accounts.map((account) => (
  <button
  key={account.AccountID}
@@ -196,11 +196,11 @@ const AccountBalancePage = () => {
  className={`p-4 rounded-lg border-2 transition-all text-left ${
  selectedAccount?.AccountID === account.AccountID
  ? 'bg-blue-900/30 border-blue-600'
- : 'bg-gray-800 border-gray-700 hover:border-gray-600'
+ : 'bg-[#0f1419] border-[#1a1f26] hover:border-gray-600'
  }`}
  >
  <div className="text-sm text-gray-400 mb-1">{account.AccountType}</div>
- <div className="text-sm font-mono text-white text-white">{account.AccountID}</div>
+ <div className="text-sm font-mono text-white">{account.AccountID}</div>
  <div className="text-sm text-gray-400 mt-1">{account.Name}</div>
  </button>
  ))}
@@ -220,46 +220,46 @@ const AccountBalancePage = () => {
  {isAuthenticated && selectedAccount && balances && !loading && (
  <>
  {/* Account Summary Cards */}
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
  {/* Total Account Value */}
- <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 border border-blue-700/50 rounded-lg p-6">
+ <div className="bg-gradient-to-br from-blue-900/40 to-blue-800/20 border border-blue-700/50 rounded-lg p-3">
  <div className="flex items-center justify-between mb-2">
- <span className="text-gray-300 text-sm">Total Value</span>
+ <span className="text-sm text-gray-300">Total Value</span>
  </div>
- <div className="text-[20px] text-white text-white mb-1">
+ <div className="text-[20px] text-white mb-1">
  {formatCurrency(balances.AccountValue || balances.TotalValue)}
  </div>
  <div className="text-sm text-gray-400">Account Equity</div>
  </div>
 
  {/* Cash Balance */}
- <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 border border-green-700/50 rounded-lg p-6">
+ <div className="bg-gradient-to-br from-green-900/40 to-green-800/20 border border-green-700/50 rounded-lg p-3">
  <div className="flex items-center justify-between mb-2">
- <span className="text-gray-300 text-sm">Cash Balance</span>
+ <span className="text-sm text-gray-300">Cash Balance</span>
  </div>
- <div className="text-[20px] text-white text-white mb-1">
+ <div className="text-[20px] text-white mb-1">
  {formatCurrency(balances.CashBalance)}
  </div>
  <div className="text-sm text-gray-400">Available Cash</div>
  </div>
 
  {/* Buying Power */}
- <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 border border-purple-700/50 rounded-lg p-6">
+ <div className="bg-gradient-to-br from-purple-900/40 to-purple-800/20 border border-purple-700/50 rounded-lg p-3">
  <div className="flex items-center justify-between mb-2">
- <span className="text-gray-300 text-sm">Buying Power</span>
+ <span className="text-sm text-gray-300">Buying Power</span>
  </div>
- <div className="text-[20px] text-white text-white mb-1">
+ <div className="text-[20px] text-white mb-1">
  {formatCurrency(balances.BuyingPower || balances.DayTradingBuyingPower)}
  </div>
  <div className="text-sm text-gray-400">Available to Trade</div>
  </div>
 
  {/* Market Value */}
- <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 border border-orange-700/50 rounded-lg p-6">
+ <div className="bg-gradient-to-br from-orange-900/40 to-orange-800/20 border border-orange-700/50 rounded-lg p-3">
  <div className="flex items-center justify-between mb-2">
- <span className="text-gray-300 text-sm">Market Value</span>
+ <span className="text-sm text-gray-300">Market Value</span>
  </div>
- <div className="text-[20px] text-white text-white mb-1">
+ <div className="text-[20px] text-white mb-1">
  {formatCurrency(balances.MarketValue)}
  </div>
  <div className="text-sm text-gray-400">Positions Value</div>
@@ -267,13 +267,13 @@ const AccountBalancePage = () => {
  </div>
 
  {/* Detailed Balance Information */}
- <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 mb-6">
- <h2 className="text-[14px] text-white text-white mb-4">Account Details</h2>
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+ <h2 className="text-base text-white mb-4">Account Details</h2>
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
  {balances.UnrealizedProfitLoss !== undefined && (
- <div className="bg-gray-800 p-4 rounded-lg">
+ <div className="bg-[#0f1419] p-3 rounded-lg">
  <div className="text-sm text-gray-400 mb-1">Unrealized P&L</div>
- <div className={`text-sm text-white ${
+ <div className={`text-sm ${
  balances.UnrealizedProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'
  }`}>
  {formatCurrency(balances.UnrealizedProfitLoss)}
@@ -281,9 +281,9 @@ const AccountBalancePage = () => {
  </div>
  )}
  {balances.RealizedProfitLoss !== undefined && (
- <div className="bg-gray-800 p-4 rounded-lg">
+ <div className="bg-[#0f1419] p-3 rounded-lg">
  <div className="text-sm text-gray-400 mb-1">Realized P&L (Today)</div>
- <div className={`text-sm text-white ${
+ <div className={`text-sm ${
  balances.RealizedProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'
  }`}>
  {formatCurrency(balances.RealizedProfitLoss)}
@@ -291,33 +291,33 @@ const AccountBalancePage = () => {
  </div>
  )}
  {balances.Commission !== undefined && (
- <div className="bg-gray-800 p-4 rounded-lg">
+ <div className="bg-[#0f1419] p-3 rounded-lg">
  <div className="text-sm text-gray-400 mb-1">Commissions (Today)</div>
- <div className="text-sm text-white text-white">
+ <div className="text-sm text-white">
  {formatCurrency(balances.Commission)}
  </div>
  </div>
  )}
  {balances.OptionBuyingPower !== undefined && (
- <div className="bg-gray-800 p-4 rounded-lg">
+ <div className="bg-[#0f1419] p-3 rounded-lg">
  <div className="text-sm text-gray-400 mb-1">Option Buying Power</div>
- <div className="text-sm text-white text-white">
+ <div className="text-sm text-white">
  {formatCurrency(balances.OptionBuyingPower)}
  </div>
  </div>
  )}
  {balances.MaintenanceMargin !== undefined && (
- <div className="bg-gray-800 p-4 rounded-lg">
+ <div className="bg-[#0f1419] p-3 rounded-lg">
  <div className="text-sm text-gray-400 mb-1">Maintenance Margin</div>
- <div className="text-sm text-white text-white">
+ <div className="text-sm text-white">
  {formatCurrency(balances.MaintenanceMargin)}
  </div>
  </div>
  )}
  {balances.DayTrades !== undefined && (
- <div className="bg-gray-800 p-4 rounded-lg">
+ <div className="bg-[#0f1419] p-3 rounded-lg">
  <div className="text-sm text-gray-400 mb-1">Day Trades Used</div>
- <div className="text-sm text-white text-white">
+ <div className="text-sm text-white">
  {balances.DayTrades} / {balances.DayTradesRemaining || 'N/A'}
  </div>
  </div>
@@ -327,12 +327,12 @@ const AccountBalancePage = () => {
 
  {/* Positions Table */}
  {positions.length > 0 && (
- <div className="bg-gray-900 border border-gray-800 rounded-lg p-6">
- <h2 className="text-[14px] text-white text-white mb-4">Current Positions</h2>
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+ <h2 className="text-base text-white mb-4">Current Positions</h2>
  <div className="overflow-x-auto">
  <table className="w-full">
  <thead>
- <tr className="border-b border-gray-800">
+ <tr className="border-b border-[#1a1f26]">
  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Symbol</th>
  <th className="text-right py-3 px-4 text-sm font-medium text-gray-400">Quantity</th>
  <th className="text-right py-3 px-4 text-sm font-medium text-gray-400">Avg Price</th>
@@ -348,9 +348,9 @@ const AccountBalancePage = () => {
  const pnlPercent = position.UnrealizedProfitLossPercent || 0;
  
  return (
- <tr key={index} className="border-b border-gray-800/50 hover:bg-gray-800/50 transition-colors">
+ <tr key={index} className="border-b border-[#1a1f26]/50 hover:bg-[#0f1419]/50 transition-colors">
  <td className="py-3 px-4">
- <div className="font-mono text-white text-white text-base">{position.Symbol}</div>
+ <div className="font-mono text-white text-base">{position.Symbol}</div>
  <div className="text-xs text-gray-400">{position.AssetType}</div>
  </td>
  <td className="text-right py-3 px-4 text-white">{position.Quantity}</td>
@@ -360,15 +360,15 @@ const AccountBalancePage = () => {
  <td className="text-right py-3 px-4 text-white font-mono">
  {formatCurrency(position.Last)}
  </td>
- <td className="text-right py-3 px-4 text-white text-white">
+ <td className="text-right py-3 px-4 text-white">
  {formatCurrency(position.MarketValue)}
  </td>
- <td className={`text-right py-3 px-4 text-white ${
+ <td className={`text-right py-3 px-4 ${
  pnl >= 0 ? 'text-green-400' : 'text-red-400'
  }`}>
  {formatCurrency(pnl)}
  </td>
- <td className={`text-right py-3 px-4 text-white ${
+ <td className={`text-right py-3 px-4 ${
  pnlPercent >= 0 ? 'text-green-400' : 'text-red-400'
  }`}>
  {formatPercent(pnlPercent)}
@@ -384,8 +384,8 @@ const AccountBalancePage = () => {
 
  {/* No Positions Message */}
  {positions.length === 0 && !loading && (
- <div className="bg-gray-900 border border-gray-800 rounded-lg p-12 text-center">
- <h3 className="text-[14px] text-white text-white mb-2">No Open Positions</h3>
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-12 text-center">
+ <h3 className="text-base text-white mb-2">No Open Positions</h3>
  <p className="text-gray-400 mb-4">This account currently has no open positions</p>
  <Link 
  to="/builder" 
@@ -400,8 +400,8 @@ const AccountBalancePage = () => {
 
  {/* Not Authenticated State */}
  {isAuthenticated && accounts.length === 0 && !loading && (
- <div className="bg-gray-900 border border-gray-800 rounded-lg p-12 text-center">
- <h3 className="text-[14px] text-white text-white mb-2">No Accounts Found</h3>
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-12 text-center">
+ <h3 className="text-base text-white mb-2">No Accounts Found</h3>
  <p className="text-gray-400">Could not find any TradeStation accounts</p>
  </div>
  )}

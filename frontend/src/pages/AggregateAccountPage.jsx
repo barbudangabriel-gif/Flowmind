@@ -183,8 +183,8 @@ export default function AggregateAccountPage() {
     return (
       <div className="min-h-screen bg-slate-900 p-6">
         <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 text-center">
-          <div className="text-4xl mb-4">🏦</div>
-          <h2 className="text-xl font-bold text-white mb-2">No Accounts Found</h2>
+          <div className="text-4xl mb-3">🏦</div>
+          <h2 className="text-base font-bold text-white mb-2">No Accounts Found</h2>
           <p className="text-gray-400">Connect your broker accounts to see aggregate data</p>
         </div>
       </div>
@@ -192,71 +192,66 @@ export default function AggregateAccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 p-6">
+    <div className="p-4 space-y-4 bg-[#0f1419] min-h-screen">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-3xl">🏦</span>
-          <div>
-            <h1 className="text-2xl font-bold text-white">Aggregate Account View</h1>
-            <p className="text-sm text-gray-400">Unified view across all brokers and account types</p>
-          </div>
-        </div>
+      <div>
+        <h1 className="text-base text-white mb-1">Aggregate Account View</h1>
+        <p className="text-sm text-gray-400">Unified view across all brokers and account types</p>
       </div>
 
       {/* Portfolio Overview */}
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+        <div className="flex items-center justify-between mb-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-2xl font-bold text-white">Total Portfolio Value</h2>
+              <h2 className="text-base text-white">Total Portfolio Value</h2>
               <InfoTooltip text="Combined value across all brokers: TradeStation, Tastytrade, and IBKR" />
             </div>
-            <div className="text-4xl font-bold text-white">
+            <div className="text-[28px] text-white">
               ${aggregateData.totalPortfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <div className={`text-lg mt-1 ${aggregateData.totalTodayChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`text-sm mt-1 ${aggregateData.totalTodayChangePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               Today: {aggregateData.totalTodayChangePercent >= 0 ? '+' : ''}{aggregateData.totalTodayChangePercent.toFixed(2)}% 
               ({aggregateData.totalTodayChangePercent >= 0 ? '+' : ''}${Math.abs(aggregateData.totalTodayChangeAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
             </div>
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400">Connected Accounts</div>
-            <div className="text-3xl font-bold text-blue-400">{aggregateData.accountCount}</div>
+            <div className="text-[28px] text-blue-400">{aggregateData.accountCount}</div>
           </div>
         </div>
 
         {/* Market Value Breakdown */}
-        <div className="border-t border-slate-700 pt-4">
-          <h3 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">Asset Allocation</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-slate-900 rounded-lg p-3">
+        <div className="border-t border-[#1a1f26] pt-4">
+          <h3 className="text-sm text-gray-400 mb-3">Asset Allocation</h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="bg-[#0f1419] rounded-lg p-3">
               <div className="text-xs text-blue-400 mb-1">Stocks</div>
-              <div className="text-lg font-bold text-white">
+              <div className="text-sm text-white">
                 ${aggregateData.totalStocks.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
-            <div className="bg-slate-900 rounded-lg p-3">
+            <div className="bg-[#0f1419] rounded-lg p-3">
               <div className="text-xs text-green-400 mb-1">Cash</div>
-              <div className="text-lg font-bold text-white">
+              <div className="text-sm text-white">
                 ${aggregateData.totalCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
-            <div className="bg-slate-900 rounded-lg p-3">
+            <div className="bg-[#0f1419] rounded-lg p-3">
               <div className="text-xs text-purple-400 mb-1">Options</div>
-              <div className="text-lg font-bold text-white">
+              <div className="text-sm text-white">
                 ${aggregateData.totalOptions.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
-            <div className="bg-slate-900 rounded-lg p-3">
+            <div className="bg-[#0f1419] rounded-lg p-3">
               <div className="text-xs text-yellow-400 mb-1">Futures</div>
-              <div className="text-lg font-bold text-white">
+              <div className="text-sm text-white">
                 ${aggregateData.totalFutures.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
-            <div className="bg-slate-900 rounded-lg p-3">
+            <div className="bg-[#0f1419] rounded-lg p-3">
               <div className="text-xs text-red-400 mb-1">Short Options</div>
-              <div className="text-lg font-bold text-white">
+              <div className="text-sm text-white">
                 {aggregateData.totalShortOptions < 0 ? '−' : ''}${Math.abs(aggregateData.totalShortOptions).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>
             </div>
@@ -265,25 +260,22 @@ export default function AggregateAccountPage() {
       </div>
 
       {/* Broker Breakdown */}
-      <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
-        <h2 className="text-lg font-bold text-white mb-4">Broker Breakdown</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+        <h2 className="text-base text-white mb-3">Broker Breakdown</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* TradeStation */}
-          <div className="bg-slate-900 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">📊</span>
-              <h3 className="text-lg font-semibold text-white">TradeStation</h3>
-            </div>
+          <div className="bg-[#0f1419] rounded-lg p-3">
+            <h3 className="text-sm text-white mb-3">TradeStation</h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-400">Equity</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm text-white">
                   ${aggregateData.brokerBreakdown.tradestation.equity.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-400">Futures</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm text-white">
                   ${aggregateData.brokerBreakdown.tradestation.futures.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -291,27 +283,24 @@ export default function AggregateAccountPage() {
           </div>
 
           {/* Tastytrade */}
-          <div className="bg-slate-900 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">🥤</span>
-              <h3 className="text-lg font-semibold text-white">Tastytrade</h3>
-            </div>
+          <div className="bg-[#0f1419] rounded-lg p-3">
+            <h3 className="text-sm text-white mb-3">Tastytrade</h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-400">Equity</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm text-white">
                   ${aggregateData.brokerBreakdown.tastytrade.equity.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-400">Futures</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm text-white">
                   ${aggregateData.brokerBreakdown.tastytrade.futures.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-400">Crypto</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm text-white">
                   ${aggregateData.brokerBreakdown.tastytrade.crypto.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -319,21 +308,18 @@ export default function AggregateAccountPage() {
           </div>
 
           {/* IBKR */}
-          <div className="bg-slate-900 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">🌐</span>
-              <h3 className="text-lg font-semibold text-white">IBKR</h3>
-            </div>
+          <div className="bg-[#0f1419] rounded-lg p-3">
+            <h3 className="text-sm text-white mb-3">IBKR</h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-400">Equity</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm text-white">
                   ${aggregateData.brokerBreakdown.ibkr.equity.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-400">Futures</span>
-                <span className="text-sm font-semibold text-white">
+                <span className="text-sm text-white">
                   ${aggregateData.brokerBreakdown.ibkr.futures.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -343,12 +329,11 @@ export default function AggregateAccountPage() {
       </div>
 
       {/* Info Card */}
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-6">
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
         <div className="flex items-start gap-3">
-          <div className="text-2xl">ℹ️</div>
           <div>
-            <h3 className="text-lg font-semibold text-blue-400 mb-2">Live Data Coming Soon</h3>
-            <p className="text-gray-300 mb-3">
+            <h3 className="text-sm text-blue-400 mb-2">Live Data Coming Soon</h3>
+            <p className="text-sm text-gray-300 mb-3">
               This aggregate view currently combines mock data from all brokers. When connected to real broker APIs and WebSocket feeds, 
               you'll see live balance updates, real-time P/L, and position changes across all your accounts in one unified dashboard.
             </p>

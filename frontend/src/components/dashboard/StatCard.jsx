@@ -64,15 +64,15 @@ export default function StatCard({ title, value, change, percentage, subtitle, i
   };
   
   return (
-    <div className={`bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-4 hover:border-[#1a1f26] transition-colors shadow-lg ${gradient ? `bg-gradient-to-br ${gradient}` : ''} relative`}>
-      <div className="flex items-center gap-3 mb-2">
-        <span className="text-2xl">{icon}</span>
-        <div className="text-sm text-[rgb(252, 251, 255)]">{title}</div>
+    <div className={`bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3 hover:border-[#1a1f26] transition-colors shadow-lg ${gradient ? `bg-gradient-to-br ${gradient}` : ''} relative`}>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xl">{icon}</span>
+        <div className="text-xs text-[rgb(252, 251, 255)]">{title}</div>
       </div>
-      <div className="text-[20px] text-green-400">{value?.toLocaleString?.() ?? value}</div>
-      {subtitle && <div className="text-sm text-gray-400 mt-1">{subtitle}</div>}
+      <div className="text-[18px] text-green-400">{value?.toLocaleString?.() ?? value}</div>
+      {subtitle && <div className="text-xs text-gray-400 mt-1">{subtitle}</div>}
       {(change || percentage) && (
-        <div className="text-sm mt-2">
+        <div className="text-xs mt-2">
           {change && <span className={change >= 0 ? "text-green-400" : "text-red-400"}>{change >= 0 ? "+" : ""}{change.toLocaleString?.() ?? change}</span>}
           {percentage && <span className="ml-2 text-gray-400">({percentage > 0 ? "+" : ""}{percentage}%)</span>}
         </div>

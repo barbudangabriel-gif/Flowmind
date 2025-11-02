@@ -1,7 +1,7 @@
 # FlowMind AI Agent Instructions
 
 **Project:** Options analytics platform with FastAPI backend, React 19 frontend
-**Last Updated:** November 1, 2025
+**Last Updated:** November 2, 2025
 
 **CRITICAL CONTEXT:**
 - **Target User:** Single user (Gabriel) - personal trading tool
@@ -12,17 +12,57 @@
 
 ---
 
+## 🎨 UI Design Quick Reference
+
+**MANDATORY for all UI work - updated Nov 2, 2025**
+
+### Core Styling Rules
+```jsx
+// Page structure
+<div className="p-4 space-y-4 bg-[#0f1419] min-h-screen">
+  <h1 className="text-xl text-white mb-1">Page Title</h1>
+  <p className="text-sm text-gray-400">Description</p>
+</div>
+
+// Card structure
+<div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+  <h2 className="text-base text-white mb-3">Section</h2>
+</div>
+
+// Metric value
+<div className="text-[18px] text-green-400">{value}</div>
+
+// Button
+<button className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">
+```
+
+### Anti-Patterns (NEVER USE)
+```jsx
+❌ bg-gray-900, bg-slate-800 (use bg-[#0a0e1a])
+❌ p-6, p-8, gap-6 (use p-3, gap-3)
+❌ text-2xl headers (use text-xl)
+❌ text-[20px] values (use text-[18px])
+❌ Emojis in content (only sidebar)
+❌ font-bold (use default weight)
+```
+
+**Full specification in Section 3: UI Design System**
+
+---
+
 ## 📋 Table of Contents
 1. Session Start Protocol
 2. Architecture Patterns
-3. Frontend Component Structure
-4. BuilderV2 Page - Build Tab
-5. Strategy Engine Proposal
-6. TradeStation Import System (NEW - Oct 27, 2025)
-7. Developer Workflows
-8. External APIs
-9. Common Pitfalls
-10. Key Files
+3. UI Design System (MANDATORY - Nov 2, 2025)
+4. Frontend Component Structure
+5. BuilderV2 Page - Build Tab
+6. Strategy Engine Proposal
+7. TradeStation Import System
+8. Options Risk Engine
+9. Developer Workflows
+10. External APIs
+11. Common Pitfalls
+12. Key Files
 
 ---
 
@@ -90,6 +130,211 @@ useEffect(() => { document.documentElement.classList.add('dark'); }, []);
 ```
 **Rule:** All Tailwind classes MUST be dark variants (`bg-slate-800`, `text-white`)
 **NEVER use:** `isDarkMode ?` ternaries or light classes (`bg-white`, `text-gray-800`)
+
+### 4. UI Design System (MANDATORY - Nov 2, 2025)
+**CRITICAL:** All UI components MUST follow these specifications for consistency.
+
+#### Color Palette
+```css
+/* Backgrounds */
+--page-bg: #0f1419        /* Main page background */
+--card-bg: #0a0e1a        /* Card/container background */
+--hover-bg: #0f1419       /* Hover state background */
+
+/* Borders */
+--border-primary: #1a1f26 /* Primary border color */
+
+/* Text Colors */
+--text-primary: white     /* Main headings, values */
+--text-secondary: #9ca3af /* Labels, descriptions (gray-400) */
+--text-success: #4ade80   /* Profit, positive values (green-400) */
+--text-danger: #f87171    /* Loss, negative values (red-400) */
+--text-info: #60a5fa      /* Info, links (blue-400) */
+```
+
+#### Typography Scale
+```css
+/* Headers */
+h1: text-xl              /* Page titles (20px) */
+h2: text-base            /* Section titles (16px) */
+h3: text-sm              /* Card titles (14px) */
+
+/* Body Text */
+descriptions: text-sm    /* Page descriptions (14px) */
+labels: text-xs          /* Input labels, badges (12px) */
+values: text-[18px]      /* Metric values in cards (18px) */
+body: text-sm            /* Regular body text (14px) */
+
+/* Icons */
+icons: text-xl           /* Card icons (20px) */
+```
+
+#### Spacing System
+```css
+/* Page Layout */
+page-padding: p-4        /* 16px page padding */
+page-spacing: space-y-4  /* 16px vertical spacing between sections */
+
+/* Card Layout */
+card-padding: p-3        /* 12px card padding */
+card-gap: gap-3          /* 12px gap in grids */
+card-margin: mb-3        /* 12px bottom margin */
+
+/* Component Spacing */
+button-padding: px-3 py-2     /* Button padding (12px x 8px) */
+input-padding: px-3 py-2      /* Input padding (12px x 8px) */
+badge-padding: px-2 py-1      /* Badge padding (8px x 4px) */
+```
+
+#### Component Patterns
+
+**StatCard (Dashboard metrics):**
+```jsx
+<div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+  <div className="flex items-center gap-2 mb-2">
+    <span className="text-xl">{icon}</span>
+    <div className="text-xs text-white">{title}</div>
+  </div>
+  <div className="text-[18px] text-green-400">{value}</div>
+  <div className="text-xs text-gray-400 mt-1">{subtitle}</div>
+</div>
+```
+
+**Section Container:**
+```jsx
+<div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+  <h2 className="text-base text-white mb-3">Section Title</h2>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    {/* Content */}
+  </div>
+</div>
+```
+
+**Button Variants:**
+```jsx
+/* Primary */
+<button className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm">
+  Action
+</button>
+
+/* Secondary */
+<button className="px-3 py-2 bg-[#0a0e1a] hover:bg-slate-700 text-white rounded-lg border border-[#1a1f26] text-sm">
+  Action
+</button>
+
+/* Danger */
+<button className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm">
+  Delete
+</button>
+```
+
+**Input Fields:**
+```jsx
+<input 
+  type="text"
+  className="w-full bg-[#0f1419] border border-[#1a1f26] text-white rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+  placeholder="Enter value..."
+/>
+```
+
+**Select Dropdown:**
+```jsx
+<select className="w-full bg-[#0f1419] border border-[#1a1f26] text-white rounded-lg px-3 py-2 text-sm">
+  <option value="">Select option</option>
+  <option value="1">Option 1</option>
+</select>
+```
+
+**Info Badge:**
+```jsx
+<span className="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30">
+  Badge Text
+</span>
+```
+
+#### Grid Systems
+```jsx
+/* 2-column responsive */
+<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+/* 3-column responsive */
+<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+/* 4-column responsive */
+<div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+```
+
+#### Design Rules
+1. **NO EMOJIS** in page content (only in sidebar navigation icons)
+2. **NO font-bold** - use font-medium or default weight
+3. **NO custom fonts** - system fonts only
+4. **Compact by default** - content should fit without scrolling on 1080p screens
+5. **Consistent spacing** - use spacing system values only (p-3, gap-3, mb-3)
+6. **Hover states** - all interactive elements need hover:border-gray-600 or similar
+7. **Loading states** - use spinner with "Loading..." text
+8. **Error states** - red border card with error message
+9. **Empty states** - centered card with message + action button
+
+#### Page Layout Template
+```jsx
+function PageTemplate() {
+  return (
+    <div className="p-4 space-y-4 bg-[#0f1419] min-h-screen">
+      {/* Header */}
+      <div>
+        <h1 className="text-xl text-white mb-1">Page Title</h1>
+        <p className="text-sm text-gray-400">Page description</p>
+      </div>
+
+      {/* Main Content Sections */}
+      <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+        <h2 className="text-base text-white mb-3">Section Title</h2>
+        {/* Content */}
+      </div>
+
+      {/* Info Card (optional) */}
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+        <h3 className="text-sm text-blue-400 mb-2">Info Title</h3>
+        <p className="text-xs text-gray-300">Info message</p>
+      </div>
+    </div>
+  );
+}
+```
+
+#### Responsive Breakpoints
+```css
+/* Mobile first approach */
+base: default styles (mobile)
+md: 768px+ (tablet)
+lg: 1024px+ (desktop)
+xl: 1280px+ (large desktop)
+```
+
+#### Anti-Patterns (DO NOT USE)
+```jsx
+/* ❌ Wrong - Old styling */
+<div className="bg-gray-900 p-6 mb-6">
+<h1 className="text-2xl font-bold">
+<div className="text-[20px]">  /* Use text-[18px] instead */
+<button className="px-4 py-2">  /* Use px-3 py-2 instead */
+
+/* ❌ Wrong - Light mode classes */
+<div className="bg-white text-black">
+
+/* ❌ Wrong - Emojis in content */
+<h2>📊 Dashboard</h2>
+
+/* ❌ Wrong - Inconsistent spacing */
+<div className="p-5 gap-5 mb-5">  /* Use p-3, gap-3, mb-3 */
+
+/* ✅ Correct - Compact dark theme */
+<div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+  <h1 className="text-xl text-white mb-1">Dashboard</h1>
+</div>
+```
+
+**ENFORCEMENT:** All new UI components must pass visual consistency check against Dashboard.jsx and AccountDetailPage.jsx before commit.
 
 ---
 

@@ -118,20 +118,23 @@ export default function Dashboard() {
  { timestamp: "2025-10-15T08:30:00Z", type: "module_stop_loss", message: "IV Service daily loss limit approaching", severity: "warning" }
  ];
 
- return (
- <div className="p-8 space-y-8 bg-[#0f1419] min-h-screen">
- {/* Header */}
- <div>
- <h1 className="text-2xl text-white mb-2">Dashboard</h1>
- <p className="text-base text-gray-400">Real-time overview of your trading activity and market intelligence</p>
- </div>
+  return (
+    <div className="bg-[#0f1419] min-h-screen p-4">
+      <div className="max-w-[1800px] mx-auto space-y-4">
+        {/* Header */}
+        <div>
+          <h1 className="text-base text-white mb-1">Dashboard</h1>
+          <p className="text-sm text-gray-400">
+            Overview of your portfolio, accounts, and market activity
+          </p>
+        </div>
 
       {/* Section 1: Mindfolio Overview */}
       <div>
-        <h2 className="text-xl text-white mb-4">Mindfolio Overview</h2>
+        <h2 className="text-base text-white mb-4">Mindfolio Overview</h2>
         
         {/* Mini Tickers Row - Above right two cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-3">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
           <div></div> {/* Empty space for left card */}
           <div className="grid grid-cols-2 gap-4 px-4">
             <MiniTicker symbol="SPY" price={659.48} changePct={-0.86} sparklineData={spySparkline} />
@@ -144,7 +147,7 @@ export default function Dashboard() {
         </div>
         
         {/* Main Stat Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           <StatCard 
             title="Total Mindfolio Value" 
             value={totalNAV} 
@@ -174,8 +177,8 @@ export default function Dashboard() {
         <TopMindfolios limit={3} />
       </div> {/* Section 2: Options Analytics Highlights */}
  <div>
- <h2 className="text-xl text-white mb-4">Options Analytics</h2>
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+ <h2 className="text-base text-white mb-4">Options Analytics</h2>
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
  <SignalCard
  title=" IV Service Signals"
  data={ivSignals}
@@ -196,8 +199,8 @@ export default function Dashboard() {
 
  {/* Section 3: Market Intelligence */}
  <div>
- <h2 className="text-xl text-white mb-4">Market Intelligence</h2>
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+ <h2 className="text-base text-white mb-4">Market Intelligence</h2>
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
  <FlowSummaryWidget
  title=" Options Flow (Top 5)"
  data={flowSummary}
@@ -215,7 +218,7 @@ export default function Dashboard() {
 
  {/* Section 4: Stock Scoring Insights */}
  <div>
- <h2 className="text-xl text-white mb-4">Investment Scoring - Today's Top Picks</h2>
+ <h2 className="text-base text-white mb-4">Investment Scoring - Today's Top Picks</h2>
  <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-4">
  <TopScoredStocks limit={5} ctaText="Run Full Scan" ctaLink="/stocks/scoring" />
  </div>
@@ -223,7 +226,7 @@ export default function Dashboard() {
 
  {/* Section 5: Quick Actions */}
  <div>
- <h2 className="text-xl text-white mb-4">Quick Actions</h2>
+ <h2 className="text-base text-white mb-4">Quick Actions</h2>
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
  <QuickActionButton icon="" label="Create Mindfolio" href="/mindfolio/new" gradient="from-blue-600 to-blue-700" />
  <QuickActionButton icon="" label="Open Builder" href="/builder" gradient="from-green-600 to-green-700" />
@@ -234,10 +237,11 @@ export default function Dashboard() {
 
  {/* Section 6: System Health & Alerts */}
  <div>
- <h2 className="text-xl text-white mb-4">System Status</h2>
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+ <h2 className="text-base text-white mb-4">System Status</h2>
+ <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
  <SystemHealthWidget services={systemServices} />
  <AlertsWidget alerts={recentAlerts} types={['position_threshold', 'module_stop_loss', 'api_error']} limit={5} />
+ </div>
  </div>
  </div>
  </div>
