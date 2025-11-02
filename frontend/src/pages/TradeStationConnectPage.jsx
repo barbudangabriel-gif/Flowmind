@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import TradeStationAuth from '../components/TradeStationAuth.jsx';
 import axios from 'axios';
 
-const AccountBalancePage = () => {
+const TradeStationConnectPage = () => {
  const [accounts, setAccounts] = useState([]);
  const [selectedAccount, setSelectedAccount] = useState(null);
  const [balances, setBalances] = useState(null);
@@ -159,15 +159,15 @@ const AccountBalancePage = () => {
  <div className="max-w-7xl mx-auto space-y-4">
             <div>
                 <div className="flex items-center justify-between mb-1">
-                    <h1 className="text-xl text-white">Account Balance</h1>
+                    <h1 className="text-xl text-white">TradeStation Connect</h1>
                     <Link 
-                        to="/mindfolios" 
+                        to="/" 
                         className="px-3 py-2 bg-[#0a0e1a] hover:bg-slate-700 text-white rounded-lg transition-colors border border-[#1a1f26] text-sm"
                     >
-                        View Mindfolios →
+                        ← Back to Home
                     </Link>
                 </div>
-                <p className="text-sm text-gray-400">View your TradeStation account balances and positions</p>
+                <p className="text-sm text-gray-400">Connect your TradeStation account to view balances and positions</p>
             </div>
 
  {/* Authentication Section */}
@@ -410,4 +410,4 @@ const AccountBalancePage = () => {
  );
 };
 
-export default AccountBalancePage;
+export default TradeStationConnectPage;

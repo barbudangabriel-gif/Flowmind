@@ -22,7 +22,7 @@ import MindfolioDetailNewV2 from './pages/MindfolioDetailNewV2';
 import MindfolioCreate from './pages/MindfolioCreate';
 import MindfolioPage from './pages/MindfolioPage';
 import ImportFromTradeStation from './pages/ImportFromTradeStation';
-import AccountBalancePage from './pages/AccountBalancePage';
+import TradeStationConnectPage from './pages/TradeStationConnectPage';
 import AccountDetailPage from './pages/AccountDetailPage';
 import AggregateAccountPage from './pages/AggregateAccountPage';
 import TradeStationLogin from './pages/TradeStationLogin';
@@ -252,7 +252,7 @@ function App() {
  <Route path="/market-movers" element={<MarketMoversPage />} />
  <Route path="/congress-trades" element={<CongressTradesPage />} />
  <Route path="/institutional" element={<InstitutionalPage />} />
- <Route path="/account/balance" element={<AccountBalancePage />} />
+ <Route path="/tradestation/connect" element={<TradeStationConnectPage />} />
  
  {/* Aggregate Account View */}
  <Route path="/account/aggregate" element={<AggregateAccountPage />} />

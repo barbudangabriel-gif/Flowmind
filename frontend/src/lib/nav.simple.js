@@ -31,7 +31,7 @@ export function buildNav(ctx) {
  },
  { 
  label: "Account Balance", 
- to: "/account/balance", 
+ to: "/tradestation/connect", 
  icon: "DollarSign"
  },
  { 

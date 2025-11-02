@@ -3,7 +3,7 @@
 // =============================================
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { TrendingUp, Activity, Wallet, BarChart3, Zap, ArrowRight } from 'lucide-react';
+import { TrendingUp, Activity, Wallet, BarChart3, Zap, ArrowRight, Link as LinkIcon } from 'lucide-react';
 
 export default function HomePage() {
   const quickActions = [
@@ -30,6 +30,14 @@ export default function HomePage() {
       link: '/mindfolio',
       color: 'purple',
       badge: 'Multi-Mindfolio'
+    },
+    {
+      title: 'TradeStation Connect',
+      description: 'Connect your TradeStation account',
+      icon: LinkIcon,
+      link: '/tradestation/connect',
+      color: 'orange',
+      badge: 'Auth'
     },
     {
       title: 'Optimize',
@@ -106,6 +114,7 @@ export default function HomePage() {
                 emerald: 'from-emerald-500/20 to-emerald-600/10 border-emerald-500/30 hover:border-emerald-400',
                 blue: 'from-blue-500/20 to-blue-600/10 border-blue-500/30 hover:border-blue-400',
                 purple: 'from-purple-500/20 to-purple-600/10 border-purple-500/30 hover:border-purple-400',
+                orange: 'from-orange-500/20 to-orange-600/10 border-orange-500/30 hover:border-orange-400',
                 amber: 'from-amber-500/20 to-amber-600/10 border-amber-500/30 hover:border-amber-400',
                 cyan: 'from-cyan-500/20 to-cyan-600/10 border-cyan-500/30 hover:border-cyan-400',
               };
@@ -114,6 +123,7 @@ export default function HomePage() {
                 emerald: 'text-emerald-400',
                 blue: 'text-blue-400',
                 purple: 'text-purple-400',
+                orange: 'text-orange-400',
                 amber: 'text-amber-400',
                 cyan: 'text-cyan-400',
               };

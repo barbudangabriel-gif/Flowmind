@@ -58,7 +58,7 @@ const TradeStationLogin = () => {
                     </button>
 
                     <button
-                        onClick={() => navigate('/account/balance')}
+                        onClick={() => navigate('/tradestation/connect')}
                         className="w-full bg-gray-800 hover:bg-gray-700 text-white text-[14px] py-3 rounded-lg transition-colors"
                     >
                         Back to Account Balance
