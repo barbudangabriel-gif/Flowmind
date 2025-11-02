@@ -5,7 +5,8 @@ import logging
 import os
 import secrets
 import uuid
-from datetime import datetime
+import requests
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
@@ -14,9 +15,19 @@ from pydantic import BaseModel, validator
 
 from redis_fallback import get_kv
 
+# Import TradeStation helpers
+from app.routers.tradestation import get_valid_token
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/mindfolio", tags=["mindfolio"])
+
+# TradeStation API base URL
+TS_MODE = os.getenv("TRADESTATION_MODE", "SIMULATION")
+if TS_MODE == "LIVE":
+    TS_API_BASE = "https://api.tradestation.com/v3"
+else:
+    TS_API_BASE = "https://sim-api.tradestation.com/v3"
 
 # Persistent backup directory
 BACKUP_DIR = Path("/workspaces/Flowmind/data/mindfolios")
@@ -89,6 +100,29 @@ class ImportCSV(BaseModel):
     csv_data: str
 
 
+# Position Transfer record (NEW - Nov 2, 2025)
+class PositionTransfer(BaseModel):
+    id: str
+    from_mindfolio_id: str  # Source (master or specialized)
+    to_mindfolio_id: str  # Destination (specialized)
+    symbol: str
+    quantity: float
+    avg_cost: float
+    transfer_value: float  # quantity * avg_cost
+    notes: str = ""
+    created_at: str
+
+
+# Cash Transfer record (NEW - Nov 2, 2025)
+class CashTransfer(BaseModel):
+    id: str
+    from_mindfolio_id: str
+    to_mindfolio_id: str
+    amount: float
+    notes: str = ""
+    created_at: str
+
+
 class Mindfolio(BaseModel):
     id: str
     name: str
@@ -103,6 +137,16 @@ class Mindfolio(BaseModel):
     cash_balance: float
     starting_balance: float = 10000.0  # Track initial balance for ROI calculation
     status: str = "ACTIVE"  # ACTIVE, PAUSED, CLOSED
+
+    # Master Mindfolio fields (NEW - Nov 2, 2025)
+    is_master: bool = False  # True for broker master mindfolios
+    auto_sync: bool = False  # True for auto-sync from broker API
+    last_sync: Optional[str] = None  # ISO timestamp of last sync
+    sync_status: str = "idle"  # "idle" | "syncing" | "error"
+
+    # Allocation tracking (NEW - Nov 2, 2025)
+    allocated_to: List[str] = []  # List of mindfolio IDs that received transfers
+    received_from: Optional[str] = None  # Source master mindfolio ID
 
     # Configuration
     modules: List[ModuleAllocation] = []
@@ -155,6 +199,20 @@ def key_mindfolio_transactions(pid: str) -> str:
 
 def key_mindfolio_positions(pid: str) -> str:
     return f"mf:{pid}:positions"
+
+
+# Transfer record keys (NEW - Nov 2, 2025)
+def key_position_transfer(transfer_id: str) -> str:
+    return f"transfer:position:{transfer_id}"
+
+
+def key_cash_transfer(transfer_id: str) -> str:
+    return f"transfer:cash:{transfer_id}"
+
+
+def key_mindfolio_transfers(pid: str) -> str:
+    """List of all transfer IDs (both position and cash) for a mindfolio"""
+    return f"mf:{pid}:transfers"
 
 
 # ——— Backup/Restore Functions ———
@@ -388,6 +446,44 @@ async def pf_list() -> List[Mindfolio]:
             continue
 
     return mindfolios
+
+
+# ——— Transfer Helper Functions (NEW - Nov 2, 2025) ———
+
+
+async def save_position_transfer(transfer: PositionTransfer) -> None:
+    """Save position transfer record to Redis"""
+    cli = await get_kv()
+    await cli.set(key_position_transfer(transfer.id), json.dumps(transfer.dict()))
+    
+    # Update transfer lists for both mindfolios
+    for mid in [transfer.from_mindfolio_id, transfer.to_mindfolio_id]:
+        transfers_raw = await cli.get(key_mindfolio_transfers(mid)) or "[]"
+        transfers_list = json.loads(transfers_raw)
+        transfers_list.append(transfer.id)
+        await cli.set(key_mindfolio_transfers(mid), json.dumps(transfers_list))
+
+
+async def save_cash_transfer(transfer: CashTransfer) -> None:
+    """Save cash transfer record to Redis"""
+    cli = await get_kv()
+    await cli.set(key_cash_transfer(transfer.id), json.dumps(transfer.dict()))
+    
+    # Update transfer lists for both mindfolios
+    for mid in [transfer.from_mindfolio_id, transfer.to_mindfolio_id]:
+        transfers_raw = await cli.get(key_mindfolio_transfers(mid)) or "[]"
+        transfers_list = json.loads(transfers_raw)
+        transfers_list.append(transfer.id)
+        await cli.set(key_mindfolio_transfers(mid), json.dumps(transfers_list))
+
+
+async def find_master_mindfolio(broker: str, account_id: str) -> Optional[Mindfolio]:
+    """Find existing master mindfolio for broker + account"""
+    all_mindfolios = await pf_list()
+    for mf in all_mindfolios:
+        if mf.is_master and mf.broker == broker and mf.account_id == account_id:
+            return mf
+    return None
 
 
 # ——— API Endpoints ———
@@ -1176,6 +1272,401 @@ async def import_ytd_transactions(pid: str, body: dict, user_id: str = Header("d
     except Exception as e:
         logger.error(f"YTD import failed: {e}")
         raise HTTPException(status_code=500, detail=f"Import failed: {str(e)}")
+
+
+# ——— Master Mindfolio Endpoints (NEW - Nov 2, 2025) ———
+
+
+@router.post("/master/create")
+async def create_master_mindfolio(body: dict, user_id: str = Header("default")):
+    """
+    Create a Master Mindfolio for a broker account.
+    - Auto-syncs with broker API
+    - Mirrors all positions and cash balance
+    - User can allocate positions + cash to specialized mindfolios
+    
+    Body: {
+        "broker": "TradeStation" | "Tastytrade" | "IBKR",
+        "account_id": "11775499",
+        "name": "TradeStation Master - Live" (optional)
+    }
+    """
+    try:
+        broker = body.get("broker")
+        account_id = body.get("account_id")
+        custom_name = body.get("name")
+        
+        if not broker or not account_id:
+            raise HTTPException(status_code=400, detail="Missing broker or account_id")
+        
+        # Check if master already exists
+        existing_master = await find_master_mindfolio(broker, account_id)
+        if existing_master:
+            return {
+                "status": "error",
+                "message": f"Master mindfolio already exists: {existing_master.name}",
+                "master": existing_master.dict()
+            }
+        
+        # Fetch data from broker API
+        if broker == "TradeStation":
+            # Get token
+            token_data = await get_valid_token(user_id)
+            token = token_data.get("access_token")
+            if not token:
+                raise HTTPException(status_code=401, detail="TradeStation not authenticated")
+            
+            # Get balances
+            balance_url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/balances"
+            balance_resp = requests.get(
+                balance_url,
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=15
+            )
+            balance_resp.raise_for_status()
+            balances = balance_resp.json().get("Balances", [])
+            if not balances:
+                raise HTTPException(status_code=404, detail="No balances found")
+            cash_balance = float(balances[0].get("CashBalance", 0))
+            
+            # Get positions
+            positions_url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/positions"
+            positions_resp = requests.get(
+                positions_url,
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=15
+            )
+            positions_resp.raise_for_status()
+            positions = positions_resp.json().get("Positions", [])
+            
+        elif broker == "Tastytrade":
+            # TODO: Implement Tastytrade API integration
+            raise HTTPException(status_code=501, detail="Tastytrade integration not yet implemented")
+        
+        elif broker == "IBKR":
+            # TODO: Implement IBKR API integration
+            raise HTTPException(status_code=501, detail="IBKR integration not yet implemented")
+        
+        else:
+            raise HTTPException(status_code=400, detail=f"Unknown broker: {broker}")
+        
+        # Create master mindfolio
+        now = datetime.now(timezone.utc).isoformat()
+        master = Mindfolio(
+            id=f"master_{broker.lower()}_{secrets.token_hex(6)}",
+            name=custom_name or f"{broker} Master - {account_id}",
+            broker=broker,
+            environment=os.getenv("TRADESTATION_MODE", "SIMULATION") if broker == "TradeStation" else "LIVE",
+            account_id=account_id,
+            cash_balance=cash_balance,
+            starting_balance=cash_balance,
+            is_master=True,
+            auto_sync=True,
+            last_sync=now,
+            sync_status="idle",
+            status="ACTIVE",
+            modules=[],
+            created_at=now,
+            updated_at=now
+        )
+        await pf_put(master)
+        
+        # Create BUY transactions for each position
+        cli = await get_kv()
+        for pos in positions:
+            symbol = pos.get("Symbol")
+            quantity = float(pos.get("Quantity", 0))
+            avg_price = float(pos.get("AveragePrice", 0))
+            
+            if not symbol or quantity <= 0:
+                continue
+            
+            tx = Transaction(
+                id=f"tx_{secrets.token_hex(6)}",
+                mindfolio_id=master.id,
+                account_id=account_id,
+                datetime=now,
+                symbol=symbol,
+                side="BUY",
+                qty=quantity,
+                price=avg_price,
+                fee=0.0,
+                notes="Initial import from broker (master mindfolio)",
+                created_at=now
+            )
+            
+            # Save transaction
+            await cli.set(key_transaction(tx.id), tx.json())
+            
+            # Update transaction list
+            tx_list_raw = await cli.get(key_mindfolio_transactions(master.id)) or "[]"
+            tx_ids = json.loads(tx_list_raw)
+            tx_ids.append(tx.id)
+            await cli.set(key_mindfolio_transactions(master.id), json.dumps(tx_ids))
+        
+        # Calculate positions
+        calculated_positions = await calculate_positions_fifo(master.id)
+        
+        # Save positions
+        positions_json = json.dumps([pos.dict() for pos in calculated_positions])
+        await cli.set(key_mindfolio_positions(master.id), positions_json)
+        
+        logger.info(f"Created master mindfolio {master.id} for {broker} account {account_id}")
+        
+        return {
+            "status": "success",
+            "master": master.dict(),
+            "positions_imported": len(calculated_positions),
+            "cash_balance": cash_balance
+        }
+        
+    except requests.RequestException as e:
+        logger.error(f"Broker API error: {e}")
+        raise HTTPException(status_code=503, detail=f"Broker API error: {str(e)}")
+    except Exception as e:
+        logger.error(f"Master mindfolio creation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Creation failed: {str(e)}")
+
+
+@router.post("/transfer/position")
+async def transfer_position(body: dict, user_id: str = Header("default")):
+    """
+    Transfer a position from one mindfolio to another.
+    Common pattern: Master Mindfolio → Specialized Mindfolio
+    
+    Body: {
+        "from_mindfolio_id": "master_ts_123",
+        "to_mindfolio_id": "mf_leaps_789",
+        "symbol": "TSLA",
+        "quantity": 20.0
+    }
+    """
+    try:
+        from_id = body.get("from_mindfolio_id")
+        to_id = body.get("to_mindfolio_id")
+        symbol = body.get("symbol")
+        quantity = float(body.get("quantity", 0))
+        
+        if not all([from_id, to_id, symbol]) or quantity <= 0:
+            raise HTTPException(status_code=400, detail="Missing required fields")
+        
+        # Get source mindfolio positions
+        from_positions = await get_mindfolio_positions(from_id)
+        source_position = next((p for p in from_positions if p.symbol == symbol), None)
+        
+        if not source_position:
+            raise HTTPException(status_code=404, detail=f"Position {symbol} not found in source mindfolio")
+        
+        if source_position.qty < quantity:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient quantity (have {source_position.qty}, need {quantity})"
+            )
+        
+        # Create SELL transaction in source mindfolio
+        now = datetime.now(timezone.utc).isoformat()
+        cli = await get_kv()
+        
+        sell_tx = Transaction(
+            id=f"tx_{secrets.token_hex(6)}",
+            mindfolio_id=from_id,
+            datetime=now,
+            symbol=symbol,
+            side="SELL",
+            qty=quantity,
+            price=source_position.avg_cost,  # Transfer at cost basis
+            fee=0.0,
+            notes=f"Transfer to {to_id}",
+            created_at=now
+        )
+        await cli.set(key_transaction(sell_tx.id), sell_tx.json())
+        
+        # Update source transaction list
+        tx_list_raw = await cli.get(key_mindfolio_transactions(from_id)) or "[]"
+        tx_ids = json.loads(tx_list_raw)
+        tx_ids.append(sell_tx.id)
+        await cli.set(key_mindfolio_transactions(from_id), json.dumps(tx_ids))
+        
+        # Create BUY transaction in destination mindfolio
+        buy_tx = Transaction(
+            id=f"tx_{secrets.token_hex(6)}",
+            mindfolio_id=to_id,
+            datetime=now,
+            symbol=symbol,
+            side="BUY",
+            qty=quantity,
+            price=source_position.avg_cost,  # Same cost basis
+            fee=0.0,
+            notes=f"Transfer from {from_id}",
+            created_at=now
+        )
+        await cli.set(key_transaction(buy_tx.id), buy_tx.json())
+        
+        # Update destination transaction list
+        tx_list_raw = await cli.get(key_mindfolio_transactions(to_id)) or "[]"
+        tx_ids = json.loads(tx_list_raw)
+        tx_ids.append(buy_tx.id)
+        await cli.set(key_mindfolio_transactions(to_id), json.dumps(tx_ids))
+        
+        # Recalculate positions for both mindfolios
+        from_positions = await calculate_positions_fifo(from_id)
+        to_positions = await calculate_positions_fifo(to_id)
+        
+        # Save positions
+        from_positions_json = json.dumps([pos.dict() for pos in from_positions])
+        await cli.set(key_mindfolio_positions(from_id), from_positions_json)
+        
+        to_positions_json = json.dumps([pos.dict() for pos in to_positions])
+        await cli.set(key_mindfolio_positions(to_id), to_positions_json)
+        
+        # Create transfer record
+        transfer = PositionTransfer(
+            id=f"transfer_{secrets.token_hex(6)}",
+            from_mindfolio_id=from_id,
+            to_mindfolio_id=to_id,
+            symbol=symbol,
+            quantity=quantity,
+            avg_cost=source_position.avg_cost,
+            transfer_value=quantity * source_position.avg_cost,
+            notes="",
+            created_at=now
+        )
+        await save_position_transfer(transfer)
+        
+        # Update allocation tracking
+        from_mindfolio = await pf_get(from_id)
+        to_mindfolio = await pf_get(to_id)
+        
+        if to_id not in from_mindfolio.allocated_to:
+            from_mindfolio.allocated_to.append(to_id)
+        
+        if not to_mindfolio.received_from:
+            to_mindfolio.received_from = from_id
+        
+        await pf_put(from_mindfolio)
+        await pf_put(to_mindfolio)
+        
+        logger.info(f"Transferred {quantity} {symbol} from {from_id} to {to_id}")
+        
+        return {
+            "status": "success",
+            "transfer": transfer.dict(),
+            "from_remaining": [p.dict() for p in from_positions],
+            "to_updated": [p.dict() for p in to_positions]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Position transfer failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Transfer failed: {str(e)}")
+
+
+@router.post("/transfer/cash")
+async def transfer_cash(body: dict, user_id: str = Header("default")):
+    """
+    Transfer cash between mindfolios.
+    Common pattern: Master Mindfolio → Specialized Mindfolio
+    
+    Body: {
+        "from_mindfolio_id": "master_ts_123",
+        "to_mindfolio_id": "mf_leaps_789",
+        "amount": 5000.0
+    }
+    """
+    try:
+        from_id = body.get("from_mindfolio_id")
+        to_id = body.get("to_mindfolio_id")
+        amount = float(body.get("amount", 0))
+        
+        if not all([from_id, to_id]) or amount <= 0:
+            raise HTTPException(status_code=400, detail="Missing required fields")
+        
+        # Get mindfolios
+        from_mindfolio = await pf_get(from_id)
+        to_mindfolio = await pf_get(to_id)
+        
+        if from_mindfolio.cash_balance < amount:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient cash (have ${from_mindfolio.cash_balance:.2f}, need ${amount:.2f})"
+            )
+        
+        # Update cash balances
+        from_mindfolio.cash_balance -= amount
+        to_mindfolio.cash_balance += amount
+        
+        await pf_put(from_mindfolio)
+        await pf_put(to_mindfolio)
+        
+        # Create transfer record
+        now = datetime.now(timezone.utc).isoformat()
+        transfer = CashTransfer(
+            id=f"cash_transfer_{secrets.token_hex(6)}",
+            from_mindfolio_id=from_id,
+            to_mindfolio_id=to_id,
+            amount=amount,
+            notes="",
+            created_at=now
+        )
+        await save_cash_transfer(transfer)
+        
+        logger.info(f"Transferred ${amount:.2f} from {from_id} to {to_id}")
+        
+        return {
+            "status": "success",
+            "transfer": transfer.dict(),
+            "from_balance": from_mindfolio.cash_balance,
+            "to_balance": to_mindfolio.cash_balance
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Cash transfer failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Transfer failed: {str(e)}")
+
+
+@router.post("/master/{master_id}/sync")
+async def sync_master_mindfolio(master_id: str, user_id: str = Header("default")):
+    """
+    Manually trigger sync for a master mindfolio with its broker.
+    
+    - Fetches live positions and cash balance
+    - Compares with current state
+    - Creates transactions for differences
+    - Recalculates positions
+    """
+    try:
+        # Get master mindfolio
+        master = await pf_get(master_id)
+        if not master.is_master:
+            raise HTTPException(status_code=400, detail="Not a master mindfolio")
+        
+        # Get broker token
+        if master.broker == "TradeStation":
+            token_data = await get_valid_token(user_id)
+            token = token_data.get("access_token")
+            if not token:
+                raise HTTPException(status_code=401, detail="TradeStation not authenticated")
+        else:
+            raise HTTPException(status_code=501, detail=f"{master.broker} integration not yet implemented")
+        
+        # Sync with broker
+        from services.broker_sync import BrokerSyncService
+        
+        sync_service = BrokerSyncService()
+        result = await sync_service.sync_master_mindfolio(master_id, token)
+        
+        logger.info(f"Manual sync completed for {master_id}")
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Manual sync failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Sync failed: {str(e)}")
 
 
 @router.get("/{pid}/stats")
