@@ -158,10 +158,10 @@ app = FastAPI(title="Enhanced Stock Market Analysis API", version="3.0.0")
 @app.on_event("startup")
 async def startup():
     """Initialize integration clients on startup"""
-    logger.info(" Starting FlowMind API Server...")
+    logger.info("🚀 Starting FlowMind API Server...")
 
     # Validate critical environment variables
-    logger.info(" Validating environment configuration...")
+    logger.info("🔍 Validating environment configuration...")
 
     required_vars = {
         "MONGO_URL": os.getenv("MONGO_URL"),
@@ -179,25 +179,66 @@ async def startup():
     missing_required = [key for key, val in required_vars.items() if not val]
     if missing_required:
         logger.error(
-            f" Missing required environment variables: {', '.join(missing_required)}"
+            f"❌ Missing required environment variables: {', '.join(missing_required)}"
         )
-        logger.error(" Check your .env file or environment configuration")
+        logger.error("❌ Check your .env file or environment configuration")
         raise RuntimeError(
             f"Missing required environment variables: {', '.join(missing_required)}"
         )
     else:
-        logger.info(" All required environment variables present")
+        logger.info("✅ All required environment variables present")
 
     # Check optional variables (warnings only)
     missing_optional = [key for key, val in optional_vars.items() if not val]
     if missing_optional:
-        logger.warning(f" Missing optional variables: {', '.join(missing_optional)}")
-        logger.warning(" Some features may be limited or use fallback mode")
+        logger.warning(f"⚠️  Missing optional variables: {', '.join(missing_optional)}")
+        logger.warning("⚠️  Some features may be limited or use fallback mode")
 
     # Log configuration summary
     logger.info(
-        f" Redis: {'Configured' if optional_vars['REDIS_URL'] else 'Using fallback (in-memory)'}"
+        f"📊 Redis: {'Configured' if optional_vars['REDIS_URL'] else 'Using fallback (in-memory)'}"
     )
+    logger.info(
+        f"📊 TradeStation: {'Available' if optional_vars['TS_CLIENT_ID'] else 'Not configured'}"
+    )
+    logger.info(
+        f"📊 Unusual Whales: {'Available' if optional_vars['UW_API_TOKEN'] else 'Not configured'}"
+    )
+
+    # Start CORE ENGINE WebSocket stream consumer
+    try:
+        from backend.agents.core.websocket_manager import start_stream_consumer
+
+        await start_stream_consumer()
+        logger.info("✅ CORE ENGINE WebSocket stream consumer started")
+    except Exception as e:
+        logger.warning(f"⚠️  Failed to start WebSocket stream consumer: {e}")
+        logger.warning("⚠️  Real-time streaming disabled")
+
+    # Initialize integrations
+    if INTEGRATIONS_AVAILABLE:
+        uw_token = optional_vars["UW_API_TOKEN"]
+        ts_credentials = {
+            "client_id": optional_vars["TS_CLIENT_ID"],
+            "client_secret": optional_vars["TS_CLIENT_SECRET"],
+        }
+        if uw_token and UWClient:
+            try:
+                app.state.uw = UWClient(uw_token)
+                logger.info("✅ Unusual Whales client initialized")
+            except Exception as e:
+                logger.error(f"❌ UW client initialization failed: {e}")
+
+        if ts_credentials["client_id"] and TSClient:
+            try:
+                app.state.ts = TSClient(
+                    ts_credentials["client_id"], ts_credentials["client_secret"]
+                )
+                logger.info("✅ TradeStation client initialized")
+            except Exception as e:
+                logger.error(f"❌ TS client initialization failed: {e}")
+
+    logger.info("✨ FlowMind API Server started successfully!")
     logger.info(
         f"🔑 TradeStation: {'Configured' if optional_vars['TS_CLIENT_ID'] else 'Demo mode'}"
     )
@@ -273,13 +314,22 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     """Clean up integration clients on shutdown"""
+    # Stop CORE ENGINE WebSocket stream consumer
+    try:
+        from backend.agents.core.websocket_manager import stop_stream_consumer
+
+        await stop_stream_consumer()
+        logger.info("✅ CORE ENGINE WebSocket stream consumer stopped")
+    except Exception as e:
+        logger.warning(f"⚠️  WebSocket stream consumer shutdown failed: {e}")
+
     # Shutdown WebSocket streaming
     try:
         from routers.stream import shutdown_websocket
 
         await shutdown_websocket()
     except Exception as e:
-        logger.error(f" WebSocket shutdown failed: {e}")
+        logger.error(f"❌ WebSocket shutdown failed: {e}")
 
     try:
         if hasattr(app.state, "uw") and app.state.uw:
@@ -925,7 +975,7 @@ async def metrics_endpoint():
 
         return Response(content=metrics_data, media_type=content_type)
     except Exception as e:
-        logger.error(f" Metrics export failed: {e}")
+        logger.error(f"❌ Metrics export failed: {e}")
         raise HTTPException(status_code=500, detail="Metrics export failed")
 
     # This code appears to be unreachable due to return statement above
@@ -937,6 +987,34 @@ async def metrics_endpoint():
     #     "tradestation": "configured" if ROBUST_TS_AVAILABLE else "not_configured",
     #     "timestamp": datetime.now().isoformat(),
     # }
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CORE ENGINE - WEBSOCKET ENDPOINT
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+@app.websocket("/ws/signals")
+async def websocket_signals_endpoint(websocket):
+    """
+    CORE ENGINE Real-time signal/news streaming via WebSocket.
+
+    Connect: ws://localhost:8000/ws/signals
+    
+    Client commands:
+    - {"action": "subscribe", "stream": "signals:universe"}
+    - {"action": "unsubscribe", "stream": "signals:universe"}
+    - {"action": "ping"}
+    - {"action": "stats"}
+
+    Server messages:
+    - {"type": "signal", "stream": "signals:universe", "data": {...}, "timestamp": ...}
+    - {"type": "news", "stream": "news:realtime", "data": {...}, "timestamp": ...}
+    - {"type": "status", "action": "subscribed", "stream": "...", "timestamp": ...}
+    """
+    from backend.agents.core.websocket_manager import websocket_endpoint
+
+    await websocket_endpoint(websocket)
 
 
 # Rate limiting middleware
