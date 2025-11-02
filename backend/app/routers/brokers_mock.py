@@ -106,14 +106,54 @@ async def get_mock_ts_balances(account_id: str):
         "status": "success",
         "Balances": [
             {
-                "CashBalance": 50000.00,
-                "BuyingPower": 200000.00,
-                "Equity": 65432.10,
-                "MarketValue": 65432.10,
+                # Portfolio Overview
+                "TotalPortfolioValue": 1378294.34,
+                "TotalTodayChangePercent": -0.27,
+                "TotalTodayChangeAmount": -3799.56,
+                
+                # Market Value Breakdown
+                "StocksMarketValue": 692277.96,
+                "CashValue": 488445.38,
+                "OptionsMarketValue": 278163.00,
+                "FuturesMarketValue": 0.00,
+                "ShortOptionsValue": -80592.00,
+                
+                # Account Summaries
+                "StocksOptionsAccountValue": 1376342.22,
+                "StocksOptionsTodayPercent": -0.28,
+                "StocksOptionsTodayAmount": -3799.56,
+                "FuturesAccountValue": 1952.12,
+                "FuturesTodayPercent": 0.00,
+                "FuturesTodayAmount": 0.00,
+                
+                # Main cards
+                "AccountValue": 1376342.22,
+                "StocksBuyingPower": 3427851.14,
+                "OptionsBuyingPower": 486493.26,  # Same as cash for options
+                "CashBalance": 486493.26,
+                "CashAvailableToWithdraw": 692339.17,
+                
+                # Stocks metrics
+                "StocksValue": 692277.96,
+                "StocksTodayChange": "+0.05% (+$335.94)",
+                "StocksUnrealizedPnL": -37110.80,
+                "OvernightBuyingPower": 1384678.34,
+                "DayTradingBuyingPower": 3427851.14,
+                "DayTradingQualified": True,
+                "PatternDayTrader": True,
+                
+                # Options metrics
+                "OptionsValue": 197571.00,
+                "OptionsTodayChange": "−2.05% (−$4,135.50)",
+                "OptionsUnrealizedPnL": -67086.00,
+                "OptionsApprovalLevel": 5,
+                
+                # Additional info
+                "AccountRealizedPnL": 0.00,
+                "Equity": 1376342.22,
+                "MarketValue": 889848.96,  # Stocks + Options
                 "MarginUsed": 15432.10,
                 "MaintenanceMargin": 8500.00,
-                "DayTradingBuyingPower": 100000.00,
-                "AccountValue": 65432.10,
             }
         ],
     }
