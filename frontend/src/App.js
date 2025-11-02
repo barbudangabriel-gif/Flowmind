@@ -23,6 +23,7 @@ import MindfolioCreate from './pages/MindfolioCreate';
 import MindfolioPage from './pages/MindfolioPage';
 import ImportFromTradeStation from './pages/ImportFromTradeStation';
 import AccountBalancePage from './pages/AccountBalancePage';
+import AccountDetailPage from './pages/AccountDetailPage';
 import TradeStationLogin from './pages/TradeStationLogin';
 import MarketMoversPage from './pages/MarketMoversPage';
 import CongressTradesPage from './pages/CongressTradesPage';
@@ -251,6 +252,10 @@ function App() {
  <Route path="/congress-trades" element={<CongressTradesPage />} />
  <Route path="/institutional" element={<InstitutionalPage />} />
  <Route path="/account/balance" element={<AccountBalancePage />} />
+ 
+ {/* Account Detail Pages - Dynamic Routes */}
+ <Route path="/account/:broker/:accountType" element={<AccountDetailPage />} />
+ 
  <Route path="/tradestation/login" element={<TradeStationLogin />} />
  <Route path="/mindfolio" element={<MindfolioList />} />
  <Route path="/mindfolio/new" element={<MindfolioCreate />} />
