@@ -338,6 +338,575 @@ xl: 1280px+ (large desktop)
 
 ---
 
+## Master Mindfolio System (NEW - Nov 2, 2025)
+
+### Overview
+**Status:** 🏗️ Architecture approved, implementation in progress  
+**Purpose:** Auto-sync broker accounts to mindfolios with position/cash allocation system
+
+**CRITICAL ARCHITECTURE (User quote: "toti brokeri au cate un master mindfolio"):**
+- **NOT a single master for all brokers** - Each broker has its own Master Mindfolio
+- **3 Master Mindfolios:** TradeStation Master, Tastytrade Master, IBKR Master
+- **Auto-sync:** Each master mirrors its broker account completely
+- **User workflow:** Create specialized mindfolios (LEAPS Strategy, Wheel Strategy) and allocate positions + cash from masters
+
+### Architecture Components
+
+#### 1. Master Mindfolio Data Model
+```python
+# backend/mindfolio.py - Extended Mindfolio model
+class Mindfolio(BaseModel):
+    id: str
+    name: str
+    broker: str  # "TradeStation" | "Tastytrade" | "IBKR"
+    environment: str  # "SIM" | "LIVE"
+    account_type: str  # "Equity" | "Margin"
+    account_id: Optional[str] = None
+    cash_balance: float
+    starting_balance: float = 10000.0
+    status: str  # "ACTIVE" | "ARCHIVED"
+    
+    # NEW: Master Mindfolio fields
+    is_master: bool = False  # True for broker masters
+    auto_sync: bool = False  # True for auto-sync from broker API
+    last_sync: Optional[str] = None  # ISO timestamp of last sync
+    sync_status: str = "idle"  # "idle" | "syncing" | "error"
+    
+    # NEW: Allocation tracking
+    allocated_to: List[str] = []  # List of mindfolio IDs that received transfers
+    received_from: Optional[str] = None  # Source master mindfolio ID
+    
+    modules: List[ModuleAllocation] = []
+    created_at: str
+    updated_at: str
+
+# Position Transfer record
+class PositionTransfer(BaseModel):
+    id: str
+    from_mindfolio_id: str  # Source (master or specialized)
+    to_mindfolio_id: str  # Destination (specialized)
+    symbol: str
+    quantity: float
+    avg_cost: float
+    transfer_value: float  # quantity * avg_cost
+    notes: str = ""
+    created_at: str
+
+# Cash Transfer record
+class CashTransfer(BaseModel):
+    id: str
+    from_mindfolio_id: str
+    to_mindfolio_id: str
+    amount: float
+    notes: str = ""
+    created_at: str
+```
+
+#### 2. Master Mindfolio Creation
+```python
+# backend/mindfolio.py - Create master mindfolio
+@router.post("/master/create")
+async def create_master_mindfolio(body: dict, user_id: str = Header("default")):
+    """
+    Create a Master Mindfolio for a broker account.
+    - Auto-syncs with broker API
+    - Mirrors all positions and cash balance
+    - User can allocate positions + cash to specialized mindfolios
+    """
+    broker = body.get("broker")  # "TradeStation" | "Tastytrade" | "IBKR"
+    account_id = body.get("account_id")
+    
+    # Check if master already exists for this broker + account
+    existing_master = await find_master_mindfolio(broker, account_id)
+    if existing_master:
+        return {"status": "error", "message": "Master mindfolio already exists"}
+    
+    # Fetch initial data from broker API
+    if broker == "TradeStation":
+        token_data = await get_valid_token(user_id)
+        token = token_data.get("access_token")
+        
+        # Get balances
+        balance_url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/balances"
+        balance_resp = requests.get(balance_url, headers={"Authorization": f"Bearer {token}"})
+        cash_balance = float(balance_resp.json()["Balances"][0]["CashBalance"])
+        
+        # Get positions
+        positions_url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/positions"
+        positions_resp = requests.get(positions_url, headers={"Authorization": f"Bearer {token}"})
+        positions = positions_resp.json().get("Positions", [])
+    
+    # Create master mindfolio
+    master = Mindfolio(
+        id=f"master_{broker.lower()}_{secrets.token_hex(6)}",
+        name=f"{broker} Master - {account_id}",
+        broker=broker,
+        account_id=account_id,
+        cash_balance=cash_balance,
+        starting_balance=cash_balance,
+        is_master=True,
+        auto_sync=True,
+        last_sync=datetime.now(timezone.utc).isoformat(),
+        sync_status="idle",
+        status="ACTIVE",
+    )
+    await pf_put(master)
+    
+    # Create BUY transactions for each position
+    for pos in positions:
+        tx = Transaction(
+            id=f"tx_{secrets.token_hex(6)}",
+            mindfolio_id=master.id,
+            symbol=pos["Symbol"],
+            side="BUY",
+            qty=float(pos["Quantity"]),
+            price=float(pos["AveragePrice"]),
+            datetime=datetime.now(timezone.utc).isoformat(),
+        )
+        await save_transaction(tx)
+    
+    # Calculate positions
+    calculated_positions = await calculate_positions_fifo(master.id)
+    await save_positions(master.id, calculated_positions)
+    
+    return {"status": "success", "master": master.dict()}
+```
+
+#### 3. Auto-Sync Mechanism
+```python
+# backend/services/broker_sync.py - NEW service
+class BrokerSyncService:
+    """
+    Auto-sync master mindfolios with broker APIs.
+    - Periodic sync (every 5 minutes) or manual trigger
+    - Fetch positions + balances from broker
+    - Compare with current mindfolio state
+    - Create transactions for differences
+    - Recalculate positions
+    """
+    
+    async def sync_master_mindfolio(self, master_id: str):
+        """Sync a single master mindfolio with its broker"""
+        master = await pf_get(master_id)
+        if not master or not master.is_master:
+            raise ValueError("Not a master mindfolio")
+        
+        # Update sync status
+        master.sync_status = "syncing"
+        await pf_put(master)
+        
+        try:
+            # Fetch live data from broker
+            live_positions = await self._fetch_broker_positions(
+                master.broker, master.account_id
+            )
+            live_cash = await self._fetch_broker_balance(
+                master.broker, master.account_id
+            )
+            
+            # Get current mindfolio positions
+            current_positions = await get_mindfolio_positions(master.id)
+            
+            # Calculate differences
+            position_diffs = self._calculate_position_diffs(
+                current_positions, live_positions
+            )
+            
+            # Create transactions for differences
+            for diff in position_diffs:
+                if diff["type"] == "new_buy":
+                    # New position appeared in broker
+                    tx = Transaction(
+                        id=f"tx_{secrets.token_hex(6)}",
+                        mindfolio_id=master.id,
+                        symbol=diff["symbol"],
+                        side="BUY",
+                        qty=diff["quantity"],
+                        price=diff["avg_price"],
+                        datetime=datetime.now(timezone.utc).isoformat(),
+                        notes="Auto-sync from broker",
+                    )
+                    await save_transaction(tx)
+                elif diff["type"] == "partial_sell":
+                    # Position reduced in broker
+                    tx = Transaction(
+                        id=f"tx_{secrets.token_hex(6)}",
+                        mindfolio_id=master.id,
+                        symbol=diff["symbol"],
+                        side="SELL",
+                        qty=diff["quantity"],
+                        price=diff["avg_price"],
+                        datetime=datetime.now(timezone.utc).isoformat(),
+                        notes="Auto-sync from broker",
+                    )
+                    await save_transaction(tx)
+            
+            # Update cash balance
+            master.cash_balance = live_cash
+            
+            # Recalculate positions
+            calculated_positions = await calculate_positions_fifo(master.id)
+            await save_positions(master.id, calculated_positions)
+            
+            # Update sync status
+            master.last_sync = datetime.now(timezone.utc).isoformat()
+            master.sync_status = "idle"
+            await pf_put(master)
+            
+            return {"status": "success", "synced_at": master.last_sync}
+        
+        except Exception as e:
+            master.sync_status = "error"
+            await pf_put(master)
+            raise e
+    
+    async def _fetch_broker_positions(self, broker: str, account_id: str):
+        """Fetch positions from broker API"""
+        if broker == "TradeStation":
+            token_data = await get_valid_token("default")
+            token = token_data.get("access_token")
+            url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/positions"
+            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"})
+            return resp.json().get("Positions", [])
+        # TODO: Add Tastytrade, IBKR
+    
+    async def _fetch_broker_balance(self, broker: str, account_id: str):
+        """Fetch cash balance from broker API"""
+        if broker == "TradeStation":
+            token_data = await get_valid_token("default")
+            token = token_data.get("access_token")
+            url = f"{TS_API_BASE}/brokerage/accounts/{account_id}/balances"
+            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"})
+            return float(resp.json()["Balances"][0]["CashBalance"])
+        # TODO: Add Tastytrade, IBKR
+    
+    def _calculate_position_diffs(self, current, live):
+        """Calculate differences between current and live positions"""
+        diffs = []
+        current_symbols = {p.symbol: p for p in current}
+        live_symbols = {p["Symbol"]: p for p in live}
+        
+        # New positions
+        for symbol in live_symbols:
+            if symbol not in current_symbols:
+                diffs.append({
+                    "type": "new_buy",
+                    "symbol": symbol,
+                    "quantity": float(live_symbols[symbol]["Quantity"]),
+                    "avg_price": float(live_symbols[symbol]["AveragePrice"]),
+                })
+        
+        # Reduced positions
+        for symbol in current_symbols:
+            if symbol in live_symbols:
+                current_qty = current_symbols[symbol].qty
+                live_qty = float(live_symbols[symbol]["Quantity"])
+                if live_qty < current_qty:
+                    diffs.append({
+                        "type": "partial_sell",
+                        "symbol": symbol,
+                        "quantity": current_qty - live_qty,
+                        "avg_price": float(live_symbols[symbol]["AveragePrice"]),
+                    })
+            else:
+                # Position closed
+                diffs.append({
+                    "type": "full_sell",
+                    "symbol": symbol,
+                    "quantity": current_symbols[symbol].qty,
+                    "avg_price": current_symbols[symbol].avg_cost,
+                })
+        
+        return diffs
+```
+
+#### 4. Position Transfer System
+```python
+# backend/mindfolio.py - Transfer positions between mindfolios
+@router.post("/transfer/position")
+async def transfer_position(body: dict, user_id: str = Header("default")):
+    """
+    Transfer a position from one mindfolio to another.
+    User quote: "transferam alocam pozitii si cash cum avem nevoie"
+    
+    Common pattern: Master Mindfolio → Specialized Mindfolio
+    Example: TradeStation Master → LEAPS Strategy Mindfolio
+    """
+    from_id = body.get("from_mindfolio_id")
+    to_id = body.get("to_mindfolio_id")
+    symbol = body.get("symbol")
+    quantity = float(body.get("quantity"))
+    
+    # Get source mindfolio positions
+    from_positions = await get_mindfolio_positions(from_id)
+    source_position = next((p for p in from_positions if p.symbol == symbol), None)
+    
+    if not source_position:
+        return {"status": "error", "message": f"Position {symbol} not found"}
+    
+    if source_position.qty < quantity:
+        return {"status": "error", "message": f"Insufficient quantity (have {source_position.qty}, need {quantity})"}
+    
+    # Create SELL transaction in source mindfolio
+    sell_tx = Transaction(
+        id=f"tx_{secrets.token_hex(6)}",
+        mindfolio_id=from_id,
+        symbol=symbol,
+        side="SELL",
+        qty=quantity,
+        price=source_position.avg_cost,  # Transfer at cost basis
+        datetime=datetime.now(timezone.utc).isoformat(),
+        notes=f"Transfer to {to_id}",
+    )
+    await save_transaction(sell_tx)
+    
+    # Create BUY transaction in destination mindfolio
+    buy_tx = Transaction(
+        id=f"tx_{secrets.token_hex(6)}",
+        mindfolio_id=to_id,
+        symbol=symbol,
+        side="BUY",
+        qty=quantity,
+        price=source_position.avg_cost,  # Same cost basis
+        datetime=datetime.now(timezone.utc).isoformat(),
+        notes=f"Transfer from {from_id}",
+    )
+    await save_transaction(buy_tx)
+    
+    # Recalculate positions for both mindfolios
+    await calculate_positions_fifo(from_id)
+    await calculate_positions_fifo(to_id)
+    
+    # Create transfer record
+    transfer = PositionTransfer(
+        id=f"transfer_{secrets.token_hex(6)}",
+        from_mindfolio_id=from_id,
+        to_mindfolio_id=to_id,
+        symbol=symbol,
+        quantity=quantity,
+        avg_cost=source_position.avg_cost,
+        transfer_value=quantity * source_position.avg_cost,
+        created_at=datetime.now(timezone.utc).isoformat(),
+    )
+    await save_transfer_record(transfer)
+    
+    # Update allocation tracking
+    from_mindfolio = await pf_get(from_id)
+    to_mindfolio = await pf_get(to_id)
+    
+    if to_id not in from_mindfolio.allocated_to:
+        from_mindfolio.allocated_to.append(to_id)
+    
+    to_mindfolio.received_from = from_id
+    
+    await pf_put(from_mindfolio)
+    await pf_put(to_mindfolio)
+    
+    return {
+        "status": "success",
+        "transfer": transfer.dict(),
+        "from_remaining": await get_mindfolio_positions(from_id),
+        "to_updated": await get_mindfolio_positions(to_id),
+    }
+
+@router.post("/transfer/cash")
+async def transfer_cash(body: dict, user_id: str = Header("default")):
+    """
+    Transfer cash between mindfolios.
+    Common pattern: Master Mindfolio → Specialized Mindfolio
+    """
+    from_id = body.get("from_mindfolio_id")
+    to_id = body.get("to_mindfolio_id")
+    amount = float(body.get("amount"))
+    
+    from_mindfolio = await pf_get(from_id)
+    to_mindfolio = await pf_get(to_id)
+    
+    if from_mindfolio.cash_balance < amount:
+        return {"status": "error", "message": "Insufficient cash"}
+    
+    # Update cash balances
+    from_mindfolio.cash_balance -= amount
+    to_mindfolio.cash_balance += amount
+    
+    await pf_put(from_mindfolio)
+    await pf_put(to_mindfolio)
+    
+    # Create transfer record
+    transfer = CashTransfer(
+        id=f"cash_transfer_{secrets.token_hex(6)}",
+        from_mindfolio_id=from_id,
+        to_mindfolio_id=to_id,
+        amount=amount,
+        created_at=datetime.now(timezone.utc).isoformat(),
+    )
+    await save_cash_transfer_record(transfer)
+    
+    return {
+        "status": "success",
+        "transfer": transfer.dict(),
+        "from_balance": from_mindfolio.cash_balance,
+        "to_balance": to_mindfolio.cash_balance,
+    }
+```
+
+#### 5. Frontend Integration
+
+**Master Mindfolio List View:**
+```jsx
+// frontend/src/pages/MindfoliosList.jsx
+const MasterMindfolioBadge = ({ broker, autoSync, lastSync }) => (
+  <div className="flex items-center gap-2">
+    <span className="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30">
+      Master
+    </span>
+    {autoSync && (
+      <span className="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400 border border-green-500/30">
+        Auto-Sync
+      </span>
+    )}
+    {lastSync && (
+      <span className="text-xs text-gray-400">
+        Last sync: {formatRelativeTime(lastSync)}
+      </span>
+    )}
+  </div>
+);
+
+// Master mindfolios shown at top with special styling
+const mindfolios = [
+  { id: 'master_ts_123', name: 'TradeStation Master', is_master: true, broker: 'TradeStation', ... },
+  { id: 'master_tt_456', name: 'Tastytrade Master', is_master: true, broker: 'Tastytrade', ... },
+  { id: 'mf_leaps_789', name: 'LEAPS Strategy', is_master: false, received_from: 'master_ts_123', ... },
+];
+```
+
+**Position Transfer Dialog:**
+```jsx
+// frontend/src/components/PositionTransferModal.jsx
+const PositionTransferModal = ({ isOpen, onClose, fromMindfolio }) => {
+  const [selectedPosition, setSelectedPosition] = useState(null);
+  const [toMindfolio, setToMindfolio] = useState(null);
+  const [quantity, setQuantity] = useState(0);
+  
+  const handleTransfer = async () => {
+    const response = await fetch('/api/mindfolio/transfer/position', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-User-ID': 'default' },
+      body: JSON.stringify({
+        from_mindfolio_id: fromMindfolio.id,
+        to_mindfolio_id: toMindfolio.id,
+        symbol: selectedPosition.symbol,
+        quantity: quantity,
+      }),
+    });
+    // Handle response, refresh mindfolios
+  };
+  
+  return (
+    <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+      <h2 className="text-base text-white mb-3">Transfer Position</h2>
+      
+      {/* Select position */}
+      <select onChange={(e) => setSelectedPosition(JSON.parse(e.target.value))}>
+        {fromMindfolio.positions.map(pos => (
+          <option key={pos.symbol} value={JSON.stringify(pos)}>
+            {pos.symbol} - {pos.qty} shares @ ${pos.avg_cost}
+          </option>
+        ))}
+      </select>
+      
+      {/* Select destination */}
+      <select onChange={(e) => setToMindfolio(JSON.parse(e.target.value))}>
+        {specializedMindfolios.map(mf => (
+          <option key={mf.id} value={JSON.stringify(mf)}>
+            {mf.name}
+          </option>
+        ))}
+      </select>
+      
+      {/* Quantity input */}
+      <input
+        type="number"
+        max={selectedPosition?.qty || 0}
+        value={quantity}
+        onChange={(e) => setQuantity(parseFloat(e.target.value))}
+        className="w-full bg-[#0f1419] border border-[#1a1f26] text-white rounded-lg px-3 py-2"
+      />
+      
+      <button onClick={handleTransfer} className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+        Transfer
+      </button>
+    </div>
+  );
+};
+```
+
+### Implementation Checklist
+
+**Backend (Priority 1):**
+- [ ] Add master mindfolio fields to Mindfolio model (`is_master`, `auto_sync`, `allocated_to`, `received_from`)
+- [ ] Create `PositionTransfer` and `CashTransfer` models
+- [ ] Implement `POST /api/mindfolio/master/create` endpoint
+- [ ] Implement `POST /api/mindfolio/transfer/position` endpoint
+- [ ] Implement `POST /api/mindfolio/transfer/cash` endpoint
+- [ ] Create `BrokerSyncService` in `backend/services/broker_sync.py`
+- [ ] Add sync endpoint `POST /api/mindfolio/master/{id}/sync`
+- [ ] Add Redis keys for transfer records
+
+**Frontend (Priority 2):**
+- [ ] Add Master badge to mindfolio list view
+- [ ] Create `PositionTransferModal.jsx` component
+- [ ] Create `CashTransferModal.jsx` component
+- [ ] Add "Transfer" button to master mindfolio detail pages
+- [ ] Add "Sync Now" button to master mindfolio detail pages
+- [ ] Display last sync timestamp + status indicator
+
+**Database (Priority 3):**
+- [ ] Update MongoDB schema with new fields
+- [ ] Create indexes for `is_master`, `broker`, `account_id`
+- [ ] Migration script for existing mindfolios (set `is_master=False`)
+
+**Testing (Priority 4):**
+- [ ] Test master mindfolio creation for all 3 brokers
+- [ ] Test position transfer (full + partial)
+- [ ] Test cash transfer
+- [ ] Test auto-sync mechanism
+- [ ] Test allocation tracking (`allocated_to`, `received_from`)
+
+### User Workflow Example
+
+**Gabriel's LEAPS Strategy Setup:**
+```
+1. Connect TradeStation account (OAuth)
+2. Create TradeStation Master Mindfolio (auto-sync enabled)
+   - Contains: 100 shares TSLA @ $250, 50 shares NVDA @ $500, $10,000 cash
+3. Create specialized mindfolio: "LEAPS Strategy"
+4. Transfer positions from Master → LEAPS:
+   - Transfer 20 TSLA shares
+   - Transfer 10 NVDA shares
+   - Transfer $5,000 cash
+5. TradeStation Master now shows:
+   - 80 TSLA, 40 NVDA, $5,000 cash
+   - allocated_to: ["mf_leaps_789"]
+6. LEAPS Strategy shows:
+   - 20 TSLA, 10 NVDA, $5,000 cash
+   - received_from: "master_ts_123"
+7. Auto-sync runs every 5 minutes:
+   - If Gabriel buys 10 AAPL in TradeStation
+   - Master auto-creates BUY transaction
+   - Position appears in Master (not in LEAPS)
+```
+
+**Key Benefits:**
+- ✅ Real-time sync with broker accounts
+- ✅ Separate P&L tracking per strategy
+- ✅ Flexible position allocation
+- ✅ Maintains FIFO cost basis through transfers
+- ✅ Clear audit trail (transfer records)
+
+---
+
 ## Frontend Component Structure
 
 ### Key Patterns
