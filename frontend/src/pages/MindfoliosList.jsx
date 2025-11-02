@@ -3,6 +3,53 @@ import { pfClient } from "../services/mindfolioClient";
 import { Link } from "react-router-dom";
 import MindfolioTemplateModal from "../components/MindfolioTemplateModal";
 
+// Master Mindfolio Badge Component (NEW - Nov 2, 2025)
+const MasterMindfolioBadge = ({ broker, autoSync, lastSync, syncStatus }) => {
+  const formatRelativeTime = (isoString) => {
+    if (!isoString) return 'Never';
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+  };
+
+  const syncStatusColors = {
+    'idle': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+    'syncing': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    'error': 'bg-red-500/20 text-red-400 border-red-500/30'
+  };
+
+  return (
+    <div className="flex items-center gap-2 mb-3">
+      <span className="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30 font-semibold">
+        Master
+      </span>
+      {autoSync && (
+        <span className="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400 border border-green-500/30">
+          Auto-Sync
+        </span>
+      )}
+      {syncStatus && (
+        <span className={`px-2 py-1 rounded text-xs border ${syncStatusColors[syncStatus] || syncStatusColors.idle}`}>
+          {syncStatus === 'syncing' ? '⟳ Syncing...' : syncStatus === 'error' ? '⚠ Error' : '✓ Synced'}
+        </span>
+      )}
+      {lastSync && (
+        <span className="text-xs text-gray-400">
+          {formatRelativeTime(lastSync)}
+        </span>
+      )}
+    </div>
+  );
+};
+
 export default function MindfoliosList() {
  const [items, setItems] = useState([]);
  const [loading, setLoading] = useState(true);
@@ -270,6 +317,16 @@ export default function MindfoliosList() {
  to={`/mindfolios/${p.id}`} 
  className="group bg-slate-800/50 border border-slate-700 rounded-xl p-6 hover:bg-slate-800 hover:border-slate-600 transition-all hover:shadow-xl hover:scale-105"
  >
+ {/* Master Mindfolio Badge */}
+ {p.is_master && (
+ <MasterMindfolioBadge
+ broker={p.broker}
+ autoSync={p.auto_sync}
+ lastSync={p.last_sync}
+ syncStatus={p.sync_status}
+ />
+ )}
+ 
  {/* Header */}
  <div className="flex items-start justify-between mb-4">
  <div className="flex-1">
