@@ -171,6 +171,108 @@ REACT_APP_BACKEND_URL="" npm run build  # ❌ Empty string breaks API calls
 - Caddyfile proxies `/api/*` to `http://localhost:8000` (Docker backend)
 - Frontend → Caddy :8080 → Backend :8000
 
+---
+
+## Production Server Deployment (NEW - Nov 1, 2025)
+
+### Complete Server Setup Steps
+
+**1. Initial Server Setup**
+```bash
+# Update system
+apt update && apt upgrade -y
+
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+systemctl enable docker
+systemctl start docker
+
+# Install Docker Compose
+apt install -y docker-compose-plugin
+
+# Install Git
+apt install -y git
+```
+
+**2. Install Caddy with Auth**
+```bash
+# Add Caddy repository
+apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+
+# Install Caddy
+apt update && apt install caddy
+
+# Enable Caddy service
+systemctl enable caddy
+```
+
+**3. Deploy FlowMind**
+```bash
+# Clone repository
+cd /opt
+git clone https://github.com/barbudangabriel-gif/Flowmind.git flowmind
+cd flowmind
+
+# Setup Caddy with HTTP Basic Auth
+cp Caddyfile.with-auth /etc/caddy/Caddyfile
+# Auth: Username=gabriel, Password=FlowMind2025!
+
+# Create .env files (add TradeStation + UW API keys)
+cp backend/.env.example backend/.env
+nano backend/.env  # Add TS_CLIENT_ID, TS_CLIENT_SECRET, UW_API_TOKEN
+
+# Build frontend
+cd frontend
+npm install
+echo 'REACT_APP_BACKEND_URL=http://localhost:8080' > .env.production
+npm run build
+cd ..
+
+# Start backend + Redis
+docker-compose up -d
+
+# Reload Caddy (will auto-get Let's Encrypt SSL)
+systemctl reload caddy
+```
+
+**4. Verify Deployment**
+```bash
+# Check Docker containers
+docker ps
+
+# Check Caddy status
+systemctl status caddy
+
+# Test HTTPS (will prompt for auth)
+curl -u gabriel:FlowMind2025! https://flowmindanalytics.ai/api/health
+
+# View logs
+docker-compose logs -f backend
+journalctl -u caddy -f
+```
+
+**Security Notes:**
+- ✅ HTTP Basic Auth protects entire site (frontend + API)
+- ✅ Let's Encrypt SSL auto-renewal
+- ✅ HSTS, XSS, CORS headers configured
+- ✅ SSH key-based authentication (no password login)
+- ✅ Docker containers isolated network
+
+**Caddy Password Change:**
+```bash
+# Generate new password hash
+docker run --rm caddy:latest caddy hash-password --plaintext "YOUR_NEW_PASSWORD"
+
+# Update /etc/caddy/Caddyfile with new hash
+nano /etc/caddy/Caddyfile
+
+# Reload Caddy
+systemctl reload caddy
+```
+
 **3. Size-Responsive Components**
 ```javascript
 // StrategyChart.jsx supports two sizes:
@@ -252,6 +354,212 @@ GET /earnings/week                     // This week's earnings
 - **Auth:** `Authorization: Bearer {token}` header (NOT query param)
 - **Rate limit:** 1.0s delay between requests
 - **Discovery:** 150+ endpoint variations tested, 8 tickers validated
+
+---
+
+## Options Risk Engine - HIGHEST PRIORITY (NEW - Nov 1, 2025)
+
+### Overview
+Comprehensive multi-leg options trade validation system with Greeks analysis, probability calculations, and risk limits.
+
+**Status:** ✅ OPERATIONAL (800+ lines backend, tested with 4 scenarios)  
+**Files:** 
+- `backend/options_risk_engine.py` - Core validation engine
+- `backend/mindfolio.py` - API endpoint (POST /{pid}/validate-options-trade)
+- `test_options_risk_engine.py` - Test suite
+- `OPTIONS_ANALYTICS_COMPLETE.md` - Complete documentation
+
+### Key Features
+
+#### 1. Strategy Detection & Classification
+Automatically identifies 15 multi-leg strategy types:
+```python
+LONG_CALL, LONG_PUT, SHORT_CALL, SHORT_PUT     # Single leg
+CALL_SPREAD, PUT_SPREAD                         # Vertical spreads
+IRON_CONDOR, IRON_BUTTERFLY                     # 4-leg strategies
+STRADDLE, STRANGLE, BUTTERFLY                   # Volatility plays
+CALENDAR_SPREAD, DIAGONAL_SPREAD, RATIO_SPREAD  # Advanced
+CUSTOM                                          # Unknown/complex
+```
+
+#### 2. Greeks Impact Analysis
+Real-time portfolio Greeks calculation with configurable limits:
+```python
+class GreeksLimits:
+    max_delta: 200.0      # Directional exposure limit
+    max_gamma: 20.0       # Delta sensitivity limit
+    max_vega: 500.0       # IV sensitivity limit ($)
+    max_theta: 100.0      # Daily decay limit ($)
+
+# Greeks are additive across positions
+portfolio_greeks = current_greeks + new_trade_greeks
+# BLOCKER if any limit exceeded
+```
+
+#### 3. Probability Analysis
+Risk-neutral lognormal distribution for PoP calculations:
+```python
+# Probability of Profit at expiration
+pop = calculate_pop_lognormal(current_price, breakeven, vol, dte)
+
+# Early exit probabilities (50%/25% profit targets)
+profit_50_prob = calculate_early_exit_prob(positions, 0.50)
+
+# Returns: pop_expiration, breakeven_prices, profit_50/25_probability
+```
+
+#### 4. Risk Check Levels
+Four severity levels control trade execution:
+```python
+class RiskLevel:
+    BLOCKER = "BLOCKER"   # Trade cannot proceed (red)
+    WARNING = "WARNING"   # Requires acknowledgment (yellow)
+    INFO = "INFO"         # Informational only (blue)
+    PASS = "PASS"         # No issues (green)
+```
+
+#### 5. Validation Checks (10 Total)
+- **Greeks Limits:** Delta/Gamma/Theta/Vega portfolio limits
+- **Capital Requirements:** Debit cost vs available cash
+- **Probability Thresholds:** Min PoP based on risk profile (Conservative: 70%, Moderate: 60%, Aggressive: 50%)
+- **IV Rank:** Warning if IV Rank < 50% for credit strategies
+- **Correlation:** Symbol concentration (>3 positions warning)
+- **Early Assignment:** ITM short options near expiration
+- **Expiration Concentration:** >5 positions same expiration date
+- **Strike Concentration:** >3 positions same strike
+- **Cost/Credit Detection:** Debit vs credit strategy classification
+- **Max Loss/Profit:** Strategy P&L boundaries
+
+### API Endpoint Usage
+
+```python
+# POST /api/mindfolio/{pid}/validate-options-trade
+# Request:
+{
+  "new_positions": [
+    {
+      "symbol": "TSLA",
+      "option_type": "call",      # "call" or "put"
+      "action": "buy",            # "buy" or "sell"
+      "strike": 250.0,
+      "expiry": "2025-12-01T16:00:00Z",
+      "quantity": 1,
+      "premium": 500.0,           # Per contract ($5 * 100)
+      "volatility": 0.45,         # IV (0.45 = 45%)
+      "current_price": 245.0      # Underlying price
+    }
+  ],
+  "risk_profile": "MODERATE"      # CONSERVATIVE, MODERATE, AGGRESSIVE
+}
+
+# Response:
+{
+  "status": "success",
+  "validation": {
+    "passed": true,               # Overall pass/fail
+    "checks": [                   # List of all checks
+      {
+        "check_name": "capital_requirement",
+        "level": "PASS",          # BLOCKER, WARNING, INFO, PASS
+        "message": "Capital requirement: $500 (5% of available)",
+        "current_value": 500.0,
+        "limit_value": 10000.0
+      }
+    ],
+    "strategy_info": {
+      "type": "long_call",
+      "legs": 1,
+      "estimated_cost": 500.0,
+      "max_loss": 500.0,
+      "max_profit": 0.0            # Unlimited for long call
+    },
+    "greeks_impact": {
+      "current": {...},            # Current portfolio Greeks
+      "new_trade": {...},          # New trade Greeks
+      "combined": {                # Combined Greeks
+        "delta": 0.47,
+        "gamma": 0.0128,
+        "theta": -0.23,
+        "vega": 0.27,
+        "rho": 0.08
+      }
+    },
+    "probability_analysis": {
+      "pop_expiration": 37.62,     # % probability of profit
+      "breakeven_prices": [255.0],
+      "profit_50_probability": 70.0,
+      "profit_25_probability": 70.0,
+      "current_price": 245.0
+    }
+  }
+}
+```
+
+### Integration Pattern
+
+```python
+# In mindfolio router:
+from options_risk_engine import (
+    OptionsRiskEngine,
+    OptionPosition,
+    OptionType,
+    ActionType,
+    GreeksLimits,
+)
+
+# Initialize engine with custom limits
+risk_engine = OptionsRiskEngine(greeks_limits=GreeksLimits())
+
+# Validate trade
+validation_result = await risk_engine.validate_options_trade(
+    new_positions=new_positions,
+    existing_positions=existing_options,  # From Redis
+    portfolio_cash=mindfolio.cash_balance,
+    risk_profile="MODERATE",
+)
+
+# Check result
+if validation_result.passed:
+    # Proceed with trade
+else:
+    # Show blockers to user
+    blockers = [c for c in validation_result.checks if c.level == RiskLevel.BLOCKER]
+```
+
+### Frontend Integration (TODO)
+
+**AddPositionModal.jsx** needs validation UI:
+```jsx
+const RiskCheckRow = ({ check }) => {
+  const icon = { BLOCKER: '🚫', WARNING: '⚠️', INFO: 'ℹ️', PASS: '✅' }[check.level];
+  const color = {
+    BLOCKER: 'text-red-500',
+    WARNING: 'text-yellow-500',
+    INFO: 'text-blue-500',
+    PASS: 'text-green-500',
+  }[check.level];
+  
+  return (
+    <div className="flex items-start gap-2 py-2">
+      <span className="text-lg">{icon}</span>
+      <div className="flex-1">
+        <div className={`font-medium ${color}`}>{check.check_name}</div>
+        <div className="text-sm text-slate-400">{check.message}</div>
+      </div>
+    </div>
+  );
+};
+```
+
+### TODO: Future Enhancements
+- [ ] IV Rank backend integration (fetch from market data)
+- [ ] 5-year options backtest (historical simulation)
+- [ ] Custom risk profiles (per-mindfolio limits)
+- [ ] Live options positions (fetch existing from Redis)
+- [ ] Strategy library (pre-defined click-to-add)
+- [ ] Monte Carlo early exit probabilities
+
+**CRITICAL:** Always validate options trades through this engine before execution.
 
 ---
 

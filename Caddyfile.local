@@ -1,0 +1,20 @@
+:3000 {
+    # Basic Authentication - Username: gabriel, Password: FlowMind2025!
+    basicauth {
+        gabriel $2a$14$P9qHABLRdFl0PWtd6zvZSeSDs9udWQWYVfm2EBBTSGLV8vcpVQM/6
+    }
+
+    root * /workspaces/Flowmind/frontend/build
+    try_files {path} /index.html
+
+    handle /api/* {
+        reverse_proxy host.docker.internal:8000
+    }
+
+    handle /ws/* {
+        reverse_proxy host.docker.internal:8000
+    }
+
+    encode gzip zstd
+    file_server
+}

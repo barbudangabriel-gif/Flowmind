@@ -2011,3 +2011,113 @@ async def check_module_trade_endpoint(pid: str, module_name: str, trade_risk: fl
         return {"status": "success", "can_trade": True, "reason": reason}
     else:
         return {"status": "error", "can_trade": False, "reason": reason}
+
+
+# ——— OPTIONS RISK VALIDATION (HIGHEST PRIORITY) ———
+
+class OptionPositionRequest(BaseModel):
+    """Request model for option position validation"""
+    symbol: str
+    option_type: str  # "call" or "put"
+    action: str  # "buy" or "sell"
+    strike: float
+    expiry: str  # ISO format date
+    quantity: int
+    premium: float  # Per contract (already * 100)
+    volatility: float  # Implied volatility (e.g., 0.35 for 35%)
+    current_price: float  # Current underlying price
+
+
+class ValidateOptionsTradeRequest(BaseModel):
+    """Request to validate options trade"""
+    new_positions: List[OptionPositionRequest]
+    risk_profile: str = "MODERATE"  # CONSERVATIVE, MODERATE, AGGRESSIVE
+
+
+@router.post("/{pid}/validate-options-trade")
+async def validate_options_trade_endpoint(
+    pid: str,
+    request: ValidateOptionsTradeRequest,
+    x_user_id: str = Header("default", alias="X-User-ID"),
+):
+    """
+    HIGHEST PRIORITY: Comprehensive options trade validation
+    - Multi-leg strategy detection & validation
+    - Greeks impact analysis (Delta/Gamma/Theta/Vega limits)
+    - Probability of profit calculations
+    - IV Rank checks for credit strategies
+    - Correlation with existing positions
+    - Early assignment risk analysis
+    - Capital requirements validation
+    """
+    from options_risk_engine import (
+        OptionsRiskEngine,
+        OptionPosition,
+        OptionType,
+        ActionType,
+        GreeksLimits,
+    )
+    
+    # Get mindfolio to check cash balance
+    mindfolio = await pf_get(pid)
+    if not mindfolio:
+        raise HTTPException(status_code=404, detail="Mindfolio not found")
+    
+    # Get existing options positions (filter from all positions)
+    # For now, simplified - assume no existing options positions
+    # TODO: Fetch actual options positions from Redis/portfolio
+    existing_options = []
+    
+    # Convert request positions to engine format
+    new_positions = []
+    for pos_req in request.new_positions:
+        option_type = OptionType.CALL if pos_req.option_type.lower() == "call" else OptionType.PUT
+        action = ActionType.BUY if pos_req.action.lower() == "buy" else ActionType.SELL
+        
+        new_positions.append(OptionPosition(
+            symbol=pos_req.symbol,
+            option_type=option_type,
+            action=action,
+            strike=pos_req.strike,
+            expiry=pos_req.expiry,
+            quantity=pos_req.quantity,
+            premium=pos_req.premium,
+            volatility=pos_req.volatility,
+            current_price=pos_req.current_price,
+        ))
+    
+    # Initialize risk engine with custom limits if needed
+    # TODO: Load custom limits from mindfolio risk profile settings
+    risk_engine = OptionsRiskEngine(greeks_limits=GreeksLimits())
+    
+    # Validate trade
+    validation_result = await risk_engine.validate_options_trade(
+        new_positions=new_positions,
+        existing_positions=existing_options,
+        portfolio_cash=mindfolio.cash_balance,
+        risk_profile=request.risk_profile,
+    )
+    
+    # Convert to JSON-serializable format
+    return {
+        "status": "success",
+        "validation": {
+            "passed": validation_result.passed,
+            "checks": [
+                {
+                    "check_name": check.check_name,
+                    "level": check.level.value,
+                    "message": check.message,
+                    "current_value": check.current_value,
+                    "limit_value": check.limit_value,
+                    "details": check.details,
+                }
+                for check in validation_result.checks
+            ],
+            "strategy_info": validation_result.strategy_info,
+            "greeks_impact": validation_result.greeks_impact,
+            "probability_analysis": validation_result.probability_analysis,
+            "backtest_results": validation_result.backtest_results,
+            "estimated_cost": validation_result.estimated_cost,
+        }
+    }

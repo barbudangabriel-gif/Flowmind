@@ -1,0 +1,41 @@
+flowmindanalytics.ai, www.flowmindanalytics.ai {
+    # Basic Authentication - Protect entire site
+    # Username: gabriel | Password: FlowMind2025!
+    basicauth {
+        gabriel $2a$14$P9qHABLRdFl0PWtd6zvZSeSDs9udWQWYVfm2EBBTSGLV8vcpVQM/6
+    }
+
+    root * /opt/flowmind/frontend/build
+    try_files {path} /index.html
+
+    handle /api/* {
+        reverse_proxy localhost:8000
+    }
+
+    handle /ws/* {
+        reverse_proxy localhost:8000
+    }
+
+    encode gzip zstd
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    }
+
+    @static {
+        path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.woff *.woff2 *.svg
+    }
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    log {
+        output file /var/log/caddy/flowmind-access.log
+        format json
+    }
+
+    file_server
+}
