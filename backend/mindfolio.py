@@ -516,6 +516,104 @@ async def get_tradestation_positions_grid():
         raise HTTPException(500, f"Failed to get TradeStation positions grid: {str(e)}")
 
 
+# ——— Mindfolio Templates (must be before /{pid} patterns) ———
+@router.get("/templates")
+async def get_mindfolio_templates():
+    """
+    Get predefined mindfolio templates for quick setup.
+    Returns 4 templates: Day Trading, Options Selling, Long-term Investing, Blank.
+    """
+    templates = [
+        {
+            "id": "template_day_trading",
+            "name": "Day Trading",
+            "description": "Active trading with quick entries/exits. Focus on momentum and technical analysis.",
+            "icon": "📈",
+            "starting_balance": 25000.0,  # PDT rule minimum
+            "modules": [
+                {
+                    "module": "MOMENTUM_SCANNER",
+                    "budget": 15000.0,
+                    "max_risk_per_trade": 500.0,
+                    "daily_loss_limit": 1500.0,
+                    "autotrade": False,
+                },
+                {
+                    "module": "BREAKOUT_TRADER",
+                    "budget": 10000.0,
+                    "max_risk_per_trade": 300.0,
+                    "daily_loss_limit": 1000.0,
+                    "autotrade": False,
+                },
+            ],
+            "recommended_for": "Experienced traders with time to monitor markets daily",
+            "risk_level": "HIGH",
+        },
+        {
+            "id": "template_options_selling",
+            "name": "Options Selling",
+            "description": "Generate premium income by selling puts and covered calls. Conservative theta-positive strategy.",
+            "icon": "💰",
+            "starting_balance": 50000.0,
+            "modules": [
+                {
+                    "module": "SELL_PUTS_ENGINE",
+                    "budget": 30000.0,
+                    "max_risk_per_trade": 1000.0,
+                    "daily_loss_limit": 2000.0,
+                    "autotrade": False,
+                },
+                {
+                    "module": "COVERED_CALLS",
+                    "budget": 20000.0,
+                    "max_risk_per_trade": 500.0,
+                    "daily_loss_limit": 1000.0,
+                    "autotrade": False,
+                },
+            ],
+            "recommended_for": "Income-focused investors seeking monthly cash flow",
+            "risk_level": "MEDIUM",
+        },
+        {
+            "id": "template_longterm",
+            "name": "Long-term Investing",
+            "description": "Buy-and-hold strategy with blue-chip stocks and ETFs. Minimal trading, low fees.",
+            "icon": "🏦",
+            "starting_balance": 10000.0,
+            "modules": [
+                {
+                    "module": "VALUE_INVESTOR",
+                    "budget": 7000.0,
+                    "max_risk_per_trade": 1000.0,
+                    "daily_loss_limit": 0.0,  # No daily limit for long-term
+                    "autotrade": False,
+                },
+                {
+                    "module": "DIVIDEND_COLLECTOR",
+                    "budget": 3000.0,
+                    "max_risk_per_trade": 500.0,
+                    "daily_loss_limit": 0.0,
+                    "autotrade": False,
+                },
+            ],
+            "recommended_for": "Passive investors with long-term horizon (5+ years)",
+            "risk_level": "LOW",
+        },
+        {
+            "id": "template_blank",
+            "name": "Blank Template",
+            "description": "Start from scratch. Customize your own modules and risk parameters.",
+            "icon": "📝",
+            "starting_balance": 10000.0,
+            "modules": [],
+            "recommended_for": "Advanced users who want full control",
+            "risk_level": "CUSTOM",
+        },
+    ]
+
+    return {"status": "success", "templates": templates, "count": len(templates)}
+
+
 @router.get("", response_model=List[Mindfolio])
 async def list_mindfolios():
     """List all mindfolios"""
