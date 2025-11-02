@@ -749,6 +749,252 @@ onMouseMove={(e) => {
 
 ---
 
+## Mindfolio Templates System (NEW - Nov 2, 2025)
+
+### Overview
+**Status:** ✅ Complete and operational
+**Files:** 
+- `backend/mindfolio.py` (GET /api/mindfolio/templates endpoint)
+- `frontend/src/components/MindfolioTemplateModal.jsx` (245 lines)
+- `frontend/src/pages/MindfoliosList.jsx` (modal integration)
+
+**Purpose:** Quick mindfolio creation with pre-configured templates for common trading strategies
+
+### Available Templates
+
+#### 1. 📈 Day Trading ($25,000)
+```python
+{
+  "id": "template_day_trading",
+  "icon": "📈",
+  "risk_level": "HIGH",
+  "starting_balance": 25000.0,  # PDT rule minimum
+  "modules": [
+    {"module": "MOMENTUM_SCANNER", "budget": 15000, "max_risk": 500, "daily_limit": 1500},
+    {"module": "BREAKOUT_TRADER", "budget": 10000, "max_risk": 300, "daily_limit": 1000}
+  ],
+  "recommended_for": "Experienced traders with time to monitor markets daily"
+}
+```
+
+#### 2. 💰 Options Selling ($50,000)
+```python
+{
+  "id": "template_options_selling",
+  "icon": "💰",
+  "risk_level": "MEDIUM",
+  "starting_balance": 50000.0,
+  "modules": [
+    {"module": "SELL_PUTS_ENGINE", "budget": 30000, "max_risk": 1000, "daily_limit": 2000},
+    {"module": "COVERED_CALLS", "budget": 20000, "max_risk": 500, "daily_limit": 1000}
+  ],
+  "recommended_for": "Income-focused investors seeking monthly cash flow"
+}
+```
+
+#### 3. 🏦 Long-term Investing ($10,000)
+```python
+{
+  "id": "template_longterm",
+  "icon": "🏦",
+  "risk_level": "LOW",
+  "starting_balance": 10000.0,
+  "modules": [
+    {"module": "VALUE_INVESTOR", "budget": 7000, "max_risk": 1000, "daily_limit": 0},
+    {"module": "DIVIDEND_COLLECTOR", "budget": 3000, "max_risk": 500, "daily_limit": 0}
+  ],
+  "recommended_for": "Passive investors with long-term horizon (5+ years)"
+}
+```
+
+#### 4. 📝 Blank Template ($10,000)
+```python
+{
+  "id": "template_blank",
+  "icon": "📝",
+  "risk_level": "CUSTOM",
+  "starting_balance": 10000.0,
+  "modules": [],  # Empty - user customizes
+  "recommended_for": "Advanced users who want full control"
+}
+```
+
+### Backend Implementation
+
+**Endpoint:** `GET /api/mindfolio/templates`
+
+```python
+# backend/mindfolio.py (line ~520)
+@router.get("/templates")
+async def get_mindfolio_templates():
+    """
+    Get predefined mindfolio templates for quick setup.
+    Returns 4 templates with icon, risk_level, starting_balance, modules.
+    """
+    templates = [
+        {
+            "id": "template_day_trading",
+            "name": "Day Trading",
+            "description": "Active trading with quick entries/exits...",
+            "icon": "📈",
+            "starting_balance": 25000.0,
+            "modules": [...],
+            "recommended_for": "...",
+            "risk_level": "HIGH"
+        },
+        # ... 3 more templates
+    ]
+    return {"status": "success", "templates": templates, "count": len(templates)}
+```
+
+**Response Structure:**
+```json
+{
+  "status": "success",
+  "count": 4,
+  "templates": [
+    {
+      "id": "template_day_trading",
+      "name": "Day Trading",
+      "description": "Active trading with quick entries/exits. Focus on momentum and technical analysis.",
+      "icon": "📈",
+      "starting_balance": 25000.0,
+      "modules": [
+        {
+          "module": "MOMENTUM_SCANNER",
+          "budget": 15000.0,
+          "max_risk_per_trade": 500.0,
+          "daily_loss_limit": 1500.0,
+          "autotrade": false
+        }
+      ],
+      "recommended_for": "Experienced traders with time to monitor markets daily",
+      "risk_level": "HIGH"
+    }
+  ]
+}
+```
+
+### Frontend Implementation
+
+**Modal Component:** `frontend/src/components/MindfolioTemplateModal.jsx` (245 lines)
+
+**Features:**
+- **Template Selection Grid:** 4 cards with icon, risk level badge, starting balance, modules preview
+- **Customization Form:** Name input, balance display, modules preview
+- **Auto-fetch:** Fetches templates when modal opens
+- **Dark Theme:** Slate-800/900 backgrounds, tailwind CSS
+- **Lucid Emoji:** Only clean unicode emoji (no custom icons)
+- **Risk Level Badges:**
+  - HIGH: Red badge (`bg-red-500/20 text-red-400 border-red-500/30`)
+  - MEDIUM: Yellow badge (`bg-yellow-500/20 text-yellow-400`)
+  - LOW: Green badge (`bg-green-500/20 text-green-400`)
+  - CUSTOM: Gray badge (`bg-gray-500/20 text-gray-400`)
+
+**Usage Pattern:**
+```jsx
+// MindfoliosList.jsx
+import MindfolioTemplateModal from '../components/MindfolioTemplateModal';
+
+<button onClick={() => setShowTemplateModal(true)}>
+  ✨ Create Mindfolio
+</button>
+
+<MindfolioTemplateModal
+  isOpen={showTemplateModal}
+  onClose={() => setShowTemplateModal(false)}
+  onCreateFromTemplate={async (templateData) => {
+    await pfClient.create(templateData.name, templateData.starting_balance);
+    const data = await pfClient.list();
+    setItems(data);
+  }}
+/>
+```
+
+**Flow:**
+1. User clicks "✨ Create Mindfolio" button
+2. Modal opens with 4 template cards
+3. User selects template → customization form appears
+4. User edits name (balance + modules from template)
+5. User clicks "✓ Create Mindfolio"
+6. API call: `POST /api/mindfolio` with template data
+7. Modal closes, list refreshes
+
+### Module Allocation from Templates
+
+**IMPORTANT:** Templates define modules BUT don't auto-allocate them yet.
+
+**Current behavior:**
+- Template creates mindfolio with `starting_balance` and empty `modules: []`
+- User must manually allocate modules after creation
+
+**Future enhancement (TODO):**
+```python
+# In create_mindfolio endpoint
+async def create_mindfolio(body: MindfolioCreate):
+    mindfolio = Mindfolio(
+        id=f"mf_{uuid.uuid4().hex[:12]}",
+        name=body.name,
+        cash_balance=body.starting_balance,
+        starting_balance=body.starting_balance,
+        modules=body.modules,  # Accept modules from template
+        ...
+    )
+    # TODO: Validate module budgets don't exceed cash_balance
+    await pf_put(mindfolio)
+```
+
+### Design Guidelines (Applied)
+
+**Colors:**
+- Background: `bg-slate-900`, `bg-slate-800/50`
+- Borders: `border-slate-700`
+- Text: `text-white` (primary), `text-gray-400` (secondary)
+- Accents: `text-blue-400` (interactive), `text-green-400` (money)
+
+**Fonts:**
+- No custom fonts - system default
+- Font sizes: `text-xs`, `text-sm`, `text-base`, `text-lg`, `text-xl`, `text-2xl`
+- Never use inline font-size styles
+
+**Emoji:**
+- Lucid unicode only: 📈 💰 🏦 📝 ✨ ✓ ✕
+- No custom icon libraries (no react-icons, no FontAwesome)
+
+**Spacing:**
+- Gap: `gap-2`, `gap-3`, `gap-4`, `gap-6`
+- Padding: `p-2`, `p-3`, `p-4`, `p-6`
+- Margin: `mb-1`, `mb-2`, `mb-3`, `mb-4`
+
+### Testing Checklist
+
+- [x] Backend endpoint returns 4 templates
+- [x] Frontend modal opens on button click
+- [x] Template cards display correctly (icon, risk, balance, modules)
+- [x] Customization form shows template data
+- [x] Create button calls API with template data
+- [ ] Modal closes after creation
+- [ ] List refreshes with new mindfolio
+- [ ] Modules are saved to mindfolio (currently not implemented)
+
+### Known Limitations
+
+1. **Modules not auto-allocated:** Template modules are shown but not saved yet
+2. **No module validation:** Backend doesn't validate module budgets vs cash_balance
+3. **No template persistence:** Templates are hardcoded (not in database)
+4. **No custom templates:** User can't create their own templates
+
+### Future Enhancements
+
+- [ ] Save modules from template to mindfolio
+- [ ] Validate module budgets don't exceed cash_balance
+- [ ] Allow users to create custom templates
+- [ ] Store templates in database
+- [ ] Template versioning (update templates without breaking existing mindfolios)
+- [ ] Template marketplace (share templates with community)
+
+---
+
 ## TradeStation Import System
 
 ### Overview (Oct 27, 2025 - 19:35 UTC)
