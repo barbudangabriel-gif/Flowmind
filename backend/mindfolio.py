@@ -16,7 +16,7 @@ from pydantic import BaseModel, validator
 from redis_fallback import get_kv
 
 # Import TradeStation helpers
-from app.routers.tradestation import get_valid_token
+from app.services.tradestation import get_valid_token
 
 logger = logging.getLogger(__name__)
 

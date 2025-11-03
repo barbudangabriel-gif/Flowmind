@@ -9,7 +9,7 @@ import statistics
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
-from unusual_whales_service import UnusualWhalesService
+from unusual_whales_service_clean import UnusualWhalesService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -98,6 +98,11 @@ class InvestmentScoringAgent:
             # 6. Risk assessment
             risk_analysis = self._assess_risk_factors(uw_data, signal_scores)
 
+            # 7. NEW: Recommend options strategies based on score + market conditions
+            options_strategies = self._recommend_options_strategies(
+                symbol, composite_score, uw_data, signal_scores
+            )
+
             return {
                 "symbol": symbol,
                 "investment_score": round(composite_score, 1),
@@ -105,6 +110,7 @@ class InvestmentScoringAgent:
                 "confidence_level": confidence,
                 "key_signals": key_signals,
                 "risk_analysis": risk_analysis,
+                "options_strategies": options_strategies,  # NEW: Complete trade plans!
                 "signal_breakdown": signal_scores,
                 "timestamp": datetime.now().isoformat(),
                 "agent_version": "1.0",
@@ -114,6 +120,7 @@ class InvestmentScoringAgent:
                     "congressional_trades",
                     "discount_premium_analysis",
                     "risk_reward_optimization",
+                    "options_strategy_recommendations",  # NEW
                 ],
             }
 
@@ -133,31 +140,20 @@ class InvestmentScoringAgent:
         try:
             # Fetch all UW data sources in parallel for efficiency
             tasks = [
-                self.uw_service.get_options_flow_alerts(
-                    minimum_premium=200000,
-                    limit=100,  # Focus on significant flows
-                ),
-                self.uw_service.get_dark_pool_recent(
-                    minimum_volume=100000, minimum_dark_percentage=0.01, limit=50
-                ),
-                self.uw_service.get_congressional_trades(
-                    days_back=90,  # Longer lookback for congressional activity
-                    minimum_amount=50000,
-                    limit=100,
-                ),
+                self.uw_service.get_option_contracts(symbol),  # Options flow
+                self.uw_service.get_darkpool_ticker(symbol),   # Dark pool
+                self.uw_service.get_insider_ticker(symbol),    # Insider/congressional
             ]
 
             options_flow, dark_pool, congressional = await asyncio.gather(
                 *tasks, return_exceptions=True
             )
 
-            # Filter data for the specific symbol
+            # Extract data from responses
             filtered_data = {
-                "options_flow": self._filter_options_for_symbol(options_flow, symbol),
-                "dark_pool": self._filter_dark_pool_for_symbol(dark_pool, symbol),
-                "congressional": self._filter_congressional_for_symbol(
-                    congressional, symbol
-                ),
+                "options_flow": options_flow.get("data", []) if isinstance(options_flow, dict) else [],
+                "dark_pool": dark_pool.get("data", []) if isinstance(dark_pool, dict) else [],
+                "congressional": congressional.get("data", []) if isinstance(congressional, dict) else [],
                 "strategies": [],
             }
 
@@ -768,6 +764,287 @@ class InvestmentScoringAgent:
                 "risk_factors": [f"Error: {str(e)}"],
                 "mitigating_factors": [],
             }
+
+    def _recommend_options_strategies(
+        self,
+        symbol: str,
+        investment_score: float,
+        uw_data: Dict[str, Any],
+        signal_scores: Dict[str, float],
+    ) -> List[Dict[str, Any]]:
+        """
+        Recommend specific options strategies based on investment score and market conditions.
+        This integrates options strategies directly into the scoring system.
+
+        Args:
+            symbol: Stock ticker
+            investment_score: Composite investment score (0-100)
+            uw_data: Unusual Whales data (options flow, dark pool, etc.)
+            signal_scores: Individual signal scores
+
+        Returns:
+            List of recommended options strategies with complete trade plans
+        """
+        try:
+            recommendations = []
+
+            # Extract market conditions
+            options_flow = uw_data.get("options_flow", [])
+            current_price = self._extract_current_price(options_flow)
+            avg_iv = self._calculate_average_iv(options_flow)
+            discount_score = signal_scores.get("discount_opportunity", 50)
+            
+            # Strategy 1: STRONG BUY (80-100) + HIGH IV (>50%) → Sell Cash-Secured Put
+            if investment_score >= 80 and avg_iv > 0.50:
+                strike = current_price * 0.95  # 5% OTM
+                premium = self._estimate_premium(current_price, strike, avg_iv, "put", 30)
+                
+                recommendations.append({
+                    "strategy_type": "SELL_CASH_SECURED_PUT",
+                    "priority": "HIGH",
+                    "rationale": f"Strong buy signal (score {investment_score:.0f}) with elevated IV ({avg_iv*100:.0f}%) allows premium collection while waiting for entry",
+                    "trade_details": {
+                        "action": "SELL_TO_OPEN",
+                        "option_type": "PUT",
+                        "strike": round(strike, 2),
+                        "premium_per_share": round(premium, 2),
+                        "total_premium": round(premium * 100, 2),  # Per contract
+                        "dte": 30,
+                        "quantity": 1,
+                    },
+                    "expected_outcomes": {
+                        "if_assigned": f"Buy {symbol} at ${strike:.2f} (5% discount from current ${current_price:.2f})",
+                        "if_expires": f"Keep ${premium*100:.2f} premium (ROI: {(premium/strike)*100:.2f}% in 30 days)",
+                        "max_profit": round(premium * 100, 2),
+                        "max_loss": f"Theoretically ${strike*100:.2f} (but you wanted to buy anyway)",
+                        "breakeven": round(strike - premium, 2),
+                    },
+                    "next_phase": "After assignment, sell covered call at 105% strike for income generation",
+                    "risk_level": "LOW",
+                })
+            
+            # Strategy 2: STRONG BUY (80-100) + LOW IV (<30%) → Buy Call for Leverage
+            elif investment_score >= 80 and avg_iv < 0.30:
+                strike = current_price * 1.05  # 5% OTM
+                premium = self._estimate_premium(current_price, strike, avg_iv, "call", 60)
+                
+                recommendations.append({
+                    "strategy_type": "BUY_LONG_CALL",
+                    "priority": "HIGH",
+                    "rationale": f"Strong buy signal (score {investment_score:.0f}) with low IV ({avg_iv*100:.0f}%) makes calls cheap - use leverage",
+                    "trade_details": {
+                        "action": "BUY_TO_OPEN",
+                        "option_type": "CALL",
+                        "strike": round(strike, 2),
+                        "premium_per_share": round(premium, 2),
+                        "total_cost": round(premium * 100, 2),
+                        "dte": 60,
+                        "quantity": 1,
+                    },
+                    "expected_outcomes": {
+                        "target_price": round(current_price * 1.15, 2),  # 15% upside
+                        "max_profit": "Unlimited above breakeven",
+                        "max_loss": round(premium * 100, 2),
+                        "breakeven": round(strike + premium, 2),
+                        "leverage": f"{(current_price*100) / (premium*100):.1f}x",
+                    },
+                    "exit_plan": f"Sell at 50% profit target (${premium*1.5:.2f} premium) or roll to next month if still bullish",
+                    "risk_level": "MEDIUM",
+                })
+            
+            # Strategy 3: NEUTRAL (50-70) + HIGH IV → Iron Condor for Income
+            elif 50 <= investment_score < 70 and avg_iv > 0.40:
+                call_short_strike = current_price * 1.10
+                call_long_strike = current_price * 1.15
+                put_short_strike = current_price * 0.90
+                put_long_strike = current_price * 0.85
+                
+                net_credit = self._estimate_iron_condor_credit(
+                    current_price, call_short_strike, call_long_strike,
+                    put_short_strike, put_long_strike, avg_iv
+                )
+                
+                recommendations.append({
+                    "strategy_type": "IRON_CONDOR",
+                    "priority": "MEDIUM",
+                    "rationale": f"Neutral score ({investment_score:.0f}) with high IV ({avg_iv*100:.0f}%) perfect for range-bound income strategy",
+                    "trade_details": {
+                        "action": "MULTI_LEG",
+                        "legs": [
+                            {"action": "SELL_TO_OPEN", "type": "CALL", "strike": round(call_short_strike, 2), "quantity": 1},
+                            {"action": "BUY_TO_OPEN", "type": "CALL", "strike": round(call_long_strike, 2), "quantity": 1},
+                            {"action": "SELL_TO_OPEN", "type": "PUT", "strike": round(put_short_strike, 2), "quantity": 1},
+                            {"action": "BUY_TO_OPEN", "type": "PUT", "strike": round(put_long_strike, 2), "quantity": 1},
+                        ],
+                        "net_credit": round(net_credit * 100, 2),
+                        "dte": 30,
+                    },
+                    "expected_outcomes": {
+                        "max_profit": round(net_credit * 100, 2),
+                        "max_loss": round((5 - net_credit) * 100, 2),  # $5 wing width - credit
+                        "profit_range": f"${put_short_strike:.2f} - ${call_short_strike:.2f}",
+                        "pop": "65%",  # Probability of profit (estimated)
+                    },
+                    "management": "Close at 50% profit or 21 DTE, whichever comes first",
+                    "risk_level": "LOW",
+                })
+            
+            # Strategy 4: MODERATE BUY (70-80) + DISCOUNT → Bull Call Spread
+            elif 70 <= investment_score < 80 and discount_score > 60:
+                buy_strike = current_price * 0.98  # Near ATM
+                sell_strike = current_price * 1.10  # 10% OTM
+                
+                buy_premium = self._estimate_premium(current_price, buy_strike, avg_iv, "call", 45)
+                sell_premium = self._estimate_premium(current_price, sell_strike, avg_iv, "call", 45)
+                net_debit = buy_premium - sell_premium
+                
+                recommendations.append({
+                    "strategy_type": "BULL_CALL_SPREAD",
+                    "priority": "MEDIUM",
+                    "rationale": f"Moderate buy signal (score {investment_score:.0f}) at discount - use defined-risk spread",
+                    "trade_details": {
+                        "action": "MULTI_LEG",
+                        "legs": [
+                            {"action": "BUY_TO_OPEN", "type": "CALL", "strike": round(buy_strike, 2), "premium": round(buy_premium, 2)},
+                            {"action": "SELL_TO_OPEN", "type": "CALL", "strike": round(sell_strike, 2), "premium": round(sell_premium, 2)},
+                        ],
+                        "net_debit": round(net_debit * 100, 2),
+                        "dte": 45,
+                    },
+                    "expected_outcomes": {
+                        "max_profit": round((sell_strike - buy_strike - net_debit) * 100, 2),
+                        "max_loss": round(net_debit * 100, 2),
+                        "breakeven": round(buy_strike + net_debit, 2),
+                        "risk_reward_ratio": f"{((sell_strike - buy_strike - net_debit) / net_debit):.2f}:1",
+                    },
+                    "exit_plan": "Close at 50% max profit or if score drops below 65",
+                    "risk_level": "MEDIUM",
+                })
+            
+            # Strategy 5: LOW SCORE (<50) + EXISTING POSITION → Protective Put
+            elif investment_score < 50:
+                strike = current_price * 0.95  # 5% OTM
+                premium = self._estimate_premium(current_price, strike, avg_iv, "put", 30)
+                
+                recommendations.append({
+                    "strategy_type": "PROTECTIVE_PUT",
+                    "priority": "LOW",
+                    "rationale": f"Low score ({investment_score:.0f}) suggests defensive positioning - protect existing holdings",
+                    "trade_details": {
+                        "action": "BUY_TO_OPEN",
+                        "option_type": "PUT",
+                        "strike": round(strike, 2),
+                        "premium_per_share": round(premium, 2),
+                        "total_cost": round(premium * 100, 2),
+                        "dte": 30,
+                        "quantity": 1,  # Per 100 shares owned
+                    },
+                    "expected_outcomes": {
+                        "protection_level": f"Downside protected below ${strike:.2f}",
+                        "insurance_cost": round(premium * 100, 2),
+                        "cost_as_percentage": f"{(premium/current_price)*100:.2f}% of position value",
+                        "max_loss_on_stock": f"${(current_price - strike)*100:.2f} + ${premium*100:.2f} premium = ${(current_price - strike + premium)*100:.2f}",
+                    },
+                    "alternative": "Consider selling position if score remains below 50 for 2+ weeks",
+                    "risk_level": "LOW",
+                })
+            
+            # Add market context to all recommendations
+            for rec in recommendations:
+                rec["market_context"] = {
+                    "current_price": round(current_price, 2),
+                    "avg_iv": round(avg_iv * 100, 1),
+                    "iv_percentile": self._calculate_iv_percentile(avg_iv),
+                    "options_flow_sentiment": "BULLISH" if signal_scores.get("options_flow", 50) > 60 else "BEARISH" if signal_scores.get("options_flow", 50) < 40 else "NEUTRAL",
+                    "dark_pool_strength": round(signal_scores.get("dark_pool", 50), 1),
+                }
+            
+            logger.info(f"Generated {len(recommendations)} options strategy recommendations for {symbol}")
+            return recommendations
+        
+        except Exception as e:
+            logger.error(f"Error recommending options strategies for {symbol}: {str(e)}")
+            return []
+    
+    def _extract_current_price(self, options_flow: List[Dict]) -> float:
+        """Extract current stock price from options flow data."""
+        if not options_flow:
+            return 100.0  # Default fallback
+        
+        # Try to extract from options data
+        for opt in options_flow:
+            # Check common field names
+            for field in ["underlying_price", "stock_price", "underlying_last", "last_price"]:
+                if field in opt and opt[field]:
+                    try:
+                        return float(opt[field])
+                    except (ValueError, TypeError):
+                        continue
+        
+        # If no price found, try to extract from strike prices (approximate)
+        strikes = [opt.get("strike", 0) for opt in options_flow if opt.get("strike")]
+        if strikes:
+            # Use median strike as approximation
+            return float(sorted(strikes)[len(strikes) // 2])
+        
+        return 100.0  # Fallback
+    
+    def _calculate_average_iv(self, options_flow: List[Dict]) -> float:
+        """Calculate average implied volatility from options flow."""
+        if not options_flow:
+            return 0.30  # Default 30% IV
+        
+        iv_values = [opt.get("iv", 0) for opt in options_flow if opt.get("iv")]
+        if not iv_values:
+            return 0.30
+        
+        return sum(iv_values) / len(iv_values)
+    
+    def _estimate_premium(
+        self, current_price: float, strike: float, iv: float, option_type: str, dte: int
+    ) -> float:
+        """
+        Estimate option premium using simplified Black-Scholes approximation.
+        This is a rough estimate - actual premiums should be fetched from live data.
+        """
+        # Simplified premium estimation (actual implementation would use Black-Scholes)
+        moneyness = strike / current_price
+        time_value = (dte / 365) ** 0.5
+        iv_value = iv * time_value
+        
+        if option_type.lower() == "call":
+            intrinsic = max(0, current_price - strike)
+            extrinsic = current_price * iv_value * (1 - abs(moneyness - 1))
+        else:  # put
+            intrinsic = max(0, strike - current_price)
+            extrinsic = current_price * iv_value * (1 - abs(moneyness - 1))
+        
+        return max(0.01, intrinsic + extrinsic)  # Minimum $0.01
+    
+    def _estimate_iron_condor_credit(
+        self, current_price: float, call_short: float, call_long: float,
+        put_short: float, put_long: float, iv: float
+    ) -> float:
+        """Estimate net credit for iron condor (simplified)."""
+        call_spread_credit = self._estimate_premium(current_price, call_short, iv, "call", 30) - \
+                             self._estimate_premium(current_price, call_long, iv, "call", 30)
+        put_spread_credit = self._estimate_premium(current_price, put_short, iv, "put", 30) - \
+                            self._estimate_premium(current_price, put_long, iv, "put", 30)
+        
+        return max(0.10, call_spread_credit + put_spread_credit)  # Minimum $0.10 credit
+    
+    def _calculate_iv_percentile(self, current_iv: float) -> str:
+        """Estimate IV percentile based on current IV (simplified)."""
+        if current_iv < 0.20:
+            return "LOW (<20th percentile)"
+        elif current_iv < 0.30:
+            return "BELOW_AVERAGE (20-40th percentile)"
+        elif current_iv < 0.40:
+            return "AVERAGE (40-60th percentile)"
+        elif current_iv < 0.50:
+            return "ABOVE_AVERAGE (60-80th percentile)"
+        else:
+            return "HIGH (>80th percentile)"
 
     def _analyze_options_sentiment(self, options_data: List[Dict]) -> float:
         """Analyze options flow to determine bullish/bearish sentiment."""

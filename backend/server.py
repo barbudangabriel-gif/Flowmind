@@ -848,6 +848,11 @@ from routers.stream import router as stream_router
 
 app.include_router(stream_router)  # Already has /api/stream prefix
 
+# UI Automation router (NEW - Nov 3, 2025)
+from routers.automation import router as automation_router
+
+app.include_router(automation_router, prefix="/api")
+
 # CORE ENGINE router (198-agent hierarchical system)
 from routers.core_engine import router as core_engine_router
 

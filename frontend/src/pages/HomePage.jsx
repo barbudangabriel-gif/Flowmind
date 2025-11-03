@@ -9,11 +9,11 @@ export default function HomePage() {
   const quickActions = [
     {
       title: 'Strategy Builder',
-      description: 'Build & analyze 54+ options strategies',
+      description: 'Build & analyze 69 options strategies',
       icon: TrendingUp,
       link: '/builder',
       color: 'emerald',
-      badge: '54+ Strategies'
+      badge: '69 Strategies'
     },
     {
       title: 'Options Flow',
@@ -58,7 +58,7 @@ export default function HomePage() {
   ];
 
   const stats = [
-    { label: 'Strategies Available', value: '54+', icon: TrendingUp },
+    { label: 'Strategies Available', value: '69', icon: TrendingUp },
     { label: 'Live Data Feeds', value: '2', icon: Activity },
     { label: 'Real-time Updates', value: '24/7', icon: Activity },
   ];
@@ -176,7 +176,7 @@ export default function HomePage() {
               <div>
                 <h3 className="text-white font-normal mb-1">Advanced Strategy Builder</h3>
                 <p className="text-slate-400 text-sm">
-                  54+ pre-built strategies with real-time P&L visualization, Greeks calculation, and quality scoring.
+                  69 pre-built strategies with real-time P&L visualization, Greeks calculation, and quality scoring.
                 </p>
               </div>
             </div>

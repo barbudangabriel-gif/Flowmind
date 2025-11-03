@@ -76,23 +76,38 @@ export function buildNav(ctx) {
  to: "/mindfolio", 
  icon: "FolderKanban",
  children: [
- // Dynamic mindfolios
- ...((ctx.mindfolios || []).map(p => ({
+ // Filter out master mindfolios from sidebar
+ ...((ctx.mindfolios || [])
+ .filter(p => !p.is_master)
+ .map(p => ({
  label: p.name,
  to: `/mindfolio/${p.id}`,
  icon: "FolderKanban",
  badge: (p.nav || p.cash_balance) ? { text: `$${Math.round((p.nav || p.cash_balance)/1000)}k`, tone: "default" } : undefined,
  }))),
- // Placeholder if no mindfolios
- ...((ctx.mindfolios || []).length === 0 ? [
- { label: "No mindfolios yet", to: "/mindfolio", icon: "FileX" }
+ // Placeholder if no regular mindfolios (show master mindfolios separately)
+ ...((ctx.mindfolios || []).filter(p => !p.is_master).length === 0 ? [
+ { label: "Create your first mindfolio", to: "/mindfolio", icon: "Plus" }
  ] : [])
  ]
  },
- // Mindfolio Analytics
- { label: "Mindfolio Analytics", to: "/mindfolio/analytics", icon: "BarChart3" },
- // Smart Rebalancing
- { label: "Smart Rebalancing", to: "/mindfolio/rebalancing", icon: "Scale" },
+ // Broker Master Mindfolios (separate section)
+ ...((ctx.mindfolios || []).filter(p => p.is_master).length > 0 ? [{
+ label: "Broker Masters", 
+ to: "/mindfolio", 
+ icon: "Building2",
+ badge: { text: "Auto-sync", tone: "success" },
+ children: [
+ ...((ctx.mindfolios || [])
+ .filter(p => p.is_master)
+ .map(p => ({
+ label: p.name || `${p.broker} Master`,
+ to: `/mindfolio/${p.id}`,
+ icon: "Building2",
+ badge: p.broker ? { text: p.broker, tone: "default" } : undefined,
+ })))
+ ]
+ }] : []),
  ],
  },
 
