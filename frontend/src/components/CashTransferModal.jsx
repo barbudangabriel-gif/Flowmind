@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { pfClient } from '../services/mindfolioClient';
+import { mfClient } from '../services/mindfolioClient';
 
 const CashTransferModal = ({ isOpen, onClose, fromMindfolio, onTransferComplete }) => {
   const [toMindfolio, setToMindfolio] = useState(null);
