@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { mfClient } from "../services/mindfolioClient";
 import { Line, Bar } from "react-chartjs-2";
+import PositionTransferModal from "../components/PositionTransferModal";
+import CashTransferModal from "../components/CashTransferModal";
 import {
  Chart as ChartJS,
  CategoryScale,
@@ -40,6 +42,11 @@ export default function MindfolioDetailNew() {
  const [stocksView, setStocksView] = useState("OPEN"); // OPEN or ALL
  const [expandedTickers, setExpandedTickers] = useState({}); // Track expanded tickers
  const [deleting, setDeleting] = useState(false);
+ 
+ // Master Mindfolio Transfer Modals (NEW - Nov 2, 2025)
+ const [showPositionTransferModal, setShowPositionTransferModal] = useState(false);
+ const [showCashTransferModal, setShowCashTransferModal] = useState(false);
+ const [syncing, setSyncing] = useState(false);
 
  useEffect(() => {
  loadMindfolio();
@@ -96,6 +103,41 @@ export default function MindfolioDetailNew() {
  const roiPct = mindfolio && mindfolio.starting_balance 
  ? (((mindfolio.cash_balance - mindfolio.starting_balance) / mindfolio.starting_balance) * 100).toFixed(2)
  : 0;
+ 
+ // Master Mindfolio Sync Handler (NEW - Nov 2, 2025)
+ const handleSync = async () => {
+ if (!mindfolio?.is_master) return;
+ 
+ setSyncing(true);
+ try {
+ const API = process.env.REACT_APP_BACKEND_URL || '';
+ const response = await fetch(`${API}/api/mindfolio/master/${id}/sync`, {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-User-ID': 'default'
+ }
+ });
+ 
+ const result = await response.json();
+ if (result.status === 'success') {
+ alert(`Sync completed!\n${result.transactions_created} transactions created\n${result.positions_updated} positions updated`);
+ await loadMindfolio(); // Reload mindfolio data
+ } else {
+ alert('Sync failed: ' + (result.detail || 'Unknown error'));
+ }
+ } catch (err) {
+ alert('Sync error: ' + err.message);
+ } finally {
+ setSyncing(false);
+ }
+ };
+ 
+ // Transfer Complete Callbacks (NEW - Nov 2, 2025)
+ const handleTransferComplete = (result) => {
+ alert(`Transfer completed successfully!`);
+ loadMindfolio(); // Reload data
+ };
 
  const loadChartData = async () => {
  // Mock data - replace with real API call
@@ -289,6 +331,46 @@ export default function MindfolioDetailNew() {
  <p className="text-gray-400 text-sm">Mindfolio ID: {mindfolio.id}</p>
  </div>
  <div className="flex gap-3">
+ {/* Master Mindfolio Sync Button (NEW - Nov 2, 2025) */}
+ {mindfolio.is_master && (
+ <button
+ onClick={handleSync}
+ disabled={syncing}
+ className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition flex items-center gap-2"
+ >
+ <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+ <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+ </svg>
+ {syncing ? 'Syncing...' : 'Sync Now'}
+ </button>
+ )}
+ 
+ {/* Position Transfer Button (NEW - Nov 2, 2025) */}
+ {mindfolio.positions && mindfolio.positions.length > 0 && (
+ <button
+ onClick={() => setShowPositionTransferModal(true)}
+ className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2"
+ >
+ <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+ <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+ </svg>
+ Transfer Position
+ </button>
+ )}
+ 
+ {/* Cash Transfer Button (NEW - Nov 2, 2025) */}
+ {mindfolio.cash_balance > 0 && (
+ <button
+ onClick={() => setShowCashTransferModal(true)}
+ className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition flex items-center gap-2"
+ >
+ <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+ <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+ </svg>
+ Transfer Cash
+ </button>
+ )}
+ 
  <button 
  onClick={() => alert('Import positions from TradeStation - Coming next!')}
  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition flex items-center gap-2"
@@ -3369,6 +3451,21 @@ function NewsIntelligenceTab({ mindfolioId }) {
  </div>
  </div>
  </div>
+ 
+ {/* Transfer Modals (NEW - Nov 2, 2025) */}
+ <PositionTransferModal
+ isOpen={showPositionTransferModal}
+ onClose={() => setShowPositionTransferModal(false)}
+ fromMindfolio={mindfolio}
+ onTransferComplete={handleTransferComplete}
+ />
+ 
+ <CashTransferModal
+ isOpen={showCashTransferModal}
+ onClose={() => setShowCashTransferModal(false)}
+ fromMindfolio={mindfolio}
+ onTransferComplete={handleTransferComplete}
+ />
  </div>
  );
 }
