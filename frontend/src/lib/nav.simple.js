@@ -36,6 +36,15 @@ export function buildNav(ctx) {
  children: [
  { label: "Equity", to: "/account/tradestation/equity", icon: "TrendingUp" },
  { label: "Futures", to: "/account/tradestation/futures", icon: "Zap" },
+ // Master Mindfolios for TradeStation
+ ...((ctx.mindfolios || [])
+ .filter(p => p.is_master && p.broker === "TradeStation")
+ .map(p => ({
+ label: `${p.name}`,
+ to: `/mindfolio/${p.id}`,
+ icon: "FolderKanban",
+ badge: { text: "Master", tone: "purple" },
+ }))),
  ]
  },
  { 
@@ -46,6 +55,15 @@ export function buildNav(ctx) {
  { label: "Equity", to: "/account/tastytrade/equity", icon: "TrendingUp" },
  { label: "Futures", to: "/account/tastytrade/futures", icon: "Zap" },
  { label: "Crypto", to: "/account/tastytrade/crypto", icon: "Bitcoin" },
+ // Master Mindfolios for Tastytrade
+ ...((ctx.mindfolios || [])
+ .filter(p => p.is_master && p.broker === "Tastytrade")
+ .map(p => ({
+ label: `${p.name}`,
+ to: `/mindfolio/${p.id}`,
+ icon: "FolderKanban",
+ badge: { text: "Master", tone: "purple" },
+ }))),
  ]
  },
  { 
@@ -55,6 +73,15 @@ export function buildNav(ctx) {
  children: [
  { label: "Equity", to: "/account/ibkr/equity", icon: "TrendingUp" },
  { label: "Futures", to: "/account/ibkr/futures", icon: "Zap" },
+ // Master Mindfolios for IBKR
+ ...((ctx.mindfolios || [])
+ .filter(p => p.is_master && p.broker === "IBKR")
+ .map(p => ({
+ label: `${p.name}`,
+ to: `/mindfolio/${p.id}`,
+ icon: "FolderKanban",
+ badge: { text: "Master", tone: "purple" },
+ }))),
  ]
  },
  ],
@@ -76,15 +103,17 @@ export function buildNav(ctx) {
  to: "/mindfolio", 
  icon: "FolderKanban",
  children: [
- // Dynamic mindfolios
- ...((ctx.mindfolios || []).map(p => ({
+ // Dynamic mindfolios (excluding master mindfolios - they appear under brokers)
+ ...((ctx.mindfolios || [])
+ .filter(p => !p.is_master)
+ .map(p => ({
  label: p.name,
  to: `/mindfolio/${p.id}`,
  icon: "FolderKanban",
  badge: (p.nav || p.cash_balance) ? { text: `$${Math.round((p.nav || p.cash_balance)/1000)}k`, tone: "default" } : undefined,
  }))),
  // Placeholder if no mindfolios
- ...((ctx.mindfolios || []).length === 0 ? [
+ ...((ctx.mindfolios || []).filter(p => !p.is_master).length === 0 ? [
  { label: "No mindfolios yet", to: "/mindfolio", icon: "FileX" }
  ] : [])
  ]
