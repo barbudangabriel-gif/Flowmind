@@ -63,7 +63,8 @@ export default function MindfolioList() {
 
  // Filter and sort logic - MUST be before early returns to maintain consistent hook order
  const filteredAndSortedItems = React.useMemo(() => {
- let result = [...items];
+ // First, exclude master mindfolios from the main list
+ let result = items.filter(p => !p.is_master);
 
  // Apply search filter
  if (searchQuery.trim()) {
@@ -197,6 +198,76 @@ export default function MindfolioList() {
  </div>
  </div>
 
+ {/* Master Mindfolios Section - Fixed Cards */}
+ {items.some(p => p.is_master) && (
+ <div className="space-y-3">
+ <div className="flex items-center justify-between">
+ <h2 className="text-lg font-semibold text-white">Broker Master Mindfolios</h2>
+ <span className="text-xs text-gray-400">Auto-synced from your broker accounts</span>
+ </div>
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+ {items
+ .filter(p => p.is_master)
+ .map(pf => (
+ <Link
+ key={pf.id}
+ to={`/mindfolio/${pf.id}`}
+ className="block bg-slate-800/50 border border-purple-500/30 hover:border-purple-500/50 rounded-lg p-4 transition-all hover:scale-[1.02]"
+ >
+ <div className="flex items-start justify-between mb-3">
+ <div className="flex items-center gap-2">
+ <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+ <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+ </svg>
+ <span className="font-semibold text-white">{pf.name}</span>
+ </div>
+ <span className="px-2 py-1 rounded text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30">
+ Master
+ </span>
+ </div>
+ 
+ <div className="space-y-2">
+ <div className="flex items-center justify-between">
+ <span className="text-xs text-gray-400">Broker</span>
+ <span className="text-sm text-white font-medium">{pf.broker || "TradeStation"}</span>
+ </div>
+ <div className="flex items-center justify-between">
+ <span className="text-xs text-gray-400">Cash Balance</span>
+ <span className="text-sm text-green-400 font-semibold">
+ ${(pf.cash_balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+ </span>
+ </div>
+ {pf.auto_sync && (
+ <div className="flex items-center justify-between">
+ <span className="text-xs text-gray-400">Auto-Sync</span>
+ <span className="flex items-center gap-1 text-xs text-green-400">
+ <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+ <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+ </svg>
+ Enabled
+ </span>
+ </div>
+ )}
+ {pf.last_sync && (
+ <div className="flex items-center justify-between">
+ <span className="text-xs text-gray-400">Last Sync</span>
+ <span className="text-xs text-gray-400">
+ {new Date(pf.last_sync).toLocaleString('en-US', { 
+ month: 'short', 
+ day: 'numeric', 
+ hour: '2-digit', 
+ minute: '2-digit' 
+ })}
+ </span>
+ </div>
+ )}
+ </div>
+ </Link>
+ ))}
+ </div>
+ </div>
+ )}
+
  {/* Search, Filter, Sort Controls */}
  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-4">
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -299,10 +370,16 @@ export default function MindfolioList() {
  </div>
  ) : (
  <>
+ {/* Specialized Mindfolios Header */}
+ <div className="flex items-center justify-between">
+ <h2 className="text-lg font-semibold text-white">Strategy Mindfolios</h2>
+ <span className="text-xs text-gray-400">Custom trading strategies and allocations</span>
+ </div>
+ 
  {/* Results count */}
  <div className="flex items-center justify-between text-sm text-gray-400">
  <span>
- Showing {filteredAndSortedItems.length} of {totalMindfolios} mindfolio{totalMindfolios !== 1 ? 's' : ''}
+ Showing {filteredAndSortedItems.length} of {items.filter(p => !p.is_master).length} mindfolio{items.filter(p => !p.is_master).length !== 1 ? 's' : ''}
  </span>
  <span>
  Sorted by: <span className="text-blue-400 font-semibold">
