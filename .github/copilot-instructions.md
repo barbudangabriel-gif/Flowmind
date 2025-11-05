@@ -1097,6 +1097,219 @@ nano /etc/caddy/Caddyfile
 systemctl reload caddy
 ```
 
+---
+
+## SSL Setup & Quick Deployment (NEW - Nov 5, 2025)
+
+### Automated Deployment Scripts
+
+**Status:** ✅ Production-ready scripts for SSL setup and updates
+
+**Files:**
+- `deploy_with_ssl.sh` - Full deployment with automatic SSL (Let's Encrypt)
+- `quick_update.sh` - Rapid updates after code changes
+- `SSL_SETUP_GUIDE.md` - Complete SSL configuration guide
+- `SSL_README.md` - Quick reference guide
+
+### Full Deployment (First Time)
+
+```bash
+# 1. Connect to server
+ssh root@flowmindanalytics.ai
+
+# 2. Clone repository (if not exists)
+cd /opt
+git clone https://github.com/barbudangabriel-gif/Flowmind.git flowmind
+cd flowmind
+
+# 3. Run automated deployment script
+bash deploy_with_ssl.sh
+```
+
+**Script handles:**
+- ✅ DNS verification (checks A record points to server)
+- ✅ Caddy installation (if not present)
+- ✅ Frontend build (npm install + build)
+- ✅ Backend configuration (.env setup reminder)
+- ✅ Docker containers start (backend + Redis)
+- ✅ SSL certificate automatic generation (Let's Encrypt)
+- ✅ Caddy configuration with HTTPS + Basic Auth
+- ✅ Final verification (HTTPS, SSL certificate expiry)
+
+**Duration:** 3-5 minutes  
+**SSL:** Automatic, no manual certificate configuration needed
+
+### Quick Update (After Code Changes)
+
+```bash
+# Connect to server
+ssh root@flowmindanalytics.ai
+cd /opt/flowmind
+
+# Run update script
+bash quick_update.sh
+```
+
+**Script handles:**
+- ✅ Git pull latest changes
+- ✅ Frontend rebuild
+- ✅ Backend restart
+- ✅ Caddy reload
+- ✅ Health check verification
+
+**Duration:** 1 minute
+
+### SSL Certificate Details
+
+**Provider:** Let's Encrypt (FREE)  
+**Validity:** 90 days  
+**Renewal:** Automatic (Caddy handles at 60 days)  
+**Type:** Domain Validated (DV)  
+**Protocols:** TLS 1.2, TLS 1.3
+
+**Caddy SSL Features:**
+- Automatic HTTPS for all domains in Caddyfile
+- Auto-renewal (no manual intervention)
+- OCSP stapling
+- HTTP → HTTPS redirect
+- HSTS headers
+- Modern cipher suites
+
+### DNS Requirements (CRITICAL)
+
+**Before running `deploy_with_ssl.sh`, ensure:**
+
+```bash
+# Verify DNS resolves to server IP
+dig flowmindanalytics.ai +short
+# Should return: YOUR_SERVER_IP
+
+# If not configured:
+# 1. Login to Cloudflare/DNS provider
+# 2. Add A record:
+#    - Type: A
+#    - Name: @ (for root domain)
+#    - IPv4: YOUR_SERVER_IP
+#    - Proxy: OFF (gray cloud, not orange!)
+#    - TTL: Auto
+# 3. Wait 2-5 minutes for propagation
+```
+
+**Without correct DNS:**
+- SSL certificate generation will FAIL
+- Let's Encrypt cannot verify domain ownership
+- Deployment script will exit with error
+
+### Troubleshooting SSL Issues
+
+**1. Certificate Not Generated**
+```bash
+# Check Caddy logs
+journalctl -u caddy -n 100
+
+# Look for:
+# ✅ "certificate obtained successfully"
+# ❌ "DNS: no such host" → DNS not configured
+# ❌ "timeout" → Port 443 blocked
+# ❌ "rate limit" → Too many requests, wait 1 hour
+```
+
+**2. Port 443 Not Accessible**
+```bash
+# Check firewall
+ufw status
+ufw allow 443/tcp
+ufw reload
+
+# Verify Caddy listening
+ss -tulpn | grep :443
+```
+
+**3. Let's Encrypt Rate Limits**
+- **50 certificates/week** per domain
+- **5 duplicate certificates/week**
+
+**Solution:** Use staging environment for testing
+```bash
+# Add to /etc/caddy/Caddyfile at top:
+{
+    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+# After testing, remove staging line and restart
+systemctl restart caddy
+```
+
+**4. Force Certificate Renewal**
+```bash
+# Remove existing certificate
+rm -rf /var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/*
+
+# Restart Caddy (will obtain new certificate)
+systemctl restart caddy
+```
+
+### Verification Commands
+
+```bash
+# Test HTTPS connection
+curl -I https://flowmindanalytics.ai
+
+# Check SSL certificate expiry
+echo | openssl s_client -connect flowmindanalytics.ai:443 -servername flowmindanalytics.ai 2>/dev/null | openssl x509 -noout -dates
+
+# Verify certificate issuer (should be Let's Encrypt)
+echo | openssl s_client -connect flowmindanalytics.ai:443 -servername flowmindanalytics.ai 2>/dev/null | openssl x509 -noout -issuer
+
+# Test automatic HTTP → HTTPS redirect
+curl -I http://flowmindanalytics.ai
+# Should return: 301 or 308 redirect
+```
+
+### SSH Key Fingerprint
+
+**Server fingerprint:** `62:be:3c:43:8c:bb:c3:10:81:ae:ac:41:c3:a7:2d:4a`
+
+Verify this fingerprint when connecting to prevent MITM attacks.
+
+### Deployment Checklist
+
+After running `deploy_with_ssl.sh`, verify:
+
+- [ ] DNS resolves correctly: `dig flowmindanalytics.ai +short`
+- [ ] Backend healthy: `curl http://localhost:8000/health`
+- [ ] Caddy running: `systemctl status caddy`
+- [ ] Port 443 open: `ss -tulpn | grep :443`
+- [ ] HTTPS works: `curl -I https://flowmindanalytics.ai`
+- [ ] SSL certificate valid: Certificate expiry > 60 days
+- [ ] HTTP redirects to HTTPS
+- [ ] Basic Auth prompts correctly
+
+### Update Workflow
+
+**Standard workflow after code changes:**
+
+```bash
+# 1. Develop locally, commit & push
+git add .
+git commit -m "Feature: Add new functionality"
+git push origin main
+
+# 2. SSH to production server
+ssh root@flowmindanalytics.ai
+
+# 3. Run quick update
+cd /opt/flowmind
+bash quick_update.sh
+
+# 4. Verify
+curl https://flowmindanalytics.ai/api/health
+```
+
+**No SSL reconfiguration needed** - Caddy maintains certificates automatically.
+
+---
+
 **3. Size-Responsive Components**
 ```javascript
 // StrategyChart.jsx supports two sizes:

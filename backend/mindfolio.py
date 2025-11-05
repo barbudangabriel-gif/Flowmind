@@ -486,6 +486,17 @@ async def find_master_mindfolio(broker: str, account_id: str) -> Optional[Mindfo
     return None
 
 
+async def get_mindfolio_positions(mindfolio_id: str) -> List[Position]:
+    """
+    Get positions for a mindfolio from Redis cache.
+    Returns list of Position objects.
+    """
+    cli = await get_kv()
+    positions_json = await cli.get(key_mindfolio_positions(mindfolio_id)) or "[]"
+    positions_data = json.loads(positions_json)
+    return [Position(**pos) for pos in positions_data]
+
+
 # ——— API Endpoints ———
 
 
@@ -1747,8 +1758,16 @@ async def create_transaction(pid: str, body: TransactionCreate):
 
 @router.get("/{pid}/positions", response_model=List[Position])
 async def get_positions(pid: str):
-    """Get current positions calculated using FIFO"""
-    return await calculate_positions_fifo(pid)
+    """Get current positions calculated using FIFO and save to Redis cache"""
+    positions = await calculate_positions_fifo(pid)
+    
+    # Save positions to Redis cache for transfer operations
+    cli = await get_kv()
+    positions_json = json.dumps([pos.dict() for pos in positions])
+    await cli.set(key_mindfolio_positions(pid), positions_json)
+    logger.info(f"Saved {len(positions)} positions to Redis for mindfolio {pid}")
+    
+    return positions
 
 
 @router.get("/{pid}/realized-pnl", response_model=List[RealizedPnL])

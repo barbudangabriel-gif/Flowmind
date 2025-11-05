@@ -11,7 +11,7 @@ const CashTransferModal = ({ isOpen, onClose, fromMindfolio, onTransferComplete 
   useEffect(() => {
     if (isOpen) {
       // Fetch all mindfolios for destination selection
-      pfClient.list().then(data => {
+      mfClient.list().then(data => {
         // Exclude the source mindfolio
         const filtered = data.filter(mf => mf.id !== fromMindfolio?.id);
         setAllMindfolios(filtered);

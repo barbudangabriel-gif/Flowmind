@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { mfClient } from '../services/mindfolioClient';
 
-const PositionTransferModal = ({ isOpen, onClose, fromMindfolio, onTransferComplete }) => {
+const PositionTransferModal = ({ isOpen, onClose, fromMindfolio, positions, onTransferComplete }) => {
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [toMindfolio, setToMindfolio] = useState(null);
   const [quantity, setQuantity] = useState(0);
@@ -12,7 +12,7 @@ const PositionTransferModal = ({ isOpen, onClose, fromMindfolio, onTransferCompl
   useEffect(() => {
     if (isOpen) {
       // Fetch all mindfolios for destination selection
-      pfClient.list().then(data => {
+      mfClient.list().then(data => {
         // Exclude the source mindfolio
         const filtered = data.filter(mf => mf.id !== fromMindfolio?.id);
         setAllMindfolios(filtered);
@@ -110,7 +110,7 @@ const PositionTransferModal = ({ isOpen, onClose, fromMindfolio, onTransferCompl
             className="w-full bg-[#0f1419] border border-[#1a1f26] text-white rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           >
             <option value="">-- Select position --</option>
-            {fromMindfolio?.positions?.map(pos => (
+            {positions?.map(pos => (
               <option key={pos.symbol} value={JSON.stringify(pos)}>
                 {pos.symbol} - {pos.qty} shares @ ${pos.avg_cost.toFixed(2)}
               </option>

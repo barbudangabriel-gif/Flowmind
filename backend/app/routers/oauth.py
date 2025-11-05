@@ -5,14 +5,37 @@ Handles TradeStation OAuth callbacks
 
 import logging
 import os
+import urllib.parse
 
 import requests
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 router = APIRouter(prefix="/oauth/tradestation", tags=["oauth"])
 
 log = logging.getLogger("oauth.callback")
+
+
+@router.get("/login")
+async def tradestation_login():
+    """
+    Simple endpoint: GET /api/oauth/tradestation/login
+    Redirects to TradeStation OAuth
+    """
+    client_id = os.getenv("TS_CLIENT_ID")
+    redirect_uri = os.getenv("TS_REDIRECT_URI")
+    
+    params = {
+        "response_type": "code",
+        "client_id": client_id,
+        "audience": "https://api.tradestation.com",
+        "redirect_uri": redirect_uri,
+        "scope": "openid offline_access MarketData ReadAccount Trade OptionSpreads Matrix",
+        "state": "flowmind_connect"
+    }
+    
+    auth_url = "https://signin.tradestation.com/authorize?" + urllib.parse.urlencode(params)
+    return RedirectResponse(url=auth_url)
 
 
 @router.get("/callback")
