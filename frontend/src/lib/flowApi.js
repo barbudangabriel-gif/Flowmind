@@ -1,4 +1,4 @@
-const API = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL || "";
+const API = process.env.REACT_APP_BACKEND_URL || "";
 
 const j = async (r) => {
  if (!r.ok) throw new Error(`API Error ${r.status}: ${await r.text()}`);
