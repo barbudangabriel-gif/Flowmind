@@ -1,23 +1,19 @@
 flowmindanalytics.ai, www.flowmindanalytics.ai {
-    # Basic Authentication - Protect entire site
-    # Username: gabriel | Password: FlowMind2025!
-    basicauth {
-        gabriel $2a$14$P9qHABLRdFl0PWtd6zvZSeSDs9udWQWYVfm2EBBTSGLV8vcpVQM/6
-    }
-
-    root * /opt/flowmind/frontend/build
-    try_files {path} /index.html
-
-    handle /api/* {
-        reverse_proxy localhost:8000
-    }
-
-    handle /ws/* {
-        reverse_proxy localhost:8000
+    # Use route block to ensure correct directive order
+    route {
+        # API/WebSocket reverse proxy (evaluated first)
+        reverse_proxy /api/* localhost:8000
+        reverse_proxy /ws/* localhost:8000
+        
+        # Frontend SPA (evaluated last)
+        root * /opt/flowmind/frontend/build
+        try_files {path} /index.html
+        file_server
     }
 
     encode gzip zstd
 
+    # Security headers
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         X-Frame-Options "SAMEORIGIN"
@@ -27,15 +23,13 @@ flowmindanalytics.ai, www.flowmindanalytics.ai {
         Permissions-Policy "geolocation=(), microphone=(), camera=()"
     }
 
-    @static {
-        path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.woff *.woff2 *.svg
-    }
+    # Static assets caching
+    @static path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.woff *.woff2 *.svg
     header @static Cache-Control "public, max-age=31536000, immutable"
 
+    # Access logging
     log {
         output file /var/log/caddy/flowmind-access.log
         format json
     }
-
-    file_server
 }
