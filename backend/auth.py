@@ -126,11 +126,8 @@ async def logout():
     return {"message": "Logged out successfully"}
 
 
-# Helper to generate password hash (run once)
+# Helper to generate password hash
+# Usage: python -c "from backend.auth import generate_password_hash; print(generate_password_hash('YOUR_SECURE_PASSWORD'))"
 def generate_password_hash(password: str) -> str:
-    """Generate bcrypt hash for password"""
+    """Generate bcrypt hash for password - use this to create ADMIN_PASSWORD_HASH"""
     return pwd_context.hash(password)
-
-
-# Uncomment to generate hash for "FlowMind2025!"
-# print(generate_password_hash("FlowMind2025!"))
