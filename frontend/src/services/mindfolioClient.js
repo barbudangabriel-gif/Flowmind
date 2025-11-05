@@ -1,4 +1,4 @@
-const BASE = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+const BASE = process.env.REACT_APP_BACKEND_URL || "";
 console.log('💾 mindfolioClient BASE URL:', BASE);
 
 async function j(path, init = {}) {
