@@ -101,13 +101,6 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-
-          {/* Demo Credentials */}
-                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-center">
-              <p className="text-xs text-blue-400">
-                💡 Single-user access. Contact admin for credentials.
-              </p>
-            </div>
         </div>
 
         {/* Footer */}

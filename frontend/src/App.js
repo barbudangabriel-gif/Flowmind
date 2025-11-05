@@ -183,6 +183,9 @@ function App() {
     
     console.log('[App.js] Context mindfolios:', mindfolios);
     
+    // Check if user is authenticated
+    const isAuthenticated = !!localStorage.getItem('auth_token');
+    
     return (
  <WebSocketProvider>
  <BrowserRouter>
@@ -190,8 +193,9 @@ function App() {
  {/* DISABLED FOR TESTING: <InactivityMonitor timeout={5 * 60 * 1000} /> */}
  
  <div className="flex h-screen bg-[#0a0e1a]">
- {/* Sidebar with toggle button */}
- <div className={`relative transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-[212px]'}`}>
+ {/* Sidebar with toggle button - only show when authenticated, hidden on mobile */}
+ {isAuthenticated && (
+ <div className={`relative transition-all duration-300 hidden md:block ${sidebarCollapsed ? 'md:w-16' : 'md:w-[212px]'}`}>
  <SidebarSimple ctx={ctx} collapsed={sidebarCollapsed} />
  
  {/* Toggle button - positioned on left side of sidebar at header height */}
@@ -207,6 +211,7 @@ function App() {
             </div>
  </button>
  </div>
+ )}
  
  {/* Main content area */}
  <div className="flex-1 flex flex-col overflow-hidden">

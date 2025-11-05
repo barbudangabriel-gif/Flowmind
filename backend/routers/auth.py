@@ -18,7 +18,7 @@ ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "gabriel@flowmind.ai")
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "CHANGE_ME_IN_PRODUCTION")
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "CHANGE_ME_IN_PRODUCTION")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 90  # 90 days
 
 
 class LoginRequest(BaseModel):
@@ -60,10 +60,10 @@ async def login(request: LoginRequest):
     Generate JWT token for single-user system.
     
     Credentials from environment variables:
-    - Email: gabriel@flowmind.ai (or env ADMIN_EMAIL)
+    - Email: Set via ADMIN_EMAIL environment variable (e.g., john@flowmind.ai)
     - Password: Set via ADMIN_PASSWORD environment variable
     
-    Returns JWT token valid for 7 days.
+    Returns JWT token valid for 90 days.
     """
     if request.email != ADMIN_EMAIL or request.password != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Invalid email or password")
