@@ -788,6 +788,11 @@ from mindfolio import router as mindfolio_router
 from trade_routes import router as trade_router
 from watchlist.routes import router as watchlist_router
 
+# Auth router (JWT authentication)
+from auth import router as auth_router
+
+app.include_router(auth_router)
+
 # Mount main API router (includes legacy endpoints)
 app.include_router(api_router)
 app.include_router(trade_router)

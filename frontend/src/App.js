@@ -33,6 +33,9 @@ import InstitutionalPage from './pages/InstitutionalPage';
 import LogosPage from './pages/LogosPage';
 import ScreensaverSettings from './pages/ScreensaverSettings';
 import CardTestPage from './pages/CardTestPage';
+import LoginPage from './pages/LoginPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import LogoutButton from './components/LogoutButton';
 
 function ComingSoonPage() {
  const location = window.location.pathname;
@@ -221,13 +224,16 @@ function App() {
  {/* Spacer */}
  <div className="flex-1"></div>
 
- {/* Right side - Market Status */}
+ {/* Right side - Market Status + Logout */}
  <div className="flex items-center gap-4">
  {/* Market Status - Clean text without card */}
  <div className="flex items-center gap-2 text-[8.4px] font-medium text-slate-400">
  <div className={`w-2 h-2 rounded-full ${marketOpen ? 'bg-emerald-400' : 'bg-slate-500'}`}></div>
  <span>{marketOpen ? 'MARKET OPEN' : 'MARKET CLOSED'}</span>
  </div>
+ 
+ {/* Logout Button */}
+ <LogoutButton />
  </div>
  </header>
 
@@ -237,41 +243,45 @@ function App() {
  {/* Main Content */}
  <main className="flex-1 overflow-y-auto bg-[#0f1419]">
  <Routes>
-                <Route path="/" element={<HomePage />} />
- <Route path="/dashboard" element={<Dashboard />} />
- <Route path="/builder" element={<BuilderV2Page />} />
- <Route path="/simulator" element={<SimulatorPage />} />
- <Route path="/strategy-chart-test" element={<StrategyChartTestPage />} />
- <Route path="/strategy-card-test" element={<UniversalStrategyCardTestPage />} />
- <Route path="/long-put-test" element={<LongPutTestPage />} />
- <Route path="/strategies" element={<StrategyLibraryPage />} />
- <Route path="/card-test" element={<CardTestPage />} />
- <Route path="/flow" element={<FlowPage />} />
- <Route path="/flow/live" element={<FlowPage />} />
- <Route path="/dark-pool" element={<DarkPoolPage />} />
- <Route path="/market-movers" element={<MarketMoversPage />} />
- <Route path="/congress-trades" element={<CongressTradesPage />} />
- <Route path="/institutional" element={<InstitutionalPage />} />
- <Route path="/tradestation/connect" element={<TradeStationConnectPage />} />
+                {/* Public route */}
+                <Route path="/login" element={<LoginPage />} />
+                
+                {/* Protected routes */}
+                <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+ <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+ <Route path="/builder" element={<ProtectedRoute><BuilderV2Page /></ProtectedRoute>} />
+ <Route path="/simulator" element={<ProtectedRoute><SimulatorPage /></ProtectedRoute>} />
+ <Route path="/strategy-chart-test" element={<ProtectedRoute><StrategyChartTestPage /></ProtectedRoute>} />
+ <Route path="/strategy-card-test" element={<ProtectedRoute><UniversalStrategyCardTestPage /></ProtectedRoute>} />
+ <Route path="/long-put-test" element={<ProtectedRoute><LongPutTestPage /></ProtectedRoute>} />
+ <Route path="/strategies" element={<ProtectedRoute><StrategyLibraryPage /></ProtectedRoute>} />
+ <Route path="/card-test" element={<ProtectedRoute><CardTestPage /></ProtectedRoute>} />
+ <Route path="/flow" element={<ProtectedRoute><FlowPage /></ProtectedRoute>} />
+ <Route path="/flow/live" element={<ProtectedRoute><FlowPage /></ProtectedRoute>} />
+ <Route path="/dark-pool" element={<ProtectedRoute><DarkPoolPage /></ProtectedRoute>} />
+ <Route path="/market-movers" element={<ProtectedRoute><MarketMoversPage /></ProtectedRoute>} />
+ <Route path="/congress-trades" element={<ProtectedRoute><CongressTradesPage /></ProtectedRoute>} />
+ <Route path="/institutional" element={<ProtectedRoute><InstitutionalPage /></ProtectedRoute>} />
+ <Route path="/tradestation/connect" element={<ProtectedRoute><TradeStationConnectPage /></ProtectedRoute>} />
  
  {/* Aggregate Account View */}
- <Route path="/account/aggregate" element={<AggregateAccountPage />} />
+ <Route path="/account/aggregate" element={<ProtectedRoute><AggregateAccountPage /></ProtectedRoute>} />
  
  {/* Account Detail Pages - Dynamic Routes */}
- <Route path="/account/:broker/:accountType" element={<AccountDetailPage />} />
+ <Route path="/account/:broker/:accountType" element={<ProtectedRoute><AccountDetailPage /></ProtectedRoute>} />
  
- <Route path="/tradestation/login" element={<TradeStationLogin />} />
- <Route path="/mindfolio" element={<MindfolioList />} />
- <Route path="/mindfolio/new" element={<MindfolioCreate />} />
- <Route path="/mindfolio/import" element={<ImportFromTradeStation />} />
- <Route path="/mindfolio/page/:id" element={<MindfolioPage />} />
- <Route path="/mindfolio/:id/old" element={<MindfolioDetail />} />
- <Route path="/mindfolio/:id/legacy" element={<MindfolioDetailNew />} />
- <Route path="/mindfolio/:id" element={<MindfolioDetailNewV2 />} />
- <Route path="/logos" element={<LogosPage />} />
-                <Route path="/settings/screensaver" element={<ScreensaverSettings />} />
+ <Route path="/tradestation/login" element={<ProtectedRoute><TradeStationLogin /></ProtectedRoute>} />
+ <Route path="/mindfolio" element={<ProtectedRoute><MindfolioList /></ProtectedRoute>} />
+ <Route path="/mindfolio/new" element={<ProtectedRoute><MindfolioCreate /></ProtectedRoute>} />
+ <Route path="/mindfolio/import" element={<ProtectedRoute><ImportFromTradeStation /></ProtectedRoute>} />
+ <Route path="/mindfolio/page/:id" element={<ProtectedRoute><MindfolioPage /></ProtectedRoute>} />
+ <Route path="/mindfolio/:id/old" element={<ProtectedRoute><MindfolioDetail /></ProtectedRoute>} />
+ <Route path="/mindfolio/:id/legacy" element={<ProtectedRoute><MindfolioDetailNew /></ProtectedRoute>} />
+ <Route path="/mindfolio/:id" element={<ProtectedRoute><MindfolioDetailNewV2 /></ProtectedRoute>} />
+ <Route path="/logos" element={<ProtectedRoute><LogosPage /></ProtectedRoute>} />
+                <Route path="/settings/screensaver" element={<ProtectedRoute><ScreensaverSettings /></ProtectedRoute>} />
                 {/* Catch-all for all other routes */}
-                <Route path="*" element={<ComingSoonPage />} />
+                <Route path="*" element={<ProtectedRoute><ComingSoonPage /></ProtectedRoute>} />
  </Routes>
  </main>
  </div>
