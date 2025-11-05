@@ -28,5 +28,8 @@
     "editor.insertSpaces": true
   },
   "prettier.requireConfig": true,
-  "python.formatting.provider": "black"
+  "python.formatting.provider": "black",
+  "files.associations": {
+    ".github/copilot-instructions.md": "markdown"
+  }
 }
