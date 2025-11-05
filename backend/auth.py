@@ -17,14 +17,15 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 # Config
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "flowmind_secret_change_in_production_123")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "CHANGE_ME_IN_PRODUCTION")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
 # Admin credentials (single user)
-ADMIN_EMAIL = "gabriel@flowmind.ai"
-# Password: FlowMind2025! (hashed)
-ADMIN_PASSWORD_HASH = "$2b$12$LQ3Z8J0YQZ0Z0Z0Z0Z0Z0uK8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X"  # Placeholder
+# WARNING: DO NOT commit real passwords! Use environment variables.
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "gabriel@flowmind.ai")
+ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH")  # Required: bcrypt hash
+# Generate hash: python -c "from passlib.context import CryptContext; print(CryptContext(schemes=['bcrypt']).hash('YOUR_PASSWORD'))"
 
 
 class LoginRequest(BaseModel):
@@ -76,17 +77,21 @@ async def login(request: LoginRequest):
     """
     Login endpoint for single admin user
     
-    Credentials:
-    - Email: gabriel@flowmind.ai
-    - Password: FlowMind2025!
+    Credentials must be set via environment variables:
+    - ADMIN_EMAIL (default: gabriel@flowmind.ai)
+    - ADMIN_PASSWORD_HASH (required: bcrypt hash of password)
+    
+    DO NOT commit real passwords to Git!
     """
     # Verify email
     if request.email != ADMIN_EMAIL:
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
-    # Verify password
-    # For now, simple password check (will generate proper hash after)
-    if request.password != "FlowMind2025!":
+    # Verify password hash
+    if not ADMIN_PASSWORD_HASH:
+        raise HTTPException(status_code=500, detail="Server configuration error: ADMIN_PASSWORD_HASH not set")
+    
+    if not pwd_context.verify(request.password, ADMIN_PASSWORD_HASH):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
     # Create JWT token

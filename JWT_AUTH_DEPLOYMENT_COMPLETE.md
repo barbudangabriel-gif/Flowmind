@@ -35,7 +35,12 @@ POST /api/auth/logout     # Client-side token removal
 
 **Single User Credentials:**
 - Email: `gabriel@flowmind.ai` (env: ADMIN_EMAIL)
-- Password: `FlowMind2025!` (env: ADMIN_PASSWORD)
+- Password: Set via `ADMIN_PASSWORD` environment variable (DO NOT commit passwords!)
+
+**⚠️ SECURITY CRITICAL:**
+- NEVER commit real passwords to Git
+- Always use environment variables in production
+- Previous default password was exposed in Git history - MUST be changed
 
 ### 2. Frontend Components (Pre-existing, Already Built)
 
@@ -95,7 +100,7 @@ route {
 ```bash
 curl -X POST https://flowmindanalytics.ai/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"gabriel@flowmind.ai","password":"FlowMind2025!"}'
+  -d '{"email":"gabriel@flowmind.ai","password":"YOUR_PASSWORD_HERE"}'
 ```
 
 **Response (200 OK, 268 bytes):**
@@ -193,9 +198,11 @@ curl -I https://flowmindanalytics.ai/login
 ```bash
 # Backend (.env)
 ADMIN_EMAIL=gabriel@flowmind.ai
-ADMIN_PASSWORD=FlowMind2025!
-JWT_SECRET_KEY=flowmind-secret-key-change-in-production
+ADMIN_PASSWORD=<your-secure-password-here>
+JWT_SECRET_KEY=<generate-with-openssl-rand-base64-32>
 ```
+
+**⚠️ NEVER commit .env files to Git! Add to .gitignore.**
 
 **⚠️ Security TODO:**
 - [ ] Change JWT_SECRET_KEY to random 32+ character string

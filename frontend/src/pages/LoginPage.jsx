@@ -103,11 +103,11 @@ export default function LoginPage() {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-[#1a1f26]">
-            <p className="text-xs text-gray-500 text-center">
-              Demo: gabriel@flowmind.ai / FlowMind2025!
-            </p>
-          </div>
+                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-center">
+              <p className="text-xs text-blue-400">
+                💡 Single-user access. Contact admin for credentials.
+              </p>
+            </div>
         </div>
 
         {/* Footer */}
