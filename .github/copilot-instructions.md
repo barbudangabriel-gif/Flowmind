@@ -1,5 +1,3 @@
-<!-- markdownlint-disable MD033 MD041 -->
-<!-- This is a Markdown file, not a Makefile -->
 # FlowMind AI Agent Instructions
 
 **Project:** Options analytics platform with FastAPI backend, React 19 frontend
