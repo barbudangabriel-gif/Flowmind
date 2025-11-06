@@ -28,6 +28,15 @@
 - ✅ **Security Cleanup**:
   - Sanitized `Caddyfile.with-auth` (removed leaked password hash)
   - Production passwords generated on-server, not stored in git
+- ✅ **MindfolioDetailNew UI Polish (Nov 6, 2025 - Session 2)**:
+  - Chart: Thinner lines (1.5px), smaller points (2px), white axis labels
+  - Legend: White text (size 13), smaller boxes (12x12), normal weight
+  - Typography: All font-bold → font-semibold throughout
+  - Total Value: text-3xl (matches top metrics)
+  - Labels: All gray-400 → white for better visibility
+  - Removed: Empty circles, emoji placeholders from cards
+  - Calendar: Unified format across tabs (weekday headers, day numbers, P/L values)
+  - Commit: `313800d` (+483/-120 lines)
 
 ---
 
@@ -62,7 +71,11 @@
 ❌ text-2xl headers (use text-xl)
 ❌ text-[20px] values (use text-[18px])
 ❌ Emojis in content (only sidebar)
-❌ font-bold (use default weight)
+❌ font-bold (use font-semibold or default weight)
+❌ Gray labels (text-gray-400) - use white for primary labels
+❌ Thick chart lines (default 3px) - use borderWidth: 1.5
+❌ Large legend boxes (default ~40px) - use boxWidth: 12, boxHeight: 12
+❌ Empty decorative elements (circles, emoji placeholders)
 ```
 
 **Full specification in Section 3: UI Design System**
