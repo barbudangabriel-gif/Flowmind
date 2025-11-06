@@ -1,4 +1,4 @@
-const BASE = ''; // Always use relative URLs
+const BASE = process.env.REACT_APP_BACKEND_URL || ''; // Use backend URL from env
 console.log('💾 mindfolioClient BASE URL:', BASE || 'relative');
 
 async function j(path, init = {}) {

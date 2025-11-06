@@ -8,6 +8,8 @@ import LiveDarkPool from '../components/streaming/LiveDarkPool';
 import LiveCongressFeed from '../components/streaming/LiveCongressFeed';
 import ConnectionStatus from '../components/streaming/ConnectionStatus';
 
+const API = process.env.REACT_APP_BACKEND_URL || '';
+
 /**
  * 📡 Streaming Dashboard
  * 
@@ -52,7 +54,7 @@ const StreamingDashboard = () => {
  <button
  onClick={async () => {
  try {
- const response = await fetch('http://localhost:8000/api/auth/tradestation/login');
+ const response = await fetch(`${API}/api/auth/tradestation/login`);
  const data = await response.json();
  window.location.href = data.auth_url;
  } catch (err) {

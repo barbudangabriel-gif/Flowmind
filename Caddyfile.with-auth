@@ -1,6 +1,12 @@
 flowmindanalytics.ai, www.flowmindanalytics.ai {
     # Use route block to ensure correct directive order
     route {
+        # Basic Authentication (protect entire site)
+        # Hash generated on server with: caddy hash-password --plaintext "YOUR_PASSWORD"
+        basicauth {
+            gabriel HASH_GENERATED_ON_SERVER_NOT_IN_GIT
+        }
+        
         # API/WebSocket reverse proxy (evaluated first)
         reverse_proxy /api/* localhost:8000
         reverse_proxy /ws/* localhost:8000

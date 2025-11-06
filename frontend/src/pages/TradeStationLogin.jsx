@@ -1,32 +1,66 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const API = process.env.REACT_APP_BACKEND_URL || '';
+
 const TradeStationLogin = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [config, setConfig] = useState(null);
+    const [error, setError] = useState(null);
 
-    const CLIENT_ID = 'XEs0URG1rMrGDUFRKVhlDaclvQKq8Qpj';
-    const REDIRECT_URI = 'http://localhost:8000/api/oauth/tradestation/callback';
-    const MODE = 'SIMULATION'; // SIMULATION works on localhost
-    
-    const AUTH_URL = MODE === 'LIVE' 
-        ? 'https://signin.tradestation.com/authorize'
-        : 'https://sim-signin.tradestation.com/authorize';
+    // Fetch OAuth config from backend on mount
+    useEffect(() => {
+        const fetchConfig = async () => {
+            try {
+                const response = await fetch(`${API}/api/oauth/tradestation/config`);
+                if (!response.ok) throw new Error('Failed to fetch OAuth config');
+                const data = await response.json();
+                setConfig(data);
+            } catch (err) {
+                console.error('Config fetch error:', err);
+                setError(err.message);
+            }
+        };
+        fetchConfig();
+    }, []);
 
     const initiateOAuth = () => {
+        if (!config) {
+            setError('OAuth configuration not loaded');
+            return;
+        }
+
         setLoading(true);
         
-        const oauthUrl = `${AUTH_URL}?` + new URLSearchParams({
-            client_id: CLIENT_ID,
+        const oauthUrl = `${config.auth_url}?` + new URLSearchParams({
+            client_id: config.client_id,
             response_type: 'code',
-            redirect_uri: REDIRECT_URI,
+            redirect_uri: config.redirect_uri,
             audience: 'https://api.tradestation.com',
-            scope: 'openid profile MarketData ReadAccount Trade Crypto offline_access'
+            scope: config.scope
         });
 
         // Open OAuth in same window
         window.location.href = oauthUrl;
     };
+
+    if (!config) {
+        return (
+            <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6">
+                <div className="text-center">
+                    {error ? (
+                        <div className="text-red-400">
+                            <p className="text-[14px]">Error loading configuration</p>
+                            <p className="text-xs text-gray-500 mt-2">{error}</p>
+                        </div>
+                    ) : (
+                        <p className="text-[14px] text-gray-400">Loading OAuth configuration...</p>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center p-6">
@@ -42,9 +76,13 @@ const TradeStationLogin = () => {
 
                     <div className="mb-6 p-4 bg-blue-900/20 border border-blue-700/50 rounded-lg">
                         <div className="text-[14px] text-blue-200">
-                            <div className="mb-2">Mode: <span className="text-white">{MODE}</span></div>
+                            <div className="mb-2">Mode: <span className="text-white">{config.mode}</span></div>
+                            <div className="mb-2 text-xs">
+                                <span className="text-gray-400">Callback:</span>
+                                <div className="text-gray-500 break-all mt-1">{config.redirect_uri}</div>
+                            </div>
                             <div className="text-xs text-gray-400">
-                                {MODE === 'SIMULATION' ? 'Using simulation environment for testing' : 'Using live trading environment'}
+                                {config.mode === 'SIMULATION' ? 'Using simulation environment for testing' : 'Using live trading environment'}
                             </div>
                         </div>
                     </div>

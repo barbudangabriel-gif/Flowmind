@@ -16,6 +16,25 @@ router = APIRouter(prefix="/oauth/tradestation", tags=["oauth"])
 log = logging.getLogger("oauth.callback")
 
 
+@router.get("/config")
+async def get_oauth_config():
+    """
+    Return OAuth configuration for frontend
+    GET /api/oauth/tradestation/config
+    """
+    client_id = os.getenv("TS_CLIENT_ID")
+    redirect_uri = os.getenv("TS_REDIRECT_URI")
+    mode = os.getenv("TRADESTATION_MODE", "SIMULATION")
+    
+    return {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "mode": mode,
+        "auth_url": "https://signin.tradestation.com/authorize" if mode == "LIVE" else "https://sim-signin.tradestation.com/authorize",
+        "scope": "openid offline_access MarketData ReadAccount Trade OptionSpreads Matrix"
+    }
+
+
 @router.get("/login")
 async def tradestation_login():
     """
