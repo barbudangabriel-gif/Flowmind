@@ -54,7 +54,7 @@ echo ""
 
 # Verify
 echo -e "${BLUE}Verificare...${NC}"
-if curl -s https://flowmindanalytics.ai/api/health | grep -q "healthy"; then
+if curl -s https://flowmindanalytics.ai/health | grep -q "healthy"; then
     echo -e "${GREEN}✓ Site funcționează!${NC}"
 else
     echo -e "${YELLOW}⚠️  Site nu răspunde. Verifică logs:${NC}"
