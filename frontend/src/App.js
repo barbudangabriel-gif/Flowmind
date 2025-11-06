@@ -133,13 +133,26 @@ function App() {
     let isMounted = true;
     console.log('[App.js] Fetching mindfolios from:', `/api/mindfolio`);
     fetchMindfolios()
-      .then(data => { // Update market status every minute
- React.useEffect(() => {
- const interval = setInterval(() => {
- setMarketOpen(isMarketOpen());
- }, 60000);
- return () => clearInterval(interval);
- }, []);
+      .then(data => {
+        if (!isMounted) return;
+        console.log('[App.js] Mindfolios received:', data);
+        // Filter out deleted mindfolios
+        const active = (data || []).filter(m => m.status !== 'DELETED');
+        setMindfolios(active);
+      })
+      .catch(err => {
+        console.error('Failed to load mindfolios for sidebar:', err);
+      });
+    return () => { isMounted = false; };
+  }, []);
+
+  // Update market status every minute
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setMarketOpen(isMarketOpen());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
  
  // Auto-refresh mindfolios every 30 seconds
  useEffect(() => {
