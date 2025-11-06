@@ -1,5 +1,5 @@
-const BASE = process.env.REACT_APP_BACKEND_URL || "";
-console.log('💾 mindfolioClient BASE URL:', BASE);
+const BASE = ''; // Always use relative URLs
+console.log('💾 mindfolioClient BASE URL:', BASE || 'relative');
 
 async function j(path, init = {}) {
  // Add timeout to prevent hanging

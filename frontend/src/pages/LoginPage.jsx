@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API = process.env.REACT_APP_BACKEND_URL || '';
+const API = ''; // Always use relative URLs for same-origin requests
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
