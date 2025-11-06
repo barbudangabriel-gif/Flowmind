@@ -10,6 +10,7 @@ services:
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379/0
       # MongoDB (optional - will use fallback if not available)
       MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017/flowmind}
       # Database
