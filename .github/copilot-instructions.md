@@ -1,24 +1,33 @@
 # FlowMind AI Agent Instructions
 
 **Project:** Options analytics platform with FastAPI backend, React 19 frontend
-**Last Updated:** November 3, 2025
+**Last Updated:** November 6, 2025
 
 **CRITICAL CONTEXT:**
 - **Target User:** Single user (Gabriel) - personal trading tool
 - **No multi-user support needed** - All features are for personal use only
-- **No user authentication system** - Direct access, no login/signup flows
+- **No user authentication system** - Direct access, no login/signup flows (REMOVED Nov 6, 2025)
 - **Development priority:** Functionality over scalability
 - **Deploy once, use daily** - Not a SaaS product
 
-**SESSION SUMMARY - Nov 3, 2025:**
-- ✅ Updated Homepage: "54+ Strategies" → "69 Strategies" (4 locations in HomePage.jsx)
-- ✅ Restructured Sidebar Navigation (nav.simple.js):
-  - Filtered master mindfolios from "My Mindfolios" section
-  - Added separate "Broker Masters" collapsible section with Auto-sync badge
-  - Improved empty state message ("Create your first mindfolio")
-  - Removed 404 links (Mindfolio Analytics, Smart Rebalancing)
-- ⚠️ Backend Issue: Old process (PID 555, root) was blocking - started new instance (PID 99452)
-- ❌ Unresolved: Master Mindfolios section not appearing in UI (backend connectivity issue)
+**SESSION SUMMARY - Nov 6, 2025:**
+- ✅ **AUTHENTICATION COMPLETELY REMOVED** for Codespaces development:
+  - Deleted `ProtectedRoute.jsx` component
+  - Removed all `<ProtectedRoute>` wrappers from routes (including catch-all route)
+  - Set `isAuthenticated = true` hardcoded in App.js
+  - Production auth remains active on flowmindanalytics.ai (Caddy Basic Auth)
+- ✅ **Dynamic Backend URL Configuration**:
+  - Added `GET /api/oauth/tradestation/config` endpoint for OAuth settings
+  - Frontend fetches OAuth config from backend instead of hardcoded values
+  - All components use `process.env.REACT_APP_BACKEND_URL` or empty string (relative URLs)
+- ✅ **Codespaces Proxy Setup**:
+  - Created `setupProxy.js` with http-proxy-middleware
+  - Routes `/api/*` to `localhost:8000` (avoids GitHub auth prompts)
+  - Port 8000 set to Private in Codespaces (no public access)
+  - Frontend `.env.local` uses empty `REACT_APP_BACKEND_URL` for relative URLs
+- ✅ **Security Cleanup**:
+  - Sanitized `Caddyfile.with-auth` (removed leaked password hash)
+  - Production passwords generated on-server, not stored in git
 
 ---
 
@@ -973,6 +982,14 @@ const API = process.env.REACT_APP_BACKEND_URL || "";
 const API = window.API_BASE || process.env.REACT_APP_BACKEND_URL || "";
 ```
 
+**CODESPACES DEVELOPMENT (Nov 6, 2025):**
+- **Frontend `.env.local`:** `REACT_APP_BACKEND_URL=""` (empty string for relative URLs)
+- **Proxy configuration:** `frontend/src/setupProxy.js` routes `/api/*` → `localhost:8000`
+- **Port visibility:** Port 8000 set to **Private** in Codespaces (avoids GitHub auth prompts)
+- **Port 3000:** Public (accessible via browser)
+- **Authentication:** REMOVED from frontend (ProtectedRoute deleted, isAuthenticated=true hardcoded)
+- **Result:** Development works WITHOUT any auth prompts, proxy handles API calls internally
+
 **PRODUCTION BUILD REQUIREMENTS (Nov 1, 2025):**
 - **MUST create `.env.production` before building for production**
 - **MUST set `REACT_APP_BACKEND_URL=http://localhost:8080`** (Caddy proxy URL)
@@ -994,6 +1011,10 @@ REACT_APP_BACKEND_URL="" npm run build  # ❌ Empty string breaks API calls
 - NOT direct to Docker backend (port 8000)
 - Caddyfile proxies `/api/*` to `http://localhost:8000` (Docker backend)
 - Frontend → Caddy :8080 → Backend :8000
+
+**Codespaces vs Production:**
+- **Codespaces:** Empty REACT_APP_BACKEND_URL + setupProxy.js + Port 8000 Private = No auth
+- **Production:** REACT_APP_BACKEND_URL=http://localhost:8080 + Caddy Basic Auth = Secure
 
 ---
 
