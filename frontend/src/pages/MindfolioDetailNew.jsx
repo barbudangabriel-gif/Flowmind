@@ -30,7 +30,7 @@ ChartJS.register(
 );
 
 export default function MindfolioDetailNew() {
- const { id } = useParams();
+ const { id, broker, accountType } = useParams();  // Support both /mindfolio/:id and /account/:broker/:accountType
  const navigate = useNavigate();
  const [mindfolio, setMindfolio] = useState(null);
  const [activeTab, setActiveTab] = useState("SUMMARY");
@@ -42,6 +42,7 @@ export default function MindfolioDetailNew() {
  const [stocksView, setStocksView] = useState("OPEN"); // OPEN or ALL
  const [expandedTickers, setExpandedTickers] = useState({}); // Track expanded tickers
  const [deleting, setDeleting] = useState(false);
+ const [notFound, setNotFound] = useState(false);  // Master mindfolio not found
  
  // Master Mindfolio Transfer Modals (NEW - Nov 2, 2025)
  const [showPositionTransferModal, setShowPositionTransferModal] = useState(false);
@@ -50,7 +51,7 @@ export default function MindfolioDetailNew() {
 
  useEffect(() => {
  loadMindfolio();
- }, [id]);
+ }, [id, broker, accountType]);
 
  useEffect(() => {
  if (activeTab === "SUMMARY") {
@@ -60,15 +61,46 @@ export default function MindfolioDetailNew() {
 
  const loadMindfolio = async () => {
  try {
- // Try real API first
+ // Check if we're loading by ID (legacy /mindfolio/:id route) or by broker params (new /account/:broker/:accountType route)
+ if (broker && accountType) {
+ // New route: Load master mindfolio by broker + accountType
+ const API = process.env.REACT_APP_BACKEND_URL || "";
+ const response = await fetch(
+ `${API}/api/mindfolio/master?broker=${broker}&account_type=${accountType}`,
+ {
+ headers: { "X-User-ID": "default" }
+ }
+ );
+ 
+ if (response.status === 404) {
+ // Master mindfolio not found - show import button
+ setNotFound(true);
+ setLoading(false);
+ return;
+ }
+ 
+ if (!response.ok) {
+ throw new Error(`Failed to load master mindfolio: ${response.statusText}`);
+ }
+ 
+ const result = await response.json();
+ setMindfolio(result.mindfolio);
+ setNotFound(false);
+ } else if (id) {
+ // Legacy route: Load by ID
  const data = await mfClient.get(id);
  setMindfolio(data);
+ setNotFound(false);
+ } else {
+ throw new Error("No ID or broker params provided");
+ }
  } catch (err) {
  console.error("Failed to load mindfolio, using mock data:", err);
  // Fallback to mock data
  setMindfolio({
- id: id,
- name: 'Demo Mindfolio',
+ id: id || 'mock',
+ name: 'Mindfolio Master',
+ broker: 'TradeStation',
  cash_balance: 50000,
  starting_balance: 10000, // Add starting balance for ROI calculation
  status: 'ACTIVE',
@@ -77,6 +109,7 @@ export default function MindfolioDetailNew() {
  transactions: [],
  created_at: new Date().toISOString()
  });
+ setNotFound(false);
  } finally {
  setLoading(false);
  }
@@ -133,6 +166,46 @@ export default function MindfolioDetailNew() {
  }
  };
  
+ // Import YTD Data Handler (NEW - Nov 6, 2025)
+ const handleImportYTD = async () => {
+ if (!mindfolio?.account_id) {
+ alert('No account ID found for this mindfolio');
+ return;
+ }
+ 
+ if (!window.confirm(`Import all 2025 transactions from TradeStation for account ${mindfolio.account_id}?\n\nThis will fetch all filled orders since January 1, 2025.`)) {
+ return;
+ }
+ 
+ setSyncing(true); // Reuse syncing state for loading indicator
+ try {
+ const API = process.env.REACT_APP_BACKEND_URL || '';
+ const response = await fetch(`${API}/api/mindfolio/${id}/import-ytd`, {
+ method: 'POST',
+ headers: {
+ 'Content-Type': 'application/json',
+ 'X-User-ID': 'default'
+ },
+ body: JSON.stringify({
+ account_id: mindfolio.account_id
+ })
+ });
+ 
+ const result = await response.json();
+ if (result.status === 'success') {
+ alert(`Import completed!\n\nTransactions imported: ${result.transactions_imported}\nDate range: ${result.date_range}\nSymbols: ${result.symbols}\nPositions recalculated: ${result.positions_recalculated}`);
+ await loadMindfolio(); // Reload mindfolio data
+ setActiveTab('TRANSACTIONS'); // Switch to transactions tab
+ } else {
+ alert('Import failed: ' + (result.detail || result.message || 'Unknown error'));
+ }
+ } catch (err) {
+ alert('Import error: ' + err.message);
+ } finally {
+ setSyncing(false);
+ }
+ };
+ 
  // Transfer Complete Callbacks (NEW - Nov 2, 2025)
  const handleTransferComplete = (result) => {
  alert(`Transfer completed successfully!`);
@@ -176,6 +249,9 @@ export default function MindfolioDetailNew() {
  data: cashData,
  borderColor: "rgb(34, 197, 94)",
  backgroundColor: "rgba(34, 197, 94, 0.1)",
+ borderWidth: 1.5,
+ pointRadius: 2,
+ pointHoverRadius: 4,
  fill: true,
  tension: 0.4
  },
@@ -184,6 +260,9 @@ export default function MindfolioDetailNew() {
  data: stocksData,
  borderColor: "rgb(59, 130, 246)",
  backgroundColor: "rgba(59, 130, 246, 0.1)",
+ borderWidth: 1.5,
+ pointRadius: 2,
+ pointHoverRadius: 4,
  fill: true,
  tension: 0.4
  },
@@ -192,6 +271,9 @@ export default function MindfolioDetailNew() {
  data: optionsData,
  borderColor: "rgb(168, 85, 247)",
  backgroundColor: "rgba(168, 85, 247, 0.1)",
+ borderWidth: 1.5,
+ pointRadius: 2,
+ pointHoverRadius: 4,
  fill: true,
  tension: 0.4
  }
@@ -244,6 +326,38 @@ export default function MindfolioDetailNew() {
  );
  }
 
+ // Show import prompt if master mindfolio not found
+ if (notFound && broker && accountType) {
+ const brokerDisplayName = broker.charAt(0).toUpperCase() + broker.slice(1);
+ const accountDisplayName = accountType.charAt(0).toUpperCase() + accountType.slice(1);
+ 
+ return (
+ <div className="p-8 space-y-6 bg-[#0f1419] min-h-screen">
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-6 text-center">
+ <div className="text-4xl mb-4">📊</div>
+ <h1 className="text-xl text-white mb-2">No Master Mindfolio Found</h1>
+ <p className="text-sm text-gray-400 mb-6">
+ You haven't imported your {brokerDisplayName} {accountDisplayName} account yet.
+ </p>
+ <button
+ onClick={() => {
+ // Redirect to TradeStation OAuth flow
+ if (broker.toLowerCase() === 'tradestation') {
+ const API = process.env.REACT_APP_BACKEND_URL || '';
+ window.location.href = `${API}/api/ts/login`;
+ } else {
+ alert(`Import for ${brokerDisplayName} coming soon!`);
+ }
+ }}
+ className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
+ >
+ Import from {brokerDisplayName}
+ </button>
+ </div>
+ </div>
+ );
+ }
+
  if (!mindfolio) {
  return (
  <div className="p-8">
@@ -268,7 +382,7 @@ export default function MindfolioDetailNew() {
  const drawdown = ((totalValue - initialValue) / initialValue * 100).toFixed(2);
  const isPositive = drawdown >= 0;
 
- const tabs = ["SUMMARY", "STOCKS", "OPTIONS", "DIVIDEND", "NEWS", "TERM STRUCTURE"];
+ const tabs = ["SUMMARY", "STOCKS", "OPTIONS", "DIVIDEND", "BALANCE", "TAX"];
 
  const chartOptions = {
  responsive: true,
@@ -281,9 +395,11 @@ export default function MindfolioDetailNew() {
  legend: {
  position: 'bottom',
  labels: {
- color: '#94a3b8',
+ color: '#ffffff',
  padding: 15,
- font: { size: 12 }
+ font: { size: 13, weight: 'normal' },
+ boxWidth: 12,
+ boxHeight: 12
  }
  },
  tooltip: {
@@ -307,13 +423,17 @@ export default function MindfolioDetailNew() {
  },
  scales: {
  x: {
- grid: { color: '#1e293b', drawBorder: false },
- ticks: { color: '#64748b', maxRotation: 0 }
+ grid: { display: false },
+ border: { display: true, color: 'rgba(255, 255, 255, 0.2)' },
+ ticks: { color: '#ffffff', maxRotation: 0, font: { weight: 'normal' } }
  },
  y: {
- grid: { color: '#1e293b', drawBorder: false },
+ position: 'right',
+ grid: { display: false },
+ border: { display: true, color: 'rgba(255, 255, 255, 0.2)' },
  ticks: {
- color: '#64748b',
+ color: '#ffffff',
+ font: { weight: 'normal' },
  callback: function(value) {
  return '$' + (value / 1000).toFixed(0) + 'k';
  }
@@ -327,8 +447,10 @@ export default function MindfolioDetailNew() {
  {/* Header */}
  <div className="flex items-center justify-between">
  <div>
- <h1 className="text-3xl font-bold text-white mb-1">{mindfolio.name}</h1>
- <p className="text-gray-400 text-sm">Mindfolio ID: {mindfolio.id}</p>
+ <h1 className="text-3xl font-semibold text-white">{mindfolio.name}</h1>
+ {mindfolio.broker && (
+ <p className="text-[20px] text-cyan-400 font-medium mt-1">{mindfolio.broker}</p>
+ )}
  </div>
  <div className="flex gap-3">
  {/* Master Mindfolio Sync Button (NEW - Nov 2, 2025) */}
@@ -372,26 +494,14 @@ export default function MindfolioDetailNew() {
  )}
  
  <button 
- onClick={() => alert('Import positions from TradeStation - Coming next!')}
- className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition flex items-center gap-2"
+ onClick={handleImportYTD}
+ disabled={syncing}
+ className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition flex items-center gap-2"
  >
  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
  </svg>
- Import from TS
- </button>
- <button className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition">
- Edit
- </button>
- <button className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition">
- + Add Position
- </button>
- <button 
- onClick={handleDelete}
- disabled={deleting}
- className="px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition"
- >
- {deleting ? 'Deleting...' : 'Delete'}
+ {syncing ? 'Importing...' : 'Import YTD from TS'}
  </button>
  </div>
  </div>
@@ -423,11 +533,8 @@ export default function MindfolioDetailNew() {
  {/* Dashboard Header */}
  <div className="flex items-center justify-between p-6 border-b border-slate-700">
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
- <span className="text-2xl">🛡️</span>
- </div>
  <div>
- <h2 className="text-xl font-bold text-white">Money & Risk Management</h2>
+ <h2 className="text-xl font-semibold text-white">Money & Risk Management</h2>
  <p className="text-sm text-gray-400">Mindfolio health and risk metrics</p>
  </div>
  </div>
@@ -458,33 +565,33 @@ export default function MindfolioDetailNew() {
  {/* Top Row - Key Metrics */}
  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
  {/* Mindfolio Health Score */}
- <div className="bg-slate-700/30 rounded-lg p-4">
- <div className="text-sm text-gray-400 mb-1">Mindfolio Health</div>
+ <div className="border border-slate-700/50 rounded-lg p-4">
+ <div className="text-sm text-white mb-1">Mindfolio Health</div>
  <div className="flex items-baseline gap-2">
- <div className="text-3xl font-bold text-green-400">87</div>
+ <div className="text-3xl font-semibold text-green-400">87</div>
  <div className="text-sm text-gray-400">/100</div>
  </div>
  <div className="text-xs text-green-400 mt-1">Excellent ✓</div>
  </div>
 
  {/* Sharpe Ratio */}
- <div className="bg-slate-700/30 rounded-lg p-4">
- <div className="text-sm text-gray-400 mb-1">Sharpe Ratio</div>
- <div className="text-3xl font-bold text-white">2.4</div>
+ <div className="border border-slate-700/50 rounded-lg p-4">
+ <div className="text-sm text-white mb-1">Sharpe Ratio</div>
+ <div className="text-3xl font-semibold text-white">2.4</div>
  <div className="text-xs text-green-400 mt-1">Above average</div>
  </div>
 
  {/* Max Drawdown */}
- <div className="bg-slate-700/30 rounded-lg p-4">
- <div className="text-sm text-gray-400 mb-1">Max Drawdown</div>
- <div className="text-3xl font-bold text-yellow-400">-8.2%</div>
+ <div className="border border-slate-700/50 rounded-lg p-4">
+ <div className="text-sm text-white mb-1">Max Drawdown</div>
+ <div className="text-3xl font-semibold text-yellow-400">-8.2%</div>
  <div className="text-xs text-gray-400 mt-1">Within limits</div>
  </div>
 
  {/* VaR (95%) */}
- <div className="bg-slate-700/30 rounded-lg p-4">
- <div className="text-sm text-gray-400 mb-1">VaR (95%)</div>
- <div className="text-3xl font-bold text-white">$2,450</div>
+ <div className="border border-slate-700/50 rounded-lg p-4">
+ <div className="text-sm text-white mb-1">VaR (95%)</div>
+ <div className="text-3xl font-semibold text-white">$2,450</div>
  <div className="text-xs text-gray-400 mt-1">Daily risk at 95%</div>
  </div>
  </div>
@@ -496,17 +603,17 @@ export default function MindfolioDetailNew() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {/* Buying Power Utilization */}
  <div className="bg-slate-700/30 rounded-lg p-5">
- <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
- <span></span> Buying Power Utilization
+ <h3 className="text-white font-semibold mb-4">
+ Buying Power Utilization
  </h3>
  <div className="space-y-3">
  <div>
  <div className="flex justify-between text-sm mb-1">
- <span className="text-gray-400">Total Buying Power</span>
+ <span className="text-white">Total Buying Power</span>
  <span className="text-white font-medium">$100,000</span>
  </div>
  <div className="flex justify-between text-sm mb-1">
- <span className="text-gray-400">Used</span>
+ <span className="text-white">Used</span>
  <span className="text-white font-medium">$68,500 (68.5%)</span>
  </div>
  <div className="w-full bg-slate-600 rounded-full h-3">
@@ -515,7 +622,7 @@ export default function MindfolioDetailNew() {
  </div>
  <div className="pt-3 border-t border-slate-600">
  <div className="flex justify-between text-sm">
- <span className="text-gray-400">Available</span>
+ <span className="text-white">Available</span>
  <span className="text-green-400 font-medium">$31,500</span>
  </div>
  </div>
@@ -524,25 +631,25 @@ export default function MindfolioDetailNew() {
 
  {/* Margin Requirements */}
  <div className="bg-slate-700/30 rounded-lg p-5">
- <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+ <h3 className="text-white font-semibold mb-4">
  Margin Requirements
  </h3>
  <div className="space-y-3">
  <div className="flex justify-between">
- <span className="text-gray-400 text-sm">Initial Margin</span>
+ <span className="text-white text-sm">Initial Margin</span>
  <span className="text-white font-medium">$45,000</span>
  </div>
  <div className="flex justify-between">
- <span className="text-gray-400 text-sm">Maintenance Margin</span>
+ <span className="text-white text-sm">Maintenance Margin</span>
  <span className="text-white font-medium">$32,000</span>
  </div>
  <div className="flex justify-between">
- <span className="text-gray-400 text-sm">Current Equity</span>
+ <span className="text-white text-sm">Current Equity</span>
  <span className="text-green-400 font-medium">$89,700</span>
  </div>
  <div className="flex justify-between pt-3 border-t border-slate-600">
- <span className="text-gray-400 text-sm">Margin Cushion</span>
- <span className="text-green-400 font-bold">$57,700 (180%)</span>
+ <span className="text-white text-sm">Margin Cushion</span>
+ <span className="text-green-400 font-semibold">$57,700 (180%)</span>
  </div>
  </div>
  </div>
@@ -550,15 +657,15 @@ export default function MindfolioDetailNew() {
 
  {/* Risk Limits */}
  <div className="bg-slate-700/30 rounded-lg p-5">
- <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
- <span></span> Risk Limits & Compliance
+ <h3 className="text-white font-semibold mb-4">
+ Risk Limits & Compliance
  </h3>
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
  {/* Daily Risk */}
  <div>
- <div className="text-sm text-gray-400 mb-2">Daily Loss Limit</div>
+ <div className="text-sm text-white mb-2">Daily Loss Limit</div>
  <div className="flex items-baseline gap-2 mb-1">
- <span className="text-white font-bold">-$450</span>
+ <span className="text-white font-semibold">-$450</span>
  <span className="text-gray-400 text-sm">/ $2,000</span>
  </div>
  <div className="w-full bg-slate-600 rounded-full h-2">
@@ -569,9 +676,9 @@ export default function MindfolioDetailNew() {
 
  {/* Weekly Risk */}
  <div>
- <div className="text-sm text-gray-400 mb-2">Weekly Loss Limit</div>
+ <div className="text-sm text-white mb-2">Weekly Loss Limit</div>
  <div className="flex items-baseline gap-2 mb-1">
- <span className="text-white font-bold">-$1,250</span>
+ <span className="text-white font-semibold">-$1,250</span>
  <span className="text-gray-400 text-sm">/ $8,000</span>
  </div>
  <div className="w-full bg-slate-600 rounded-full h-2">
@@ -582,9 +689,9 @@ export default function MindfolioDetailNew() {
 
  {/* Monthly Risk */}
  <div>
- <div className="text-sm text-gray-400 mb-2">Monthly Loss Limit</div>
+ <div className="text-sm text-white mb-2">Monthly Loss Limit</div>
  <div className="flex items-baseline gap-2 mb-1">
- <span className="text-white font-bold">+$3,200</span>
+ <span className="text-white font-semibold">+$3,200</span>
  <span className="text-gray-400 text-sm">/ $15,000</span>
  </div>
  <div className="w-full bg-slate-600 rounded-full h-2">
@@ -599,8 +706,8 @@ export default function MindfolioDetailNew() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {/* Concentration Risk */}
  <div className="bg-slate-700/30 rounded-lg p-5">
- <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
- <span></span> Concentration Risk
+ <h3 className="text-white font-semibold mb-4">
+ Concentration Risk
  </h3>
  <div className="space-y-3">
  {[
@@ -612,7 +719,7 @@ export default function MindfolioDetailNew() {
  ].map((item, idx) => (
  <div key={idx}>
  <div className="flex justify-between text-sm mb-1">
- <span className="text-gray-400">{item.symbol}</span>
+ <span className="text-white">{item.symbol}</span>
  <span className="text-white">{item.pct}%</span>
  </div>
  <div className="w-full bg-slate-600 rounded-full h-2">
@@ -676,17 +783,17 @@ export default function MindfolioDetailNew() {
  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
  <div>
  <div className="text-sm text-gray-400 mb-1">Average Position Size</div>
- <div className="text-2xl font-bold text-white">$5,240</div>
+ <div className="text-2xl font-semibold text-white">$5,240</div>
  <div className="text-xs text-gray-400">Across 12 positions</div>
  </div>
  <div>
  <div className="text-sm text-gray-400 mb-1">Largest Position</div>
- <div className="text-2xl font-bold text-yellow-400">$9,200</div>
+ <div className="text-2xl font-semibold text-yellow-400">$9,200</div>
  <div className="text-xs text-gray-400">TSLA (18% of mindfolio)</div>
  </div>
  <div>
  <div className="text-sm text-gray-400 mb-1">Smallest Position</div>
- <div className="text-2xl font-bold text-white">$2,100</div>
+ <div className="text-2xl font-semibold text-white">$2,100</div>
  <div className="text-xs text-gray-400">AMD (4% of mindfolio)</div>
  </div>
  </div>
@@ -702,7 +809,7 @@ export default function MindfolioDetailNew() {
  <div className="flex items-start justify-between mb-6">
  {/* Left: Allocation Breakdown */}
  <div className="space-y-2">
- <div className="text-sm text-gray-400 font-medium">Current Allocation</div>
+ <div className="text-sm text-white font-medium">Current Allocation</div>
  <div className="flex gap-4">
  <div className="flex items-center gap-2">
  <div className="w-3 h-3 rounded-full bg-green-500"></div>
@@ -724,8 +831,8 @@ export default function MindfolioDetailNew() {
 
  {/* Right: Total Value with Drawdown */}
  <div className="text-right">
- <div className="text-sm text-gray-400 font-medium mb-1">Total Value</div>
- <div className="text-3xl font-bold text-white">${(totalValue/1000).toFixed(1)}k</div>
+ <div className="text-sm text-white font-medium mb-1">Total Value</div>
+ <div className="text-3xl font-semibold text-white">${(totalValue/1000).toFixed(1)}k</div>
  <div className={`text-sm font-medium ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
  {isPositive ? '+' : ''}{drawdown}% {isPositive ? '↑' : '↓'}
  </div>
@@ -759,48 +866,33 @@ export default function MindfolioDetailNew() {
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  {/* Cash */}
  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
- <div className="flex items-center gap-3 mb-3">
- <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
- <span className="text-2xl"></span>
+ <div className="mb-3">
+ <div className="text-sm text-white">Cash</div>
+ <div className="text-2xl font-semibold text-white">${(currentCash/1000).toFixed(1)}k</div>
  </div>
- <div>
- <div className="text-sm text-gray-400">Cash</div>
- <div className="text-2xl font-bold text-white">${(currentCash/1000).toFixed(1)}k</div>
- </div>
- </div>
- <div className="text-sm text-gray-400">
+ <div className="text-sm text-white">
  {cashPct}% of mindfolio • Available for trading
  </div>
  </div>
 
  {/* Stocks */}
  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
- <div className="flex items-center gap-3 mb-3">
- <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
- <span className="text-2xl"></span>
+ <div className="mb-3">
+ <div className="text-sm text-white">Stocks</div>
+ <div className="text-2xl font-semibold text-white">${(currentStocks/1000).toFixed(1)}k</div>
  </div>
- <div>
- <div className="text-sm text-gray-400">Stocks</div>
- <div className="text-2xl font-bold text-white">${(currentStocks/1000).toFixed(1)}k</div>
- </div>
- </div>
- <div className="text-sm text-gray-400">
+ <div className="text-sm text-white">
  {stocksPct}% of mindfolio • 8 positions
  </div>
  </div>
 
  {/* Options */}
  <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
- <div className="flex items-center gap-3 mb-3">
- <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
- <span className="text-2xl"></span>
+ <div className="mb-3">
+ <div className="text-sm text-white">Options</div>
+ <div className="text-2xl font-semibold text-white">${(currentOptions/1000).toFixed(1)}k</div>
  </div>
- <div>
- <div className="text-sm text-gray-400">Options</div>
- <div className="text-2xl font-bold text-white">${(currentOptions/1000).toFixed(1)}k</div>
- </div>
- </div>
- <div className="text-sm text-gray-400">
+ <div className="text-sm text-white">
  {optionsPct}% of mindfolio • 12 contracts
  </div>
  </div>
@@ -900,35 +992,47 @@ export default function MindfolioDetailNew() {
  <div className="flex items-center justify-between">
  <div>
  <div className="text-sm text-gray-400">This Month</div>
- <div className="text-2xl font-bold text-green-400">+$2,450</div>
+ <div className="text-2xl font-semibold text-green-400">+$2,450</div>
  </div>
  <div className="text-right">
  <div className="text-sm text-gray-400">Avg Daily</div>
- <div className="text-lg font-bold text-white">+$122</div>
+ <div className="text-lg font-semibold text-white">+$122</div>
  </div>
  </div>
  </div>
- <div className="grid grid-cols-7 gap-1">
- {/* Calendar heatmap - 28 days (4 weeks) */}
- {Array.from({ length: 28 }).map((_, i) => {
- const pnl = (Math.random() - 0.4) * 500; // Random P/L
- const intensity = Math.min(Math.abs(pnl) / 250, 1);
- const bgColor = pnl >= 0 
- ? `rgba(34, 197, 94, ${intensity * 0.6})` 
- : `rgba(239, 68, 68, ${intensity * 0.6})`;
+ <div className="grid grid-cols-7 gap-2">
+ {/* Calendar Header */}
+ {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+ <div key={day} className="text-center text-xs text-gray-400 font-semibold pb-2">
+ {day}
+ </div>
+ ))}
+ 
+ {/* Calendar Days (Last 4 weeks) */}
+ {Array.from({ length: 28 }).map((_, idx) => {
+ const profit = Math.random() > 0.4 ? (Math.random() * 500 - 100) : 0;
+ const isProfit = profit > 0;
+ const isLoss = profit < 0;
+ const isEmpty = profit === 0;
+ 
  return (
  <div
- key={i}
- className="aspect-square rounded cursor-pointer hover:ring-2 hover:ring-blue-500 transition"
- style={{ backgroundColor: bgColor }}
- title={`Day ${i+1}: ${pnl >= 0 ? '+' : ''}$${pnl.toFixed(0)}`}
- />
+ key={idx}
+ className={`aspect-square rounded p-1 text-xs flex flex-col items-center justify-center ${
+ isProfit ? 'bg-green-900/40 border border-green-700' :
+ isLoss ? 'bg-red-900/40 border border-red-700' :
+ 'bg-slate-700/30 border border-slate-600'
+ }`}
+ >
+ <div className="text-gray-400 text-[10px]">{idx + 1}</div>
+ {!isEmpty && (
+ <div className={`font-semibold ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
+ {isProfit ? '+' : ''}{profit.toFixed(0)}
+ </div>
+ )}
+ </div>
  );
  })}
- </div>
- <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
- <span> Profit</span>
- <span> Loss</span>
  </div>
  </div>
 
@@ -2642,6 +2746,10 @@ export default function MindfolioDetailNew() {
  {activeTab === "NEWS" && <NewsIntelligenceTab mindfolioId={id} />}
 
  {activeTab === "TERM STRUCTURE" && <TermStructureTab mindfolioId={id} />}
+
+ {activeTab === "BALANCE" && <BalanceTab mindfolio={mindfolio} broker={broker} accountType={accountType} />}
+
+ {activeTab === "TAX" && <TaxTab mindfolio={mindfolio} />}
  </div>
  );
 }
@@ -3466,6 +3574,261 @@ function NewsIntelligenceTab({ mindfolioId }) {
  fromMindfolio={mindfolio}
  onTransferComplete={handleTransferComplete}
  />
+ </div>
+ );
+}
+
+// =============================================
+// BALANCE TAB - Account balances from broker
+// =============================================
+function BalanceTab({ mindfolio, broker, accountType }) {
+ const [balances, setBalances] = useState(null);
+ const [loading, setLoading] = useState(true);
+
+ useEffect(() => {
+ loadBalances();
+ }, [mindfolio]);
+
+ const loadBalances = async () => {
+ if (!mindfolio?.account_id) {
+ setLoading(false);
+ return;
+ }
+
+ try {
+ const API = process.env.REACT_APP_BACKEND_URL || '';
+ const response = await fetch(
+ `${API}/api/tradestation/accounts/${mindfolio.account_id}/balances`,
+ {
+ headers: { 'X-User-ID': 'default' }
+ }
+ );
+
+ if (response.ok) {
+ const data = await response.json();
+ setBalances(data.Balances?.[0] || null);
+ }
+ } catch (err) {
+ console.error('Failed to load balances:', err);
+ } finally {
+ setLoading(false);
+ }
+ };
+
+ if (loading) {
+ return <div className="text-white p-6">Loading balances...</div>;
+ }
+
+ if (!balances) {
+ return (
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-6">
+ <h3 className="text-xl text-white mb-2">Balance</h3>
+ <p className="text-sm text-gray-400">
+ Balance data will be available after connecting your broker account.
+ </p>
+ </div>
+ );
+ }
+
+ return (
+ <div className="space-y-4">
+ {/* Account Summary */}
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+ <h2 className="text-base text-white mb-3">Account Summary</h2>
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+ <div className="bg-[#0f1419] rounded-lg p-3">
+ <div className="text-xs text-gray-400 mb-1">Cash Balance</div>
+ <div className="text-[18px] text-green-400">
+ ${balances.CashBalance?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'}
+ </div>
+ </div>
+ <div className="bg-[#0f1419] rounded-lg p-3">
+ <div className="text-xs text-gray-400 mb-1">Buying Power</div>
+ <div className="text-[18px] text-blue-400">
+ ${balances.BuyingPower?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'}
+ </div>
+ </div>
+ <div className="bg-[#0f1419] rounded-lg p-3">
+ <div className="text-xs text-gray-400 mb-1">Account Value</div>
+ <div className="text-[18px] text-white">
+ ${balances.Equity?.toLocaleString('en-US', { minimumFractionDigits: 2 }) || '0.00'}
+ </div>
+ </div>
+ </div>
+ </div>
+
+ {/* Detailed Metrics */}
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+ <h2 className="text-base text-white mb-3">Detailed Metrics</h2>
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+ {Object.entries(balances).map(([key, value]) => {
+ if (typeof value !== 'number') return null;
+ return (
+ <div key={key} className="bg-[#0f1419] rounded-lg p-3">
+ <div className="text-xs text-gray-400 mb-1">{key}</div>
+ <div className="text-sm text-white">
+ ${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+ </div>
+ </div>
+ );
+ })}
+ </div>
+ </div>
+ </div>
+ );
+}
+
+// =============================================
+// TAX TAB - Tax calculations on transactions
+// =============================================
+function TaxTab({ mindfolio }) {
+ const [transactions, setTransactions] = useState([]);
+ const [taxSummary, setTaxSummary] = useState(null);
+ const [loading, setLoading] = useState(true);
+ const [taxYear, setTaxYear] = useState(new Date().getFullYear());
+
+ useEffect(() => {
+ loadTaxData();
+ }, [mindfolio, taxYear]);
+
+ const loadTaxData = async () => {
+ if (!mindfolio?.id) {
+ setLoading(false);
+ return;
+ }
+
+ try {
+ const API = process.env.REACT_APP_BACKEND_URL || '';
+ const response = await fetch(
+ `${API}/api/mindfolio/${mindfolio.id}/transactions`,
+ {
+ headers: { 'X-User-ID': 'default' }
+ }
+ );
+
+ if (response.ok) {
+ const data = await response.json();
+ setTransactions(data.transactions || []);
+ calculateTaxSummary(data.transactions || []);
+ }
+ } catch (err) {
+ console.error('Failed to load transactions:', err);
+ } finally {
+ setLoading(false);
+ }
+ };
+
+ const calculateTaxSummary = (txns) => {
+ // Filter transactions by tax year
+ const yearTxns = txns.filter(tx => {
+ const txDate = new Date(tx.datetime);
+ return txDate.getFullYear() === taxYear;
+ });
+
+ // Calculate realized gains/losses (simplified - need FIFO matching)
+ const sells = yearTxns.filter(tx => tx.side === 'SELL');
+ const totalRealizedGains = sells.reduce((sum, tx) => {
+ // Simplified: assume 10% gain per sell (real calculation needs cost basis)
+ return sum + (tx.qty * tx.price * 0.1);
+ }, 0);
+
+ setTaxSummary({
+ totalTransactions: yearTxns.length,
+ totalSells: sells.length,
+ totalRealizedGains: totalRealizedGains,
+ estimatedTax: totalRealizedGains * 0.15, // 15% capital gains tax estimate
+ });
+ };
+
+ if (loading) {
+ return <div className="text-white p-6">Loading tax data...</div>;
+ }
+
+ return (
+ <div className="space-y-4">
+ {/* Tax Year Selector */}
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+ <div className="flex items-center justify-between">
+ <h2 className="text-base text-white">Tax Year</h2>
+ <select
+ value={taxYear}
+ onChange={(e) => setTaxYear(parseInt(e.target.value))}
+ className="bg-[#0f1419] border border-[#1a1f26] text-white rounded-lg px-3 py-2 text-sm"
+ >
+ <option value={2025}>2025</option>
+ <option value={2024}>2024</option>
+ <option value={2023}>2023</option>
+ </select>
+ </div>
+ </div>
+
+ {/* Tax Summary */}
+ {taxSummary && (
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+ <h2 className="text-base text-white mb-3">Tax Summary ({taxYear})</h2>
+ <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+ <div className="bg-[#0f1419] rounded-lg p-3">
+ <div className="text-xs text-gray-400 mb-1">Total Transactions</div>
+ <div className="text-[18px] text-white">{taxSummary.totalTransactions}</div>
+ </div>
+ <div className="bg-[#0f1419] rounded-lg p-3">
+ <div className="text-xs text-gray-400 mb-1">Sell Transactions</div>
+ <div className="text-[18px] text-white">{taxSummary.totalSells}</div>
+ </div>
+ <div className="bg-[#0f1419] rounded-lg p-3">
+ <div className="text-xs text-gray-400 mb-1">Realized Gains</div>
+ <div className="text-[18px] text-green-400">
+ ${taxSummary.totalRealizedGains.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+ </div>
+ </div>
+ <div className="bg-[#0f1419] rounded-lg p-3">
+ <div className="text-xs text-gray-400 mb-1">Estimated Tax (15%)</div>
+ <div className="text-[18px] text-red-400">
+ ${taxSummary.estimatedTax.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+ </div>
+ </div>
+ </div>
+ </div>
+ )}
+
+ {/* Tax Notice */}
+ <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+ <h3 className="text-sm text-blue-400 mb-2">📋 Tax Calculation Notice</h3>
+ <p className="text-xs text-gray-300">
+ This is a simplified tax estimate. For accurate tax reporting, use FIFO cost basis matching 
+ and consult with a tax professional. Capital gains tax rates vary based on holding period 
+ (short-term vs long-term) and income level.
+ </p>
+ </div>
+
+ {/* Transaction List */}
+ <div className="bg-[#0a0e1a] border border-[#1a1f26] rounded-lg p-3">
+ <h2 className="text-base text-white mb-3">Transactions ({taxYear})</h2>
+ <div className="space-y-2">
+ {transactions
+ .filter(tx => new Date(tx.datetime).getFullYear() === taxYear)
+ .slice(0, 10)
+ .map(tx => (
+ <div key={tx.id} className="bg-[#0f1419] rounded-lg p-3 flex items-center justify-between">
+ <div>
+ <div className="text-sm text-white">{tx.symbol}</div>
+ <div className="text-xs text-gray-400">{new Date(tx.datetime).toLocaleDateString()}</div>
+ </div>
+ <div className="text-right">
+ <div className={`text-sm ${tx.side === 'BUY' ? 'text-blue-400' : 'text-orange-400'}`}>
+ {tx.side} {tx.qty}
+ </div>
+ <div className="text-xs text-gray-400">${tx.price.toFixed(2)}</div>
+ </div>
+ </div>
+ ))}
+ {transactions.filter(tx => new Date(tx.datetime).getFullYear() === taxYear).length === 0 && (
+ <div className="text-sm text-gray-400 text-center py-4">
+ No transactions found for {taxYear}
+ </div>
+ )}
+ </div>
+ </div>
  </div>
  );
 }
