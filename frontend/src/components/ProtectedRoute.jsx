@@ -13,36 +13,16 @@ export default function ProtectedRoute({ children }) {
 
   const checkAuth = async () => {
     const token = localStorage.getItem('auth_token');
-    const expires = localStorage.getItem('auth_expires');
 
-    // No token or expired
-    if (!token || !expires || Date.now() > parseInt(expires)) {
+    // No token
+    if (!token) {
       setIsAuthenticated(false);
       return;
     }
 
-    // Verify token with backend
-    try {
-      const response = await fetch(`${API}/api/auth/verify`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        setIsAuthenticated(true);
-      } else {
-        // Token invalid
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_email');
-        localStorage.removeItem('auth_expires');
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      setIsAuthenticated(false);
-    }
+    // Simple token check - just verify it exists
+    // JWT expiration will be handled by backend
+    setIsAuthenticated(true);
   };
 
   // Still checking

@@ -30,11 +30,11 @@ export default function LoginPage() {
         throw new Error(data.detail || 'Login failed');
       }
 
-      // Store token
-      localStorage.setItem('auth_token', data.access_token);
-      localStorage.setItem('auth_email', email);
-      localStorage.setItem('auth_expires', Date.now() + data.expires_in * 1000);
-
+      // Store token (backend returns 'token' not 'access_token')
+      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('auth_email', data.user?.email || email);
+      localStorage.setItem('auth_name', data.user?.name || '');
+      
       // Redirect to dashboard
       navigate('/');
     } catch (err) {
