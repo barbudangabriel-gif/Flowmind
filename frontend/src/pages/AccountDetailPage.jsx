@@ -42,7 +42,8 @@ export default function AccountDetailPage() {
   const [balances, setBalances] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [equityTab, setEquityTab] = useState('stocks'); // 'stocks' or 'options'
+  const [mainTab, setMainTab] = useState('balance'); // 'balance' or 'tax'
+  const [equityTab, setEquityTab] = useState('stocks'); // 'stocks' or 'options' (within balance tab)
 
   // Broker display names
   const brokerNames = {

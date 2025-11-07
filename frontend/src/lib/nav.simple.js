@@ -34,8 +34,8 @@ export function buildNav(ctx) {
  to: "/account/tradestation", 
  icon: "Wallet",
  children: [
- { label: "Equity", to: "/account/tradestation/equity", icon: "TrendingUp" },
- { label: "Futures", to: "/account/tradestation/futures", icon: "Zap" },
+ { label: "MF Master Equity", to: "/mindfolio/mf_909a45e4a3d7/legacy", icon: "TrendingUp" },
+ { label: "MF Master Futures", to: "/mindfolio/mf_909a45e4a3d7/legacy", icon: "Zap" },
  ]
  },
  { 
@@ -43,18 +43,19 @@ export function buildNav(ctx) {
  to: "/account/tastytrade", 
  icon: "Wallet",
  children: [
- { label: "Equity", to: "/account/tastytrade/equity", icon: "TrendingUp" },
- { label: "Futures", to: "/account/tastytrade/futures", icon: "Zap" },
+ { label: "MF Master Equity", to: "/mindfolio/mf_207943a4e6a8/legacy", icon: "TrendingUp" },
+ { label: "MF Master Futures", to: "/mindfolio/mf_207943a4e6a8/legacy", icon: "Zap" },
  { label: "Crypto", to: "/account/tastytrade/crypto", icon: "Bitcoin" },
  ]
  },
  { 
- label: "IBKR", 
+ label: "Interactive Brokers", 
  to: "/account/ibkr", 
- icon: "Wallet",
+ icon: "Globe",
  children: [
- { label: "Equity", to: "/account/ibkr/equity", icon: "TrendingUp" },
- { label: "Futures", to: "/account/ibkr/futures", icon: "Zap" },
+ { label: "MF Master Equity", to: "/mindfolio/mf_2c171f1be938/legacy", icon: "TrendingUp" },
+ { label: "MF Master Futures", to: "/mindfolio/mf_2c171f1be938/legacy", icon: "Zap" },
+ { label: "Forex", to: "/account/ibkr/forex", icon: "DollarSign" },
  ]
  },
  ],
@@ -146,22 +147,13 @@ export function buildNav(ctx) {
  ]
  },
  { 
- label: "Algos", 
+ label: "Algos Module", 
  to: "/screener/iv", 
  icon: "Bot",
  children: [
- { label: "Trade Simulator", to: "/simulator", icon: "PlayCircle" },
  { label: "IV Setups (Auto)", to: "/screener/iv", icon: "Activity" },
- { label: "Iron Condor Scanner", to: "/screener/iv?strategy=IRON_CONDOR", icon: "Target" },
- { label: "Calendar Scanner", to: "/screener/iv?strategy=CALENDAR", icon: "Calendar" },
- { label: "Diagonal Scanner", to: "/screener/iv?strategy=DIAGONAL", icon: "TrendingUp" },
- { label: "Double Diagonal", to: "/screener/iv?strategy=DOUBLE_DIAGONAL", icon: "Layers" },
  { label: "Put Selling Engine", to: "/screener/sell-puts", icon: "ArrowDown" },
- { label: "Covered Calls", to: "/screener/covered-calls", icon: "Shield" },
- { label: "Cash-Secured Puts", to: "/screener/csp", icon: "DollarSign" },
- { label: "Preview Queue", to: "/trades/preview", icon: "ClipboardList" },
- { label: "Orders (SIM)", to: "/trades/orders/sim", icon: "ReceiptText" },
- { label: "Orders (LIVE)", to: "/trades/orders/live", icon: "CreditCard" },
+ { label: "SPY Hedge", to: "/screener/spy-hedge", icon: "Shield" },
  ]
  },
  { 
@@ -212,6 +204,23 @@ export function buildNav(ctx) {
  items: [
  { label: "Risk & Gates", to: "/settings/gates", icon: "Shield" },
  { label: "Screensaver", to: "/settings/screensaver", icon: "Monitor" },
+ { 
+ label: "Trading Tools", 
+ to: "/simulator", 
+ icon: "Wrench",
+ children: [
+ { label: "Trade Simulator", to: "/simulator", icon: "PlayCircle" },
+ { label: "Iron Condor Scanner", to: "/screener/iv?strategy=IRON_CONDOR", icon: "Target" },
+ { label: "Calendar Scanner", to: "/screener/iv?strategy=CALENDAR", icon: "Calendar" },
+ { label: "Diagonal Scanner", to: "/screener/iv?strategy=DIAGONAL", icon: "TrendingUp" },
+ { label: "Double Diagonal", to: "/screener/iv?strategy=DOUBLE_DIAGONAL", icon: "Layers" },
+ { label: "Covered Calls", to: "/screener/covered-calls", icon: "Shield" },
+ { label: "Cash-Secured Puts", to: "/screener/csp", icon: "DollarSign" },
+ { label: "Preview Queue", to: "/trades/preview", icon: "ClipboardList" },
+ { label: "Orders (SIM)", to: "/trades/orders/sim", icon: "ReceiptText" },
+ { label: "Orders (LIVE)", to: "/trades/orders/live", icon: "CreditCard" },
+ ]
+ },
  { 
  label: "Data & APIs", 
  to: "/settings/keys", 

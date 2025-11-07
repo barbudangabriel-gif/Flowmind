@@ -269,13 +269,14 @@ function App() {
  {/* Aggregate Account View */}
  <Route path="/account/aggregate" element={<AggregateAccountPage />} />
  
- {/* Account Detail Pages - Dynamic Routes */}
+ {/* Account Detail Pages */}
  <Route path="/account/:broker/:accountType" element={<AccountDetailPage />} />
  
  <Route path="/tradestation/login" element={<TradeStationLogin />} />
  <Route path="/mindfolio" element={<MindfolioList />} />
  <Route path="/mindfolio/new" element={<MindfolioCreate />} />
  <Route path="/mindfolio/import" element={<ImportFromTradeStation />} />
+ <Route path="/mindfolio/master-ts" element={<MindfolioDetailNew />} />
  <Route path="/mindfolio/page/:id" element={<MindfolioPage />} />
  <Route path="/mindfolio/:id/old" element={<MindfolioDetail />} />
  <Route path="/mindfolio/:id/legacy" element={<MindfolioDetailNew />} />

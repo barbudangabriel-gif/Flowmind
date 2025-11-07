@@ -674,6 +674,37 @@ async def get_mindfolio_templates():
     return {"status": "success", "templates": templates, "count": len(templates)}
 
 
+@router.get("/master")
+async def get_master_mindfolio(broker: str, account_type: str):
+    """
+    Find master mindfolio by broker + account_type.
+    
+    Query params:
+        broker: "TradeStation" | "Tastytrade" | "IBKR"
+        account_type: "Equity" | "Futures" | "Crypto"
+    
+    Returns:
+        Mindfolio if exists, 404 if not found
+    """
+    all_mindfolios = await pf_list()
+    
+    # Find master mindfolio matching broker + account_type
+    for mf in all_mindfolios:
+        if (mf.broker == broker and 
+            mf.account_type == account_type and 
+            mf.is_master == True):
+            return {
+                "status": "success",
+                "mindfolio": mf.dict()
+            }
+    
+    # Not found
+    raise HTTPException(
+        status_code=404, 
+        detail=f"No master mindfolio found for {broker} {account_type}"
+    )
+
+
 @router.get("", response_model=List[Mindfolio])
 async def list_mindfolios():
     """List all mindfolios"""
@@ -861,6 +892,8 @@ async def import_full_tradestation_mindfolio(
             account_id=account_id,
             cash_balance=cash_balance,
             starting_balance=cash_balance,
+            is_master=True,  # Mark as master mindfolio for broker account
+            auto_sync=False,  # Manual sync for now (TODO: implement auto-sync)
             status="ACTIVE",
             modules=[],
             created_at=datetime.utcnow().isoformat(),
